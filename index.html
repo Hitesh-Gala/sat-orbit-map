@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4">
+  <title>Argos · Satellite Tracker</title>
+  <link rel="preconnect" href="https://celestrak.org">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="globe"></div>
+
+  <header class="topbar">
+    <div class="brand">ARGOS · SATELLITE TRACKER</div>
+    <div class="sub">CelesTrak · NORAD GP catalog · live propagation</div>
+  </header>
+
+  <aside class="hud-tr">
+    <section class="panel clock" aria-label="clocks">
+      <div class="row">
+        <span class="label">UTC</span>
+        <span id="utc-time" class="time">--:--:--</span>
+      </div>
+      <div class="row">
+        <span class="label">IST</span>
+        <span id="ist-time" class="time">--:--:--</span>
+      </div>
+      <div class="row date">
+        <span id="utc-date" class="dim">----</span>
+      </div>
+    </section>
+
+    <details class="panel sats" id="vis-panel">
+      <summary>
+        <span>
+          <span class="label">Visible · India</span>
+          <span class="hint-inline">above horizon</span>
+        </span>
+        <span id="vis-count" class="count">…</span>
+      </summary>
+      <div class="hint">Az/El from New Delhi (28.61°N, 77.21°E). Sorted by elevation.</div>
+      <div id="vis-list" class="list" role="listbox"></div>
+    </details>
+
+    <details class="panel sats" id="cn-panel">
+      <summary>
+        <span>
+          <span class="label">Chinese Sats</span>
+          <span class="hint-inline">active payloads</span>
+        </span>
+        <span id="cn-count" class="count">…</span>
+      </summary>
+      <div class="hint">SATCAT COUNTRY=PRC ∩ active TLEs. Purpose inferred from designation.</div>
+      <div id="cn-list" class="list" role="listbox"></div>
+    </details>
+
+    <div class="footer">
+      <span id="status">Booting…</span><br>
+      Source: <a href="https://celestrak.org" target="_blank" rel="noopener">celestrak.org</a>
+      (n2yo &amp; satellitetracker3d require server-side keys / scraping and aren't called from the browser).
+    </div>
+  </aside>
+
+  <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+  <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

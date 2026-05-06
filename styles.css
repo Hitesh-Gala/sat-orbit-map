@@ -1,0 +1,241 @@
+:root {
+  --bg: #02060d;
+  --panel: rgba(8, 16, 28, 0.78);
+  --line: rgba(110, 200, 255, 0.18);
+  --text: #cfe8ff;
+  --dim: #7891a8;
+  --accent: #67c8ff;
+  --accent2: #ff6b6b;
+  --green: #67e8a4;
+  --mono: 'JetBrains Mono', 'Fira Code', 'Consolas', ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+}
+body {
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+#globe {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  touch-action: none;
+}
+
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 14px 18px;
+  z-index: 10;
+  pointer-events: none;
+}
+.brand {
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  text-shadow: 0 0 12px rgba(103, 200, 255, 0.55);
+}
+.sub {
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+}
+
+.hud-tr {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  width: 320px;
+  max-width: calc(100vw - 28px);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: calc(100vh - 28px);
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, .35) inset,
+    0 6px 24px rgba(0, 0, 0, .45);
+}
+
+/* --- Clock --- */
+.clock .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 2px 0;
+}
+.clock .row.date {
+  justify-content: flex-end;
+  margin-top: 2px;
+}
+.clock .label,
+.panel .label {
+  color: var(--dim);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.clock .time {
+  font-variant-numeric: tabular-nums;
+  font-size: 20px;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 10px rgba(103, 200, 255, 0.55);
+}
+.dim { color: var(--dim); font-size: 10px; }
+
+/* --- Collapsible satellite panels --- */
+details.sats > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+  gap: 8px;
+}
+details.sats > summary::-webkit-details-marker { display: none; }
+details.sats > summary::after {
+  content: '▾';
+  color: var(--dim);
+  margin-left: 6px;
+  transform: rotate(-90deg);
+  transition: transform .15s ease;
+  font-size: 12px;
+}
+details.sats[open] > summary::after { transform: rotate(0deg); }
+
+.hint-inline {
+  color: var(--dim);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  margin-left: 6px;
+  text-transform: uppercase;
+}
+.count {
+  font-variant-numeric: tabular-nums;
+  font-size: 17px;
+  color: var(--green);
+  text-shadow: 0 0 8px rgba(103, 232, 164, 0.45);
+}
+#cn-count { color: var(--accent2); text-shadow: 0 0 8px rgba(255, 107, 107, 0.45); }
+
+.hint {
+  color: var(--dim);
+  margin: 8px 0 4px;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.list {
+  margin-top: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.list::-webkit-scrollbar { width: 6px; }
+.list::-webkit-scrollbar-thumb {
+  background: rgba(110, 200, 255, 0.22);
+  border-radius: 3px;
+}
+.list::-webkit-scrollbar-track { background: transparent; }
+
+.item {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(110, 200, 255, 0.07);
+}
+.item:last-child { border-bottom: 0; }
+.item .name {
+  color: var(--text);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.item .meta {
+  color: var(--accent);
+  font-size: 10px;
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.item .meta.muted { color: var(--dim); }
+.item .meta strong {
+  color: var(--text);
+  font-weight: normal;
+}
+
+.tag {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.tag.cn {
+  background: rgba(255, 107, 107, 0.18);
+  color: var(--accent2);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.footer {
+  font-size: 10px;
+  color: var(--dim);
+  padding: 6px 4px 0;
+  line-height: 1.5;
+}
+#status::before {
+  content: '●';
+  color: var(--green);
+  margin-right: 6px;
+  text-shadow: 0 0 6px rgba(103, 232, 164, 0.6);
+}
+#status.err::before { color: var(--accent2); text-shadow: 0 0 6px rgba(255, 107, 107, 0.6); }
+#status.warn::before { color: #f7c948; text-shadow: 0 0 6px rgba(247, 201, 72, 0.6); }
+
+/* --- Satellite markers (HTML overlay on globe) --- */
+.sat-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green), 0 0 10px rgba(103, 232, 164, 0.5);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+.sat-dot.cn {
+  background: var(--accent2);
+  box-shadow: 0 0 6px var(--accent2), 0 0 10px rgba(255, 107, 107, 0.5);
+  width: 5px;
+  height: 5px;
+}
+
+@media (max-width: 600px) {
+  .hud-tr { width: calc(100vw - 16px); right: 8px; top: 8px; }
+  .clock .time { font-size: 17px; }
+  .list { max-height: 200px; }
+}
