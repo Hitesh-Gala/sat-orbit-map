@@ -217,6 +217,45 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
 #status.err::before { color: var(--accent2); text-shadow: 0 0 6px rgba(255, 107, 107, 0.6); }
 #status.warn::before { color: #f7c948; text-shadow: 0 0 6px rgba(247, 201, 72, 0.6); }
 
+/* --- Centre-left "2-D Views" launcher button --- */
+.btn-2d {
+  position: fixed;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+  text-shadow: 0 0 8px rgba(103, 200, 255, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.btn-2d:hover {
+  border-color: var(--accent);
+  background: rgba(8, 16, 28, 0.92);
+  transform: translateY(-50%) translateX(2px);
+  text-decoration: none;
+}
+.btn-2d-icon {
+  font-size: 16px;
+  line-height: 1;
+  color: var(--green);
+  text-shadow: 0 0 8px rgba(103, 232, 164, 0.5);
+}
+
 /* --- Satellite markers (HTML overlay on globe) --- */
 .sat-dot {
   width: 4px;
@@ -238,4 +277,114 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   .hud-tr { width: calc(100vw - 16px); right: 8px; top: 8px; }
   .clock .time { font-size: 17px; }
   .list { max-height: 200px; }
+  .btn-2d { left: 8px; padding: 10px 12px; font-size: 10px; }
 }
+
+/* --- 2-D views page ----------------------------------------------------- */
+body.page-2d { overflow: auto; }
+body.page-2d #globe { display: none; }
+
+.page-2d-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(ellipse at top, rgba(78, 168, 255, 0.06), transparent 60%),
+    var(--bg);
+}
+
+.page-2d-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.page-2d-header .brand {
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  text-shadow: 0 0 12px rgba(103, 200, 255, 0.55);
+}
+.page-2d-header .right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+}
+.page-2d-header .legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.page-2d-header .legend-dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.page-2d-header .legend-dot.red   { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+
+.btn-back {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 6px 12px;
+}
+.btn-back:hover { border-color: var(--accent); }
+
+.maps-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 1px;
+  background: var(--line);
+  min-height: calc(100vh - 56px);
+}
+@media (max-width: 900px) {
+  .maps-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, minmax(360px, 1fr));
+  }
+}
+
+.map-cell {
+  position: relative;
+  background: var(--bg);
+  overflow: hidden;
+  min-height: 320px;
+}
+.map-cell .map-title {
+  position: absolute;
+  top: 10px;
+  left: 14px;
+  z-index: 5;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(103, 200, 255, 0.5);
+  pointer-events: none;
+}
+.map-cell .map-sub {
+  position: absolute;
+  top: 26px;
+  left: 14px;
+  z-index: 5;
+  font-size: 9px;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+  pointer-events: none;
+}
+.map-cell .chart {
+  width: 100%;
+  height: 100%;
+}
+

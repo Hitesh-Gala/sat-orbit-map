@@ -11,6 +11,11 @@
 <body>
   <div id="globe"></div>
 
+  <a class="btn-2d" href="2d-views.html" title="Open 2-D map projections in this window">
+    <span class="btn-2d-icon">⊞</span>
+    <span class="btn-2d-label">2-D Views</span>
+  </a>
+
   <header class="topbar">
     <div class="brand">ARGOS · SATELLITE TRACKER</div>
     <div class="sub">CelesTrak · NORAD GP catalog · live propagation</div>
@@ -64,6 +69,7 @@
 
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+  <script src="tle-loader.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

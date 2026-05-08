@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Argos · 2-D Views</title>
+  <link rel="preconnect" href="https://celestrak.org">
+  <link rel="preconnect" href="https://cdn.amcharts.com">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="page-2d">
+  <div class="page-2d-shell">
+    <header class="page-2d-header">
+      <div class="brand">ARGOS · 2-D VIEWS</div>
+      <div class="right">
+        <span><span class="legend-dot green"></span>satellite</span>
+        <span><span class="legend-dot red"></span>Chinese payload</span>
+        <span id="map-status">Booting…</span>
+        <a class="btn-back" href="index.html">← Globe</a>
+      </div>
+    </header>
+
+    <main class="maps-grid">
+      <div class="map-cell">
+        <div class="map-title">Mercator</div>
+        <div class="map-sub">conformal · 1569 · standard nautical chart</div>
+        <div id="map-mercator" class="chart"></div>
+      </div>
+      <div class="map-cell">
+        <div class="map-title">Equal Earth</div>
+        <div class="map-sub">equal-area · 2018 · area-faithful</div>
+        <div id="map-equal" class="chart"></div>
+      </div>
+      <div class="map-cell">
+        <div class="map-title">Natural Earth</div>
+        <div class="map-sub">compromise · pseudocylindrical</div>
+        <div id="map-natural" class="chart"></div>
+      </div>
+      <div class="map-cell">
+        <div class="map-title">Polar Azimuthal</div>
+        <div class="map-sub">north-pole-centred · equal-area hemisphere</div>
+        <div id="map-polar" class="chart"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- amCharts 5 -->
+  <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/map.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+
+  <!-- Satellite math + shared data layer -->
+  <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+  <script src="tle-loader.js"></script>
+  <script src="2d-views.js"></script>
+</body>
+</html>
