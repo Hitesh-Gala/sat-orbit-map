@@ -299,8 +299,54 @@ body.page-2d {
 }
 body.page-2d #globe { display: none; }
 body.page-2d .page-2d-header .brand { text-shadow: none; }
-body.page-2d .map-cell { background: #f7f4ec; }
-body.page-2d .map-cell .map-title { text-shadow: none; }
+
+/* Realistic-Earth map cell: deep ocean letterbox + NASA Blue Marble +
+   bathymetry raster as the chart basemap (Plate-Carrée projection, so it
+   aligns with amCharts' geoEquirectangular polygons). */
+body.page-2d .map-cell {
+  background: #02080f;
+  /* Equirectangular world is 360°×180° = 2:1.  Forcing the cell aspect to
+     match means amCharts' aspect-preserving fit and the CSS basemap stretch
+     produce the same rectangle, so country strokes line up with coastlines. */
+  aspect-ratio: 2 / 1;
+  align-self: center;
+  justify-self: center;
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  min-height: 0;
+  margin: 0 auto;
+}
+body.page-2d .maps-grid {
+  align-items: center;
+  justify-items: center;
+  background: #02080f;
+}
+body.page-2d .map-cell .chart {
+  /* Stretch the equirectangular raster to fill the chart area exactly so
+     the polygon strokes (also stretched by amCharts to fill) line up. */
+  background-image: url('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg');
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+/* Subtle vignette adds depth without obscuring the coasts. */
+body.page-2d .map-cell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.4));
+  z-index: 4;
+}
+body.page-2d .map-cell .map-title {
+  color: #f1f7ff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+}
+body.page-2d .map-cell .map-sub {
+  color: #b8cbe2;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
 
 .page-2d-shell {
   min-height: 100vh;

@@ -13,7 +13,10 @@ const REFRESH_MS = 10_000;
 const MAX_POINTS = 1500;
 
 const projections = [
-  { id: 'equal', containerId: 'map-equal', proj: () => am5map.geoEqualEarth() },
+  // Equirectangular: longitude→x and latitude→y are linear, so a Plate-
+  // Carrée raster (NASA Blue Marble + bathymetry) overlays in pixel-perfect
+  // alignment with our amCharts vector polygons.
+  { id: 'equal', containerId: 'map-equal', proj: () => am5map.geoEquirectangular() },
 ];
 
 function setStatus(msg) {
@@ -28,49 +31,55 @@ function buildMap({ containerId, proj }) {
 
   const chart = root.container.children.push(am5map.MapChart.new(root, {
     projection: proj(),
-    panX: 'rotateX',
-    panY: 'translateY',
-    wheelY: 'zoom',
-    paddingTop: 30, paddingBottom: 6, paddingLeft: 6, paddingRight: 6,
+    // Lock pan/zoom: the basemap raster is positioned via CSS and won't
+    // re-project, so any user transform would desync the layers.
+    panX: 'none',
+    panY: 'none',
+    wheelY: 'none',
+    pinchZoom: false,
+    paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: 0,
   }));
 
-  // Graticule (lat/lon grid) — soft gray-blue lines on cream background.
-  const grat = chart.series.push(am5map.GraticuleSeries.new(root, { step: 30 }));
-  grat.mapLines.template.setAll({
-    stroke: am5.color(0xb6c4d3),
-    strokeOpacity: 0.6,
-    strokeWidth: 0.5,
-  });
-
-  // Country polygons — cyan continents on the light cartographic theme.
+  // Country polygons — TRANSPARENT fill so the topographic basemap shows
+  // through; thin warm-white strokes act as soft political boundaries.
   const polygons = chart.series.push(am5map.MapPolygonSeries.new(root, {
     geoJSON: am5geodata_worldLow,
   }));
   polygons.mapPolygons.template.setAll({
-    fill: am5.color(0x18d6ea),
-    stroke: am5.color(0x0d6c80),
-    strokeWidth: 0.4,
-    fillOpacity: 0.85,
+    fill: am5.color(0xffffff),
+    fillOpacity: 0,
+    stroke: am5.color(0xfaf3e0),
+    strokeOpacity: 0.55,
+    strokeWidth: 0.55,
     interactive: false,
   });
 
-  // Satellite points — darker fills give contrast on light land.
+  // Faint graticule (lat/lon grid) every 30°.
+  const grat = chart.series.push(am5map.GraticuleSeries.new(root, { step: 30 }));
+  grat.mapLines.template.setAll({
+    stroke: am5.color(0xffffff),
+    strokeOpacity: 0.09,
+    strokeWidth: 0.4,
+  });
+
+  // Satellite points — bright cyan + red, with a soft halo to stay legible
+  // on the dark ocean of the Blue Marble texture.
   const pointSeries = chart.series.push(am5map.MapPointSeries.new(root, {
     latitudeField: 'lat',
     longitudeField: 'lon',
   }));
   pointSeries.bullets.push((rt, _series, dataItem) => {
     const cn = dataItem.dataContext.cn;
-    const radius = cn ? 2.4 : 1.7;
-    const color = cn ? 0xc62828 : 0x2e7d4f;
+    const radius = cn ? 2.6 : 1.9;
+    const color = cn ? 0xff5252 : 0x88f7ff;
     return am5.Bullet.new(rt, {
       sprite: am5.Circle.new(rt, {
         radius,
         fill: am5.color(color),
-        fillOpacity: 0.9,
+        fillOpacity: 0.95,
         stroke: am5.color(color),
-        strokeOpacity: 0.25,
-        strokeWidth: 3,
+        strokeOpacity: 0.35,
+        strokeWidth: 4,
         tooltipText: '{name}\n[bold]{altKm} km[/]  ·  {latStr}, {lonStr}',
       }),
     });
