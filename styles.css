@@ -280,9 +280,27 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   .btn-2d { left: 8px; padding: 10px 12px; font-size: 10px; }
 }
 
-/* --- 2-D views page ----------------------------------------------------- */
-body.page-2d { overflow: auto; }
+/* --- 2-D views page (light theme) --------------------------------------- */
+/* Override the dark-theme custom properties for descendants of body.page-2d.
+   Every existing rule that uses var(--bg)/var(--accent)/etc picks up the
+   light palette automatically. */
+body.page-2d {
+  --bg:       #eef2f6;
+  --panel:    rgba(255, 255, 255, 0.92);
+  --line:     #cfd8e3;
+  --text:     #1a2b40;
+  --dim:      #5a6a7d;
+  --accent:   #1565c0;
+  --accent2:  #c62828;
+  --green:    #2e7d4f;
+  background: var(--bg);
+  color: var(--text);
+  overflow: auto;
+}
 body.page-2d #globe { display: none; }
+body.page-2d .page-2d-header .brand { text-shadow: none; }
+body.page-2d .map-cell { background: #f7f4ec; }
+body.page-2d .map-cell .map-title { text-shadow: none; }
 
 .page-2d-shell {
   min-height: 100vh;

@@ -39,27 +39,27 @@ function buildMap({ containerId, proj }) {
     paddingTop: 30, paddingBottom: 6, paddingLeft: 6, paddingRight: 6,
   }));
 
-  // Graticule (lat/lon grid) — first so it sits beneath landmasses.
+  // Graticule (lat/lon grid) — soft gray-blue lines on cream background.
   const grat = chart.series.push(am5map.GraticuleSeries.new(root, { step: 30 }));
   grat.mapLines.template.setAll({
-    stroke: am5.color(0x1a3450),
-    strokeOpacity: 0.5,
+    stroke: am5.color(0xb6c4d3),
+    strokeOpacity: 0.6,
     strokeWidth: 0.5,
   });
 
-  // Country polygons.
+  // Country polygons — light cartographic style.
   const polygons = chart.series.push(am5map.MapPolygonSeries.new(root, {
     geoJSON: am5geodata_worldLow,
     exclude: ['AQ'], // Antarctica clutters polar view; drop it.
   }));
   polygons.mapPolygons.template.setAll({
-    fill: am5.color(0x0e2238),
-    stroke: am5.color(0x1f4670),
+    fill: am5.color(0xfdfaf0),
+    stroke: am5.color(0x90a4b8),
     strokeWidth: 0.5,
     interactive: false,
   });
 
-  // Satellite points.
+  // Satellite points — darker fills give contrast on light land.
   const pointSeries = chart.series.push(am5map.MapPointSeries.new(root, {
     latitudeField: 'lat',
     longitudeField: 'lon',
@@ -67,14 +67,15 @@ function buildMap({ containerId, proj }) {
   pointSeries.bullets.push((rt, _series, dataItem) => {
     const cn = dataItem.dataContext.cn;
     const radius = cn ? 2.4 : 1.7;
+    const color = cn ? 0xc62828 : 0x2e7d4f;
     return am5.Bullet.new(rt, {
       sprite: am5.Circle.new(rt, {
         radius,
-        fill: am5.color(cn ? 0xff6b6b : 0x67e8a4),
-        fillOpacity: 0.85,
-        stroke: am5.color(cn ? 0xff6b6b : 0x67e8a4),
-        strokeOpacity: 0.4,
-        strokeWidth: 4,
+        fill: am5.color(color),
+        fillOpacity: 0.9,
+        stroke: am5.color(color),
+        strokeOpacity: 0.25,
+        strokeWidth: 3,
         tooltipText: '{name}\n[bold]{altKm} km[/]  ·  {latStr}, {lonStr}',
       }),
     });
