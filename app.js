@@ -12,20 +12,23 @@ const MAX_VISIBLE_MARKERS = 250;
 const COUNTRIES_URL = 'https://unpkg.com/three-globe@2.31.1/example/country-polygons/ne_110m_admin_0_countries.geojson';
 
 const globe = Globe()(document.getElementById('globe'))
+  // Realistic Earth: NASA Blue Marble color texture + topology bump map for
+  // shaded relief, against the night-sky starfield.
+  .globeImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg')
+  .bumpImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-topology.png')
   .backgroundImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/night-sky.png')
   .showAtmosphere(true)
-  .atmosphereColor('#7be3f0')
+  .atmosphereColor('#4ea8ff')
   .atmosphereAltitude(0.18)
   .pointOfView({ lat: 22, lng: 80, altitude: 2.4 }, 0)
-  // Country polygons in cyan over a light-blue ocean sphere.
+  // Country polygons act as thin political borders overlaid on the texture:
+  // transparent caps/sides so the underlying terrain shows through, and a
+  // warm-white stroke for the boundary line itself.
   .polygonsData([])
-  .polygonAltitude(0.006)
-  .polygonCapColor(() => 'rgba(24, 214, 234, 0.92)')
-  .polygonSideColor(() => 'rgba(8, 110, 130, 0.5)')
-  .polygonStrokeColor(() => 'rgba(6, 70, 90, 0.9)');
-
-// Light-blue ocean for the globe sphere itself.
-globe.globeMaterial().color.set('#cfe6ec');
+  .polygonAltitude(0.005)
+  .polygonCapColor(() => 'rgba(255, 255, 255, 0)')
+  .polygonSideColor(() => 'rgba(255, 255, 255, 0)')
+  .polygonStrokeColor(() => 'rgba(255, 240, 200, 0.55)');
 
 fetch(COUNTRIES_URL)
   .then(r => r.json())
