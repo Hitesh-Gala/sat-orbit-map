@@ -9,14 +9,28 @@ const MAX_VISIBLE_MARKERS = 250;
 
 // --- Globe -----------------------------------------------------------------
 
+const COUNTRIES_URL = 'https://unpkg.com/three-globe@2.31.1/example/country-polygons/ne_110m_admin_0_countries.geojson';
+
 const globe = Globe()(document.getElementById('globe'))
-  .globeImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg')
-  .bumpImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-topology.png')
   .backgroundImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/night-sky.png')
   .showAtmosphere(true)
-  .atmosphereColor('#4ea8ff')
+  .atmosphereColor('#7be3f0')
   .atmosphereAltitude(0.18)
-  .pointOfView({ lat: 22, lng: 80, altitude: 2.4 }, 0);
+  .pointOfView({ lat: 22, lng: 80, altitude: 2.4 }, 0)
+  // Country polygons in cyan over a light-blue ocean sphere.
+  .polygonsData([])
+  .polygonAltitude(0.006)
+  .polygonCapColor(() => 'rgba(24, 214, 234, 0.92)')
+  .polygonSideColor(() => 'rgba(8, 110, 130, 0.5)')
+  .polygonStrokeColor(() => 'rgba(6, 70, 90, 0.9)');
+
+// Light-blue ocean for the globe sphere itself.
+globe.globeMaterial().color.set('#cfe6ec');
+
+fetch(COUNTRIES_URL)
+  .then(r => r.json())
+  .then(geo => globe.polygonsData(geo.features.filter(f => f.properties.ISO_A2 !== 'AQ')))
+  .catch(e => console.warn('Country polygons failed to load:', e.message));
 
 // OrbitControls give pinch-zoom on touch and drag-rotate on mouse out of the box.
 const controls = globe.controls();

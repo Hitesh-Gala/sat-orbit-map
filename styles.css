@@ -372,6 +372,10 @@ body.page-2d .map-cell .map-title { text-shadow: none; }
     grid-template-rows: repeat(4, minmax(360px, 1fr));
   }
 }
+.maps-grid.maps-single {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
 
 .map-cell {
   position: relative;

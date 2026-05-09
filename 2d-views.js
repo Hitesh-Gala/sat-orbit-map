@@ -13,12 +13,7 @@ const REFRESH_MS = 10_000;
 const MAX_POINTS = 1500;
 
 const projections = [
-  { id: 'mercator', containerId: 'map-mercator', proj: () => am5map.geoMercator() },
-  { id: 'equal',    containerId: 'map-equal',    proj: () => am5map.geoEqualEarth() },
-  { id: 'natural',  containerId: 'map-natural',  proj: () => am5map.geoNaturalEarth1() },
-  // Polar: orthographic rotated to look down on the north pole gives a
-  // hemispheric polar projection that is a flat circular map.
-  { id: 'polar',    containerId: 'map-polar',    proj: () => am5map.geoOrthographic().rotate([0, -90, 0]) },
+  { id: 'equal', containerId: 'map-equal', proj: () => am5map.geoEqualEarth() },
 ];
 
 function setStatus(msg) {
@@ -47,15 +42,15 @@ function buildMap({ containerId, proj }) {
     strokeWidth: 0.5,
   });
 
-  // Country polygons — light cartographic style.
+  // Country polygons — cyan continents on the light cartographic theme.
   const polygons = chart.series.push(am5map.MapPolygonSeries.new(root, {
     geoJSON: am5geodata_worldLow,
-    exclude: ['AQ'], // Antarctica clutters polar view; drop it.
   }));
   polygons.mapPolygons.template.setAll({
-    fill: am5.color(0xfdfaf0),
-    stroke: am5.color(0x90a4b8),
-    strokeWidth: 0.5,
+    fill: am5.color(0x18d6ea),
+    stroke: am5.color(0x0d6c80),
+    strokeWidth: 0.4,
+    fillOpacity: 0.85,
     interactive: false,
   });
 
