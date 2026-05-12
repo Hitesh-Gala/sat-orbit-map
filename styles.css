@@ -217,13 +217,18 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
 #status.err::before { color: var(--accent2); text-shadow: 0 0 6px rgba(255, 107, 107, 0.6); }
 #status.warn::before { color: #f7c948; text-shadow: 0 0 6px rgba(247, 201, 72, 0.6); }
 
-/* --- Centre-left "2-D Views" launcher button --- */
-.btn-2d {
+/* --- Centre-left stacked nav launchers --- */
+.left-nav {
   position: fixed;
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.btn-nav {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -243,13 +248,13 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   cursor: pointer;
   transition: background .15s, border-color .15s, transform .15s;
 }
-.btn-2d:hover {
+.btn-nav:hover {
   border-color: var(--accent);
   background: rgba(8, 16, 28, 0.92);
-  transform: translateY(-50%) translateX(2px);
+  transform: translateX(2px);
   text-decoration: none;
 }
-.btn-2d-icon {
+.btn-nav-icon {
   font-size: 16px;
   line-height: 1;
   color: var(--green);
@@ -272,12 +277,32 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   width: 5px;
   height: 5px;
 }
+.sat-dot.orbit { width: 5px; height: 5px; }
+
+/* --- Orbits page · class legend --- */
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+  font-size: 10px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 
 @media (max-width: 600px) {
   .hud-tr { width: calc(100vw - 16px); right: 8px; top: 8px; }
   .clock .time { font-size: 17px; }
   .list { max-height: 200px; }
-  .btn-2d { left: 8px; padding: 10px 12px; font-size: 10px; }
+  .left-nav { left: 8px; }
+  .btn-nav { padding: 10px 12px; font-size: 10px; }
 }
 
 /* --- 2-D views page (light theme) --------------------------------------- */
