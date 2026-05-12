@@ -46,15 +46,18 @@ const globe = Globe()(document.getElementById('globe'))
   .polygonCapColor(() => 'rgba(255, 255, 255, 0)')
   .polygonSideColor(() => 'rgba(255, 255, 255, 0)')
   .polygonStrokeColor(() => 'rgba(255, 240, 200, 0.55)')
-  // Satellite markers — thin radial bars from the surface up to altitude,
-  // with globe.gl's built-in pointLabel tooltip on hover (same UX pattern
-  // as amCharts' tooltipText on the 2-D map).
+  // Satellite markers — flat dots floating just above the surface (we
+  // collapse the point altitude so globe.gl renders a low disc rather
+  // than a long radial bar).  Refresh is driven by update() below, which
+  // re-applies pointsData(markers) every REFRESH_MS.  Hover surfaces the
+  // satellite name + altitude + lat/lon (+ Az/El when above the New
+  // Delhi horizon) via globe.gl's built-in pointLabel tooltip.
   .pointsData([])
   .pointLat(d => d.lat)
   .pointLng(d => d.lon)
-  .pointAltitude(d => d.alt / EARTH_R_KM)
-  .pointRadius(0.22)
-  .pointResolution(4)
+  .pointAltitude(0.003)
+  .pointRadius(0.35)
+  .pointResolution(8)
   .pointColor(d => d.cn ? '#ff6b6b' : '#67e8a4')
   .pointsMerge(false)
   .pointLabel(satLabelHtml);
