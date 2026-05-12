@@ -33,6 +33,18 @@ function orbitalPeriodMinutes(rec) {
   return (2 * Math.PI) / rec.no;
 }
 
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function satLabelHtml(d) {
+  return `<div class="sat-tip">`
+       + `<b>${escapeHtml(d.name)}</b>`
+       + `<div>${d.alt.toFixed(0)} km · ${d.lat.toFixed(2)}°, ${d.lon.toFixed(2)}°</div>`
+       + `<div class="cls" style="color:${d.color}">${d.cls} orbit</div>`
+       + `</div>`;
+}
+
 // --- Globe ----------------------------------------------------------------
 
 const globe = Globe()(document.getElementById('globe'))
@@ -59,19 +71,17 @@ const globe = Globe()(document.getElementById('globe'))
   .pathStroke(0.55)
   .pathTransitionDuration(0)
   .pathLabel(d => `${d.name}<br>${d.cls} · period ${d.period.toFixed(1)} min`)
-  // Live satellite dots.
-  .htmlElementsData([])
-  .htmlLat(d => d.lat)
-  .htmlLng(d => d.lon)
-  .htmlAltitude(d => d.alt / EARTH_R_KM)
-  .htmlElement(d => {
-    const el = document.createElement('div');
-    el.className = 'sat-dot orbit';
-    el.style.background = d.color;
-    el.style.boxShadow = `0 0 6px ${d.color}, 0 0 10px ${d.color}66`;
-    el.title = `${d.name}\n${d.alt.toFixed(0)} km · ${d.cls}`;
-    return el;
-  });
+  // Live satellite dots — small radial bars from surface to altitude with
+  // globe.gl's built-in pointLabel tooltip on hover.
+  .pointsData([])
+  .pointLat(d => d.lat)
+  .pointLng(d => d.lon)
+  .pointAltitude(d => d.alt / EARTH_R_KM)
+  .pointRadius(0.2)
+  .pointResolution(6)
+  .pointColor(d => d.color)
+  .pointsMerge(false)
+  .pointLabel(satLabelHtml);
 
 const controls = globe.controls();
 controls.enableDamping = true;
@@ -200,7 +210,7 @@ function refreshDots() {
     if (!r) continue;
     dots.push({ lat: r.lat, lon: r.lon, alt: r.alt, name: s.name, cls: s.cls, color: s.color });
   }
-  globe.htmlElementsData(dots);
+  globe.pointsData(dots);
 }
 
 // --- Boot -----------------------------------------------------------------

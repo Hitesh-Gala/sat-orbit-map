@@ -5,11 +5,30 @@ const { OBSERVER, EARTH_R_KM, inferPurpose, propagate, makeSatrecs,
 
 const REFRESH_MS = 10_000;
 const RELOAD_TLE_MS = 6 * 3600 * 1000;
-const MAX_VISIBLE_MARKERS = 250;
+const MAX_VISIBLE_MARKERS = 120;
 
 // --- Globe -----------------------------------------------------------------
 
 const COUNTRIES_URL = 'https://unpkg.com/three-globe@2.31.1/example/country-polygons/ne_110m_admin_0_countries.geojson';
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// Tooltip content for a satellite marker — globe.gl injects this into its
+// built-in .scene-tooltip overlay on hover, matching the 2-D map UX.
+function satLabelHtml(d) {
+  let h = `<div class="sat-tip">`;
+  h += `<b>${escapeHtml(d.name)}</b>`;
+  h += `<div>${d.alt.toFixed(0)} km · ${d.lat.toFixed(2)}°, ${d.lon.toFixed(2)}°</div>`;
+  if (Number.isFinite(d.az) && Number.isFinite(d.el)) {
+    h += `<div>Az ${d.az.toFixed(1)}° · El ${d.el.toFixed(1)}°</div>`;
+  }
+  if (d.cn) h += `<div class="cn">Chinese payload</div>`;
+  h += `</div>`;
+  return h;
+}
 
 const globe = Globe()(document.getElementById('globe'))
   // Realistic Earth: NASA Blue Marble color texture + topology bump map for
@@ -21,14 +40,24 @@ const globe = Globe()(document.getElementById('globe'))
   .atmosphereColor('#4ea8ff')
   .atmosphereAltitude(0.18)
   .pointOfView({ lat: 22, lng: 80, altitude: 2.4 }, 0)
-  // Country polygons act as thin political borders overlaid on the texture:
-  // transparent caps/sides so the underlying terrain shows through, and a
-  // warm-white stroke for the boundary line itself.
+  // Country polygons act as thin political borders overlaid on the texture.
   .polygonsData([])
   .polygonAltitude(0.005)
   .polygonCapColor(() => 'rgba(255, 255, 255, 0)')
   .polygonSideColor(() => 'rgba(255, 255, 255, 0)')
-  .polygonStrokeColor(() => 'rgba(255, 240, 200, 0.55)');
+  .polygonStrokeColor(() => 'rgba(255, 240, 200, 0.55)')
+  // Satellite markers — thin radial bars from the surface up to altitude,
+  // with globe.gl's built-in pointLabel tooltip on hover (same UX pattern
+  // as amCharts' tooltipText on the 2-D map).
+  .pointsData([])
+  .pointLat(d => d.lat)
+  .pointLng(d => d.lon)
+  .pointAltitude(d => d.alt / EARTH_R_KM)
+  .pointRadius(0.22)
+  .pointResolution(4)
+  .pointColor(d => d.cn ? '#ff6b6b' : '#67e8a4')
+  .pointsMerge(false)
+  .pointLabel(satLabelHtml);
 
 fetch(COUNTRIES_URL)
   .then(r => r.json())
@@ -43,18 +72,6 @@ controls.rotateSpeed = 0.5;
 controls.zoomSpeed = 0.8;
 controls.minDistance = 110;
 controls.maxDistance = 800;
-
-globe
-  .htmlElementsData([])
-  .htmlLat(d => d.lat)
-  .htmlLng(d => d.lon)
-  .htmlAltitude(d => d.alt / EARTH_R_KM)
-  .htmlElement(d => {
-    const el = document.createElement('div');
-    el.className = 'sat-dot' + (d.cn ? ' cn' : '');
-    el.title = `${d.name}\n${d.alt.toFixed(0)} km`;
-    return el;
-  });
 
 window.addEventListener('resize', () => {
   globe.width(window.innerWidth).height(window.innerHeight);
@@ -155,7 +172,11 @@ function update() {
 
   visible.sort((a, b) => b.el - a.el);
   for (const s of visible.slice(0, MAX_VISIBLE_MARKERS)) {
-    markers.push({ lat: s.lat, lon: s.lon, alt: s.alt, name: s.name, cn: s.cn });
+    markers.push({
+      lat: s.lat, lon: s.lon, alt: s.alt,
+      name: s.name, cn: s.cn,
+      az: s.az, el: s.el,
+    });
   }
   for (const s of cnList) {
     if (s.el <= 0) markers.push({ lat: s.lat, lon: s.lon, alt: s.alt, name: s.name, cn: true });
@@ -186,7 +207,7 @@ function update() {
       </div>
     </div>`).join('') || '<div class="hint">No active Chinese payloads matched the active TLE catalog.</div>';
 
-  globe.htmlElementsData(markers);
+  globe.pointsData(markers);
 }
 
 // --- Boot -----------------------------------------------------------------

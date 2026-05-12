@@ -268,8 +268,18 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   border-radius: 50%;
   background: var(--green);
   box-shadow: 0 0 6px var(--green), 0 0 10px rgba(103, 232, 164, 0.5);
-  pointer-events: none;
   transform: translate(-50%, -50%);
+  cursor: crosshair;
+  position: relative;
+}
+/* Expanded transparent hit area so the tiny visible dot is easy to target
+   on both desktop and touch.  Pointer events on the pseudo bubble up to
+   the parent .sat-dot, which is what the tooltip listeners are bound to. */
+.sat-dot::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
 }
 .sat-dot.cn {
   background: var(--accent2);
@@ -278,6 +288,45 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   height: 5px;
 }
 .sat-dot.orbit { width: 5px; height: 5px; }
+
+/* --- Globe.gl scene-tooltip (the hover label container) --- */
+.scene-tooltip {
+  pointer-events: none;
+  z-index: 100;
+}
+.sat-tip {
+  background: rgba(8, 16, 28, 0.95);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 8px 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55);
+  max-width: 320px;
+}
+.sat-tip b {
+  color: var(--accent);
+  font-weight: normal;
+  letter-spacing: 0.04em;
+}
+.sat-tip .cn {
+  margin-top: 2px;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent2);
+}
+.sat-tip .cls {
+  margin-top: 2px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
 
 /* --- Orbits page · class legend --- */
 .legend-row {
