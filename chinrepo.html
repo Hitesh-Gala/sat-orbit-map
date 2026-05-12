@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4">
+  <title>Argos · ChinRepo</title>
+  <link rel="preconnect" href="https://celestrak.org">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="page-repo">
+  <div class="repo-shell">
+    <header class="repo-header">
+      <div class="brand">ARGOS · CHINREPO · ACTIVE PRC PAYLOADS</div>
+      <div class="right">
+        <span id="repo-status">Booting…</span>
+        <a class="btn-back" href="index.html">← Globe</a>
+      </div>
+    </header>
+
+    <div class="repo-toolbar">
+      <input type="search" id="filter" placeholder="Filter by name or purpose…" autocomplete="off">
+      <span class="pill">Showing <strong id="repo-count">…</strong> / <strong id="repo-total">…</strong></span>
+      <span class="pill">UTC <strong id="utc-time">--:--:--</strong></span>
+      <span class="pill">IST <strong id="ist-time">--:--:--</strong></span>
+    </div>
+
+    <div class="repo-table-wrap">
+      <table class="repo-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>NORAD</th>
+            <th>Int'l ID</th>
+            <th>Purpose (inferred)</th>
+            <th>Launched</th>
+            <th>Site</th>
+            <th class="col-num">Altitude</th>
+            <th>Sub-point</th>
+            <th>Orbit</th>
+          </tr>
+        </thead>
+        <tbody id="repo-rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+  <script src="tle-loader.js?v=2"></script>
+  <script src="chinrepo.js?v=1"></script>
+</body>
+</html>

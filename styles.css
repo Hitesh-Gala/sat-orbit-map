@@ -261,6 +261,19 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   text-shadow: 0 0 8px rgba(103, 232, 164, 0.5);
 }
 
+/* Bottom-left launcher (e.g. ChinRepo) — same chrome as the centre-left
+   stack but anchored to the viewport bottom edge. */
+.btn-bl {
+  position: fixed;
+  left: 14px;
+  bottom: 14px;
+  z-index: 10;
+}
+.btn-bl .btn-nav-icon {
+  color: var(--accent2);
+  text-shadow: 0 0 8px rgba(255, 107, 107, 0.55);
+}
+
 /* --- Satellite markers (HTML overlay on globe) --- */
 .sat-dot {
   width: 4px;
@@ -352,7 +365,115 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   .list { max-height: 200px; }
   .left-nav { left: 8px; }
   .btn-nav { padding: 10px 12px; font-size: 10px; }
+  .btn-bl { left: 8px; bottom: 8px; }
 }
+
+/* --- ChinRepo page (Chinese-payload repository view) -------------------- */
+body.page-repo { overflow: auto; }
+body.page-repo #globe { display: none; }
+
+.repo-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(ellipse at top, rgba(255, 107, 107, 0.05), transparent 60%),
+    var(--bg);
+}
+.repo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.repo-header .brand {
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  color: var(--accent2);
+  text-shadow: 0 0 12px rgba(255, 107, 107, 0.55);
+}
+.repo-header .right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+}
+.repo-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 0.08em;
+}
+.repo-toolbar input[type="search"] {
+  flex: 1;
+  min-width: 200px;
+  max-width: 360px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 7px 10px;
+  letter-spacing: 0.04em;
+  outline: none;
+}
+.repo-toolbar input[type="search"]:focus { border-color: var(--accent); }
+.repo-toolbar .pill {
+  display: inline-block;
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+}
+.repo-toolbar .pill strong { color: var(--accent2); font-weight: normal; }
+.repo-table-wrap {
+  flex: 1;
+  overflow: auto;
+  padding: 0 20px 20px;
+}
+table.repo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.repo-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  color: var(--dim);
+  font-weight: normal;
+  text-align: left;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 10px;
+  padding: 10px 8px;
+  white-space: nowrap;
+}
+.repo-table tbody td {
+  padding: 7px 8px;
+  border-bottom: 1px solid rgba(110, 200, 255, 0.06);
+  color: var(--text);
+  vertical-align: top;
+}
+.repo-table tbody tr:hover td { background: rgba(255, 107, 107, 0.04); }
+.repo-table .col-name { color: var(--accent); letter-spacing: 0.03em; }
+.repo-table .col-num { text-align: right; font-variant-numeric: tabular-nums; }
+.repo-table .muted { color: var(--dim); }
 
 /* --- 2-D views page (light theme) --------------------------------------- */
 /* Override the dark-theme custom properties for descendants of body.page-2d.
