@@ -475,6 +475,41 @@ table.repo-table {
 .repo-table .col-num { text-align: right; font-variant-numeric: tabular-nums; }
 .repo-table .muted { color: var(--dim); }
 
+/* Light-mode override for the ChinRepo page — toggled via the theme button.
+   Re-defines the CSS custom properties scoped to body.page-repo.light, so
+   every existing rule that reads var(--bg)/var(--text)/etc picks up the
+   light palette automatically. */
+body.page-repo.light {
+  --bg:       #f4f6f9;
+  --panel:    rgba(255, 255, 255, 0.92);
+  --line:     #cfd8e3;
+  --text:     #1a2b40;
+  --dim:      #5a6a7d;
+  --accent:   #1565c0;
+  --accent2:  #c1392b;
+  --green:    #2e7d4f;
+  background: var(--bg);
+  color: var(--text);
+}
+body.page-repo.light .repo-header .brand { text-shadow: none; }
+body.page-repo.light .repo-shell {
+  background:
+    radial-gradient(ellipse at top, rgba(193, 57, 43, 0.06), transparent 60%),
+    var(--bg);
+}
+body.page-repo.light .repo-table tbody tr:hover td { background: rgba(193, 57, 43, 0.05); }
+body.page-repo.light .repo-toolbar input[type="search"] {
+  background: #ffffff;
+  border-color: var(--line);
+}
+body.page-repo.light .repo-table tbody td {
+  border-bottom-color: rgba(26, 43, 64, 0.08);
+}
+body.page-repo.light #repo-status::before { text-shadow: none; }
+body.page-repo.light .btn-back {
+  background: rgba(255, 255, 255, 0.7);
+}
+
 /* --- 2-D views page (light theme) --------------------------------------- */
 /* Override the dark-theme custom properties for descendants of body.page-2d.
    Every existing rule that uses var(--bg)/var(--accent)/etc picks up the

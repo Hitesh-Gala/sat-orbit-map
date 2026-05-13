@@ -6,6 +6,25 @@ const { propagate, makeSatrecs, fetchTLEs, fetchChinaSatcat, inferPurpose } = wi
 const REFRESH_MS = 10_000;
 
 const $ = id => document.getElementById(id);
+
+// --- Theme toggle (light / dark) ------------------------------------------
+// Persists the user's choice in localStorage so the page opens in the same
+// mode next time.  The dark palette is the default; toggling adds the
+// `.light` class on <body>, which re-defines the CSS custom properties.
+(function setupTheme() {
+  const STORE_KEY = 'argos.repo.theme';
+  const btn = document.getElementById('theme-toggle');
+  function apply(mode) {
+    document.body.classList.toggle('light', mode === 'light');
+    btn.textContent = mode === 'light' ? '☾ Dark' : '☀ Light';
+  }
+  apply(localStorage.getItem(STORE_KEY) || 'dark');
+  btn.addEventListener('click', () => {
+    const next = document.body.classList.contains('light') ? 'dark' : 'light';
+    localStorage.setItem(STORE_KEY, next);
+    apply(next);
+  });
+})();
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
