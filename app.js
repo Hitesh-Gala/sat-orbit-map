@@ -9,7 +9,11 @@ const MAX_VISIBLE_MARKERS = 120;
 
 // --- Globe -----------------------------------------------------------------
 
-const COUNTRIES_URL = 'https://unpkg.com/three-globe@2.31.1/example/country-polygons/ne_110m_admin_0_countries.geojson';
+// Natural Earth 50 m countries — ~3 MB but coastlines and country borders
+// trace the Blue Marble texture far more accurately than the bundled 110 m
+// (the latter visibly drifts inland from the coast on small islands and
+// peninsulas).
+const COUNTRIES_URL = 'https://raw.githubusercontent.com/martynafford/natural-earth-geojson/master/50m/cultural/ne_50m_admin_0_countries.json';
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c =>
@@ -41,11 +45,15 @@ const globe = Globe()(document.getElementById('globe'))
   .atmosphereAltitude(0.18)
   .pointOfView({ lat: 22, lng: 80, altitude: 2.4 }, 0)
   // Country polygons act as thin political borders overlaid on the texture.
+  // polygonAltitude is held at a hair above the surface (≈6 km) — small
+  // enough to avoid the parallax offset that 32 km caused, large enough to
+  // avoid z-fighting with the textured globe.  Stroke is a soft pale cyan
+  // for clean contrast against the Blue Marble's blues and greens.
   .polygonsData([])
-  .polygonAltitude(0.005)
+  .polygonAltitude(0.001)
   .polygonCapColor(() => 'rgba(255, 255, 255, 0)')
   .polygonSideColor(() => 'rgba(255, 255, 255, 0)')
-  .polygonStrokeColor(() => 'rgba(255, 240, 200, 0.55)')
+  .polygonStrokeColor(() => 'rgba(220, 240, 255, 0.65)')
   // Satellite markers — flat dots floating just above the surface (we
   // collapse the point altitude so globe.gl renders a low disc rather
   // than a long radial bar).  Refresh is driven by update() below, which
