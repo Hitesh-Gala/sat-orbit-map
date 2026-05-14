@@ -274,6 +274,91 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   text-shadow: 0 0 8px rgba(255, 107, 107, 0.55);
 }
 
+/* --- News ticker (Chinese rocket launches) ------------------------------
+   Lives to the right of the ChinRepo button.  The viewport clips, the
+   track scrolls right-to-left infinitely.  Items are duplicated in JS so
+   the keyframe loop is seamless. */
+.news-ticker {
+  position: fixed;
+  bottom: 14px;
+  left: 132px;
+  right: 14px;
+  height: 38px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  overflow: hidden;
+}
+.ticker-label {
+  flex-shrink: 0;
+  color: var(--accent2);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(255, 107, 107, 0.45);
+  border-right: 1px solid var(--line);
+  padding-right: 12px;
+}
+.ticker-viewport {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.ticker-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: ticker-scroll 180s linear infinite;
+  will-change: transform;
+}
+.news-ticker:hover .ticker-track { animation-play-state: paused; }
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-right: 36px;
+  font-size: 11px;
+  color: var(--text);
+}
+.ticker-item::before {
+  content: '●';
+  color: var(--accent2);
+  font-size: 8px;
+  margin-right: 2px;
+}
+.ticker-item a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.ticker-item a:hover { text-decoration: underline; }
+.ticker-item .source {
+  color: var(--dim);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.ticker-status {
+  display: inline-block;
+  color: var(--dim);
+  font-size: 11px;
+  padding: 0 12px;
+}
+
+@media (max-width: 720px) {
+  .news-ticker { left: 8px; right: 8px; bottom: 60px; }
+  .btn-bl { /* keep button in normal slot; ticker stacks above on mobile */ }
+}
+
 /* --- Satellite markers (HTML overlay on globe) --- */
 .sat-dot {
   width: 4px;
