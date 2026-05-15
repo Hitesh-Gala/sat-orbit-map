@@ -274,6 +274,50 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   text-shadow: 0 0 8px rgba(255, 107, 107, 0.55);
 }
 
+
+/* --- Top-right theme toggle on the main page --- */
+.btn-theme {
+  align-self: flex-end;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 5px 10px;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.btn-theme:hover { border-color: var(--accent); }
+
+/* --- Main page light theme ----------------------------------------------
+   Re-defines the CSS custom properties scoped to body.light, so every rule
+   that reads var(--bg)/var(--text)/etc switches palette automatically.  The
+   3-D globe canvas itself stays unchanged (it's a textured WebGL scene). */
+body.light {
+  --bg:       #eef2f6;
+  --panel:    rgba(255, 255, 255, 0.88);
+  --line:     #cfd8e3;
+  --text:     #1a2b40;
+  --dim:      #5a6a7d;
+  --accent:   #1565c0;
+  --accent2:  #c1392b;
+  --green:    #2e7d4f;
+}
+body.light .brand { text-shadow: none; }
+body.light .clock .time {
+  text-shadow: 0 0 6px rgba(21, 101, 192, 0.25);
+}
+body.light .count { text-shadow: none; }
+body.light .ticker-label { text-shadow: none; }
+body.light .btn-nav-icon,
+body.light .btn-bl .btn-nav-icon { text-shadow: none; }
+body.light .panel .label,
+body.light .topbar .sub { color: var(--dim); }
+
 /* --- News ticker (Chinese rocket launches) ------------------------------
    Lives to the right of the ChinRepo button.  The viewport clips, the
    track scrolls right-to-left infinitely.  Items are duplicated in JS so
@@ -281,8 +325,12 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
 .news-ticker {
   position: fixed;
   bottom: 14px;
-  left: 132px;
-  right: 14px;
+  left: 50%;
+  /* Width is bounded so the ticker leaves clear space on both sides:
+     ~150 px on the left for the ChinRepo button, ~150 px symmetric on
+     the right.  translateX(-50%) keeps it centred on the viewport. */
+  width: min(820px, calc(100vw - 300px));
+  transform: translateX(-50%);
   height: 38px;
   z-index: 10;
   display: flex;
@@ -355,8 +403,15 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
 }
 
 @media (max-width: 720px) {
-  .news-ticker { left: 8px; right: 8px; bottom: 60px; }
-  .btn-bl { /* keep button in normal slot; ticker stacks above on mobile */ }
+  /* Not enough horizontal space to leave 150 px gutters on each side, so
+     the ticker drops above the ChinRepo button and uses the full width. */
+  .news-ticker {
+    left: 8px;
+    right: 8px;
+    width: auto;
+    transform: none;
+    bottom: 60px;
+  }
 }
 
 /* --- Satellite markers (HTML overlay on globe) --- */

@@ -108,6 +108,25 @@ function tickClocks() {
 tickClocks();
 setInterval(tickClocks, 1000);
 
+// --- Theme toggle (light / dark) -----------------------------------------
+// The 3-D globe itself is a WebGL scene that doesn't respect CSS, but the
+// HUD chrome around it switches palettes via body.light class overrides.
+(function setupTheme() {
+  const KEY = 'argos.main.theme';
+  const btn = document.getElementById('theme-toggle');
+  if (!btn) return;
+  function apply(mode) {
+    document.body.classList.toggle('light', mode === 'light');
+    btn.textContent = mode === 'light' ? '☾ Dark' : '☀ Light';
+  }
+  apply(localStorage.getItem(KEY) || 'dark');
+  btn.addEventListener('click', () => {
+    const next = document.body.classList.contains('light') ? 'dark' : 'light';
+    localStorage.setItem(KEY, next);
+    apply(next);
+  });
+})();
+
 // --- App state ------------------------------------------------------------
 
 let activeTLEs = [];
