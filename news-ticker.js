@@ -4,7 +4,14 @@
 // browser-side XML parsing or third-party CORS proxy is needed.  The free
 // tier (no API key) allows ~10 000 hits/day across all clients, which is
 // plenty given our 30-minute localStorage cache.
+//
+// Everything below sits inside an IIFE so the top-level const declarations
+// don't collide with identically-named consts in app.js (notably `esc`).
+// Classic <script> tags share a single Script lexical environment per
+// realm, so two scripts declaring the same top-level const are a parse
+// error in the second one — silently breaking the whole file.
 
+(function () {
 const FEEDS = [
   { url: 'https://spacenews.com/feed/',            source: 'SpaceNews' },
   { url: 'https://www.space.com/feeds/all',        source: 'Space.com' },
@@ -125,3 +132,5 @@ function render(items) {
     render([]);
   }
 })();
+
+})();  // close IIFE

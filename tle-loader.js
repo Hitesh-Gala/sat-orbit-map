@@ -193,9 +193,16 @@ window.Argos = (function () {
   }
 
   // Convert raw TLE entries into satrec-bearing tracking objects.
+  // Dedupes by NORAD_CAT_ID — the CelesTrak GP feed and the bundled
+  // snapshot occasionally carry the same satellite twice (e.g., when a
+  // catalog crossover or stale fragment lingers), which used to surface
+  // as repeated rows in ChinRepo and double dots on the globe.
   function makeSatrecs(tles) {
     const out = [];
+    const seen = new Set();
     for (const t of tles) {
+      if (seen.has(t.noradId)) continue;
+      seen.add(t.noradId);
       try {
         out.push({ name: t.name, noradId: t.noradId, rec: satellite.twoline2satrec(t.l1, t.l2) });
       } catch { /* skip malformed */ }
