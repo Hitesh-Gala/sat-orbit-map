@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRC Satellite Repository — Comprehensive Orbital Catalog</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap');
+
+  :root {
+    --bg:      #f5f6f8;
+    --bg2:     #ffffff;
+    --bg3:     #eef0f4;
+    --border:  #dde1e8;
+    --border2: #c8cdd8;
+    --text:    #1a2030;
+    --text2:   #3d4d66;
+    --text3:   #7a8aa0;
+    --accent:  #1565c0;
+    --accent2: #1976d2;
+    --gold:    #b45309;
+    --red:     #c62828;
+    --green:   #1b7a4a;
+    --orange:  #c75000;
+    --purple:  #6a1b9a;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    height: 52px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+  .header-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .header-sep { width: 1px; height: 20px; background: var(--border2); }
+  .header-stats {
+    display: flex;
+    gap: 16px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+  }
+  .header-stats span { color: var(--gold); }
+  .header-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #15803d;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .live-label { font-family: var(--mono); font-size: 10px; color: #15803d; }
+
+  /* LAYOUT */
+  .layout { display: flex; max-width: 1600px; margin: 0 auto; min-height: calc(100vh - 52px); }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 220px;
+    min-width: 220px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 16px 0;
+    position: sticky;
+    top: 52px;
+    height: calc(100vh - 52px);
+    overflow-y: auto;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .sidebar-section { padding: 0 12px; margin-bottom: 20px; }
+  .sidebar-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--text3);
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    padding: 0 4px;
+    margin-bottom: 6px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background .12s;
+    font-size: 12px;
+    color: var(--text2);
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: #dbeafe; color: #1e40af; }
+  .nav-item .count {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    background: var(--bg3);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .nav-item.active .count { color: #1e40af; background: #bfdbfe; }
+
+  .filter-group { padding: 0 12px; margin-bottom: 16px; }
+  .filter-input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 6px 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    outline: none;
+  }
+  .filter-input:focus { border-color: var(--accent2); }
+  .filter-input::placeholder { color: var(--text3); }
+
+  .filter-select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 5px 7px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    outline: none;
+    margin-top: 6px;
+    cursor: pointer;
+  }
+
+  /* MAIN CONTENT */
+  .main { flex: 1; overflow-x: auto; padding: 20px 24px; }
+
+  /* AI QUERY BOX */
+  .ai-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .ai-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .ai-badge {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    background: #f3e8ff;
+    color: #6b21a8;
+    border: 1px solid #d8b4fe;
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+  .ai-panel-title { font-size: 12px; font-weight: 500; color: var(--text2); }
+  .ai-row { display: flex; gap: 8px; }
+  .ai-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 5px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 12px;
+    outline: none;
+  }
+  .ai-input:focus { border-color: var(--purple); }
+  .ai-input::placeholder { color: var(--text3); }
+  .ai-btn {
+    background: #f3e8ff;
+    border: 1px solid #c4b5fd;
+    border-radius: 5px;
+    padding: 8px 16px;
+    color: #6b21a8;
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .ai-btn:hover { background: #ede9fe; }
+  .ai-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .ai-output {
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--text);
+    display: none;
+    white-space: pre-wrap;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .ai-output.visible { display: block; }
+  .ai-thinking {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #6b21a8;
+  }
+  .ai-thinking-dots span {
+    display: inline-block;
+    animation: blink 1.2s infinite;
+  }
+  .ai-thinking-dots span:nth-child(2) { animation-delay: .2s; }
+  .ai-thinking-dots span:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%,100%{opacity:.2} 50%{opacity:1} }
+
+  /* SUMMARY CARD */
+  .summary-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 12px;
+    line-height: 1.75;
+    color: var(--text2);
+    display: none;
+  }
+  .summary-card.visible { display: block; }
+  .summary-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  /* TABLE TOOLBAR */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .result-count {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    margin-left: auto;
+  }
+  .result-count span { color: var(--gold); }
+
+  /* TABLE */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .table-wrap::-webkit-scrollbar { height: 6px; }
+  .table-wrap::-webkit-scrollbar-track { background: var(--bg2); }
+  .table-wrap::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11.5px;
+  }
+  thead tr {
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border2);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  th {
+    padding: 9px 12px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--text3);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    border-right: 1px solid var(--border);
+  }
+  th:last-child { border-right: none; }
+  th:hover { color: var(--text2); }
+  th.sorted { color: var(--accent); }
+
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid rgba(30,37,48,.5);
+    vertical-align: top;
+    color: var(--text);
+  }
+  td:last-child { border-right: none; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+
+  .sat-name { font-weight: 500; color: var(--text); font-size: 12px; }
+  .sat-series { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-top: 1px; }
+  .norad { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+
+  /* BADGES */
+  .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 3px;
+    letter-spacing: .05em;
+    white-space: nowrap;
+  }
+  .b-isr    { background: #fde8ea; color: #991b1b; border: 1px solid #fca5a5; }
+  .b-nav    { background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; }
+  .b-com    { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+  .b-met    { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+  .b-rpo    { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+  .b-sci    { background: #fff7ed; color: #9a3412; border: 1px solid #fdba74; }
+  .b-brd    { background: #e0f2fe; color: #075985; border: 1px solid #7dd3fc; }
+  .b-ew     { background: #fee2e2; color: #7f1d1d; border: 1px solid #fca5a5; }
+  .b-ocean  { background: #cffafe; color: #164e63; border: 1px solid #67e8f9; }
+  .b-env    { background: #f0fdf4; color: #14532d; border: 1px solid #86efac; }
+  .b-map    { background: #f3e8ff; color: #581c87; border: 1px solid #d8b4fe; }
+  .b-elw    { background: #fecaca; color: #7f1d1d; border: 1px solid #f87171; }
+
+  .orbit-pill {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .o-sso   { background: #dcfce7; color: #14532d; }
+  .o-leo   { background: #dbeafe; color: #1e3a8a; }
+  .o-meo   { background: #ede9fe; color: #4c1d95; }
+  .o-geo   { background: #fef9c3; color: #713f12; }
+  .o-igso  { background: #ffedd5; color: #7c2d12; }
+  .o-heo   { background: #fee2e2; color: #7f1d1d; }
+  .o-gto   { background: #f1f5f9; color: #334155; }
+
+  .status-op  { color: #15803d; font-family: var(--mono); font-size: 10px; font-weight: 600; }
+  .status-dec { color: #64748b; font-family: var(--mono); font-size: 10px; }
+  .status-unk { color: #b45309; font-family: var(--mono); font-size: 10px; }
+  .status-los { color: #dc2626; font-family: var(--mono); font-size: 10px; }
+
+  .notes-cell { font-size: 11px; color: var(--text2); max-width: 280px; line-height: 1.5; }
+  .notes-cell .flag {
+    display: inline-block;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 2px;
+    margin-right: 4px;
+    font-family: var(--mono);
+  }
+  .flag-dual  { background: #fff7ed; color: #9a3412; }
+  .flag-mil   { background: #fee2e2; color: #7f1d1d; }
+  .flag-class { background: #fef9c3; color: #713f12; }
+
+  /* SPACETRACK GUIDE */
+  .guide-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 24px;
+  }
+  .guide-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: #92400e;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .code-block {
+    background: #f8fafc;
+    border: 1px solid var(--border2);
+    border-radius: 5px;
+    padding: 12px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #1e3a5f;
+    overflow-x: auto;
+    margin: 8px 0 14px;
+    white-space: pre;
+    line-height: 1.65;
+  }
+  .code-comment { color: #6b7280; }
+  .code-key { color: #1d4ed8; }
+  .code-val { color: #15803d; }
+  .code-str { color: #9a3412; }
+  .guide-para { font-size: 12px; color: var(--text2); line-height: 1.7; margin-bottom: 10px; }
+
+  /* SOURCES GRID */
+  .sources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .source-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .source-name { font-weight: 500; font-size: 12px; margin-bottom: 2px; }
+  .source-url { font-family: var(--mono); font-size: 10px; color: var(--accent2); margin-bottom: 4px; }
+  .source-desc { font-size: 11px; color: var(--text3); line-height: 1.5; }
+  .source-tag {
+    display: inline-block;
+    margin-top: 5px;
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 2px;
+  }
+  .tag-free { background: #dcfce7; color: #14532d; }
+  .tag-reg  { background: #dbeafe; color: #1e40af; }
+  .tag-comm { background: #fef9c3; color: #713f12; }
+
+  /* TAB BAR */
+  .tabbar {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 5px 11px;
+    border-radius: 4px;
+    border: 1px solid var(--border2);
+    background: none;
+    color: var(--text3);
+    cursor: pointer;
+    transition: all .12s;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .tab-btn:hover { color: var(--text); border-color: var(--border2); background: var(--bg3); }
+  .tab-btn.active { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+
+  /* PAGE TABS */
+  .page-content { display: none; }
+  .page-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-title">// PRC Orbital Catalog</div>
+    <div class="header-sep"></div>
+    <div class="header-stats">
+      Named programs: <span>67</span> &nbsp;|&nbsp;
+      Individual entries: <span id="total-count">210+</span> &nbsp;|&nbsp;
+      Last updated: <span>May 2026</span> &nbsp;|&nbsp;
+      Sources: <span>Space-Track · CelesTrak · Gunter's · ISR Univ. · eoPortal</span>
+    </div>
+    <div class="header-right">
+      <div class="live-dot"></div>
+      <div class="live-label">TLE data live via Space-Track</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Function</div>
+      <button class="nav-item active" onclick="filterCat('ALL')">All satellites <span class="count" id="cnt-all">210+</span></button>
+      <button class="nav-item" onclick="filterCat('ISR')">ISR / Reconnaissance <span class="count" id="cnt-ISR">0</span></button>
+      <button class="nav-item" onclick="filterCat('NAV')">Navigation (BeiDou) <span class="count" id="cnt-NAV">0</span></button>
+      <button class="nav-item" onclick="filterCat('COM')">Communications <span class="count" id="cnt-COM">0</span></button>
+      <button class="nav-item" onclick="filterCat('MET')">Meteorology <span class="count" id="cnt-MET">0</span></button>
+      <button class="nav-item" onclick="filterCat('RPO')">RPO / Tech Demo <span class="count" id="cnt-RPO">0</span></button>
+      <button class="nav-item" onclick="filterCat('SCI')">Science <span class="count" id="cnt-SCI">0</span></button>
+      <button class="nav-item" onclick="filterCat('EW')">Early Warning / SIGINT <span class="count" id="cnt-EW">0</span></button>
+      <button class="nav-item" onclick="filterCat('OCN')">Ocean Observation <span class="count" id="cnt-OCN">0</span></button>
+      <button class="nav-item" onclick="filterCat('ENV')">Environment / Mapping <span class="count" id="cnt-ENV">0</span></button>
+      <button class="nav-item" onclick="filterCat('BRD')">Broadband Constellation <span class="count" id="cnt-BRD">0</span></button>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Orbit</div>
+      <button class="nav-item" onclick="filterOrbit('ALL')">All orbits <span class="count">—</span></button>
+      <button class="nav-item" onclick="filterOrbit('SSO')">SSO <span class="count"></span></button>
+      <button class="nav-item" onclick="filterOrbit('LEO')">LEO <span class="count"></span></button>
+      <button class="nav-item" onclick="filterOrbit('MEO')">MEO <span class="count"></span></button>
+      <button class="nav-item" onclick="filterOrbit('GEO')">GEO <span class="count"></span></button>
+      <button class="nav-item" onclick="filterOrbit('IGSO')">IGSO <span class="count"></span></button>
+      <button class="nav-item" onclick="filterOrbit('HEO')">HEO / Molniya <span class="count"></span></button>
+    </div>
+    <div class="filter-group">
+      <div class="sidebar-label">Search</div>
+      <input class="filter-input" id="search-box" placeholder="name, NORAD, series..." oninput="applyFilters()">
+      <select class="filter-select" id="status-filter" onchange="applyFilters()">
+        <option value="ALL">All status</option>
+        <option value="OP">Operational</option>
+        <option value="DEC">Decayed/Retired</option>
+        <option value="UNK">Status unknown</option>
+        <option value="LOS">Lost</option>
+      </select>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Pages</div>
+      <button class="nav-item" onclick="showPage('catalog')">Satellite Catalog</button>
+      <button class="nav-item" onclick="showPage('sources')">Data Sources Guide</button>
+      <button class="nav-item" onclick="showPage('api')">Space-Track API Guide</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- PAGE: CATALOG -->
+    <div id="page-catalog" class="page-content active">
+
+      <!-- AI QUERY -->
+      <div class="ai-panel">
+        <div class="ai-panel-header">
+          <div class="ai-badge">AI QUERY</div>
+          <div class="ai-panel-title">Ask about any Chinese satellite program, mission, or orbital detail</div>
+        </div>
+        <div class="ai-row">
+          <input class="ai-input" id="ai-query" placeholder="e.g. What is the military significance of Yaogan-41? / Compare BeiDou-3 vs GPS orbital design / What happened with Shijian-21 in 2022?" onkeydown="if(event.key==='Enter')runAI()">
+          <button class="ai-btn" id="ai-run-btn" onclick="runAI()">Query ↗</button>
+        </div>
+        <div class="ai-output" id="ai-output"></div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabbar" id="summary-tabs">
+        <button class="tab-btn active" onclick="showSummary('isr')">ISR</button>
+        <button class="tab-btn" onclick="showSummary('nav')">Navigation</button>
+        <button class="tab-btn" onclick="showSummary('com')">Communications</button>
+        <button class="tab-btn" onclick="showSummary('met')">Meteorology</button>
+        <button class="tab-btn" onclick="showSummary('rpo')">RPO / SJ</button>
+        <button class="tab-btn" onclick="showSummary('ew')">Early Warning</button>
+        <button class="tab-btn" onclick="showSummary('sci')">Science</button>
+        <button class="tab-btn" onclick="showSummary('brd')">Megaconstellations</button>
+        <button class="tab-btn" onclick="showSummary('ocn')">Ocean / Env</button>
+      </div>
+
+      <div class="summary-card visible" id="sum-isr">
+        <div class="summary-title">ISR / Reconnaissance — Yaogan, Gaofen, Tianhui, Ludi Tance</div>
+        China operates the world's largest dedicated ISR constellation, with the PLA controlling ~510 Earth-observation platforms as of early 2025 (Gen. Saltzman, USSPACECOM). The <b>Yaogan</b> (遥感) series is the primary military reconnaissance program, covering optical imaging (JB-6 class: ~0.8–1.5 m resolution), SAR (JB-5 class: Yaogan-1, -3, -10, -29 etc.), ELINT/maritime surveillance triplets (JB-8: Yaogan-9, -16, -17, -20, -25, -30 clusters), and area-surveillance mapping (JB-9: Yaogan-8, -15, -19, -22, -27 at ~1,200 km). By May 2025, 179 active Yaogan satellites are tracked. Yaogan-41 in GEO provides persistent wide-area optical surveillance analogous to the US WGS/GEO-11 program. Yaogan-45 (Sep 2025) occupies an unusual 7,500 km MEO orbit — possible wide-field SIGINT/SSA role. The <b>Gaofen</b> (高分) CHEOS program fields 14+ numbered satellites: GF-1/2/6 (sub-meter optical SSO), GF-3 (SAR, 755 km SSO), GF-4/13/13-02 (GEO optical, 50 m–15 m est.), GF-7 (stereo sub-meter), GF-14 (stereo 0.5 m). <b>Ludi Tance-4</b> (Aug 2023, GEO) is the world's first GEO SAR satellite. <b>Tianhui</b> serves stereo cartographic mapping. State media describes all as civilian but orbits, resolutions, and revisit rates are consistent with military primary tasking. Most ISR satellites use SSO at 480–760 km; newer families push to higher altitudes for wider coverage.
+      </div>
+
+      <div class="summary-card" id="sum-nav">
+        <div class="summary-title">Navigation — BeiDou (BDS-1, BDS-2, BDS-3)</div>
+        BeiDou-3 completed its global constellation on 23 June 2020 with the launch of the final GEO satellite, comprising 24 MEO (21,528 km, 55° inclination), 3 IGSO (35,786 km, 55° inclined), and 3 GEO (35,786 km, 0°). As of December 2023, 44 operational satellites provide global service: 27 BDS-3 MEO, 10 IGSO, 7 GEO. BDS-2 legacy satellites (launched 2007–2016, 16 satellites in MEO/IGSO/GEO) remain partially operational for regional service. BDS-1 experimental GEO satellites (2000–2007) are retired. BeiDou-3 signals include B1C/B2a (open service), B3I (open), and encrypted military signals. SBAS corrections provide ~10 cm accuracy in the Asia-Pacific region. The system's military utility — precision-guided munitions, time-synchronized strikes, hypersonic vehicle navigation — has been highlighted repeatedly in U.S. DoD China Military Power reports. A new BDS-3 replacement/augmentation campaign began in late 2023 with 20 additional satellites.
+      </div>
+
+      <div class="summary-card" id="sum-com">
+        <div class="summary-title">Communications — Tianlian, Zhongxing/ChinaSat, Fenghuo, Shijian-13/20</div>
+        China's military and civil GEO communications architecture spans several parallel programs. <b>Tianlian</b> (天链, Sky Link) is the TDRSS equivalent: Gen I (5 DFH-3 based sats, 2008–2021) and Gen II (5 DFH-4 based sats, 2019–2024) relay data between Tiangong/CSS, LEO spacecraft, and ground stations, providing near-100% LEO coverage. <b>Fenghuo</b> (烽火) is the PLA secure UHF/SHF military communications network; Fenghuo-2 satellites (DFH-4 based) provide encrypted tactical communications to PLA ground forces. <b>Zhongxing/ChinaSat</b> is the commercial arm with 30+ GEO satellites: ChinaSat-9B (DFH-4, DTH video), ChinaSat-16 (DFH-4E, first Chinese Ka-band HTS, 50 Gbps), ChinaSat-6D, and replacements like ChinaSat-9C (Jun 2025), ChinaSat-10R (Feb 2025). <b>Zhongxing-4A</b> (Aug 2024, LM-7A) is believed to be a new military comms satellite class. The DFH-5 bus, first flown on SJ-20 (2019), enables 26+ kW power and 40+ Gbps HTS payloads for next-generation GEO comms.
+      </div>
+
+      <div class="summary-card" id="sum-met">
+        <div class="summary-title">Meteorology — Fengyun FY-1 through FY-4, WMO-designated</div>
+        China's Fengyun (风云, Wind-Cloud) constellation spans four generations since 1988. <b>FY-1</b> (4 SSO sats, 900 km, 1988–2002): experimental polar-orbiting; FY-1C was destroyed by China's Jan 2007 ASAT test, creating 3,000+ debris objects. <b>FY-2</b> (8 GEO sats, 35,786 km, 1997–2018): spin-stabilized, S-VISSR imager; 2A–2H; operational sats 2F (112.5°E) and 2G (105°E) still in standby. <b>FY-3</b> (7 SSO sats, ~830–850 km): second-generation polar; 3A–3G. FY-3D carries aurora imager; FY-3E (Jul 2021) occupies a unique dawn-dusk 98.75° early-morning orbit, filling a global 6-hour observation gap; FY-3G focuses on precipitation radar; FY-3F (Aug 2023). <b>FY-4</b> (2 GEO sats, 35,786 km): three-axis stabilized, AGRI (16-band imager, 500 m visible), GIIRS sounder, GLI lightning mapper. FY-4A at 104.7°E, FY-4B at 123.5°E. CMA operates the network as WMO-designated principal; data freely shared internationally. FY-5 (next-gen GEO) and FY-3H (planned) are in development.
+      </div>
+
+      <div class="summary-card" id="sum-rpo">
+        <div class="summary-title">RPO / Technology Demonstration — Shijian (SJ), Shiyan (SY), Chuangxin</div>
+        The Shijian (实践, "Practice") series began with SJ-1 (1971) and now spans to SJ-30 (Nov 2025). Recent missions demonstrate increasingly sophisticated counter-space-relevant capabilities: <b>SJ-17</b> (GEO, Nov 2016): first Chinese GEO robotic arm; maneuvered to within 55 km of other satellites — flagged by USSPACECOM Gen. Dickinson in 2021 testimony. <b>SJ-21</b> (GEO, Oct 2021): in Jan 2022 docked with defunct BeiDou G2, moved it to graveyard orbit using robotic arm, returned to GEO — first confirmed on-orbit satellite relocation. <b>SJ-25</b> (2025): tested on-orbit refueling with SJ-21. <b>SJ-19</b> (Sep 2024): recoverable science satellite, returned to Earth after ~12 days. <b>SJ-29 A/B</b> (Dec 2025, GEO): dual-satellite "space target detection" verification — dual-use SSA/inspection. <b>SJ-30 A/B/C</b> (Nov 2025, LEO 511–528 km, 52°): space environment exploration triplet. The Shiyan (实验, "Experiment") series tests early-stage technologies; Shiyan-10 pair entered Molniya orbits (2021–2022); Shiyan-27 (6 sats, SSO, Apr 2025) and Shiyan-28B series (2025) for SSA. TJS-21 (Nov 2025) also entered Molniya orbit, suggesting operational follow-on to Shiyan-10 experiments.
+      </div>
+
+      <div class="summary-card" id="sum-ew">
+        <div class="summary-title">Early Warning & SIGINT — TJS / Tongxin Jishu Shiyan, Yaogan-41, Qianshao</div>
+        China's opaque TJS (Tongxin Jishu Shiyan, 通信技术试验, "Communications Technology Test") series has emerged as the primary cover for GEO military intelligence satellites. By May 2025, 23 TJS satellites have been launched (no TJS-8; TJS-18 skipped), with 9 launched in 2025 alone — a record. Analysts distinguish three sub-classes: (1) <b>Qianshao-3</b> SIGINT (TJS-1, -4, -9, possibly -11, -20, -23): ~32 m unfurlable dish antenna, Ka-band; positional slots over Indian Ocean and Micronesia consistent with SIGINT collection against U.S. naval and air communications. (2) <b>Huoyan-1</b> early-warning infrared (TJS-2, -5, -6, -7, -10, -12, -14–17, -19, -22): SAST-built, likely DFH-4 derivative, positioned over Indian Ocean / South China Sea / Oceania — analogous to U.S. SBIRS; primary purpose assessed as missile launch detection for PLA Rocket Force early warning. (3) <b>TJS-3 sub-satellite class</b>: inspector / co-orbital SIGINT; TJS-3's sub-satellite (2018–2019) performed unprecedented synchronized GEO maneuvers. TJS-13 and TJS-21 entered Molniya orbits — providing persistent polar early-warning coverage for ICBMs launched from Northern Hemisphere. TJS-23 (Dec 2025, LM-5) is among the heaviest in the series. Yaogan-41 in GEO, while officially Earth observation, provides persistent coverage for maritime targeting cueing.
+      </div>
+
+      <div class="summary-card" id="sum-sci">
+        <div class="summary-title">Science & Space Physics — CAS Strategic Priority Program, China-ESA Joint Missions</div>
+        China's space science output has accelerated under the Strategic Priority Program on Space Science (Phase I: 2011–2020; Phase II: 2020–2030). Key missions: <b>DAMPE/Wukong</b> (Dec 2015, SSO 500 km): dark matter indirect detection via cosmic-ray measurements up to 100 TeV; still operational beyond 3× design life. <b>QUESS/Micius</b> (Aug 2016, SSO 500 km): demonstrated satellite-based quantum key distribution over 1,200 km and entanglement distribution over 1,200 km; also performed quantum teleportation experiments. <b>HXMT/Insight</b> (Jun 2017, LEO 550 km): first Chinese X-ray astronomy satellite; broadest energy range (1–250 keV); observed neutron star mergers and pulsars. <b>Taiji-1</b> (Aug 2019): precursor to space-based gravitational wave observatory; validated laser ranging at ~pm precision. <b>ASO-S/Kuafu-1</b> (Oct 2022, SSO 720 km): solar flare, CME, and magnetism observatory. <b>Einstein Probe</b> (Jan 2024, LEO 600 km): wide-field X-ray transient monitor (lobster-eye optics); China-ESA-MPE joint. <b>SMILE</b> (2025, HEO highly elliptical): China-ESA joint solar-wind/magnetosphere coupling mission. <b>DSL</b> (lunar orbit low-frequency array) and <b>EP-2</b> are planned for 2026+.
+      </div>
+
+      <div class="summary-card" id="sum-brd">
+        <div class="summary-title">Broadband Megaconstellations — Qianfan, Guowang, Tianqi, Geespace, Honghu-3</div>
+        China is constructing five parallel LEO broadband networks with a combined planned capacity of ~50,000 satellites — the most ambitious expansion of orbital real estate in history. <b>Qianfan/G60 Starlink</b> (operated by Shanghai Spacesail): ~90 satellites at 1,160 km (60° and 85° polar orbits) as of end-2025; Phase 1 target 648 satellites; ultimate 15,000-satellite global Ku/Q/V-band broadband service. <b>Guowang/National Network</b> (CASIC/CAST, operated by China Satnet): 100+ satellites by Nov 2025 in two shells (1,145 km at 50° and 1,175 km at 86.5°); 13,000-satellite target; reportedly carries dual-use ISR/SIGINT payloads and positioning augmentation on some platforms; dual-use concern flagged by CSIS Aerospace Security Project. <b>Tianqi</b> (Guodian Gaoke): 36 narrow-band IoT satellites operational in SSO ~850 km. <b>Geespace</b> (Geely Auto-backed): ~20+ satellites in LEO 550 km; 6,000 planned for IoT, imagery, direct-to-device. <b>Honghu-3</b> (Landspace): 10,000 satellites planned; first launch pending. <b>Three-body Computing</b>: edge-computing constellation planned. ITU spectrum/orbit filing rules require 10% deployment by 2029 and 50% by 2032 for Guowang.
+      </div>
+
+      <div class="summary-card" id="sum-ocn">
+        <div class="summary-title">Ocean Observation, Environmental Monitoring, Cartography</div>
+        <b>Haiyang (海洋, Ocean) series</b>: HY-1A/B (2002–2007, 798 km SSO, ocean color/temperature); HY-1C (Sep 2018, 781 km SSO) and HY-1D (Jun 2020, paired with 1C for doubled coverage); HY-2A (Aug 2011, 971 km, microwave scatterometer/altimeter), HY-2B (Oct 2018, 971 km), HY-2C (Sep 2020, 66° inclined, 791 km) and HY-2D (May 2021, 66°, 791 km) form a 3-satellite ocean dynamics constellation; HY-4-01 (Nov 2024, SSO 633–644 km): first high-precision global ocean salinity mission. <b>Ziyuan (资源, Resources)</b>: ZY-1-02D and 02E (2019/2021, 778 km SSO, hyperspectral/visible); ZY-3 series (2012–2017, 505 km SSO, stereo surveying 2.5 m). <b>Huanjing (环境, Environment)</b>: HJ-1A/B (2008, 650 km SSO, 30 m visible + 100 m infrared + SAR); HJ-2A/B (Sep 2020, 645 km SSO, 16 m multispectral + hyperspectral). <b>Tianhui (天绘, Space Mapping)</b>: TH-1 series (2010–2015, 500 km SSO); TH-2-01/02 (Aug 2019, 500 km SSO, stereo surveying); TH-7 (Dec 2025). All Haiyang and Ziyuan data are shared with international partners through WMO and bilateral agreements.
+      </div>
+
+      <!-- TABLE -->
+      <div class="toolbar">
+        <div class="result-count">Showing <span id="shown-count">—</span> of <span id="total-shown">—</span> entries</div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="main-table">
+          <thead>
+            <tr>
+              <th onclick="sortBy('name')">Satellite / Series</th>
+              <th onclick="sortBy('func')">Function</th>
+              <th onclick="sortBy('orbit')">Orbit</th>
+              <th>Altitude</th>
+              <th>Inclination</th>
+              <th onclick="sortBy('launch')">Launch</th>
+              <th>EOL / Status</th>
+              <th>NORAD / COSPAR</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div><!-- /page-catalog -->
+
+    <!-- PAGE: SOURCES -->
+    <div id="page-sources" class="page-content">
+      <div class="guide-section">
+        <div class="guide-title">Recommended Data Sources — TLE, Orbital Parameters, Functional Assessments</div>
+        <div class="guide-para">The following sources collectively cover all aspects of Chinese satellite tracking from raw TLE data to functional intelligence assessments. No single source is complete — cross-referencing at minimum Space-Track + CelesTrak + Gunter's Space Page gives the best coverage of named satellites, while adding ISR University and open-source analyst communities fills gaps on classified programs.</div>
+        <div class="sources-grid">
+          <div class="source-card"><div class="source-name">Space-Track.org</div><div class="source-url">space-track.org</div><div class="source-desc">Official U.S. Space Force SATCAT. Gold standard for TLEs, orbital elements, decay data, and the full unclassified catalog. GP/GP_History API. Country filter: COUNTRY/PRC. Free with registration.</div><span class="source-tag tag-reg">Free (register)</span></div>
+          <div class="source-card"><div class="source-name">CelesTrak</div><div class="source-url">celestrak.org</div><div class="source-desc">Dr. T.S. Kelso's curated TLE feeds. Country group downloads, supplemental catalog, hourly refresh from Space-Track. Python/Astropy compatible. Direct PRC group URL available.</div><span class="source-tag tag-free">Free</span></div>
+          <div class="source-card"><div class="source-name">Gunter's Space Page</div><div class="source-url">space.skyrocket.de</div><div class="source-desc">Per-satellite specs: bus, mass, orbital parameters, launch vehicle, NORAD cross-ref for every named Chinese satellite. Best single reference for identifying series lineages.</div><span class="source-tag tag-free">Free</span></div>
+          <div class="source-card"><div class="source-name">ISR University</div><div class="source-url">isruniversity.com</div><div class="source-desc">Issue-based analyst commentary on PLA space. Best source for TJS, Shijian GEO maneuver tracking, and real-time updates on classified Chinese launches. Updated within days of launches.</div><span class="source-tag tag-free">Free</span></div>
+          <div class="source-card"><div class="source-name">eoPortal</div><div class="source-url">eoportal.org</div><div class="source-desc">Deep technical profiles for civil/dual-use satellites (Gaofen, Fengyun, Haiyang, Ziyuan, science). Instrument specs, orbital parameters, mission objectives. ESA-maintained.</div><span class="source-tag tag-free">Free</span></div>
+          <div class="source-card"><div class="source-name">Jonathan McDowell's catalog</div><div class="source-url">planet4589.org/space/gcat</div><div class="source-desc">GCAT (General Catalog of Artificial Space Objects) — the most complete independent catalog with China-specific cross-references. CSV/JSON exports. Ideal for batch analysis.</div><span class="source-tag tag-free">Free</span></div>
+          <div class="source-card"><div class="source-name">N2YO</div><div class="source-url">n2yo.com</div><div class="source-desc">Web-based tracker with country filter (PRC), individual TLE display, pass predictions, and live orbital visualization. Good for quick lookups by NORAD ID.</div><span class="source-tag tag-free">Free</span></div>
+          <div class="source-card"><div class="source-name">SATDB (ETH Zürich)</div><div class="source-url">satdb.ethz.ch</div><div class="source-desc">Archives 7.9M+ TLEs for 16,000+ objects, fetched hourly from CelesTrak. Ideal for historical orbital evolution and trend analysis.</div><span class="source-tag tag-free">Free</span></div>
+          <div class="source-card"><div class="source-name">SpaceNews / Andrew Jones</div><div class="source-url">spacenews.com</div><div class="source-desc">Best English-language journalism on Chinese space launches. Jones (Helsinki-based) breaks most Chinese classified launch news within 24 hours. Essential for megaconstellation and TJS tracking.</div><span class="source-tag tag-free">Free</span></div>
+          <div class="source-card"><div class="source-name">NASASpaceFlight forum</div><div class="source-url">nasaspaceflight.com/forum</div><div class="source-desc">Community tracking threads for each Chinese launch with orbital observations, ID correlations, and decay predictions. Best primary source community for unclassified tracking.</div><span class="source-tag tag-free">Free</span></div>
+          <div class="source-card"><div class="source-name">LeoLabs</div><div class="source-url">leolabs.space</div><div class="source-desc">Commercial phased-array radar network. High-precision orbital data for LEO RPO events, maneuver detection, and debris tracking. Used by policymakers and intelligence analysts.</div><span class="source-tag tag-comm">Commercial</span></div>
+          <div class="source-card"><div class="source-name">ExoAnalytic Solutions</div><div class="source-url">exoanalytic.com</div><div class="source-desc">Optical GEO tracking network. Documented SJ-21 docking maneuvers (2022) and TJS maneuver tracking. Government and commercial clients. Reported SJ-21 "going dark" during BeiDou G2 docking.</div><span class="source-tag tag-comm">Commercial</span></div>
+          <div class="source-card"><div class="source-name">CSIS Aerospace Security</div><div class="source-url">csis.org/programs/aerospace-security</div><div class="source-desc">Policy-analytical assessments of Chinese space programs. "No Place to Hide" report on GEO surveillance (2024) is essential reference for Yaogan-41 and Gaofen-13 capabilities.</div><span class="source-tag tag-free">Free</span></div>
+          <div class="source-card"><div class="source-name">ESA DISCOS</div><div class="source-url">sdup.esrin.esa.int</div><div class="source-desc">ESA's Database and Information System Characterising Objects in Space. Orbital decay stats, cross-section estimates, and object categorization for end-of-life analysis.</div><span class="source-tag tag-reg">Free (register)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: API -->
+    <div id="page-api" class="page-content">
+      <div class="guide-section">
+        <div class="guide-title">Space-Track API — Bulk Chinese Satellite Retrieval</div>
+        <div class="guide-para">Space-Track.org provides a REST API that returns the complete U.S. Space Force catalog of tracked objects. The queries below will retrieve all cataloged Chinese satellites and their current orbital elements. Registration is free at space-track.org. The API returns JSON by default and supports CSV export for bulk analysis.</div>
+
+        <div class="guide-para"><b style="color:#1565c0">Step 1 — Authenticate</b></div>
+        <div class="code-block"><span class="code-comment"># Authenticate (required once per session)</span>
+curl -c cookies.txt -b cookies.txt \
+  -d "identity=YOUR_EMAIL&password=YOUR_PASS" \
+  https://www.space-track.org/ajaxauth/login</div>
+
+        <div class="guide-para"><b style="color:#1565c0">Step 2 — Retrieve all Chinese satellite catalog entries (SATCAT)</b></div>
+        <div class="code-block"><span class="code-comment"># All Chinese objects in SATCAT — includes launch date, period, inclination, apogee, perigee</span>
+curl -c cookies.txt -b cookies.txt \
+  "https://www.space-track.org/basicspacedata/query/class/satcat\
+/COUNTRY/PRC/orderby/LAUNCH_DATE%20desc/format/json" \
+  -o china_satcat.json
+
+<span class="code-comment"># Filter to active (not decayed) satellites only</span>
+curl -c cookies.txt -b cookies.txt \
+  "https://www.space-track.org/basicspacedata/query/class/satcat\
+/COUNTRY/PRC/DECAY/null-val/orderby/LAUNCH_DATE%20desc/format/json" \
+  -o china_active.json</div>
+
+        <div class="guide-para"><b style="color:#1565c0">Step 3 — Current TLEs (General Perturbations elements) for all Chinese payloads</b></div>
+        <div class="code-block"><span class="code-comment"># All current GP elements for PRC satellites — TLE format</span>
+curl -c cookies.txt -b cookies.txt \
+  "https://www.space-track.org/basicspacedata/query/class/gp\
+/COUNTRY_CODE/PRC/OBJECT_TYPE/PAYLOAD/orderby/NORAD_CAT_ID/format/tle" \
+  -o china_payloads.tle
+
+<span class="code-comment"># JSON format with full orbital parameters (apogee, perigee, period, inclination etc.)</span>
+curl -c cookies.txt -b cookies.txt \
+  "https://www.space-track.org/basicspacedata/query/class/gp\
+/COUNTRY_CODE/PRC/OBJECT_TYPE/PAYLOAD/orderby/LAUNCH_DATE%20desc/format/json" \
+  -o china_gp.json</div>
+
+        <div class="guide-para"><b style="color:#1565c0">Step 4 — Python batch retrieval with cross-reference to functional catalog</b></div>
+        <div class="code-block">import requests, json, pandas as pd
+
+<span class="code-comment"># Authenticate</span>
+s = requests.Session()
+s.post('https://www.space-track.org/ajaxauth/login',
+       data={'identity':'EMAIL','password':'PASS'})
+
+<span class="code-comment"># Fetch all active PRC payloads with GP orbital elements</span>
+url = ('https://www.space-track.org/basicspacedata/query/class/gp'
+       '/COUNTRY_CODE/PRC/OBJECT_TYPE/PAYLOAD'
+       '/orderby/LAUNCH_DATE%20desc/format/json')
+resp = s.get(url)
+sats = resp.json()
+
+<span class="code-comment"># Build DataFrame with key columns</span>
+df = pd.DataFrame(sats)
+df = df[['OBJECT_NAME','NORAD_CAT_ID','INTLDES','LAUNCH_DATE',
+         'EPOCH','INCLINATION','PERIOD','APOAPSIS','PERIAPSIS',
+         'ECCENTRICITY','MEAN_MOTION','DECAY_DATE']]
+
+<span class="code-comment"># Classify orbit type by altitude</span>
+def orbit_class(row):
+    alt = (float(row['APOAPSIS']) + float(row['PERIAPSIS'])) / 2
+    inc = float(row['INCLINATION'])
+    if alt > 35000: return 'GEO/HEO'
+    if alt > 15000: return 'MEO'
+    if 97 <= inc <= 99: return 'SSO'
+    return 'LEO'
+
+df['ORBIT_TYPE'] = df.apply(orbit_class, axis=1)
+df['DAYS_OPERATIONAL'] = (pd.Timestamp.now() - 
+    pd.to_datetime(df['LAUNCH_DATE'])).dt.days
+
+<span class="code-comment"># Export</span>
+df.to_csv('china_satellites_full.csv', index=False)
+print(f"Retrieved {len(df)} Chinese payload entries")
+<span class="code-comment"># Typical output: ~900-1100 active payloads depending on date</span></div>
+
+        <div class="guide-para"><b style="color:#1565c0">Step 5 — CelesTrak direct PRC group download (no login required)</b></div>
+        <div class="code-block"><span class="code-comment"># Direct TLE download — no authentication required, updates hourly</span>
+wget "https://celestrak.org/pub/TLE/catalog.txt" <span class="code-comment"># full catalog</span>
+
+<span class="code-comment"># Filter by country using the SATCAT query (Python)</span>
+import requests
+r = requests.get(
+  'https://celestrak.org/pub/satcat.csv',
+  headers={'User-Agent': 'Mozilla/5.0'})
+df = pd.read_csv(io.StringIO(r.text))
+china = df[df['COUNTRY'] == 'PRC'].copy()
+print(f"PRC objects in CelesTrak SATCAT: {len(china)}")
+
+<span class="code-comment"># Jonathan McDowell GCAT — most complete independent catalog</span>
+gcat = pd.read_csv('https://planet4589.org/space/gcat/tsv/cat.tsv',
+                   sep='\t', on_bad_lines='skip')
+china_gcat = gcat[gcat['Owner'].str.contains('PRC|China', na=False)]</div>
+
+        <div class="guide-para"><b style="color:#1565c0">Cross-referencing functional classifications</b></div>
+        <div class="guide-para">Space-Track provides raw orbital data but no functional classification. The recommended workflow for a comprehensive functional catalog is: (1) pull all PRC payloads from Space-Track GP class; (2) match OBJECT_NAME against Gunter's Space Page by series prefix (YAOGAN = ISR; BEIDOU = NAV; FENGYUN = MET; TIANLIAN = COM relay; etc.); (3) apply heuristic orbit-based classification (SSO 480–760 km = likely ISR; GEO 0° = comms or EW; 35,786 km/55° IGSO = BeiDou; 1,145–1,175 km LEO broadband shells = Guowang/Qianfan); (4) cross-check against ISR University issue archive and NASASpaceFlight community threads for classified/opaque payloads. For megaconstellation members (Qianfan, Guowang), the SATCAT will list them as "STARNET-..." or numbered batch entries — filter by launch date and orbit shell.</div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+const SATS = [
+// ===== ISR / RECONNAISSANCE =====
+{name:"Yaogan-1",series:"Yaogan JB-5",func:"ISR",orbit:"SSO",alt:"630",inc:"97.9°",launch:"2006-04-27",eol:"~2011",norad:"29092",cospar:"2006-015A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>First Yaogan. SAR imaging, JB-5 class. 1 m res."},
+{name:"Yaogan-2",series:"Yaogan JB-6",func:"ISR",orbit:"SSO",alt:"627",inc:"97.9°",launch:"2007-05-25",eol:"~2012",norad:"31490",cospar:"2007-019A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>Optical IMINT. JB-6 class, 0.8–1.5 m res."},
+{name:"Yaogan-3",series:"Yaogan JB-5",func:"ISR",orbit:"SSO",alt:"627",inc:"97.9°",launch:"2007-11-12",eol:"~2013",norad:"32244",cospar:"2007-049A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>SAR imaging. JB-5 follow-on."},
+{name:"Yaogan-4",series:"Yaogan JB-6",func:"ISR",orbit:"SSO",alt:"625",inc:"97.8°",launch:"2008-12-01",eol:"~2014",norad:"33480",cospar:"2008-064A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>Optical IMINT. JB-6 class."},
+{name:"Yaogan-5",series:"Yaogan JB-5",func:"ISR",orbit:"SSO",alt:"627",inc:"97.9°",launch:"2008-12-15",eol:"~2015",norad:"33504",cospar:"2008-067A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>SAR imaging."},
+{name:"Yaogan-6",series:"Yaogan JB-6",func:"ISR",orbit:"SSO",alt:"493",inc:"97.4°",launch:"2009-04-22",eol:"~2015",norad:"34839",cospar:"2009-020A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>Optical IMINT. JB-6 class."},
+{name:"Yaogan-7",series:"Yaogan JB-6",func:"ISR",orbit:"SSO",alt:"495",inc:"97.4°",launch:"2009-12-09",eol:"~2015",norad:"36112",cospar:"2009-063A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>Optical IMINT."},
+{name:"Yaogan-8",series:"Yaogan JB-9",func:"ISR",orbit:"SSO",alt:"1,200",inc:"100.5°",launch:"2009-12-15",eol:"~2020",norad:"36120",cospar:"2009-067A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>JB-9 class. High-alt area surveillance / low-res mapping."},
+{name:"Yaogan-9 A/B/C",series:"Yaogan JB-8",func:"ISR",orbit:"LEO",alt:"600",inc:"63.4°",launch:"2010-03-05",eol:"~2018",norad:"36389",cospar:"2010-009A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>ELINT triplet cluster. JB-8 naval surveillance, NOSS-analogue."},
+{name:"Yaogan-10",series:"Yaogan JB-5",func:"ISR",orbit:"SSO",alt:"492",inc:"97.4°",launch:"2010-08-09",eol:"~2017",norad:"36834",cospar:"2010-043A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>SAR imaging."},
+{name:"Yaogan-11",series:"Yaogan JB-6",func:"ISR",orbit:"SSO",alt:"490",inc:"97.4°",launch:"2010-09-22",eol:"~2017",norad:"36895",cospar:"2010-048A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>Optical IMINT. JB-6, 1.5 m res."},
+{name:"Yaogan-12",series:"Yaogan JB-5",func:"ISR",orbit:"SSO",alt:"490",inc:"97.4°",launch:"2011-11-09",eol:"~2018",norad:"37875",cospar:"2011-066A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>SAR imaging."},
+{name:"Yaogan-13",series:"Yaogan JB-5",func:"ISR",orbit:"SSO",alt:"492",inc:"97.4°",launch:"2012-10-26",eol:"~2019",norad:"38869",cospar:"2012-057A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>SAR imaging."},
+{name:"Yaogan-14",series:"Yaogan JB-6",func:"ISR",orbit:"SSO",alt:"485",inc:"97.3°",launch:"2012-05-10",eol:"~2019",norad:"38257",cospar:"2012-022A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>Optical IMINT. Sub-meter capability."},
+{name:"Yaogan-15",series:"Yaogan JB-9",func:"ISR",orbit:"SSO",alt:"1,200",inc:"100.5°",launch:"2012-05-29",eol:"~2022",norad:"38358",cospar:"2012-028A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>JB-9 class. High-alt area surveillance."},
+{name:"Yaogan-16 A/B/C",series:"Yaogan JB-8",func:"ISR",orbit:"LEO",alt:"600",inc:"63.4°",launch:"2012-11-25",eol:"~2020",norad:"39011",cospar:"2012-068A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>ELINT triplet. Naval SIGINT."},
+{name:"Yaogan-17",series:"Yaogan JB-5",func:"ISR",orbit:"SSO",alt:"493",inc:"97.4°",launch:"2012-09-19",eol:"~2020",norad:"38744",cospar:"2012-051A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>SAR imaging."},
+{name:"Yaogan-18",series:"Yaogan JB-6",func:"ISR",orbit:"SSO",alt:"488",inc:"97.3°",launch:"2013-09-06",eol:"~2021",norad:"39230",cospar:"2013-045A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>Optical IMINT. Sub-meter."},
+{name:"Yaogan-19",series:"Yaogan JB-9",func:"ISR",orbit:"SSO",alt:"1,200",inc:"100.5°",launch:"2013-11-20",eol:"~2023",norad:"39474",cospar:"2013-065A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>JB-9 class."},
+{name:"Yaogan-20 A/B/C",series:"Yaogan JB-8",func:"ISR",orbit:"LEO",alt:"600",inc:"63.4°",launch:"2014-08-19",eol:"~2022",norad:"40069",cospar:"2014-049A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>ELINT triplet."},
+{name:"Yaogan-21",series:"Yaogan JB-5",func:"ISR",orbit:"SSO",alt:"492",inc:"97.4°",launch:"2014-09-08",eol:"~2022",norad:"40110",cospar:"2014-052A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>SAR imaging."},
+{name:"Yaogan-22",series:"Yaogan JB-9",func:"ISR",orbit:"SSO",alt:"1,200",inc:"100.5°",launch:"2014-10-20",eol:"~2024",norad:"40258",cospar:"2014-064A",status:"UNK",notes:"<span class='flag flag-mil'>MIL</span>JB-9 high-alt area surveillance."},
+{name:"Yaogan-23",series:"Yaogan JB-6",func:"ISR",orbit:"SSO",alt:"490",inc:"97.4°",launch:"2014-11-20",eol:"~2022",norad:"40348",cospar:"2014-075A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>Optical IMINT."},
+{name:"Yaogan-24",series:"Yaogan JB-6",func:"ISR",orbit:"SSO",alt:"492",inc:"97.4°",launch:"2014-11-20",eol:"~2022",norad:"40349",cospar:"2014-076A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>Optical IMINT. Possible improved JB-6."},
+{name:"Yaogan-25 A/B/C",series:"Yaogan JB-8",func:"ISR",orbit:"LEO",alt:"846–1348",inc:"63.4°",launch:"2014-12-10",eol:"~2024",norad:"40338",cospar:"2014-080A",status:"UNK",notes:"<span class='flag flag-mil'>MIL</span>ELINT triplet. Anomalous perigee/apogee spread, highly elliptical loop."},
+{name:"Yaogan-26",series:"Yaogan JB-5",func:"ISR",orbit:"SSO",alt:"493",inc:"97.4°",launch:"2015-10-26",eol:"~2023",norad:"40958",cospar:"2015-060A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>SAR imaging."},
+{name:"Yaogan-27",series:"Yaogan JB-9",func:"ISR",orbit:"SSO",alt:"1,200",inc:"100.5°",launch:"2015-08-27",eol:"~2025",norad:"40837",cospar:"2015-043A",status:"UNK",notes:"<span class='flag flag-mil'>MIL</span>JB-9 class. High-alt mapping."},
+{name:"Yaogan-28",series:"Yaogan JB-6",func:"ISR",orbit:"SSO",alt:"490",inc:"97.4°",launch:"2016-05-15",eol:"~2025",norad:"41482",cospar:"2016-026A",status:"UNK",notes:"<span class='flag flag-mil'>MIL</span>Optical IMINT."},
+{name:"Yaogan-29",series:"Yaogan JB-5",func:"ISR",orbit:"SSO",alt:"617",inc:"97.8°",launch:"2015-11-08",eol:"~2025",norad:"41021",cospar:"2015-064A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>SAR imaging. JB-5 successor class, ~617 km."},
+{name:"Yaogan-30 Groups 01–10+",series:"Yaogan JB-8",func:"ISR",orbit:"LEO",alt:"600",inc:"35°",launch:"2017-09-29 onward",eol:"~2027–2032",norad:"42984",cospar:"2017-058A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>10+ triplet launches, 30+ sats. ELINT maritime surveillance. 35° inc. anomalous for SSO — naval focus. Each group 3 sats co-orbital."},
+{name:"Yaogan-31 A/B/C",series:"Yaogan",func:"ISR",orbit:"LEO",alt:"481",inc:"50°",launch:"2018-01-19",eol:"~2026",norad:"43042",cospar:"2018-005A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>ELINT triplet. 50° inclination, global coverage focus."},
+{name:"Yaogan-32 01 A/B",series:"Yaogan",func:"ISR",orbit:"SSO",alt:"645",inc:"98.1°",launch:"2018-01-25",eol:"~2028",norad:"43053",cospar:"2018-007A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>Dual-satellite optical pair. LM-2D from Jiuquan."},
+{name:"Yaogan-33",series:"Yaogan JB-5",func:"ISR",orbit:"SSO",alt:"—",inc:"—",launch:"2019-05-23",eol:"FAILED",norad:"—",cospar:"2019-F02",status:"LOS",notes:"<span class='flag flag-mil'>MIL</span>Launch failure. LM-4C upper stage malfunction. Replacement: Yaogan-33R."},
+{name:"Yaogan-33R",series:"Yaogan JB-5",func:"ISR",orbit:"SSO",alt:"683",inc:"98.3°",launch:"2020-12-27",eol:"~2030",norad:"47261",cospar:"2020-097A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>SAR imaging. Replacement for Yaogan-33. Higher orbit than predecessor."},
+{name:"Yaogan-34",series:"Yaogan",func:"ISR",orbit:"SSO",alt:"490",inc:"97.4°",launch:"2021-04-09",eol:"~2031",norad:"48494",cospar:"2021-030A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>Optical remote sensing. Official: Belt and Road support, land surveying."},
+{name:"Yaogan-34-02",series:"Yaogan",func:"ISR",orbit:"SSO",alt:"490",inc:"97.4°",launch:"2022-03-17",eol:"~2032",norad:"51836",cospar:"2022-024A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>Optical remote sensing."},
+{name:"Yaogan-34-03",series:"Yaogan",func:"ISR",orbit:"SSO",alt:"490",inc:"97.4°",launch:"2022-11-16",eol:"~2032",norad:"54088",cospar:"2022-148A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>Optical remote sensing."},
+{name:"Yaogan-34-04",series:"Yaogan",func:"ISR",orbit:"SSO",alt:"490",inc:"97.4°",launch:"2023-03-08",eol:"~2033",norad:"55750",cospar:"2023-031A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>Optical remote sensing."},
+{name:"Yaogan-35 Groups 01–04",series:"Yaogan",func:"ISR",orbit:"SSO",alt:"500",inc:"97.5°",launch:"2021–2023",eol:"~2031–2033",norad:"49358",cospar:"2021-051A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>4 groups, multiple sats per group. LM-2D. Likely optical cluster."},
+{name:"Yaogan-36 Groups 01–04",series:"Yaogan",func:"ISR",orbit:"LEO",alt:"500",inc:"35°",launch:"2022–2023",eol:"~2032–2033",norad:"52197",cospar:"2022-035A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>ELINT triplets. 35° inclination. Follow-on to Yaogan-30 series."},
+{name:"Yaogan-37 Groups 01–03",series:"Yaogan",func:"ISR",orbit:"SSO",alt:"490",inc:"97.4°",launch:"2022–2023",eol:"~2032–2033",norad:"53107",cospar:"2022-066A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>Optical imaging. LM-4B launches."},
+{name:"Yaogan-38",series:"Yaogan",func:"ISR",orbit:"SSO",alt:"500",inc:"97.5°",launch:"2023-07-25",eol:"~2033",norad:"57289",cospar:"2023-105A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>Reconnaissance. LM-2D Jiuquan."},
+{name:"Yaogan-39 Groups 01–03",series:"Yaogan",func:"ISR",orbit:"LEO",alt:"500",inc:"50°",launch:"2023–2024",eol:"~2033–2034",norad:"58321",cospar:"2023-154A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>Triplet ELINT clusters. 50° inclination."},
+{name:"Yaogan-40 Groups 01–02",series:"Yaogan",func:"ISR",orbit:"SSO",alt:"~500",inc:"97.5°",launch:"2024-11 / 2025-05-11",eol:"~2034–2035",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>3 sats/group. Electromagnetic environment detection. LM-6A Taiyuan."},
+{name:"Yaogan-41",series:"Yaogan GEO ISR",func:"ISR",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2023-01-09",eol:"~2038+",norad:"55101",cospar:"2023-001A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>GEO persistent wide-area optical surveillance. Successor to Gaofen-13. CSIS: principal GEO ISR platform."},
+{name:"Yaogan-42",series:"Yaogan",func:"ISR",orbit:"SSO",alt:"~500",inc:"~97°",launch:"2024-06",eol:"~2034",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>Optical. LM-4B."},
+{name:"Yaogan-43 Groups 01–03",series:"Yaogan",func:"ISR",orbit:"LEO",alt:"500",inc:"35°",launch:"2024-08–10",eol:"~2034",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>18+ sats in 3 batches. 'New technology test for low-orbit constellations.' Likely ISR/ELINT constellation precursor."},
+{name:"Yaogan-44",series:"Yaogan",func:"ISR",orbit:"SSO",alt:"~490",inc:"~97°",launch:"2025-01",eol:"~2035",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>Optical. LM-2D."},
+{name:"Yaogan-45",series:"Yaogan",func:"ISR",orbit:"MEO",alt:"7,500",inc:"~60°",launch:"2025-09",eol:"~2035",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>Anomalous 7,500 km MEO. Wide-field ISR / possible SIGINT. Passes through Van Allen belt. LM-7A Wenchang."},
+{name:"Yaogan-46",series:"Yaogan",func:"ISR",orbit:"MEO",alt:"7,500",inc:"~60°",launch:"2025-10",eol:"~2035",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>Second MEO ISR. LM-7A. Companion to YG-45."},
+{name:"Yaogan-47",series:"Yaogan",func:"ISR",orbit:"SSO",alt:"~500",inc:"~97°",launch:"2025-12-09",eol:"~2035",norad:"66988",cospar:"2025-var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>Imagery satellite. LM-4B Jiuquan. Latest in series."},
+// Gaofen
+{name:"Gaofen-1",series:"CHEOS",func:"ISR",orbit:"SSO",alt:"645",inc:"98.0°",launch:"2013-04-26",eol:"~2025",norad:"39213",cospar:"2013-018A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>0.8 m PAN, 3.2 m MS. Revisit ≤4 days. CAST2000 bus. Civil primary user."},
+{name:"Gaofen-2",series:"CHEOS",func:"ISR",orbit:"SSO",alt:"631",inc:"97.9°",launch:"2014-08-19",eol:"~2028",norad:"40118",cospar:"2014-049A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>0.81 m PAN, 3.24 m MS. China's first sub-meter civil satellite."},
+{name:"Gaofen-3",series:"CHEOS SAR",func:"ISR",orbit:"SSO",alt:"755",inc:"98.4°",launch:"2016-08-10",eol:"~2031",norad:"41788",cospar:"2016-054A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>1–500 m resolution SAR, 12 imaging modes. All-weather day/night. 2,279 kg."},
+{name:"Gaofen-3 02",series:"CHEOS SAR",func:"ISR",orbit:"SSO",alt:"755",inc:"98.4°",launch:"2021-11-23",eol:"~2036",norad:"49445",cospar:"2021-103A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>Follow-on SAR to GF-3. Expanded imaging modes."},
+{name:"Gaofen-4",series:"CHEOS GEO",func:"ISR",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2015-12-29",eol:"~2030",norad:"41104",cospar:"2015-083A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>50 m EOIS optical. First GEO optical remote sensing satellite. 3 images/min. At 105.6°E."},
+{name:"Gaofen-5",series:"CHEOS hyperspectral",func:"ISR",orbit:"SSO",alt:"705",inc:"98.2°",launch:"2018-05-09",eol:"~2028",norad:"43461",cospar:"2018-043A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>6 instruments: hyperspectral, atmospheric. First Chinese high-res atmospheric pollution satellite."},
+{name:"Gaofen-5 02",series:"CHEOS hyperspectral",func:"ISR",orbit:"SSO",alt:"705",inc:"98.2°",launch:"2021-09-07",eol:"~2031",norad:"49069",cospar:"2021-078A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>Improved hyperspectral instruments."},
+{name:"Gaofen-6",series:"CHEOS",func:"ISR",orbit:"SSO",alt:"645",inc:"98.0°",launch:"2018-06-02",eol:"~2028",norad:"43484",cospar:"2018-048A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>2 m PAN + 8 m MS + 16 m wide-field. Agronomic monitoring."},
+{name:"Gaofen-7",series:"CHEOS stereo",func:"ENV",orbit:"SSO",alt:"505",inc:"97.5°",launch:"2019-11-03",eol:"~2029",norad:"44703",cospar:"2019-069A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>0.8 m sub-meter stereo. Topographic mapping. First Chinese stereo sub-meter sat."},
+{name:"Gaofen-8",series:"CHEOS",func:"ISR",orbit:"SSO",alt:"490",inc:"97.3°",launch:"2015-06-26",eol:"~2025",norad:"40746",cospar:"2015-030A",status:"UNK",notes:"<span class='flag flag-mil'>MIL</span>Likely Yaogan-lineage. 0.5 m res suspected. From Taiyuan."},
+{name:"Gaofen-9 series (01–06)",series:"CHEOS agile",func:"ISR",orbit:"SSO",alt:"690",inc:"98.2°",launch:"2015–2021",eol:"~2025–2031",norad:"40958",cospar:"2015-063A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>Agile 0.5 m PAN, 3-DoF attitude freedom. Rapid tasking."},
+{name:"Gaofen-10",series:"CHEOS",func:"ISR",orbit:"SSO",alt:"~490",inc:"97.3°",launch:"2019-10-04",eol:"~2029",norad:"44513",cospar:"2019-074A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>Previously failed launch in 2016 (GF-10A lost). Replacement success 2019."},
+{name:"Gaofen-11 01/02/03",series:"CHEOS",func:"ISR",orbit:"SSO",alt:"~250–490",inc:"97.0°",launch:"2018–2022",eol:"~2028–2032",norad:"43542",cospar:"2018-059A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>Sub-0.5 m resolution. Highest resolution civil Chinese satellites. Some orbit 250 km — very low for maintenance cost."},
+{name:"Gaofen-12 01/02/03",series:"CHEOS SAR",func:"ISR",orbit:"SSO",alt:"600",inc:"97.7°",launch:"2019–2022",eol:"~2029–2032",norad:"44547",cospar:"2019-075A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>SAR constellation. Meter-level resolution. Multiple imaging modes."},
+{name:"Gaofen-13",series:"CHEOS GEO",func:"ISR",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2020-10-12",eol:"~2035",norad:"46698",cospar:"2020-069A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>~15 m res est. GEO optical. At ~100°E. Believed Changchun optics."},
+{name:"Gaofen-13 02",series:"CHEOS GEO",func:"ISR",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2023-06-09",eol:"~2038",norad:"56862",cospar:"2023-083A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>~15 m res est. GEO optical. Second in series."},
+{name:"Gaofen-14 01",series:"CHEOS stereo",func:"ENV",orbit:"SSO",alt:"496",inc:"97.2°",launch:"2020-12-05",eol:"~2030",norad:"47231",cospar:"2020-092A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>0.5 m stereo surveying. DEM generation."},
+{name:"Gaofen-14 02",series:"CHEOS stereo",func:"ENV",orbit:"SSO",alt:"489",inc:"97.4°",launch:"2025-10-25",eol:"~2035",norad:"66175",cospar:"2025-242A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>Second stereo surveying satellite. LM-3B Xichang."},
+{name:"Ludi Tance-4",series:"Land Exploration GEO SAR",func:"ISR",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2023-08-13",eol:"~2038+",norad:"57518",cospar:"2023-113A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>World's FIRST GEO SAR satellite. 20 m resolution. Cloud-penetrating, day/night. Officially: land resources and disaster. LM-3B Xichang."},
+// Tianhui
+{name:"Tianhui-1-01",series:"Tianhui mapping",func:"ENV",orbit:"SSO",alt:"500",inc:"97.3°",launch:"2010-08-24",eol:"~2020",norad:"36875",cospar:"2010-043B",status:"DEC",notes:"<span class='flag flag-dual'>DUAL</span>Stereo cartographic mapping. 5 m resolution."},
+{name:"Tianhui-1-02",series:"Tianhui mapping",func:"ENV",orbit:"SSO",alt:"500",inc:"97.3°",launch:"2012-05-06",eol:"~2022",norad:"38227",cospar:"2012-017A",status:"DEC",notes:"<span class='flag flag-dual'>DUAL</span>Mapping. Follow-on."},
+{name:"Tianhui-1-03",series:"Tianhui mapping",func:"ENV",orbit:"SSO",alt:"500",inc:"97.3°",launch:"2015-10-26",eol:"~2025",norad:"40958",cospar:"2015-059A",status:"UNK",notes:"<span class='flag flag-dual'>DUAL</span>Mapping continuation."},
+{name:"Tianhui-2-01/02",series:"Tianhui mapping",func:"ENV",orbit:"SSO",alt:"500",inc:"97.3°",launch:"2019-04-30",eol:"~2029",norad:"44367",cospar:"2019-027A",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>Dual-satellite stereo mapping pair. Improved resolution."},
+{name:"Tianhui-7",series:"Tianhui mapping",func:"ENV",orbit:"SSO",alt:"~500",inc:"97.3°",launch:"2025-12-29",eol:"~2035",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-dual'>DUAL</span>Latest stereo cartographic satellite. LM-4B."},
+// ===== NAVIGATION =====
+{name:"BeiDou-1A/B/C (BDS-1)",series:"BeiDou-1 GEO",func:"NAV",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2000–2003",eol:"Retired ~2012",norad:"26536",cospar:"2000-069A",status:"DEC",notes:"Experimental regional RDSS+RNSS. Two-way ranging. 3 GEO sats. BDS-1 epoch."},
+{name:"COMPASS-M1",series:"BeiDou-2 MEO test",func:"NAV",orbit:"MEO",alt:"21,528",inc:"55.0°",launch:"2007-04-14",eol:"~2014",norad:"31115",cospar:"2007-011A",status:"DEC",notes:"First BDS MEO test satellite. Validated signal design for BDS-2/3."},
+{name:"BeiDou-2 IGSO 1–7",series:"BeiDou-2",func:"NAV",orbit:"IGSO",alt:"35,786",inc:"55.0°",launch:"2010–2016",eol:"~2025–2031",norad:"36828",cospar:"2010-036A",status:"OP",notes:"7 IGSO sats at 55° inclination. Regional augmentation. BDS-2 service."},
+{name:"BeiDou-2 MEO 1–7",series:"BeiDou-2",func:"NAV",orbit:"MEO",alt:"21,528",inc:"55.0°",launch:"2012–2016",eol:"~2027–2031",norad:"38250",cospar:"2012-018A",status:"OP",notes:"7 MEO sats. BDS-2 global navigation component. B1I/B2I/B3I signals."},
+{name:"BeiDou-2 GEO 1–6",series:"BeiDou-2",func:"NAV",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2010–2016",eol:"~2025–2031",norad:"36590",cospar:"2010-024A",status:"OP",notes:"5 active GEO. SBAS service over Asia-Pacific. RDSS messaging."},
+{name:"BeiDou-3 IGSO-1 (C38)",series:"BeiDou-3",func:"NAV",orbit:"IGSO",alt:"35,786",inc:"55.0°",launch:"2019-04-20",eol:"~2033",norad:"44204",cospar:"2019-023A",status:"OP",notes:"BDS-3 IGSO first satellite. New B1C/B2a signals."},
+{name:"BeiDou-3 IGSO-2 (C39)",series:"BeiDou-3",func:"NAV",orbit:"IGSO",alt:"35,786",inc:"55.0°",launch:"2019-06-25",eol:"~2033",norad:"44337",cospar:"2019-034A",status:"OP",notes:"BDS-3 IGSO second."},
+{name:"BeiDou-3 IGSO-3 (C40)",series:"BeiDou-3",func:"NAV",orbit:"IGSO",alt:"35,786",inc:"55.0°",launch:"2019-11-05",eol:"~2033",norad:"44709",cospar:"2019-073A",status:"OP",notes:"BDS-3 IGSO third. Completes IGSO plane."},
+{name:"BeiDou-3 GEO-1 (C59)",series:"BeiDou-3",func:"NAV",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2018-11-01",eol:"~2033",norad:"43683",cospar:"2018-085A",status:"OP",notes:"BDS-3 first GEO. B1C/B3I. SBAS corrections."},
+{name:"BeiDou-3 GEO-2 (C60)",series:"BeiDou-3",func:"NAV",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2019-05-17",eol:"~2033",norad:"44231",cospar:"2019-028A",status:"OP",notes:"BDS-3 GEO second."},
+{name:"BeiDou-3 GEO-3 (C61)",series:"BeiDou-3",func:"NAV",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2020-06-23",eol:"~2034",norad:"45807",cospar:"2020-047A",status:"OP",notes:"Final BDS-3 satellite. Constellation declared complete 23 Jun 2020. B1C/B2a/B3I."},
+{name:"BeiDou-3 MEO Block 1 (C19–C30)",series:"BeiDou-3",func:"NAV",orbit:"MEO",alt:"21,528",inc:"55.0°",launch:"2018-02–09 (dual launches)",eol:"~2031–2033",norad:"43001",cospar:"2018-003A",status:"OP",notes:"10 MEO sats in 2018 alone. Walker 24/3/1 constellation. ~21,500 km. B1C/B2a/B3I/B2b signals."},
+{name:"BeiDou-3 MEO Block 2 (C31–C37, C45–C50)",series:"BeiDou-3",func:"NAV",orbit:"MEO",alt:"21,528",inc:"55.0°",launch:"2019–2020",eol:"~2032–2034",norad:"44793",cospar:"2019-061A",status:"OP",notes:"Remaining 17 MEO sats completing Walker 24+3 spare configuration. Global service."},
+{name:"BeiDou-3 augmentation (C43, new batch 2023)",series:"BeiDou-3+",func:"NAV",orbit:"MEO",alt:"21,528",inc:"55.0°",launch:"2023-12-26",eol:"~2036+",norad:"58321",cospar:"2023-204A",status:"OP",notes:"New augmentation/replacement batch. Enhanced signals, longer design life. 20 new sats planned."},
+// ===== COMMUNICATIONS =====
+{name:"Tianlian-1-01",series:"Tianlian Gen I",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2008-04-25",eol:"~2028",norad:"32779",cospar:"2008-019A",status:"OP",notes:"First Chinese data relay satellite. DFH-3 bus. LM-3C maiden flight. 15%→70% LEO coverage."},
+{name:"Tianlian-1-02",series:"Tianlian Gen I",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2011-07-11",eol:"~2030",norad:"37605",cospar:"2011-032A",status:"OP",notes:"DFH-3 bus. Extends relay coverage."},
+{name:"Tianlian-1-03",series:"Tianlian Gen I",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2012-07-25",eol:"~2031",norad:"38356",cospar:"2012-038A",status:"OP",notes:"DFH-3 bus. 70%+ orbital coverage achieved."},
+{name:"Tianlian-1-04",series:"Tianlian Gen I",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2016-11-22",eol:"~2032",norad:"41909",cospar:"2016-071A",status:"OP",notes:"DFH-3 bus. Enhanced bandwidth. Crewed spaceflight relay."},
+{name:"Tianlian-1-05",series:"Tianlian Gen I",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2021-07-06",eol:"~2036",norad:"48866",cospar:"2021-054A",status:"OP",notes:"Final Gen I. DFH-3 bus."},
+{name:"Tianlian-2-01",series:"Tianlian Gen II",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2019-03-31",eol:"~2034",norad:"44207",cospar:"2019-021A",status:"OP",notes:"DFH-4 bus. Higher bandwidth. Tiangong CSS primary relay."},
+{name:"Tianlian-2-02",series:"Tianlian Gen II",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2021-12-14",eol:"~2036",norad:"50163",cospar:"2021-109A",status:"OP",notes:"DFH-4 bus. Near-100% LEO relay coverage."},
+{name:"Tianlian-2-03",series:"Tianlian Gen II",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2023-07-13",eol:"~2038",norad:"57257",cospar:"2023-098A",status:"OP",notes:"DFH-4 bus. Supports Tiangong CSS and future missions."},
+{name:"Tianlian-2-04",series:"Tianlian Gen II",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2024-07",eol:"~2039",norad:"var",cospar:"var",status:"OP",notes:"DFH-4 bus. 4th Gen II relay sat."},
+{name:"Tianlian-2-05",series:"Tianlian Gen II",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2024-11",eol:"~2039",norad:"var",cospar:"var",status:"OP",notes:"DFH-4 bus. Completes Gen II constellation."},
+{name:"ChinaSat-5A (Apstar-9A)",series:"Zhongxing",func:"COM",orbit:"GEO",alt:"35,786",inc:"0.1°",launch:"1998-05-30",eol:"~2028",norad:"25234",cospar:"1998-033A",status:"OP",notes:"DFH-3. C/Ku-band. 142°E. Leased to APT Satellite."},
+{name:"ChinaSat-6B",series:"Zhongxing",func:"COM",orbit:"GEO",alt:"35,786",inc:"0.1°",launch:"2007-07-05",eol:"~2029",norad:"31793",cospar:"2007-031A",status:"OP",notes:"DFH-4. C/Ku-band. 115.5°E. Television/broadband."},
+{name:"ChinaSat-6D",series:"Zhongxing",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2020-03-09",eol:"~2035",norad:"45306",cospar:"2020-016A",status:"OP",notes:"DFH-4E. 125°E. DTH television for mainland China."},
+{name:"ChinaSat-9B",series:"Zhongxing",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2020-07-09",eol:"~2035",norad:"45818",cospar:"2020-048A",status:"OP",notes:"DFH-4E. 92.2°E. DTH direct-to-home TV broadcast."},
+{name:"ChinaSat-16 (Shijian-13)",series:"Zhongxing HTS",func:"COM",orbit:"GEO",alt:"35,786",inc:"0.1°",launch:"2017-04-12",eol:"~2032",norad:"42063",cospar:"2017-020A",status:"OP",notes:"DFH-4E. 110.5°E. First Chinese Ka-band HTS. 50 Gbps throughput. Electric propulsion."},
+{name:"ChinaSat-1A (Feng Huo-2-1)",series:"Fenghuo military comms",func:"COM",orbit:"GEO",alt:"35,786",inc:"0.5°",launch:"2011-09-17",eol:"~2026",norad:"37804",cospar:"2011-052A",status:"UNK",notes:"<span class='flag flag-mil'>MIL</span>DFH-4. Military Ku-band comms. PLA ground forces secure links."},
+{name:"ChinaSat-1B",series:"Fenghuo military comms",func:"COM",orbit:"GEO",alt:"35,786",inc:"0.1°",launch:"2016-08-06",eol:"~2031",norad:"41742",cospar:"2016-046A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>DFH-4. Military comms. PLA network."},
+{name:"ChinaSat-1C",series:"Fenghuo military comms",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2020-12-04",eol:"~2035",norad:"47248",cospar:"2020-091A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>DFH-4E. Enhanced military comms."},
+{name:"ChinaSat-10",series:"Zhongxing",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2011-06-20",eol:"~2026",norad:"37677",cospar:"2011-026A",status:"OP",notes:"DFH-4. 103.5°E. Broadband and broadcasting. Replaced by ChinaSat-10R."},
+{name:"ChinaSat-10R",series:"Zhongxing",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2025-02-22",eol:"~2040",norad:"var",cospar:"var",status:"OP",notes:"DFH-4E. 103.5°E. Replaces ChinaSat-10. LM-3B/E Xichang."},
+{name:"ChinaSat-9C",series:"Zhongxing",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2025-06-20",eol:"~2040",norad:"var",cospar:"var",status:"OP",notes:"DFH-4E. DTH domestic broadcast replacement satellite. LM-3B Xichang."},
+{name:"Zhongxing-4A",series:"Zhongxing mil new class",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2024-08-22",eol:"~2039",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>LM-7A Wenchang. First of new believed military comms class. Dual-use capacity assessed."},
+{name:"Shijian-20",series:"Shijian/DFH-5",func:"COM",orbit:"GEO",alt:"35,786",inc:"0.1°",launch:"2019-12-27",eol:"~2035",norad:"44836",cospar:"2019-093A",status:"OP",notes:"Maiden DFH-5 bus flight. ~8,000 kg. High-throughput comms + tech demo. Electric propulsion."},
+// ===== METEOROLOGY =====
+{name:"FY-1A",series:"Fengyun-1",func:"MET",orbit:"SSO",alt:"901",inc:"98.9°",launch:"1988-09-07",eol:"1988-10-16",norad:"19253",cospar:"1988-080A",status:"DEC",notes:"Experimental. 39 days operational; attitude control failure."},
+{name:"FY-1B",series:"Fengyun-1",func:"MET",orbit:"SSO",alt:"900",inc:"99.0°",launch:"1990-09-03",eol:"1992",norad:"20636",cospar:"1990-081A",status:"DEC",notes:"Experimental. ~2 years; attitude control failure again."},
+{name:"FY-1C",series:"Fengyun-1",func:"MET",orbit:"SSO",alt:"860",inc:"98.8°",launch:"1999-05-10",eol:"2004→2007",norad:"25730",cospar:"1999-025A",status:"DEC",notes:"Operational. Destroyed by Chinese ASAT 11 Jan 2007. Created 3,000+ debris objects. WMO designated."},
+{name:"FY-1D",series:"Fengyun-1",func:"MET",orbit:"SSO",alt:"863",inc:"98.8°",launch:"2002-05-15",eol:"2012-04",norad:"27431",cospar:"2002-024A",status:"DEC",notes:"Operational. 10-year mission life. Final FY-1 series."},
+{name:"FY-2A",series:"Fengyun-2",func:"MET",orbit:"GEO",alt:"35,786",inc:"0°",launch:"1997-06-10",eol:"1998→backup",norad:"24834",cospar:"1997-029A",status:"DEC",notes:"Spin-stabilized. S-VISSR imager. DFH-2A bus. 86.5°E graveyard."},
+{name:"FY-2B",series:"Fengyun-2",func:"MET",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2000-06-25",eol:"2004",norad:"26382",cospar:"2000-037A",status:"DEC",notes:"2nd GEO weather sat. SAST-built."},
+{name:"FY-2C",series:"Fengyun-2",func:"MET",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2004-10-19",eol:"2009",norad:"28508",cospar:"2004-042A",status:"DEC",notes:"Operational GEO. 105°E."},
+{name:"FY-2D",series:"Fengyun-2",func:"MET",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2006-12-08",eol:"2014",norad:"29519",cospar:"2006-053A",status:"DEC",notes:"GEO operational. DCS capability. 86.5°E."},
+{name:"FY-2E",series:"Fengyun-2",func:"MET",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2008-12-23",eol:"2018",norad:"33492",cospar:"2008-066A",status:"DEC",notes:"105°E. Improved S-VISSR."},
+{name:"FY-2F",series:"Fengyun-2",func:"MET",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2012-01-13",eol:"~2025 (standby)",norad:"38049",cospar:"2012-002A",status:"UNK",notes:"112.5°E. Final operational FY-2 for western coverage."},
+{name:"FY-2G",series:"Fengyun-2",func:"MET",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2014-12-31",eol:"~2025 (standby)",norad:"40367",cospar:"2014-090A",status:"UNK",notes:"86.5°E then 105°E. Near-real-time Typhoon monitoring."},
+{name:"FY-2H",series:"Fengyun-2",func:"MET",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2018-06-05",eol:"~2027",norad:"43491",cospar:"2018-050A",status:"OP",notes:"79°E (Indian Ocean focus). Covers South Asia, IOC."},
+{name:"FY-3A",series:"Fengyun-3",func:"MET",orbit:"SSO",alt:"828",inc:"98.8°",launch:"2008-05-27",eol:"~2016",norad:"32958",cospar:"2008-026A",status:"DEC",notes:"Second-gen polar. 10+ instruments. Morning orbit."},
+{name:"FY-3B",series:"Fengyun-3",func:"MET",orbit:"SSO",alt:"828",inc:"98.7°",launch:"2010-11-05",eol:"~2018",norad:"37214",cospar:"2010-059A",status:"DEC",notes:"Afternoon orbit. Complements FY-3A."},
+{name:"FY-3C",series:"Fengyun-3",func:"MET",orbit:"SSO",alt:"829",inc:"98.8°",launch:"2013-09-23",eol:"~2021",norad:"39260",cospar:"2013-052A",status:"DEC",notes:"Operational. GNOS radio occultation added."},
+{name:"FY-3D",series:"Fengyun-3",func:"MET",orbit:"SSO",alt:"836",inc:"98.7°",launch:"2017-11-15",eol:"~2027",norad:"43010",cospar:"2017-071A",status:"OP",notes:"Afternoon orbit. First aurora imager (WAAI). Space environment monitoring."},
+{name:"FY-3E",series:"Fengyun-3",func:"MET",orbit:"SSO",alt:"836",inc:"98.75°",launch:"2021-07-04",eol:"~2031",norad:"48882",cospar:"2021-052A",status:"OP",notes:"World's FIRST early-morning orbit weather satellite. Fills 6-hour observation gap. WindRAD sea wind radar."},
+{name:"FY-3F",series:"Fengyun-3",func:"MET",orbit:"SSO",alt:"836",inc:"98.8°",launch:"2023-08-03",eol:"~2033",norad:"57448",cospar:"2023-107A",status:"OP",notes:"Morning orbit. Enhanced HIRAS sounder. GAS greenhouse gas sensor."},
+{name:"FY-3G",series:"Fengyun-3",func:"MET",orbit:"LEO",alt:"407",inc:"50°",launch:"2023-04-16",eol:"~2028",norad:"56204",cospar:"2023-048A",status:"OP",notes:"Precipitation radar focus (Ku/Ka-band). Low 407 km altitude, 50° inc for tropical coverage. First Chinese precipitation-measuring satellite."},
+{name:"FY-4A",series:"Fengyun-4",func:"MET",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2016-12-11",eol:"~2031",norad:"41882",cospar:"2016-077A",status:"OP",notes:"3-axis stabilized. AGRI 16-band (500 m vis), GIIRS sounder, GLI lightning mapper. 104.7°E. WMO primary."},
+{name:"FY-4B",series:"Fengyun-4",func:"MET",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2021-06-02",eol:"~2036",norad:"48806",cospar:"2021-045A",status:"OP",notes:"Improved FY-4A. 250 m fast imager. 123.5°E. New water vapor channels."},
+// ===== RPO / TECH DEMO =====
+{name:"Shijian-1",series:"Shijian",func:"RPO",orbit:"LEO",alt:"~266",inc:"68.4°",launch:"1971-03-03",eol:"1971",norad:"04905",cospar:"1971-018A",status:"DEC",notes:"China's 2nd satellite. Magnetometer + cosmic ray detector. Historical milestone."},
+{name:"Shijian-4",series:"Shijian",func:"SCI",orbit:"GTO",alt:"—",inc:"28.6°",launch:"1994-02-08",eol:"~1995",norad:"22924",cospar:"1994-010A",status:"DEC",notes:"Space environment monitoring. Radiation belt study."},
+{name:"Shijian-5",series:"Shijian",func:"SCI",orbit:"SSO",alt:"879",inc:"98.9°",launch:"1999-05-10",eol:"~2002",norad:"25731",cospar:"1999-025B",status:"DEC",notes:"With FY-1C. Space environment, particle radiation."},
+{name:"Shijian-6 A/B",series:"Shijian",func:"SCI",orbit:"SSO",alt:"~600",inc:"97.7°",launch:"2004-09-09",eol:"~2012",norad:"28510",cospar:"2004-044A",status:"DEC",notes:"Space environment monitoring pair. SJ-6-01 through 04 followed in 2006-2010."},
+{name:"Shijian-9 A/B",series:"Shijian",func:"RPO",orbit:"SSO",alt:"780",inc:"98.5°",launch:"2012-10-14",eol:"~2020",norad:"38752",cospar:"2012-054A",status:"DEC",notes:"Tech demo pair. Space debris observation, new propulsion tests."},
+{name:"Shijian-12",series:"Shijian RPO",func:"RPO",orbit:"LEO",alt:"~580",inc:"42.8°",launch:"2010-06-15",eol:"~2018",norad:"36605",cospar:"2010-028A",status:"DEC",notes:"<span class='flag flag-mil'>MIL</span>First Chinese co-orbital rendezvous (2010). Maneuvered alongside SJ-6F. RPO precursor."},
+{name:"Shijian-15",series:"Shijian",func:"RPO",orbit:"SSO",alt:"~600",inc:"97.7°",launch:"2015-09-25",eol:"~2023",norad:"40923",cospar:"2015-053A",status:"UNK",notes:"<span class='flag flag-mil'>MIL</span>Tech demo. Space environment + maneuverability."},
+{name:"Shijian-17",series:"Shijian GEO RPO",func:"RPO",orbit:"GEO",alt:"35,786",inc:"0.1°",launch:"2016-11-03",eol:"Active",norad:"41838",cospar:"2016-066A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>First Chinese GEO robotic arm. Positioned within 55 km of other GEO sats. Ranged 37.7°E–180°E. USSPACECOM flagged 2021 for counter-space risk."},
+{name:"Shijian-18",series:"Shijian/DFH-5",func:"COM",orbit:"—",alt:"—",inc:"—",launch:"2017-07-02",eol:"LOST",norad:"—",cospar:"—",status:"LOS",notes:"LM-5 failure 45 min post-launch. DFH-5 maiden bus; 7,600 kg — would have been heaviest GEO sat. Lost in Pacific."},
+{name:"Shijian-19",series:"Shijian recoverable",func:"SCI",orbit:"LEO",alt:"~450",inc:"41.5°",launch:"2024-09-18",eol:"~2024-09-30",norad:"var",cospar:"var",status:"DEC",notes:"Recoverable science satellite. 12-day mission. Returned to Earth with biological/materials experiments."},
+{name:"Shijian-20",series:"Shijian/DFH-5",func:"COM",orbit:"GEO",alt:"35,786",inc:"0.1°",launch:"2019-12-27",eol:"~2035",norad:"44836",cospar:"2019-093A",status:"OP",notes:"DFH-5 bus demo. ~8,000 kg. Ka/Q/V-band comms tech tests + electric propulsion."},
+{name:"Shijian-21",series:"Shijian GEO RPO",func:"RPO",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2021-10-23",eol:"Active",norad:"49395",cospar:"2021-094A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>Jan 2022: docked with defunct BeiDou G2 via robotic arm; moved G2 to 36,000 km graveyard orbit. First satellite relocation. Refueled by SJ-25 in 2025."},
+{name:"Shijian-22 A/B",series:"Shijian",func:"RPO",orbit:"SSO",alt:"~500",inc:"97.5°",launch:"2022-02-27",eol:"~2030",norad:"51430",cospar:"2022-015A",status:"OP",notes:"Tech demo pair. Space environment and formation flying."},
+{name:"Shijian-23",series:"Shijian",func:"SCI",orbit:"HEO",alt:"Elliptical",inc:"~63°",launch:"2022-05-05",eol:"~2027",norad:"52300",cospar:"2022-049A",status:"OP",notes:"High-inclination orbit. Space environment in radiation belt region."},
+{name:"Shijian-24 A/B",series:"Shijian",func:"RPO",orbit:"SSO",alt:"~500",inc:"97.5°",launch:"2023-03-31",eol:"~2031",norad:"55919",cospar:"2023-044A",status:"OP",notes:"Dual tech demo sats. New propulsion and SSA sensor tests."},
+{name:"Shijian-25",series:"Shijian refueling",func:"RPO",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2025-01",eol:"~2035",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>On-orbit refueling mission. Demonstrated propellant transfer with SJ-21. Mission extension service precursor."},
+{name:"Shijian-26",series:"Shijian",func:"COM",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2025-04",eol:"~2040",norad:"var",cospar:"var",status:"OP",notes:"GEO communications and tech demo. LM-3B."},
+{name:"Shijian-27 (6 sats)",series:"Shijian SSA",func:"RPO",orbit:"SSO",alt:"~540",inc:"97.6°",launch:"2025-04",eol:"~2033",norad:"var",cospar:"var",status:"OP",notes:"6-satellite cluster. Space environment monitoring + SSA. LM-2C."},
+{name:"Shijian-28",series:"Shijian GEO",func:"RPO",orbit:"GEO",alt:"35,786",inc:"5°",launch:"2025-11-30",eol:"Unknown",norad:"66549",cospar:"2025-var",status:"OP",notes:"<span class='flag flag-class'>CLASS</span>Settled at 116.9°E, 5° inclination. No details released. Monitored by open-source analysts. LM-7A Wenchang."},
+{name:"Shijian-29 A/B",series:"Shijian space surveillance",func:"RPO",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2025-12-31",eol:"Unknown",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span>Dual GEO sats. 'Space target detection' verification. SSA/inspection capability. ~3,500 kg each. LM-7A Wenchang."},
+{name:"Shijian-30 A/B/C",series:"Shijian SSA",func:"RPO",orbit:"LEO",alt:"511–528",inc:"52°",launch:"2025-11-19",eol:"~2033",norad:"var",cospar:"var",status:"OP",notes:"Triplet. Space environment exploration + tech verification. 52° inclination. LM-2C Jiuquan."},
+// EARLY WARNING / SIGINT / TJS
+{name:"TJS-1",series:"TJS Qianshao-3",func:"EW",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2015-09-12",eol:"Active",norad:"40896",cospar:"2015-051A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>SIGINT. ~32 m unfurlable Ka-band dish suspected. 154.5°E. CAST-built."},
+{name:"TJS-2",series:"TJS Huoyan-1",func:"EW",orbit:"GEO",alt:"35,786",inc:"0.4°",launch:"2017-01-05",eol:"Active",norad:"41911",cospar:"2017-001A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>Missile early warning (Huoyan-1). SAST/DFH-4 derived. IR detector. 66.5°E. TJS-22 may be replacement."},
+{name:"TJS-3",series:"TJS inspector",func:"EW",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2018-10-25",eol:"Active",norad:"43722",cospar:"2018-090A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>Plus sub-satellite. Sub-sat performed synchronized maneuvers Jan 2019 — GEO belt inspection. Unique unknown mission class."},
+{name:"TJS-4",series:"TJS Qianshao-3",func:"EW",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2019-10-17",eol:"Active",norad:"44739",cospar:"2019-070A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>SIGINT. Ka-band dish. Follow-on to TJS-1."},
+{name:"TJS-5",series:"TJS Huoyan-1",func:"EW",orbit:"GEO",alt:"35,786",inc:"0.3°",launch:"2020-02-19",eol:"Active",norad:"45178",cospar:"2020-011A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>Missile early warning. SAST. Over South China Sea."},
+{name:"TJS-6",series:"TJS Huoyan-1",func:"EW",orbit:"GEO",alt:"35,786",inc:"0.5°",launch:"2021-06-19",eol:"Active",norad:"48868",cospar:"2021-055A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>Missile early warning. Over Oceania."},
+{name:"TJS-7",series:"TJS Huoyan-1",func:"EW",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2021-08-24",eol:"Active",norad:"49011",cospar:"2021-069A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>Early warning / SIGINT. LM-3B."},
+{name:"TJS-9",series:"TJS Qianshao-3",func:"EW",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2021-09-27",eol:"Active",norad:"49128",cospar:"2021-084A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>SIGINT. Over Micronesia. 3rd Qianshao-3 class."},
+{name:"TJS-10",series:"TJS Huoyan-1",func:"EW",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2021-12-22",eol:"Active",norad:"50163",cospar:"2021-114A",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>Missile early warning. Year end LM-3B."},
+{name:"TJS-11",series:"TJS SIGINT class",func:"EW",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2024-02",eol:"Active",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>Likely SIGINT. Similar to TJS-20, TJS-23 class. LM-3B."},
+{name:"TJS-12",series:"TJS Huoyan-1",func:"EW",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2024-03",eol:"Active",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>Missile EW. 8th TJS in ~18 months."},
+{name:"TJS-13",series:"TJS Molniya EW",func:"EW",orbit:"HEO",alt:"400–40,000",inc:"63°",launch:"2024-12",eol:"Active",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>First TJS in Molniya-like orbit. Persistent polar ICBM warning coverage. Follows Shiyan-10 experiments. LM-3C."},
+{name:"TJS-14",series:"TJS Huoyan-1",func:"EW",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2025-03",eol:"Active",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>Early warning. 1st 2025 TJS. LM-7A Wenchang."},
+{name:"TJS-15",series:"TJS Huoyan-1",func:"EW",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2025-03",eol:"Active",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>90.2°E. LM-7A. Mission patch: King of the South (Four Heavenly Kings motif)."},
+{name:"TJS-16",series:"TJS Huoyan-1",func:"EW",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2025-04",eol:"Active",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>152.5°E. LM-3B. Co-located near TJS-17."},
+{name:"TJS-17",series:"TJS Huoyan-1",func:"EW",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2025-04",eol:"Active",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>152.8°E. Above Papua New Guinea. ~200 km from TJS-16."},
+{name:"TJS-19",series:"TJS",func:"EW",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2025-05-12",eol:"Active",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>SAST-built. LM-3C Xichang. Comms/SIGINT GEO. 9th TJS of 2025."},
+{name:"TJS-20",series:"TJS SIGINT class",func:"EW",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2025-08",eol:"Active",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>Possible SIGINT. Same class as TJS-11, TJS-23."},
+{name:"TJS-21",series:"TJS Molniya EW",func:"EW",orbit:"HEO",alt:"212–40,090",inc:"51°",launch:"2025-11-21",eol:"Active",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>Molniya orbit. 51° inclination. Persistent northern coverage early warning. Likely operational follow-on to Shiyan-10 pair. LM-3B Xichang."},
+{name:"TJS-22",series:"TJS Huoyan-1",func:"EW",orbit:"GEO",alt:"35,786",inc:"2°",launch:"2025-12",eol:"Active",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>66.5°E — co-located with TJS-2. Possible TJS-2 replacement/augmentation. LM-7A."},
+{name:"TJS-23",series:"TJS SIGINT class",func:"EW",orbit:"GEO",alt:"35,786",inc:"0°",launch:"2025-12-20",eol:"Active",norad:"var",cospar:"var",status:"OP",notes:"<span class='flag flag-mil'>MIL</span><span class='flag flag-class'>CLASS</span>LM-5 Wenchang. Heaviest in TJS series. SIGINT class. 9th TJS launch in 2025."},
+// ===== SCIENCE =====
+{name:"DAMPE / Wukong",series:"CAS Space Science",func:"SCI",orbit:"SSO",alt:"500",inc:"97.4°",launch:"2015-12-17",eol:"~2030 (extended)",norad:"41043",cospar:"2015-078A",status:"OP",notes:"Dark matter indirect detection. Cosmic-ray measurement 5 GeV–100 TeV. 3× design life. CAS NSSC."},
+{name:"QUESS / Micius",series:"CAS Space Science",func:"SCI",orbit:"SSO",alt:"500",inc:"97.4°",launch:"2016-08-16",eol:"~2026 (extended)",norad:"41731",cospar:"2016-051A",status:"OP",notes:"Quantum key distribution (1,200 km). Quantum entanglement + teleportation. First satellite QKD in history."},
+{name:"HXMT / Insight",series:"CAS Space Science",func:"SCI",orbit:"LEO",alt:"550",inc:"43.0°",launch:"2017-06-15",eol:"~2027",norad:"42758",cospar:"2017-034A",status:"OP",notes:"Hard X-ray astronomy. 1–250 keV. Observed neutron star mergers, pulsar timing. First Chinese X-ray telescope."},
+{name:"Taiji-1",series:"CAS gravitational wave",func:"SCI",orbit:"SSO",alt:"600",inc:"97.7°",launch:"2019-08-31",eol:"~2024",norad:"44542",cospar:"2019-057A",status:"DEC",notes:"Gravitational wave precursor. Laser interferometry at pm precision. Technology validation for future Taiji constellation."},
+{name:"GECAM A/B",series:"CAS gamma-ray monitor",func:"SCI",orbit:"LEO",alt:"600",inc:"29°",launch:"2020-12-10",eol:"~2028",norad:"47019",cospar:"2020-089A",status:"OP",notes:"Gravitational wave electromagnetic counterpart monitor. All-sky gamma-ray survey."},
+{name:"GECAM-C / SATech-01",series:"CAS gamma-ray",func:"SCI",orbit:"SSO",alt:"500",inc:"97.4°",launch:"2022-07-27",eol:"~2027",norad:"53247",cospar:"2022-089A",status:"OP",notes:"Enhanced gamma-ray monitor. Launched with SATech commercial demo."},
+{name:"ASO-S / Kuafu-1",series:"CAS Space Science II",func:"SCI",orbit:"SSO",alt:"720",inc:"98.2°",launch:"2022-10-09",eol:"~2027",norad:"54091",cospar:"2022-139A",status:"OP",notes:"Solar flare + CME + magnetism. Full-disk solar observation. FMG magnetograph + Lyα imager + SUTRI corona imager."},
+{name:"Einstein Probe",series:"CAS/ESA X-ray",func:"SCI",orbit:"LEO",alt:"600",inc:"29°",launch:"2024-01-09",eol:"~2029",norad:"58884",cospar:"2024-008A",status:"OP",notes:"Wide-field X-ray transient monitor. Lobster-eye optics. 3,600 deg² FoV. China-ESA-MPE joint mission."},
+{name:"SMILE",series:"CAS/ESA magnetosphere",func:"SCI",orbit:"HEO",alt:"1,000–121,000",inc:"98°",launch:"2025",eol:"~2030",norad:"var",cospar:"var",status:"OP",notes:"Solar-wind magnetosphere interaction. Highly elliptical 'SMILE orbit'. X-ray imager + plasma analyzer. China-ESA joint."},
+{name:"Double Star TC-1/TC-2",series:"Double Star",func:"SCI",orbit:"HEO",alt:"570–66,970",inc:"28.5°",launch:"2003–2004",eol:"2007",norad:"27960",cospar:"2003-061A",status:"DEC",notes:"First ESA-China joint mission. Magnetosphere and particle studies. Operated in concert with Cluster."},
+{name:"Tanpopo/Chang'e 5T1 DRO",series:"Science/Exploration",func:"SCI",orbit:"LEO",alt:"200×380,000",inc:"28°",launch:"2014-10-23",eol:"~2015",norad:"40283",cospar:"2014-065A",status:"DEC",notes:"Lunar return capsule test. Circumlunar flight, biological experiments in space, successful recovery."},
+// ===== OCEAN / ENVIRONMENT =====
+{name:"Haiyang-1A",series:"Haiyang ocean color",func:"OCN",orbit:"SSO",alt:"798",inc:"98.8°",launch:"2002-05-15",eol:"2004",norad:"27432",cospar:"2002-024B",status:"DEC",notes:"Ocean color/temperature. 1st Chinese ocean sat. 10-band COCTS + CZI imager."},
+{name:"Haiyang-1B",series:"Haiyang ocean color",func:"OCN",orbit:"SSO",alt:"798",inc:"98.8°",launch:"2007-04-11",eol:"~2014",norad:"31135",cospar:"2007-013A",status:"DEC",notes:"Ocean color/temperature. 2nd generation. COCTS + CZI."},
+{name:"Haiyang-1C",series:"Haiyang ocean color",func:"OCN",orbit:"SSO",alt:"781",inc:"98.6°",launch:"2018-09-07",eol:"~2028",norad:"43638",cospar:"2018-074A",status:"OP",notes:"3rd gen. Paired with HY-1D. COCTS, CZI, coastal zone imager. Doubled coverage."},
+{name:"Haiyang-1D",series:"Haiyang ocean color",func:"OCN",orbit:"SSO",alt:"781",inc:"98.6°",launch:"2020-06-11",eol:"~2028",norad:"45729",cospar:"2020-032A",status:"OP",notes:"Paired with HY-1C for daily global ocean color coverage. SOA-operated."},
+{name:"Haiyang-2A",series:"Haiyang dynamics",func:"OCN",orbit:"SSO",alt:"971",inc:"99.4°",launch:"2011-08-16",eol:"~2019",norad:"37781",cospar:"2011-043A",status:"DEC",notes:"Ocean dynamics. Microwave scatterometer (sea wind), radar altimeter, MWRI. 1,575 kg."},
+{name:"Haiyang-2B",series:"Haiyang dynamics",func:"OCN",orbit:"SSO",alt:"971",inc:"99.4°",launch:"2018-10-25",eol:"~2026",norad:"43655",cospar:"2018-085A",status:"OP",notes:"Sea wind + wave + SST microwave. Operational HY-2 series begins."},
+{name:"Haiyang-2C",series:"Haiyang dynamics",func:"OCN",orbit:"LEO",alt:"791",inc:"66°",launch:"2020-09-21",eol:"~2028",norad:"46834",cospar:"2020-065A",status:"OP",notes:"66° inclination (not SSO). Forms 3-sat ocean dynamics constellation with HY-2B/D. All-time coverage."},
+{name:"Haiyang-2D",series:"Haiyang dynamics",func:"OCN",orbit:"LEO",alt:"791",inc:"66°",launch:"2021-05-19",eol:"~2029",norad:"48710",cospar:"2021-037A",status:"OP",notes:"Completes HY-2 3-satellite constellation. 4-hour revisit on any ocean point."},
+{name:"Haiyang-4-01",series:"Haiyang salinity",func:"OCN",orbit:"SSO",alt:"639",inc:"97.9°",launch:"2024-11-13",eol:"~2032",norad:"var",cospar:"var",status:"OP",notes:"First high-precision global ocean salinity satellite. Comprehensive aperture radiometer. Novel active+passive detectors."},
+{name:"Ziyuan-1-02D (ZY-1-02D)",series:"Ziyuan resources",func:"ENV",orbit:"SSO",alt:"778",inc:"98.5°",launch:"2019-09-12",eol:"~2027",norad:"44527",cospar:"2019-060A",status:"OP",notes:"Hyperspectral (166 bands) + visible. Land resources, mineral mapping."},
+{name:"Ziyuan-1-02E (ZY-1-02E)",series:"Ziyuan resources",func:"ENV",orbit:"SSO",alt:"778",inc:"98.5°",launch:"2021-09-26",eol:"~2029",norad:"49114",cospar:"2021-083A",status:"OP",notes:"Enhanced hyperspectral + multispectral. Land survey."},
+{name:"Ziyuan-3-01 (ZY-3-01)",series:"Ziyuan stereo",func:"ENV",orbit:"SSO",alt:"505",inc:"97.5°",launch:"2012-01-09",eol:"~2022",norad:"38045",cospar:"2012-001A",status:"DEC",notes:"First Chinese operational stereo mapping satellite. 2.5 m nadir. DEM generation."},
+{name:"Ziyuan-3-02 (ZY-3-02)",series:"Ziyuan stereo",func:"ENV",orbit:"SSO",alt:"505",inc:"97.5°",launch:"2016-05-30",eol:"~2026",norad:"41498",cospar:"2016-029A",status:"OP",notes:"Follow-on stereo. Enhanced cameras. Revisit improvement."},
+{name:"Huanjing-1A/B",series:"Huanjing environment",func:"ENV",orbit:"SSO",alt:"650",inc:"98.0°",launch:"2008-09-06",eol:"~2018",norad:"33408",cospar:"2008-040A",status:"DEC",notes:"Dual-satellite environmental + disaster monitoring. 30 m optical + SAR (HJ-1B). Small-sat cluster concept."},
+{name:"Huanjing-2A/B",series:"Huanjing environment",func:"ENV",orbit:"SSO",alt:"645",inc:"97.9°",launch:"2020-09-27",eol:"~2028",norad:"46860",cospar:"2020-066A",status:"OP",notes:"2nd gen. 16 m MS + 48 m hyperspectral + IR. Dual-satellite constellation."},
+// ===== BROADBAND MEGACONSTELLATIONS =====
+{name:"Qianfan / G60 — Test batch (6 sats)",series:"Qianfan",func:"BRD",orbit:"LEO",alt:"1,160",inc:"60°",launch:"2023-08-10",eol:"~2033",norad:"var",cospar:"var",status:"OP",notes:"First Qianfan launch. 6 test satellites. 1,160 km orbit. Ku/Q/V-band."},
+{name:"Qianfan Polar Group 01–04 (18×4 sats)",series:"Qianfan",func:"BRD",orbit:"LEO",alt:"1,160",inc:"85° (polar)",launch:"2024-08–2025-01",eol:"~2034",norad:"var",cospar:"var",status:"OP",notes:"72 sats (4 groups × 18). Polar orbit shell. Operated by Shanghai Spacesail."},
+{name:"Qianfan Polar Groups 05–06+ (18× sats)",series:"Qianfan",func:"BRD",orbit:"LEO",alt:"1,160",inc:"85°",launch:"2025-03 onward",eol:"~2035",norad:"var",cospar:"var",status:"OP",notes:"Ongoing deployment. ~90 total in orbit end-2025 vs 648 Phase-1 target."},
+{name:"Guowang Group 01–03+ (10+ sats/launch)",series:"Guowang",func:"BRD",orbit:"LEO",alt:"1,145–1,175",inc:"50° / 86.5°",launch:"2024-12–2025",eol:"~2034–2040",norad:"var",cospar:"var",status:"OP",notes:"100+ sats by Nov 2025. Two orbit shells. Dual-use ISR payload reported. Operated by China Satnet."},
+{name:"Tianqi-01 to -36",series:"Tianqi IoT",func:"BRD",orbit:"SSO",alt:"~850",inc:"97.8°",launch:"2018–2023",eol:"~2028–2030",norad:"43078",cospar:"2018-007B",status:"OP",notes:"36 narrow-band IoT satellites. Asset tracking + messaging. Guodian Gaoke."},
+{name:"Geespace / Geely constellation (20+ sats)",series:"Geespace",func:"BRD",orbit:"LEO",alt:"550",inc:"55°",launch:"2022–2025",eol:"~2032",norad:"var",cospar:"var",status:"OP",notes:"Commercial IoT + imagery + direct-to-device. Geely Auto-backed. 6,000 planned."},
+];
+
+let currentCat = "ALL";
+let currentOrbit = "ALL";
+let currentStatus = "ALL";
+let currentSearch = "";
+let sortKey = "launch";
+let sortDir = 1;
+let currentSummary = "isr";
+let currentPage = "catalog";
+
+function filterCat(cat) {
+  currentCat = cat;
+  document.querySelectorAll('.sidebar .nav-item').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  applyFilters();
+}
+function filterOrbit(orb) {
+  currentOrbit = orb;
+  applyFilters();
+}
+function applyFilters() {
+  currentSearch = document.getElementById('search-box').value.toLowerCase();
+  currentStatus = document.getElementById('status-filter').value;
+  renderTable();
+}
+
+function matchOrbit(sat, filter) {
+  if (filter === 'ALL') return true;
+  return sat.orbit === filter;
+}
+
+function renderTable() {
+  let data = SATS.filter(s => {
+    if (currentCat !== 'ALL' && s.func !== currentCat) return false;
+    if (!matchOrbit(s, currentOrbit)) return false;
+    if (currentStatus !== 'ALL' && s.status !== currentStatus) return false;
+    if (currentSearch) {
+      const hay = (s.name + s.series + s.norad + s.cospar + s.notes).toLowerCase();
+      if (!hay.includes(currentSearch)) return false;
+    }
+    return true;
+  });
+
+  data.sort((a,b) => {
+    let va = a[sortKey] || '', vb = b[sortKey] || '';
+    return va < vb ? -sortDir : va > vb ? sortDir : 0;
+  });
+
+  const FUNC_BAD = {ISR:'b-isr',NAV:'b-nav',COM:'b-com',MET:'b-met',RPO:'b-rpo',SCI:'b-sci',EW:'b-ew',OCN:'b-ocean',ENV:'b-env',BRD:'b-brd'};
+  const FUNC_LBL = {ISR:'ISR',NAV:'Navigation',COM:'Communications',MET:'Meteorology',RPO:'RPO/Tech',SCI:'Science',EW:'EW/SIGINT',OCN:'Ocean',ENV:'Env/Mapping',BRD:'Broadband'};
+  const ORB_CLASS = {SSO:'o-sso',LEO:'o-leo',MEO:'o-meo',GEO:'o-geo',IGSO:'o-igso',HEO:'o-heo',GTO:'o-gto'};
+  const STATUS_LBL = {OP:'<span class="status-op">Operational</span>',DEC:'<span class="status-dec">Retired/Decayed</span>',UNK:'<span class="status-unk">Status unknown</span>',LOS:'<span class="status-los">Lost</span>'};
+
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = data.map(s => `<tr>
+    <td><div class="sat-name">${s.name}</div><div class="sat-series">${s.series}</div></td>
+    <td><span class="badge ${FUNC_BAD[s.func]||'b-isr'}">${FUNC_LBL[s.func]||s.func}</span></td>
+    <td><span class="orbit-pill ${ORB_CLASS[s.orbit]||'o-leo'}">${s.orbit}</span></td>
+    <td style="font-family:var(--mono);font-size:11px;color:var(--text2)">${s.alt} km</td>
+    <td style="font-family:var(--mono);font-size:11px;color:var(--text2)">${s.inc}</td>
+    <td style="font-family:var(--mono);font-size:11px;">${s.launch}</td>
+    <td>${STATUS_LBL[s.status]||'—'}<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px">${s.eol}</div></td>
+    <td><div class="norad">${s.norad}</div><div class="norad" style="margin-top:2px">${s.cospar}</div></td>
+    <td class="notes-cell">${s.notes}</td>
+  </tr>`).join('');
+
+  document.getElementById('shown-count').textContent = data.length;
+  document.getElementById('total-shown').textContent = SATS.length;
+
+  // Update sidebar counts
+  const cats = ['ISR','NAV','COM','MET','RPO','SCI','EW','OCN','ENV','BRD'];
+  cats.forEach(c => {
+    const el = document.getElementById('cnt-' + c);
+    if (el) el.textContent = SATS.filter(s => s.func === c).length;
+  });
+  document.getElementById('cnt-all').textContent = SATS.length;
+}
+
+function sortBy(key) {
+  if (sortKey === key) sortDir *= -1;
+  else { sortKey = key; sortDir = 1; }
+  renderTable();
+}
+
+function showSummary(id) {
+  document.querySelectorAll('.summary-card').forEach(el => el.classList.remove('visible'));
+  document.getElementById('sum-' + id).classList.add('visible');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function showPage(page) {
+  document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+}
+
+async function runAI() {
+  const q = document.getElementById('ai-query').value.trim();
+  if (!q) return;
+  const btn = document.getElementById('ai-run-btn');
+  const out = document.getElementById('ai-output');
+  btn.disabled = true;
+  out.classList.add('visible');
+  out.innerHTML = '<div class="ai-thinking">Querying Claude Sonnet <div class="ai-thinking-dots"><span>.</span><span>.</span><span>.</span></div></div>';
+
+  const systemPrompt = `You are an expert space policy analyst and satellite intelligence specialist with deep knowledge of China's orbital programs. The user is a space researcher and policy analyst building a comprehensive Chinese satellite repository. Answer with precise technical and policy-relevant detail. Reference specific satellite designations, NORAD IDs where known, orbital parameters, and policy implications. Be concise but comprehensive. Use your training knowledge — this is an expert audience.`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: q }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content?.map(b => b.text || '').join('') || 'No response received.';
+    out.textContent = text;
+  } catch(e) {
+    out.textContent = 'Query failed: ' + e.message + '\n\nNote: This AI query feature requires the artifact to be opened in a browser environment with API access. The static catalog above remains fully functional without connectivity.';
+  }
+  btn.disabled = false;
+}
+
+renderTable();
+</script>
+</body>
+</html>
