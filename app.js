@@ -34,12 +34,44 @@ function satLabelHtml(d) {
   return h;
 }
 
+const NIGHT_SKY_URL = 'https://unpkg.com/three-globe@2.31.1/example/img/night-sky.png';
+
+// Pixel-invert the night-sky texture on the fly to produce a "day-sky"
+// equivalent (black stars on a white background) for the light theme.
+// Generated lazily and memoised — unpkg sends Access-Control-Allow-Origin:
+// *, so the canvas read isn't tainted.
+let invertedSkyDataUrl = null;
+async function getInvertedSkyUrl() {
+  if (invertedSkyDataUrl) return invertedSkyDataUrl;
+  const img = await new Promise((resolve, reject) => {
+    const i = new Image();
+    i.crossOrigin = 'anonymous';
+    i.onload = () => resolve(i);
+    i.onerror = () => reject(new Error('night-sky load failed'));
+    i.src = NIGHT_SKY_URL;
+  });
+  const c = document.createElement('canvas');
+  c.width = img.naturalWidth;
+  c.height = img.naturalHeight;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  const id = ctx.getImageData(0, 0, c.width, c.height);
+  for (let i = 0; i < id.data.length; i += 4) {
+    id.data[i]     = 255 - id.data[i];
+    id.data[i + 1] = 255 - id.data[i + 1];
+    id.data[i + 2] = 255 - id.data[i + 2];
+  }
+  ctx.putImageData(id, 0, 0);
+  invertedSkyDataUrl = c.toDataURL('image/png');
+  return invertedSkyDataUrl;
+}
+
 const globe = Globe()(document.getElementById('globe'))
   // Realistic Earth: NASA Blue Marble color texture + topology bump map for
   // shaded relief, against the night-sky starfield.
   .globeImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg')
   .bumpImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-topology.png')
-  .backgroundImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/night-sky.png')
+  .backgroundImageUrl(NIGHT_SKY_URL)
   .showAtmosphere(true)
   .atmosphereColor('#4ea8ff')
   .atmosphereAltitude(0.18)
@@ -115,9 +147,24 @@ setInterval(tickClocks, 1000);
   const KEY = 'argos.main.theme';
   const btn = document.getElementById('theme-toggle');
   if (!btn) return;
-  function apply(mode) {
+  async function apply(mode) {
     document.body.classList.toggle('light', mode === 'light');
     btn.textContent = mode === 'light' ? '☾ Dark' : '☀ Light';
+    // Swap the WebGL skybox: white sky + black stars in light mode, the
+    // original night sky in dark mode.  Atmosphere tint shifts to a
+    // muted gold so the rim glow still reads against the white sky.
+    try {
+      if (mode === 'light') {
+        const url = await getInvertedSkyUrl();
+        globe.backgroundImageUrl(url);
+        globe.atmosphereColor('#7a8aa0');
+      } else {
+        globe.backgroundImageUrl(NIGHT_SKY_URL);
+        globe.atmosphereColor('#4ea8ff');
+      }
+    } catch (e) {
+      console.warn('Theme: skybox swap failed:', e.message);
+    }
   }
   apply(localStorage.getItem(KEY) || 'dark');
   btn.addEventListener('click', () => {
