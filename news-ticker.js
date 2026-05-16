@@ -101,8 +101,8 @@ function render(items) {
   // scroll speed stays roughly constant whether we have 6 items or 20.
   requestAnimationFrame(() => {
     const w = track.scrollWidth / 2;
-    const pxPerSec = 70;
-    const seconds = Math.max(60, Math.round(w / pxPerSec));
+    const pxPerSec = 140;  // doubled from 70 px/sec
+    const seconds = Math.max(30, Math.round(w / pxPerSec));
     track.style.animationDuration = seconds + 's';
   });
 }
