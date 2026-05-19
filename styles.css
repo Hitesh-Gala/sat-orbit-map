@@ -553,12 +553,49 @@ body.light .topbar .sub { color: var(--dim); }
 }
 
 @media (max-width: 600px) {
-  .hud-tr { width: calc(100vw - 16px); right: 8px; top: 8px; }
+  .hud-tr { width: calc(100vw - 16px); right: 8px; top: 8px; gap: 6px; max-height: calc(100vh - 16px); }
+  .panel { padding: 8px 10px; }
   .clock .time { font-size: 17px; }
-  .list { max-height: 200px; }
+  .clock .label, .panel .label { font-size: 9px; }
+  .count { font-size: 14px; }
+  .list { max-height: 180px; }
+  .item .name { font-size: 11px; }
+  .item .meta { font-size: 10px; }
   .left-nav { left: 8px; }
   .btn-nav { padding: 10px 12px; font-size: 10px; }
   .btn-bl { left: 8px; bottom: 8px; }
+  /* >=16px font-size on form fields suppresses iOS focus-zoom */
+  .lookup-form input[type="number"],
+  .repo-toolbar input[type="search"] { font-size: 16px; }
+}
+
+/* Phone-sized viewports: collapse text/density further. */
+@media (max-width: 420px) {
+  .topbar { padding: 8px 12px; pointer-events: none; }
+  .brand { font-size: 11px; letter-spacing: 0.16em; }
+  .sub   { font-size: 9px; }
+  .panel { padding: 7px 9px; }
+  .clock .time { font-size: 15px; }
+  .count { font-size: 13px; }
+  .hint, .hint-inline { font-size: 9px; }
+  .list { max-height: 140px; }
+  .item .meta { font-size: 9px; }
+  .btn-nav { padding: 8px 10px; font-size: 9px; letter-spacing: 0.14em; }
+  .btn-nav-icon { font-size: 13px; }
+  .lookup-form label { flex-basis: 78px; }
+}
+
+/* Respect iOS / Android notch & home-bar so fixed chrome doesn't sit
+   under them.  Falls back to the plain 8 / 14 px values if the env()
+   variables aren't supported. */
+@supports (padding: env(safe-area-inset-top)) {
+  .hud-tr     { top:    max(8px,  env(safe-area-inset-top));    right:  max(8px,  env(safe-area-inset-right)); }
+  .left-nav   { left:   max(8px,  env(safe-area-inset-left)); }
+  .btn-bl     { left:   max(8px,  env(safe-area-inset-left));   bottom: max(8px,  env(safe-area-inset-bottom)); }
+  .news-ticker{ bottom: max(14px, env(safe-area-inset-bottom)); }
+  @media (max-width: 720px) {
+    .news-ticker { bottom: calc(60px + env(safe-area-inset-bottom)); }
+  }
 }
 
 /* --- ChinRepo page (Chinese-payload repository view) -------------------- */
@@ -667,6 +704,25 @@ table.repo-table {
 .repo-table .col-name { color: var(--accent); letter-spacing: 0.03em; }
 .repo-table .col-num { text-align: right; font-variant-numeric: tabular-nums; }
 .repo-table .muted { color: var(--dim); }
+
+/* Mobile pass for ChinRepo — keep the table readable on narrow phones
+   without trying to shoehorn 9 wide columns; horizontal scroll inside
+   .repo-table-wrap takes over.  Header and toolbar wrap to two/three
+   rows so the search field and pills stay full-width and tappable. */
+@media (max-width: 720px) {
+  .repo-header   { padding: 10px 12px; gap: 8px; }
+  .repo-header .brand { font-size: 11px; letter-spacing: 0.14em; }
+  .repo-toolbar  { padding: 10px 12px; gap: 10px; }
+  .repo-toolbar input[type="search"] { flex: 1 1 100%; min-width: 0; max-width: none; font-size: 16px; }
+  .repo-table-wrap { padding: 0 12px 12px; -webkit-overflow-scrolling: touch; }
+  .repo-table thead th { font-size: 9px; padding: 8px 6px; }
+  .repo-table tbody td { padding: 6px; }
+  .btn-back { padding: 5px 10px; font-size: 10px; }
+}
+@media (max-width: 480px) {
+  .repo-header .right { flex-wrap: wrap; gap: 6px; }
+  .repo-table { font-size: 10px; }
+}
 
 /* Light-mode override for the ChinRepo page — toggled via the theme button.
    Re-defines the CSS custom properties scoped to body.page-repo.light, so
