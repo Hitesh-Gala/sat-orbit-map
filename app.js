@@ -181,6 +181,7 @@ const prcMeta = new Map();
 
 function setStatus(msg, cls = '') {
   const el = document.getElementById('status');
+  if (!el) return;  // footer line was removed; keep call sites silent
   el.textContent = msg;
   el.className = cls;
 }
