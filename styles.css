@@ -34,6 +34,22 @@ a:hover { text-decoration: underline; }
   z-index: 0;
   touch-action: none;
 }
+#globe.hidden-view { display: none; }
+
+/* Google Maps satellite-view container on the Cone page.  Sits in the
+   same z-stack as #globe; gets shown once we have a Maps key and the
+   user has pressed Compute.  Native pinch-zoom is enabled at JS level
+   via gestureHandling: 'greedy'. */
+#gmap {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: none;
+  /* let Google handle gestures itself; CSS touch-action: manipulation
+     keeps double-tap-to-zoom on while letting maps own pinch */
+  touch-action: manipulation;
+}
+#gmap.shown { display: block; }
 
 .topbar {
   position: fixed;
