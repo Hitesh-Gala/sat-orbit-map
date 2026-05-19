@@ -57,6 +57,16 @@
       </div>
     </section>
 
+    <section class="panel tracking-summary" aria-label="catalog tracking total">
+      <div class="row">
+        <span class="label">Tracking</span>
+        <span id="tracked-count" class="count">…</span>
+      </div>
+      <div class="row date">
+        <span id="tracked-asof" class="dim">— · objects in active catalog</span>
+      </div>
+    </section>
+
     <details class="panel sats" id="vis-panel">
       <summary>
         <span>
@@ -67,6 +77,23 @@
       </summary>
       <div class="hint">Az/El from New Delhi (28.61°N, 77.21°E). Sorted by elevation.</div>
       <div id="vis-list" class="list" role="listbox"></div>
+    </details>
+
+    <details class="panel sats" id="lookup-panel">
+      <summary>
+        <span>
+          <span class="label">Observer Lookup</span>
+          <span class="hint-inline">custom point</span>
+        </span>
+        <span id="lookup-count" class="count">…</span>
+      </summary>
+      <div class="lookup-form">
+        <label>Lat <input type="number" id="lookup-lat" step="0.01" min="-90"  max="90"  value="28.61" inputmode="decimal"></label>
+        <label>Lon <input type="number" id="lookup-lon" step="0.01" min="-180" max="180" value="77.21" inputmode="decimal"></label>
+        <button type="button" id="lookup-btn">Recompute</button>
+      </div>
+      <div class="hint">Active satellites above the horizon from this point, right now.  Edit lat/lon to query any location; refreshes with the 10-s globe tick while the panel is open.</div>
+      <div id="lookup-list" class="list" role="listbox"></div>
     </details>
 
     <details class="panel sats" id="cn-panel">
@@ -91,7 +118,7 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=3"></script>
-  <script src="app.js?v=12"></script>
+  <script src="app.js?v=13"></script>
   <script src="news-ticker.js?v=12"></script>
 </body>
 </html>
