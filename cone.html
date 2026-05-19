@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4">
+  <title>Argos · Cone</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="globe"></div>
+
+  <header class="topbar">
+    <div class="brand">ARGOS · CONE</div>
+    <div class="sub">Globe with custom-location centring</div>
+  </header>
+
+  <aside class="hud-tr">
+    <section class="panel" aria-label="Custom location">
+      <div class="row" style="padding-bottom:6px;">
+        <span class="label">Centre On</span>
+      </div>
+      <div class="lookup-form">
+        <label>Lat <input type="number" id="cone-lat" step="0.01" min="-90"  max="90"  value="28.61" inputmode="decimal"></label>
+        <label>Lon <input type="number" id="cone-lon" step="0.01" min="-180" max="180" value="77.21" inputmode="decimal"></label>
+        <button type="button" id="cone-btn">Compute</button>
+      </div>
+      <div class="hint">Enter a latitude (−90…90) and longitude (−180…180), then press Compute.  The globe will rotate so the point sits at view centre.</div>
+    </section>
+
+    <div class="footer">
+      <a class="btn-back" href="index.html">← Globe</a>
+    </div>
+  </aside>
+
+  <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+  <script src="cone.js?v=1"></script>
+</body>
+</html>
