@@ -11,6 +11,26 @@
 const COUNTRIES_URL = 'https://raw.githubusercontent.com/martynafford/natural-earth-geojson/master/50m/cultural/ne_50m_admin_0_countries.json';
 const KEY_STORE     = 'argos.gmap.key';
 
+// Pink jellyfish ("medusa") marker — inline SVG so it renders identically
+// across platforms.  Bell with radial-gradient fill, five tentacles.
+const MEDUSA_SVG = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 70'>
+  <defs>
+    <radialGradient id='b' cx='40%' cy='35%'>
+      <stop offset='0%' stop-color='#ffd6ee'/>
+      <stop offset='100%' stop-color='#ff4fa3'/>
+    </radialGradient>
+  </defs>
+  <path d='M32 6 C 16 6 8 22 8 32 L 12 36 L 18 32 L 24 36 L 30 32 L 34 36 L 40 32 L 46 36 L 52 32 L 56 36 C 56 22 48 6 32 6 Z'
+        fill='url(#b)' stroke='#c2156d' stroke-width='1.5' stroke-linejoin='round'/>
+  <path d='M 14 36 Q 12 50 14 60' fill='none' stroke='#ff4fa3' stroke-width='2.5' stroke-linecap='round'/>
+  <path d='M 22 36 Q 20 52 25 64' fill='none' stroke='#ff77bd' stroke-width='2.5' stroke-linecap='round'/>
+  <path d='M 32 36 Q 32 54 32 68' fill='none' stroke='#ff4fa3' stroke-width='2.5' stroke-linecap='round'/>
+  <path d='M 42 36 Q 44 52 39 64' fill='none' stroke='#ff77bd' stroke-width='2.5' stroke-linecap='round'/>
+  <path d='M 50 36 Q 52 50 50 60' fill='none' stroke='#ff4fa3' stroke-width='2.5' stroke-linecap='round'/>
+  <ellipse cx='24' cy='18' rx='6' ry='3' fill='#ffe8f4' opacity='0.85'/>
+</svg>`;
+const MEDUSA_DATA_URL = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(MEDUSA_SVG);
+
 // --- Globe ---------------------------------------------------------------
 
 const globe = Globe()(document.getElementById('globe'))
@@ -25,7 +45,20 @@ const globe = Globe()(document.getElementById('globe'))
   .polygonAltitude(0.001)
   .polygonCapColor(() => 'rgba(255, 255, 255, 0)')
   .polygonSideColor(() => 'rgba(255, 255, 255, 0)')
-  .polygonStrokeColor(() => 'rgba(220, 240, 255, 0.65)');
+  .polygonStrokeColor(() => 'rgba(220, 240, 255, 0.65)')
+  // HTML marker layer for the pink medusa.  Single element only, so the
+  // older globe.gl 2.32 htmlElements quirk that bit the satellite dots
+  // doesn't apply.
+  .htmlElementsData([])
+  .htmlLat(d => d.lat)
+  .htmlLng(d => d.lng)
+  .htmlAltitude(d => d.alt || 0.01)
+  .htmlElement(() => {
+    const el = document.createElement('div');
+    el.className = 'medusa-marker';
+    el.innerHTML = MEDUSA_SVG;
+    return el;
+  });
 
 const controls = globe.controls();
 controls.enableDamping = true;
@@ -100,6 +133,7 @@ function loadGoogleMaps(apiKey) {
 const gmapDiv = document.getElementById('gmap');
 const backBtn = document.getElementById('back-to-globe');
 let gmap = null;
+let medusaMarker = null;  // Google Maps marker for the pink medusa
 
 function showMap(lat, lon) {
   document.getElementById('globe').classList.add('hidden-view');
@@ -122,6 +156,21 @@ function showMap(lat, lon) {
     gmap.setCenter({ lat, lng: lon });
     gmap.setZoom(14);
   }
+
+  // Pink-medusa marker — tip of the lowest tentacle (54 px down from the
+  // top of the 48×52 icon) is anchored on the point, so the marker hovers
+  // above the satellite imagery the way you'd expect a pin to.
+  if (medusaMarker) medusaMarker.setMap(null);
+  medusaMarker = new google.maps.Marker({
+    position: { lat, lng: lon },
+    map: gmap,
+    icon: {
+      url: MEDUSA_DATA_URL,
+      scaledSize: new google.maps.Size(48, 52),
+      anchor: new google.maps.Point(24, 50),
+    },
+    title: `Lat ${lat.toFixed(3)}°, Lon ${lon.toFixed(3)}°`,
+  });
 }
 
 function showGlobe() {
@@ -145,8 +194,11 @@ async function recentre() {
   lonEl.style.borderColor = valid ? '' : 'var(--accent2)';
   if (!valid) return;
 
-  // Always: rotate the globe to the chosen point first.
+  // Always: rotate the globe to the chosen point first, and drop the
+  // pink medusa marker at the same coordinates so it's already visible
+  // when the rotation lands.
   globe.pointOfView({ lat, lng: lon, altitude: 1.4 }, 1500);
+  globe.htmlElementsData([{ lat, lng: lon, alt: 0.01 }]);
 
   // Then: if a Maps key is configured, swap in the satellite view.
   const apiKey = localStorage.getItem(KEY_STORE);
