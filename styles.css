@@ -51,17 +51,18 @@ a:hover { text-decoration: underline; }
 }
 #gmap.shown { display: block; }
 
-/* Pink-medusa overlay marker on the Cone globe.  Anchored by globe.gl at
-   the satellite lat/lng/altitude; we shift it so the tip of the lowest
-   tentacle sits on the point. */
-.medusa-marker {
-  width: 48px;
-  height: 52px;
-  transform: translate(-50%, -100%);
+/* Pink down-arrow overlay marker on the Cone globe.  globe.gl puts the
+   centre of the element at the lat/lng/altitude; we shift left by 50 %
+   and up by 98 % so the bottom-centre — which is precisely the SVG
+   arrowhead tip — sits on the point. */
+.arrow-marker {
+  width: 28px;
+  height: 42px;
+  transform: translate(-50%, -98%);
   pointer-events: none;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55));
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.65));
 }
-.medusa-marker svg {
+.arrow-marker svg {
   width: 100%;
   height: 100%;
   display: block;

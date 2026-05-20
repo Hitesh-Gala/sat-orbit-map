@@ -11,25 +11,21 @@
 const COUNTRIES_URL = 'https://raw.githubusercontent.com/martynafford/natural-earth-geojson/master/50m/cultural/ne_50m_admin_0_countries.json';
 const KEY_STORE     = 'argos.gmap.key';
 
-// Pink jellyfish ("medusa") marker — inline SVG so it renders identically
-// across platforms.  Bell with radial-gradient fill, five tentacles.
-const MEDUSA_SVG = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 70'>
+// Pink down-arrow marker — inline SVG so it renders identically across
+// platforms.  The arrowhead tip sits at the centre-bottom of the viewBox
+// (16, 47 in 32×48 coords); CSS / GMaps anchors hook on that exact pixel
+// so the arrow points precisely at the target coordinate.
+const ARROW_SVG = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 48'>
   <defs>
-    <radialGradient id='b' cx='40%' cy='35%'>
-      <stop offset='0%' stop-color='#ffd6ee'/>
-      <stop offset='100%' stop-color='#ff4fa3'/>
-    </radialGradient>
+    <linearGradient id='a' x1='0' y1='0' x2='0' y2='1'>
+      <stop offset='0%'  stop-color='#ffb1d8'/>
+      <stop offset='100%' stop-color='#ff1f86'/>
+    </linearGradient>
   </defs>
-  <path d='M32 6 C 16 6 8 22 8 32 L 12 36 L 18 32 L 24 36 L 30 32 L 34 36 L 40 32 L 46 36 L 52 32 L 56 36 C 56 22 48 6 32 6 Z'
-        fill='url(#b)' stroke='#c2156d' stroke-width='1.5' stroke-linejoin='round'/>
-  <path d='M 14 36 Q 12 50 14 60' fill='none' stroke='#ff4fa3' stroke-width='2.5' stroke-linecap='round'/>
-  <path d='M 22 36 Q 20 52 25 64' fill='none' stroke='#ff77bd' stroke-width='2.5' stroke-linecap='round'/>
-  <path d='M 32 36 Q 32 54 32 68' fill='none' stroke='#ff4fa3' stroke-width='2.5' stroke-linecap='round'/>
-  <path d='M 42 36 Q 44 52 39 64' fill='none' stroke='#ff77bd' stroke-width='2.5' stroke-linecap='round'/>
-  <path d='M 50 36 Q 52 50 50 60' fill='none' stroke='#ff4fa3' stroke-width='2.5' stroke-linecap='round'/>
-  <ellipse cx='24' cy='18' rx='6' ry='3' fill='#ffe8f4' opacity='0.85'/>
+  <path d='M 16 47 L 4 29 L 11 29 L 11 4 L 21 4 L 21 29 L 28 29 Z'
+        fill='url(#a)' stroke='#9c0b58' stroke-width='1.4' stroke-linejoin='round' stroke-linecap='round'/>
 </svg>`;
-const MEDUSA_DATA_URL = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(MEDUSA_SVG);
+const ARROW_DATA_URL = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(ARROW_SVG);
 
 // --- Globe ---------------------------------------------------------------
 
@@ -55,8 +51,8 @@ const globe = Globe()(document.getElementById('globe'))
   .htmlAltitude(d => d.alt || 0.01)
   .htmlElement(() => {
     const el = document.createElement('div');
-    el.className = 'medusa-marker';
-    el.innerHTML = MEDUSA_SVG;
+    el.className = 'arrow-marker';
+    el.innerHTML = ARROW_SVG;
     return el;
   });
 
@@ -133,7 +129,7 @@ function loadGoogleMaps(apiKey) {
 const gmapDiv = document.getElementById('gmap');
 const backBtn = document.getElementById('back-to-globe');
 let gmap = null;
-let medusaMarker = null;  // Google Maps marker for the pink medusa
+let arrowMarker = null;  // Google Maps marker for the pink down-arrow
 
 function showMap(lat, lon) {
   document.getElementById('globe').classList.add('hidden-view');
@@ -157,17 +153,17 @@ function showMap(lat, lon) {
     gmap.setZoom(14);
   }
 
-  // Pink-medusa marker — tip of the lowest tentacle (54 px down from the
-  // top of the 48×52 icon) is anchored on the point, so the marker hovers
-  // above the satellite imagery the way you'd expect a pin to.
-  if (medusaMarker) medusaMarker.setMap(null);
-  medusaMarker = new google.maps.Marker({
+  // Pink-arrow marker — the SVG viewBox is 32×48 and the arrowhead tip
+  // is at (16, 47), so we scale the icon to 32×48 and anchor exactly
+  // there.  Result: the pixel of the tip lands on the chosen lat/lon.
+  if (arrowMarker) arrowMarker.setMap(null);
+  arrowMarker = new google.maps.Marker({
     position: { lat, lng: lon },
     map: gmap,
     icon: {
-      url: MEDUSA_DATA_URL,
-      scaledSize: new google.maps.Size(48, 52),
-      anchor: new google.maps.Point(24, 50),
+      url: ARROW_DATA_URL,
+      scaledSize: new google.maps.Size(32, 48),
+      anchor: new google.maps.Point(16, 47),
     },
     title: `Lat ${lat.toFixed(3)}°, Lon ${lon.toFixed(3)}°`,
   });
@@ -195,8 +191,8 @@ async function recentre() {
   if (!valid) return;
 
   // Always: rotate the globe to the chosen point first, and drop the
-  // pink medusa marker at the same coordinates so it's already visible
-  // when the rotation lands.
+  // pink down-arrow at the same coordinates so its tip is already on
+  // the location when the rotation lands.
   globe.pointOfView({ lat, lng: lon, altitude: 1.4 }, 1500);
   globe.htmlElementsData([{ lat, lng: lon, alt: 0.01 }]);
 
