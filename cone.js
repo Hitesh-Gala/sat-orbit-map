@@ -62,8 +62,10 @@ const globe = Globe()(document.getElementById('globe'))
   .objectLng(d => d.lon)
   .objectAltitude(d => d.alt / EARTH_R_KM_GLOBE)
   .objectThreeObject(d => new THREE.Mesh(
-    new THREE.SphereGeometry(0.55, 10, 10),
-    new THREE.MeshBasicMaterial({ color: d.color, transparent: true, opacity: 0.95 })
+    // Larger sphere for prominence; opaque so the colour reads cleanly
+    // against the faint cone fill.
+    new THREE.SphereGeometry(1.4, 14, 14),
+    new THREE.MeshBasicMaterial({ color: d.color })
   ))
   .objectLabel(d => `<div class="sat-tip">
     <b>${escHtml(d.name)}</b>
@@ -259,6 +261,15 @@ function cameraForTopView(lat, lon) {
 }
 
 let coneMesh = null;
+let coneWire = null;
+
+// Faint baseline so the cone is barely there; the raycaster-driven hover
+// bumps the alpha up so it's clearly visible when the cursor is over /
+// inside the cone's volume on screen.
+const CONE_BASE_OPACITY  = 0.06;
+const CONE_HOVER_OPACITY = 0.30;
+const WIRE_BASE_OPACITY  = 0.18;
+const WIRE_HOVER_OPACITY = 0.55;
 
 function clearCone() {
   if (!coneMesh) return;
@@ -268,9 +279,10 @@ function clearCone() {
     if (o.material) o.material.dispose();
   });
   coneMesh = null;
+  coneWire = null;
 }
 
-function drawCone(lat, lon, heightKm = CONE_HEIGHT_KM, opacity = 0.25) {
+function drawCone(lat, lon, heightKm = CONE_HEIGHT_KM) {
   if (typeof THREE === 'undefined') {
     console.warn('Pinch: THREE not loaded; skipping cone.');
     return;
@@ -301,20 +313,24 @@ function drawCone(lat, lon, heightKm = CONE_HEIGHT_KM, opacity = 0.25) {
   geo.rotateX(Math.PI);
 
   const mat = new THREE.MeshBasicMaterial({
-    color: 0xff4fa3,
+    color: 0xffc4dc,                // lighter pink
     transparent: true,
-    opacity,
+    opacity: CONE_BASE_OPACITY,
     side: THREE.DoubleSide,
     depthWrite: false,
   });
   coneMesh = new THREE.Mesh(geo, mat);
 
-  // Outline: edge ring at the base + a few generatrices for shape cues.
-  const wire = new THREE.LineSegments(
+  // Outline: edge ring + generatrices, kept very faint by default.
+  coneWire = new THREE.LineSegments(
     new THREE.EdgesGeometry(geo, 1),
-    new THREE.LineBasicMaterial({ color: 0xff77bd, transparent: true, opacity: 0.55 })
+    new THREE.LineBasicMaterial({
+      color: 0xffd1e6,
+      transparent: true,
+      opacity: WIRE_BASE_OPACITY,
+    })
   );
-  coneMesh.add(wire);
+  coneMesh.add(coneWire);
 
   // Place the apex on the surface and align local +Y with the outward
   // surface normal so the cone opens straight up into space.
@@ -372,10 +388,10 @@ const HALF_ANGLE_RAD      = (90 - CONE_TANGENT_ANGLE_DEG) * Math.PI / 180;
 const TAN_HALF            = Math.tan(HALF_ANGLE_RAD);
 
 const ORBIT_COLOR = {
-  LEO: '#67e8a4',  // green
-  MEO: '#f5b14a',  // amber
-  GEO: '#ff6b6b',  // red
-  HEO: '#c08bff',  // purple
+  LEO: '#ffffff',  // white
+  MEO: '#4a90e2',  // blue
+  GEO: '#67e8a4',  // green
+  HEO: '#c08bff',  // purple (out-of-spec orbits)
 };
 function orbitClass(altKm) {
   if (altKm < 2000)  return 'LEO';
@@ -449,7 +465,7 @@ async function show() {
   const cam = cameraForTopView(lat, lon);
   globe.pointOfView({ lat: cam.lat, lng: cam.lng, altitude: 8 }, 1500);
   globe.htmlElementsData([]);
-  setTimeout(() => drawCone(lat, lon, SHOW_CONE_HEIGHT_KM, 0.15), 60);
+  setTimeout(() => drawCone(lat, lon, SHOW_CONE_HEIGHT_KM), 60);
 
   // Load TLE catalogue once (cached for the session by tle-loader).
   if (!showActiveTLEs.length) {
@@ -491,3 +507,46 @@ async function show() {
 }
 
 document.getElementById('show-btn').addEventListener('click', show);
+
+// --- Cursor-inside-cone raycaster -----------------------------------------
+//
+// Whenever the cursor's screen pixel lies over (or "inside" — in the sense
+// that the camera ray passes through the cone volume), bump the cone's
+// fill and outline opacities up so it's clearly visible.  Otherwise the
+// cone stays at its very-faint baseline.
+
+const raycaster = (typeof THREE !== 'undefined') ? new THREE.Raycaster() : null;
+const ndc = (typeof THREE !== 'undefined') ? new THREE.Vector2() : null;
+let coneHovered = false;
+let coneRafPending = false;
+let lastMouseEvt = null;
+
+function setConeHoverState(hovered) {
+  if (hovered === coneHovered || !coneMesh) return;
+  coneHovered = hovered;
+  coneMesh.material.opacity = hovered ? CONE_HOVER_OPACITY : CONE_BASE_OPACITY;
+  if (coneWire) coneWire.material.opacity = hovered ? WIRE_HOVER_OPACITY : WIRE_BASE_OPACITY;
+}
+
+function probeConeHover() {
+  coneRafPending = false;
+  if (!coneMesh || !lastMouseEvt || !raycaster) return;
+  const canvas = document.querySelector('#globe canvas');
+  if (!canvas) return;
+  const rect = canvas.getBoundingClientRect();
+  ndc.x = ((lastMouseEvt.clientX - rect.left) / rect.width)  *  2 - 1;
+  ndc.y = ((lastMouseEvt.clientY - rect.top)  / rect.height) * -2 + 1;
+  raycaster.setFromCamera(ndc, globe.camera());
+  // intersectObject(coneMesh, false) skips the child wire so a hit on the
+  // outline alone (which is technically infinitesimally thin anyway) doesn't
+  // flicker the state at the edges.
+  const hits = raycaster.intersectObject(coneMesh, false);
+  setConeHoverState(hits.length > 0);
+}
+
+document.addEventListener('mousemove', e => {
+  lastMouseEvt = e;
+  if (coneRafPending) return;
+  coneRafPending = true;
+  requestAnimationFrame(probeConeHover);
+}, { passive: true });
