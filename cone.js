@@ -263,13 +263,13 @@ function cameraForTopView(lat, lon) {
 let coneMesh = null;
 let coneWire = null;
 
-// Faint baseline so the cone is barely there; the raycaster-driven hover
-// bumps the alpha up so it's clearly visible when the cursor is over /
-// inside the cone's volume on screen.
-const CONE_BASE_OPACITY  = 0.06;
-const CONE_HOVER_OPACITY = 0.30;
-const WIRE_BASE_OPACITY  = 0.18;
-const WIRE_HOVER_OPACITY = 0.55;
+// Cone fills use AdditiveBlending, so the pixel value adds to the
+// background colour: at very low opacity (0.03) it reads as an almost
+// invisible pink haze; at hover opacity (0.18) it reads as a soft glow.
+const CONE_BASE_OPACITY  = 0.03;
+const CONE_HOVER_OPACITY = 0.18;
+const WIRE_BASE_OPACITY  = 0.10;
+const WIRE_HOVER_OPACITY = 0.45;
 
 function clearCone() {
   if (!coneMesh) return;
@@ -313,21 +313,25 @@ function drawCone(lat, lon, heightKm = CONE_HEIGHT_KM) {
   geo.rotateX(Math.PI);
 
   const mat = new THREE.MeshBasicMaterial({
-    color: 0xffc4dc,                // lighter pink
+    color: 0xff9ec6,                // mid-pink; AdditiveBlending lightens it
     transparent: true,
     opacity: CONE_BASE_OPACITY,
     side: THREE.DoubleSide,
     depthWrite: false,
+    blending: THREE.AdditiveBlending, // adds RGB on top of bg → soft glow
   });
   coneMesh = new THREE.Mesh(geo, mat);
 
-  // Outline: edge ring + generatrices, kept very faint by default.
+  // Outline: edge ring + generatrices.  Also additive so hover gives a
+  // soft rim-light rather than a hard outline.
   coneWire = new THREE.LineSegments(
     new THREE.EdgesGeometry(geo, 1),
     new THREE.LineBasicMaterial({
       color: 0xffd1e6,
       transparent: true,
       opacity: WIRE_BASE_OPACITY,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
     })
   );
   coneMesh.add(coneWire);
@@ -504,6 +508,19 @@ async function show() {
   const tally = ['LEO', 'MEO', 'GEO', 'HEO']
     .filter(k => counts[k]).map(k => `${k} ${counts[k]}`).join(' · ');
   showStatus(`In cone: ${inCone.length}  ·  ${tally || 'none'}`);
+
+  // Populate the left-edge HUD: total + per-class counts at the top, a
+  // scrollable dropdown list sorted by altitude underneath.
+  document.getElementById('hudtl-count').textContent = inCone.length;
+  document.getElementById('hudtl-tally').textContent = tally || 'none';
+  const sorted = inCone.slice().sort((a, b) => a.alt - b.alt);
+  document.getElementById('hudtl-list').innerHTML = sorted.map(s => `
+    <div class="item">
+      <div class="name" style="color:${s.color}">${escHtml(s.name)}</div>
+      <div class="meta"><span style="color:${s.color}">${s.cls}</span> · Alt <strong>${s.alt.toFixed(0)} km</strong></div>
+      <div class="meta muted">Sub-point ${s.lat.toFixed(2)}°, ${s.lon.toFixed(2)}°</div>
+    </div>`).join('') || '<div class="hint">No satellites in the cone right now.</div>';
+  document.getElementById('cone-hud-tl').classList.add('shown');
 }
 
 document.getElementById('show-btn').addEventListener('click', show);

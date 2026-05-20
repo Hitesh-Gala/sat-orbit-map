@@ -36,6 +36,26 @@ a:hover { text-decoration: underline; }
 }
 #globe.hidden-view { display: none; }
 
+/* Left-edge HUD used by the Cone page's Show button to surface the
+   per-satellite list.  Mirrors .hud-tr on the right; starts hidden and
+   gets revealed once Show populates it. */
+.hud-tl {
+  position: fixed;
+  top: 70px;
+  left: 14px;
+  width: 320px;
+  max-width: calc(100vw - 28px);
+  z-index: 10;
+  display: none;          /* shown via .shown class after first Show pass */
+  flex-direction: column;
+  gap: 8px;
+  max-height: calc(100vh - 84px);
+}
+.hud-tl.shown { display: flex; }
+@media (max-width: 600px) {
+  .hud-tl { width: calc(100vw - 16px); left: 8px; top: 56px; max-height: calc(100vh - 70px); }
+}
+
 /* Google Maps satellite-view container on the Cone page.  Sits in the
    same z-stack as #globe; gets shown once we have a Maps key and the
    user has pressed Compute.  Native pinch-zoom is enabled at JS level

@@ -12,6 +12,26 @@
   <div id="globe"></div>
   <div id="gmap" aria-hidden="true"></div>
 
+  <!-- Left HUD: populated by the Show button with the in-cone satellite
+       list.  Hidden until at least one Show pass runs. -->
+  <aside class="hud-tl" id="cone-hud-tl" aria-label="Satellites inside the cone">
+    <section class="panel">
+      <div class="row">
+        <span class="label">In Cone</span>
+        <span id="hudtl-count" class="count">…</span>
+      </div>
+      <div id="hudtl-tally" class="dim" style="font-size:10px;margin-top:2px;">—</div>
+    </section>
+    <details class="panel sats" id="hudtl-panel" open>
+      <summary>
+        <span><span class="label">Satellite List</span></span>
+        <span class="hint-inline">name · class · alt</span>
+      </summary>
+      <div class="hint">Sorted by altitude (LEO → HEO).  Click an entry to keep its tooltip pinned on the globe.</div>
+      <div id="hudtl-list" class="list" role="listbox"></div>
+    </details>
+  </aside>
+
   <header class="topbar">
     <div class="brand">ARGOS · CONE</div>
     <div class="sub">Custom-location globe centring · Google Maps satellite zoom-in</div>
@@ -62,6 +82,6 @@
   <!-- Live TLE catalogue + satellite.js (SGP4) for the Show button. -->
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=3"></script>
-  <script src="cone.js?v=10"></script>
+  <script src="cone.js?v=11"></script>
 </body>
 </html>
