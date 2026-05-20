@@ -340,11 +340,13 @@ async function pinch() {
   // the user can see the cone.
   showGlobe();
 
-  // Rotate so the target sits at the top of the visible disk, then drop
-  // the pink down-arrow and the semi-transparent cone.
+  // Rotate so the target sits at the top of the visible disk, then draw
+  // the semi-transparent cone.  The pink arrow (if any was placed by a
+  // previous Compute press) is cleared — the cone tip already marks the
+  // exact surface point, so the arrow would just clutter.
   const cam = cameraForTopView(lat, lon);
   globe.pointOfView({ lat: cam.lat, lng: cam.lng, altitude: 1.9 }, 1500);
-  globe.htmlElementsData([{ lat, lng: lon, alt: 0.01 }]);
+  globe.htmlElementsData([]);
   // Draw the cone right after the rotation begins; it's added directly to
   // the scene and rotates along with the camera animation.
   setTimeout(() => drawCone(lat, lon), 60);
@@ -446,7 +448,7 @@ async function show() {
   // extended height with a slightly more transparent fill.
   const cam = cameraForTopView(lat, lon);
   globe.pointOfView({ lat: cam.lat, lng: cam.lng, altitude: 8 }, 1500);
-  globe.htmlElementsData([{ lat, lng: lon, alt: 0.01 }]);
+  globe.htmlElementsData([]);
   setTimeout(() => drawCone(lat, lon, SHOW_CONE_HEIGHT_KM, 0.15), 60);
 
   // Load TLE catalogue once (cached for the session by tle-loader).
