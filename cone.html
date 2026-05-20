@@ -25,9 +25,10 @@
       <div class="lookup-form">
         <label>Lat <input type="number" id="cone-lat" step="0.01" min="-90"  max="90"  value="28.61" inputmode="decimal"></label>
         <label>Lon <input type="number" id="cone-lon" step="0.01" min="-180" max="180" value="77.21" inputmode="decimal"></label>
-        <button type="button" id="cone-btn">Compute</button>
+        <button type="button" id="cone-btn" class="full-row">Compute</button>
+        <button type="button" id="pinch-btn" class="full-row">Pinch</button>
       </div>
-      <div class="hint">Pressing Compute rotates the globe to the chosen point, then — if a Google Maps key is set below — loads a satellite-view map at the same coordinates with pinch-zoom.</div>
+      <div class="hint"><b>Compute</b>: rotates the globe to the point and (with a Maps key set below) opens a satellite-zoom view.<br><b>Pinch</b>: lifts the point to the top of the globe, drops the pink arrow, and draws a 1000-km semi-transparent cone with the tip on the surface and sides 40° off the tangent.</div>
     </section>
 
     <section class="panel" id="key-panel" aria-label="Google Maps API key">
@@ -52,7 +53,10 @@
     </div>
   </aside>
 
+  <!-- Load three.js explicitly so our Pinch handler can build a ConeGeometry
+       Mesh.  Version matches globe.gl 2.32's internal three (r157). -->
+  <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
-  <script src="cone.js?v=4"></script>
+  <script src="cone.js?v=6"></script>
 </body>
 </html>

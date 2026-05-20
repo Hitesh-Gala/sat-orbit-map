@@ -221,3 +221,117 @@ document.getElementById('cone-btn').addEventListener('click', recentre);
     if (e.key === 'Enter') { e.preventDefault(); recentre(); }
   });
 });
+
+// --- Pinch: target-on-top view + 3-D cone overlay -------------------------
+
+const CONE_HEIGHT_KM         = 1000;
+const CONE_TANGENT_ANGLE_DEG = 40;     // sides 40° off the local tangent
+const EARTH_R_KM             = 6371;
+
+// Place camera 90° "south" of the target along its meridian, so the
+// target's surface normal aligns with the screen-up direction — i.e. the
+// target sits at the top of the visible globe disk.  Wrap once if the
+// naive lat = lat-90 would slip past the south pole.
+function cameraForTopView(lat, lon) {
+  let camLat = lat - 90;
+  let camLng = lon;
+  if (camLat < -90) {
+    camLat = -180 - camLat;
+    camLng = ((camLng + 180 + 540) % 360) - 180;
+  }
+  return { lat: camLat, lng: camLng };
+}
+
+let coneMesh = null;
+
+function clearCone() {
+  if (!coneMesh) return;
+  globe.scene().remove(coneMesh);
+  coneMesh.traverse(o => {
+    if (o.geometry) o.geometry.dispose();
+    if (o.material) o.material.dispose();
+  });
+  coneMesh = null;
+}
+
+function drawCone(lat, lon) {
+  if (typeof THREE === 'undefined') {
+    console.warn('Pinch: THREE not loaded; skipping cone.');
+    return;
+  }
+  clearCone();
+
+  // Geometry: cone with apex at origin, base centred at +Y * height.
+  // Height in globe.gl units = (altitude in Earth radii) × Earth-radius
+  // (=100 internally).  We use globe.getCoords() for the two endpoints
+  // and measure the distance so the maths is units-agnostic.
+  const altFraction = CONE_HEIGHT_KM / EARTH_R_KM;
+  // globe.getCoords() returns a plain {x, y, z} POJO — wrap in
+  // THREE.Vector3 so we get distanceTo / normalize / etc.
+  const a = globe.getCoords(lat, lon, 0);
+  const t = globe.getCoords(lat, lon, altFraction);
+  const apex = new THREE.Vector3(a.x, a.y, a.z);
+  const top  = new THREE.Vector3(t.x, t.y, t.z);
+  const height3D = apex.distanceTo(top);
+  // Half-angle from cone axis = 90° − the 40° angle from the tangent
+  const halfAxisRad = (90 - CONE_TANGENT_ANGLE_DEG) * Math.PI / 180;
+  const baseRadius = height3D * Math.tan(halfAxisRad);
+
+  const geo = new THREE.ConeGeometry(baseRadius, height3D, 96, 1, false);
+  // ConeGeometry default: tip at +Y·(h/2), base at -Y·(h/2).  We want
+  // tip at origin and base at +Y·h.  Translate the tip to origin, then
+  // flip 180° around X so the base lands at +Y.
+  geo.translate(0, -height3D / 2, 0);
+  geo.rotateX(Math.PI);
+
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0xff4fa3,
+    transparent: true,
+    opacity: 0.25,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+  coneMesh = new THREE.Mesh(geo, mat);
+
+  // Outline: edge ring at the base + a few generatrices for shape cues.
+  const wire = new THREE.LineSegments(
+    new THREE.EdgesGeometry(geo, 1),
+    new THREE.LineBasicMaterial({ color: 0xff77bd, transparent: true, opacity: 0.55 })
+  );
+  coneMesh.add(wire);
+
+  // Place the apex on the surface and align local +Y with the outward
+  // surface normal so the cone opens straight up into space.
+  coneMesh.position.copy(apex);
+  const up = apex.clone().normalize();
+  coneMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), up);
+
+  globe.scene().add(coneMesh);
+}
+
+async function pinch() {
+  const latEl = document.getElementById('cone-lat');
+  const lonEl = document.getElementById('cone-lon');
+  const lat = parseFloat(latEl.value);
+  const lon = parseFloat(lonEl.value);
+  const valid = Number.isFinite(lat) && Number.isFinite(lon)
+             && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+  latEl.style.borderColor = valid ? '' : 'var(--accent2)';
+  lonEl.style.borderColor = valid ? '' : 'var(--accent2)';
+  if (!valid) return;
+
+  // If we were on the Google Maps view, drop back to the globe first so
+  // the user can see the cone.
+  showGlobe();
+
+  // Rotate so the target sits at the top of the visible disk, then drop
+  // the pink down-arrow and the semi-transparent cone.
+  const cam = cameraForTopView(lat, lon);
+  globe.pointOfView({ lat: cam.lat, lng: cam.lng, altitude: 1.9 }, 1500);
+  globe.htmlElementsData([{ lat, lng: lon, alt: 0.01 }]);
+  // Draw the cone right after the rotation begins; it's added directly to
+  // the scene and rotates along with the camera animation.
+  setTimeout(() => drawCone(lat, lon), 60);
+}
+
+document.getElementById('pinch-btn').addEventListener('click', pinch);
