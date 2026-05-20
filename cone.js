@@ -42,7 +42,7 @@ const globe = Globe()(document.getElementById('globe'))
   .polygonCapColor(() => 'rgba(255, 255, 255, 0)')
   .polygonSideColor(() => 'rgba(255, 255, 255, 0)')
   .polygonStrokeColor(() => 'rgba(220, 240, 255, 0.65)')
-  // HTML marker layer for the pink medusa.  Single element only, so the
+  // HTML marker layer for the pink arrow.  Single element only, so the
   // older globe.gl 2.32 htmlElements quirk that bit the satellite dots
   // doesn't apply.
   .htmlElementsData([])
@@ -54,7 +54,22 @@ const globe = Globe()(document.getElementById('globe'))
     el.className = 'arrow-marker';
     el.innerHTML = ARROW_SVG;
     return el;
-  });
+  })
+  // Satellite-dot layer (Show button).  Each in-cone satellite gets a
+  // small coloured sphere at its real altitude with a hover tooltip.
+  .objectsData([])
+  .objectLat(d => d.lat)
+  .objectLng(d => d.lon)
+  .objectAltitude(d => d.alt / EARTH_R_KM_GLOBE)
+  .objectThreeObject(d => new THREE.Mesh(
+    new THREE.SphereGeometry(0.55, 10, 10),
+    new THREE.MeshBasicMaterial({ color: d.color, transparent: true, opacity: 0.95 })
+  ))
+  .objectLabel(d => `<div class="sat-tip">
+    <b>${escHtml(d.name)}</b>
+    <div>Alt ${d.alt.toFixed(0)} km · ${d.lat.toFixed(2)}°, ${d.lon.toFixed(2)}°</div>
+    <div class="cls" style="color:${d.color}">${d.cls} orbit</div>
+  </div>`);
 
 const controls = globe.controls();
 controls.enableDamping = true;
@@ -62,7 +77,8 @@ controls.dampingFactor = 0.1;
 controls.rotateSpeed = 0.5;
 controls.zoomSpeed = 0.8;
 controls.minDistance = 110;
-controls.maxDistance = 800;
+controls.maxDistance = 1500;  // ≈ 15 Earth radii — enough headroom for the
+                              // 40 000-km Show cone to fit in view at alt 8
 
 fetch(COUNTRIES_URL)
   .then(r => r.json())
@@ -254,7 +270,7 @@ function clearCone() {
   coneMesh = null;
 }
 
-function drawCone(lat, lon) {
+function drawCone(lat, lon, heightKm = CONE_HEIGHT_KM, opacity = 0.25) {
   if (typeof THREE === 'undefined') {
     console.warn('Pinch: THREE not loaded; skipping cone.');
     return;
@@ -265,7 +281,7 @@ function drawCone(lat, lon) {
   // Height in globe.gl units = (altitude in Earth radii) × Earth-radius
   // (=100 internally).  We use globe.getCoords() for the two endpoints
   // and measure the distance so the maths is units-agnostic.
-  const altFraction = CONE_HEIGHT_KM / EARTH_R_KM;
+  const altFraction = heightKm / EARTH_R_KM;
   // globe.getCoords() returns a plain {x, y, z} POJO — wrap in
   // THREE.Vector3 so we get distanceTo / normalize / etc.
   const a = globe.getCoords(lat, lon, 0);
@@ -287,7 +303,7 @@ function drawCone(lat, lon) {
   const mat = new THREE.MeshBasicMaterial({
     color: 0xff4fa3,
     transparent: true,
-    opacity: 0.25,
+    opacity,
     side: THREE.DoubleSide,
     depthWrite: false,
   });
@@ -335,3 +351,141 @@ async function pinch() {
 }
 
 document.getElementById('pinch-btn').addEventListener('click', pinch);
+
+// --- Show: live satellite dots inside the extended cone -------------------
+//
+// Cone for filtering:
+//   apex      = surface point at (lat, lon)
+//   axis      = local outward normal at apex
+//   half-angle = 50° from axis (i.e. sides 40° off the tangent plane)
+//   height    = SHOW_CONE_HEIGHT_KM (40 000 km, deep into GEO)
+//
+// A satellite is "inside" the cone iff its ECEF position projects on to
+// the axis within [0, height], and its distance from the axis at that
+// projection is at most  axial × tan(half-angle).
+
+const SHOW_CONE_HEIGHT_KM = 40000;
+const EARTH_R_KM_GLOBE    = 6371;   // shadowed locally so the layer accessor reads cleanly
+const HALF_ANGLE_RAD      = (90 - CONE_TANGENT_ANGLE_DEG) * Math.PI / 180;
+const TAN_HALF            = Math.tan(HALF_ANGLE_RAD);
+
+const ORBIT_COLOR = {
+  LEO: '#67e8a4',  // green
+  MEO: '#f5b14a',  // amber
+  GEO: '#ff6b6b',  // red
+  HEO: '#c08bff',  // purple
+};
+function orbitClass(altKm) {
+  if (altKm < 2000)  return 'LEO';
+  if (altKm < 30000) return 'MEO';
+  if (altKm < 42000) return 'GEO';
+  return 'HEO';
+}
+
+function llaToEcef(latDeg, lonDeg, altKm) {
+  const phi = latDeg * Math.PI / 180;
+  const lam = lonDeg * Math.PI / 180;
+  const r = EARTH_R_KM_GLOBE + altKm;
+  return {
+    x: r * Math.cos(phi) * Math.cos(lam),
+    y: r * Math.cos(phi) * Math.sin(lam),
+    z: r * Math.sin(phi),
+  };
+}
+
+function isInsideCone(satLat, satLon, satAltKm, apexLat, apexLon) {
+  const apex = llaToEcef(apexLat, apexLon, 0);
+  const sat  = llaToEcef(satLat,  satLon,  satAltKm);
+  // local outward unit normal at apex
+  const am = Math.hypot(apex.x, apex.y, apex.z);
+  const nx = apex.x / am, ny = apex.y / am, nz = apex.z / am;
+  // vector apex -> sat
+  const vx = sat.x - apex.x, vy = sat.y - apex.y, vz = sat.z - apex.z;
+  // projection on axis
+  const axial = vx * nx + vy * ny + vz * nz;
+  if (axial <= 0 || axial > SHOW_CONE_HEIGHT_KM) return false;
+  // perpendicular distance to axis
+  const vMagSq   = vx*vx + vy*vy + vz*vz;
+  const radialSq = vMagSq - axial * axial;
+  if (radialSq < 0) return false;
+  const maxR = axial * TAN_HALF;
+  return radialSq <= maxR * maxR;
+}
+
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+let showActiveTLEs = [];
+
+function showStatus(msg, isErr) {
+  const el = document.getElementById('show-status');
+  if (!msg) { el.style.display = 'none'; return; }
+  el.textContent = msg;
+  el.style.color = isErr ? 'var(--accent2)' : 'var(--accent)';
+  el.style.display = 'block';
+}
+
+async function show() {
+  const latEl = document.getElementById('cone-lat');
+  const lonEl = document.getElementById('cone-lon');
+  const lat = parseFloat(latEl.value);
+  const lon = parseFloat(lonEl.value);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    showStatus('Invalid lat / lon', true);
+    return;
+  }
+
+  // If we were on the Maps satellite view, drop back to the globe.
+  showGlobe();
+
+  // Rotate to put the apex at the top of the disk and pull the camera
+  // far enough out (≈ 8 Earth radii) to fit a 40 000-km cone in frame
+  // along with the GEO sats inside it.  Re-draws the cone to that
+  // extended height with a slightly more transparent fill.
+  const cam = cameraForTopView(lat, lon);
+  globe.pointOfView({ lat: cam.lat, lng: cam.lng, altitude: 8 }, 1500);
+  globe.htmlElementsData([{ lat, lng: lon, alt: 0.01 }]);
+  setTimeout(() => drawCone(lat, lon, SHOW_CONE_HEIGHT_KM, 0.15), 60);
+
+  // Load TLE catalogue once (cached for the session by tle-loader).
+  if (!showActiveTLEs.length) {
+    showStatus('Loading TLE catalogue…');
+    try {
+      const { tles, source } = await window.Argos.fetchTLEs();
+      showActiveTLEs = window.Argos.makeSatrecs(tles);
+      showStatus(`Catalogue: ${showActiveTLEs.length.toLocaleString()} sats (${source})`);
+    } catch (e) {
+      showStatus('TLE fetch failed: ' + e.message, true);
+      return;
+    }
+  }
+
+  // Propagate every satellite once and keep the in-cone ones.
+  const now = new Date();
+  const inCone = [];
+  const counts = { LEO: 0, MEO: 0, GEO: 0, HEO: 0 };
+  for (const t of showActiveTLEs) {
+    const r = window.Argos.propagate(t.rec, now);
+    if (!r || !Number.isFinite(r.lat) || !Number.isFinite(r.lon)) continue;
+    if (!isInsideCone(r.lat, r.lon, r.alt, lat, lon)) continue;
+    const cls = orbitClass(r.alt);
+    counts[cls]++;
+    inCone.push({
+      name: t.name,
+      lat:  r.lat,
+      lon:  r.lon,
+      alt:  r.alt,
+      cls,
+      color: ORBIT_COLOR[cls] || '#88f7ff',
+    });
+  }
+
+  globe.objectsData(inCone);
+  const tally = ['LEO', 'MEO', 'GEO', 'HEO']
+    .filter(k => counts[k]).map(k => `${k} ${counts[k]}`).join(' · ');
+  showStatus(`In cone: ${inCone.length}  ·  ${tally || 'none'}`);
+}
+
+document.getElementById('show-btn').addEventListener('click', show);
