@@ -140,6 +140,28 @@ function tickClocks() {
 tickClocks();
 setInterval(tickClocks, 1000);
 
+// --- Mobile drawer toggles (☰ / ▤) ---------------------------------------
+// On viewports ≤ 720 px the left-nav and right-HUD become side drawers;
+// these two toggles slide them in / out.  Opening one closes the other
+// so the globe behind never has both drawers on top of it.
+(function setupDrawers() {
+  const nav = document.getElementById('nav-toggle');
+  const dat = document.getElementById('hud-toggle');
+  if (!nav || !dat) return;
+  nav.addEventListener('click', () => {
+    document.body.classList.toggle('nav-open');
+    document.body.classList.remove('hud-open');
+  });
+  dat.addEventListener('click', () => {
+    document.body.classList.toggle('hud-open');
+    document.body.classList.remove('nav-open');
+  });
+  // Tapping the globe behind an open drawer closes it — common mobile UX.
+  document.getElementById('globe').addEventListener('click', () => {
+    document.body.classList.remove('nav-open', 'hud-open');
+  });
+})();
+
 // --- Theme toggle (light / dark) -----------------------------------------
 // The 3-D globe itself is a WebGL scene that doesn't respect CSS, but the
 // HUD chrome around it switches palettes via body.light class overrides.

@@ -11,6 +11,10 @@
 <body>
   <div id="globe"></div>
 
+  <!-- Mobile-only toggles.  Hidden via CSS above the 720-px breakpoint. -->
+  <button type="button" id="nav-toggle" class="hud-toggle nav-toggle" aria-label="Open menu">☰</button>
+  <button type="button" id="hud-toggle" class="hud-toggle data-toggle" aria-label="Open data panel">▤</button>
+
   <nav class="left-nav" aria-label="views">
     <a class="btn-nav" href="2d-views.html" title="Open 2-D map projections">
       <span class="btn-nav-icon">⊞</span>
@@ -115,7 +119,7 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=3"></script>
-  <script src="app.js?v=14"></script>
+  <script src="app.js?v=15"></script>
   <script src="news-ticker.js?v=12"></script>
 </body>
 </html>

@@ -257,12 +257,12 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   border-radius: 3px;
   color: var(--accent);
   font-family: var(--mono);
-  /* +30 % from 10 → 13, padding trimmed from 6 → 5 vertical so the
-     button takes less area around the label */
+  /* +30 % font over the original 10 px, padding trimmed so the button
+     hugs the label rather than swallowing it in chrome. */
   font-size: 13px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  padding: 5px 9px;
+  padding: 4px 7px;
   cursor: pointer;
 }
 .lookup-form button:hover { border-color: var(--accent); background: rgba(103, 200, 255, 0.14); }
@@ -346,17 +346,16 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
 .btn-nav {
   display: flex;
   align-items: center;
-  gap: 8px;
-  /* tighter padding so the button doesn't dominate around its label */
-  padding: 8px 12px;
+  gap: 6px;
+  /* Tight padding so the button hugs its label rather than dominating it. */
+  padding: 5px 9px;
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 5px;
   color: var(--accent);
   font-family: var(--mono);
-  /* +30 % over the previous 11 px so the label reads clearly */
   font-size: 14px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   text-decoration: none;
   text-shadow: 0 0 8px rgba(103, 200, 255, 0.45);
@@ -611,59 +610,103 @@ body.light .topbar .sub { color: var(--dim); }
   flex-shrink: 0;
 }
 
+/* Mobile-only toggle buttons that summon the left-nav and the right-HUD
+   as side drawers.  Hidden on desktop where the two panels sit
+   permanently on-screen. */
+.hud-toggle {
+  position: fixed;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  z-index: 12;
+  border-radius: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  text-shadow: 0 0 8px rgba(103, 200, 255, 0.45);
+}
+.hud-toggle.nav-toggle  { top: 10px; left: 10px;  }
+.hud-toggle.data-toggle { top: 10px; right: 10px; }
+
 @media (max-width: 720px) {
-  /* Not enough horizontal room for two symmetric panels.  The left nav
-     collapses into a horizontal strip pinned to the bottom of the screen
-     so its buttons are still reachable; the right HUD claims the full
-     width above. */
-  .left-nav {
-    top: auto;
-    bottom: 8px;
-    left: 8px;
-    right: 8px;
-    width: auto;
+  .hud-toggle { display: flex; }
+  /* Compact the brand strip so it doesn't fight the toggles for room. */
+  .topbar { padding: 10px 60px; text-align: center; pointer-events: none; }
+  .brand  { font-size: 13px; letter-spacing: 0.14em; }
+  .sub    { display: none; }
+
+  /* Left nav and right HUD both become full-height side drawers that
+     slide in from the screen edge on demand.  Default state: parked off
+     screen.  body.nav-open / body.hud-open slides the corresponding
+     drawer into view.  Each selector is prefixed with `body` to bump
+     specificity past the @supports safe-area-inset rules later in the
+     file. */
+  body .left-nav {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: auto;
+    width: min(280px, 78vw);
     max-width: none;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
     max-height: none;
+    padding: 60px 12px 14px;
+    flex-direction: column;
+    background: rgba(2, 6, 13, 0.96);
+    border-right: 1px solid var(--line);
+    border-radius: 0;
+    transform: translateX(-100%);
+    transition: transform .22s ease-out;
   }
-  .btn-nav { padding: 6px 10px; font-size: 12px; gap: 6px; }
-  .btn-nav-icon { font-size: 14px; }
-  .btn-nav-label { white-space: nowrap; }
+  body.nav-open .left-nav { transform: translateX(0); }
+
+  body .hud-tr {
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: min(320px, 86vw);
+    max-width: none;
+    max-height: none;
+    padding: 60px 12px 14px;
+    background: rgba(2, 6, 13, 0.96);
+    border-left: 1px solid var(--line);
+    border-radius: 0;
+    transform: translateX(100%);
+    transition: transform .22s ease-out;
+  }
+  body.hud-open .hud-tr { transform: translateX(0); }
+
+  /* Drawer hint: a small × badge in the top-corner so users know how
+     to close it (re-tap the same toggle does the job). */
+  .hud-toggle.nav-toggle:after,
+  .hud-toggle.data-toggle:after { content: ''; }
+  body.nav-open  .hud-toggle.nav-toggle  { color: var(--accent); border-color: var(--accent); }
+  body.hud-open  .hud-toggle.data-toggle { color: var(--accent); border-color: var(--accent); }
+
+  .btn-nav { padding: 6px 10px; font-size: 13px; gap: 6px; }
+  .btn-nav-icon { font-size: 15px; }
 }
 
 @media (max-width: 600px) {
-  .hud-tr { width: calc(100vw - 16px); right: 8px; top: 56px; gap: 6px; max-height: calc(100vh - 130px); }
+  /* Inside-drawer tweaks only — geometry (transform / position) is
+     handled by the 720-px drawer block above, not duplicated here. */
   .panel { padding: 8px 10px; }
-  .clock .time { font-size: 17px; }
-  .clock .label, .panel .label { font-size: 9px; }
-  .count { font-size: 14px; }
-  .list { max-height: 180px; }
-  .item .name { font-size: 11px; }
-  .item .meta { font-size: 10px; }
-  .left-nav { left: 8px; }
-  .btn-nav { padding: 10px 12px; font-size: 10px; }
-  .btn-bl { left: 8px; bottom: 8px; }
+  .clock .time { font-size: 22px; }
+  .clock .label, .panel .label { font-size: 12px; }
+  .count { font-size: 18px; }
+  .list { max-height: 50vh; }
+  .item .name { font-size: 13px; }
+  .item .meta { font-size: 12px; }
   /* >=16px font-size on form fields suppresses iOS focus-zoom */
   .lookup-form input[type="number"],
   .repo-toolbar input[type="search"] { font-size: 16px; }
-}
-
-/* Phone-sized viewports: collapse text/density further. */
-@media (max-width: 420px) {
-  .topbar { padding: 8px 12px; pointer-events: none; }
-  .brand { font-size: 11px; letter-spacing: 0.16em; }
-  .sub   { font-size: 9px; }
-  .panel { padding: 7px 9px; }
-  .clock .time { font-size: 15px; }
-  .count { font-size: 13px; }
-  .hint, .hint-inline { font-size: 9px; }
-  .list { max-height: 140px; }
-  .item .meta { font-size: 9px; }
-  .btn-nav { padding: 8px 10px; font-size: 9px; letter-spacing: 0.14em; }
-  .btn-nav-icon { font-size: 13px; }
-  .lookup-form label { flex-basis: 78px; }
 }
 
 /* Respect iOS / Android notch & home-bar so fixed chrome doesn't sit
