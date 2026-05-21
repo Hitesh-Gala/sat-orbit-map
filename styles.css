@@ -22,7 +22,9 @@ html, body {
 body {
   color: var(--text);
   font-family: var(--mono);
-  font-size: 12px;
+  /* Base bumped 12 → 14 (~+17 %) — combined with the per-component
+     bumps below, most HUD text reads ~30 % larger overall. */
+  font-size: 14px;
   -webkit-font-smoothing: antialiased;
 }
 a { color: var(--accent); text-decoration: none; }
@@ -41,7 +43,7 @@ a:hover { text-decoration: underline; }
    gets revealed once Show populates it. */
 .hud-tl {
   position: fixed;
-  top: 70px;
+  top: 60px;
   left: 14px;
   width: 320px;
   max-width: calc(100vw - 28px);
@@ -49,7 +51,7 @@ a:hover { text-decoration: underline; }
   display: none;          /* shown via .shown class after first Show pass */
   flex-direction: column;
   gap: 8px;
-  max-height: calc(100vh - 84px);
+  max-height: calc(100vh - 74px);
 }
 .hud-tl.shown { display: flex; }
 @media (max-width: 600px) {
@@ -97,21 +99,21 @@ a:hover { text-decoration: underline; }
   pointer-events: none;
 }
 .brand {
-  font-size: 13px;
-  letter-spacing: 0.22em;
+  font-size: 17px;
+  letter-spacing: 0.18em;
   color: var(--accent);
   text-shadow: 0 0 12px rgba(103, 200, 255, 0.55);
 }
 .sub {
-  font-size: 10px;
+  font-size: 13px;
   color: var(--dim);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   margin-top: 4px;
 }
 
 .hud-tr {
   position: fixed;
-  top: 14px;
+  top: 60px;        /* clear the brand strip — symmetric with .left-nav */
   right: 14px;
   width: 320px;
   max-width: calc(100vw - 28px);
@@ -119,7 +121,7 @@ a:hover { text-decoration: underline; }
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: calc(100vh - 28px);
+  max-height: calc(100vh - 74px);
 }
 
 .panel {
@@ -148,13 +150,13 @@ a:hover { text-decoration: underline; }
 .clock .label,
 .panel .label {
   color: var(--dim);
-  font-size: 10px;
-  letter-spacing: 0.18em;
+  font-size: 13px;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 .clock .time {
   font-variant-numeric: tabular-nums;
-  font-size: 20px;
+  font-size: 26px;
   color: var(--accent);
   letter-spacing: 0.05em;
   text-shadow: 0 0 10px rgba(103, 200, 255, 0.55);
@@ -184,14 +186,14 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
 
 .hint-inline {
   color: var(--dim);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.12em;
   margin-left: 6px;
   text-transform: uppercase;
 }
 .count {
   font-variant-numeric: tabular-nums;
-  font-size: 17px;
+  font-size: 22px;
   color: var(--green);
   text-shadow: 0 0 8px rgba(103, 232, 164, 0.45);
 }
@@ -200,7 +202,7 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
 .hint {
   color: var(--dim);
   margin: 8px 0 4px;
-  font-size: 10px;
+  font-size: 13px;
   line-height: 1.4;
 }
 
@@ -223,9 +225,9 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   display: flex;
   flex-direction: column;
   gap: 3px;
-  font-size: 9px;
+  font-size: 12px;
   color: var(--dim);
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 .lookup-form input[type="number"] {
@@ -234,7 +236,7 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   border-radius: 3px;
   color: var(--text);
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 14px;
   padding: 5px 7px;
   outline: none;
   width: 100%;
@@ -255,10 +257,12 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   border-radius: 3px;
   color: var(--accent);
   font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.18em;
+  /* +30 % from 10 → 13, padding trimmed from 6 → 5 vertical so the
+     button takes less area around the label */
+  font-size: 13px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  padding: 6px 10px;
+  padding: 5px 9px;
   cursor: pointer;
 }
 .lookup-form button:hover { border-color: var(--accent); background: rgba(103, 200, 255, 0.14); }
@@ -277,7 +281,7 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
 .item:last-child { border-bottom: 0; }
 .item .name {
   color: var(--text);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 0.04em;
   display: flex;
   align-items: center;
@@ -285,7 +289,7 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
 }
 .item .meta {
   color: var(--accent);
-  font-size: 10px;
+  font-size: 13px;
   margin-top: 2px;
   font-variant-numeric: tabular-nums;
 }
@@ -324,28 +328,35 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
 #status.warn::before { color: #f7c948; text-shadow: 0 0 6px rgba(247, 201, 72, 0.6); }
 
 /* --- Centre-left stacked nav launchers --- */
+/* Left-edge nav panel, mirror of .hud-tr.  Anchored just below the brand
+   strip so it stacks symmetrically with the right HUD on the other side
+   of the screen. */
 .left-nav {
   position: fixed;
   left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 60px;
+  width: 200px;
+  max-width: calc(100vw - 28px);
   z-index: 10;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  max-height: calc(100vh - 74px);
 }
 .btn-nav {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 16px;
+  /* tighter padding so the button doesn't dominate around its label */
+  padding: 8px 12px;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 6px;
   color: var(--accent);
   font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.18em;
+  /* +30 % over the previous 11 px so the label reads clearly */
+  font-size: 14px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   text-decoration: none;
   text-shadow: 0 0 8px rgba(103, 200, 255, 0.45);
@@ -361,20 +372,15 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   text-decoration: none;
 }
 .btn-nav-icon {
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1;
   color: var(--green);
   text-shadow: 0 0 8px rgba(103, 232, 164, 0.5);
 }
 
-/* Bottom-left launcher (e.g. ChinRepo) — same chrome as the centre-left
-   stack but anchored to the viewport bottom edge. */
-.btn-bl {
-  position: fixed;
-  left: 14px;
-  bottom: 14px;
-  z-index: 10;
-}
+/* ChinRepo / accent-coloured nav button.  Lives inside .left-nav as a
+   regular row item now; the bottom-left fixed-position anchor has been
+   retired so all the launchers stack symmetrically with .hud-tr. */
 .btn-bl .btn-nav-icon {
   color: var(--accent2);
   text-shadow: 0 0 8px rgba(255, 107, 107, 0.55);
@@ -605,8 +611,30 @@ body.light .topbar .sub { color: var(--dim); }
   flex-shrink: 0;
 }
 
+@media (max-width: 720px) {
+  /* Not enough horizontal room for two symmetric panels.  The left nav
+     collapses into a horizontal strip pinned to the bottom of the screen
+     so its buttons are still reachable; the right HUD claims the full
+     width above. */
+  .left-nav {
+    top: auto;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-width: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-height: none;
+  }
+  .btn-nav { padding: 6px 10px; font-size: 12px; gap: 6px; }
+  .btn-nav-icon { font-size: 14px; }
+  .btn-nav-label { white-space: nowrap; }
+}
+
 @media (max-width: 600px) {
-  .hud-tr { width: calc(100vw - 16px); right: 8px; top: 8px; gap: 6px; max-height: calc(100vh - 16px); }
+  .hud-tr { width: calc(100vw - 16px); right: 8px; top: 56px; gap: 6px; max-height: calc(100vh - 130px); }
   .panel { padding: 8px 10px; }
   .clock .time { font-size: 17px; }
   .clock .label, .panel .label { font-size: 9px; }
