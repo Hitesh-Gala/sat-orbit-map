@@ -610,34 +610,83 @@ body.light .topbar .sub { color: var(--dim); }
   flex-shrink: 0;
 }
 
-/* On a portrait-held phone the design has too many overlays for the
-   narrow axis, so we force the page to render as landscape by rotating
-   the entire <body> 90° CW.  The rotation is restricted to small
-   viewports (≤ 920 px on the long axis) so tablets and desktops are
-   unaffected; once the user actually rotates their device to landscape
-   the @media query stops matching and the page renders normally. */
-@media (orientation: portrait) and (max-width: 920px) {
-  html, body { overflow: hidden; }
-  body {
-    width: 100vh;
-    height: 100vw;
-    position: fixed;
-    top: 0;
-    left: 0;
-    transform-origin: 0 0;
-    transform: translateX(100vw) rotate(90deg);
-  }
+/* Compact top-corner toggle pills used on mobile to summon the nav menu
+   and the data HUD.  Hidden on desktop where the full panels live on
+   screen permanently. */
+.float-toggle {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  position: fixed;
+  top: 8px;
+  padding: 7px 11px;
+  z-index: 12;
+  background: var(--panel);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px rgba(103, 200, 255, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+.float-toggle.menu-toggle { left: 8px; }
+.float-toggle.data-toggle { right: 8px; }
+.float-toggle .ico { font-size: 14px; line-height: 1; }
+body.nav-open  .float-toggle.menu-toggle,
+body.hud-open  .float-toggle.data-toggle {
+  background: rgba(103, 200, 255, 0.18);
 }
 
-/* All HUD chrome stays visible on small landscape phones — the
-   wide-axis layout has room for both panels and the centre globe. */
 @media (max-width: 720px) {
-  .topbar { padding: 8px 14px; }
+  /* Pull the brand strip in so the MENU / DATA pills have room. */
+  .topbar { padding: 10px 92px; text-align: center; pointer-events: none; }
   .brand  { font-size: 12px; letter-spacing: 0.14em; }
-  .sub    { font-size: 9px; }
-  .btn-nav { padding: 5px 9px; font-size: 12px; gap: 6px; }
+  .sub    { display: none; }
+  .float-toggle { display: inline-flex; }
+
+  /* Permanent nav + HUD hidden by default — they're surfaced via the
+     pills.  body.{nav,hud}-open swap them back to visible / slid-in. */
+  body .left-nav {
+    top: 56px;
+    bottom: auto;
+    left: 8px;
+    right: auto;
+    width: auto;
+    max-width: 70vw;
+    max-height: none;
+    flex-direction: column;
+    display: none;
+    background: rgba(2, 6, 13, 0.96);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 8px;
+    gap: 6px;
+  }
+  body.nav-open .left-nav { display: flex; }
+
+  body .hud-tr {
+    top: 56px;
+    bottom: 12px;
+    right: 8px;
+    width: min(300px, 86vw);
+    max-width: 86vw;
+    max-height: none;
+    display: none;
+    background: rgba(2, 6, 13, 0.96);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px;
+    overflow-y: auto;
+  }
+  body.hud-open .hud-tr { display: flex; }
+
+  .btn-nav { padding: 7px 12px; font-size: 12px; gap: 6px; }
   .btn-nav-icon { font-size: 14px; }
-  .hud-tr { width: 280px; }
   .panel { padding: 7px 10px; }
 }
 

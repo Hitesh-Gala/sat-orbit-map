@@ -140,6 +140,37 @@ function tickClocks() {
 tickClocks();
 setInterval(tickClocks, 1000);
 
+// --- Mobile pill toggles (MENU / DATA) -----------------------------------
+// On viewports ≤ 720 px both side-panels are hidden by default; the two
+// top-corner pills surface them on tap.  Opening one closes the other so
+// the globe behind is never sandwiched between two overlays.
+(function setupPills() {
+  const nav = document.getElementById('nav-toggle');
+  const dat = document.getElementById('hud-toggle');
+  if (!nav || !dat) return;
+  nav.addEventListener('click', e => {
+    e.stopPropagation();
+    document.body.classList.toggle('nav-open');
+    document.body.classList.remove('hud-open');
+  });
+  dat.addEventListener('click', e => {
+    e.stopPropagation();
+    document.body.classList.toggle('hud-open');
+    document.body.classList.remove('nav-open');
+  });
+  // Tapping outside any open panel closes it — common mobile pattern.
+  document.addEventListener('click', e => {
+    const tr = document.querySelector('.hud-tr');
+    const ln = document.querySelector('.left-nav');
+    if (document.body.classList.contains('hud-open') && tr && !tr.contains(e.target) && e.target !== dat && !dat.contains(e.target)) {
+      document.body.classList.remove('hud-open');
+    }
+    if (document.body.classList.contains('nav-open') && ln && !ln.contains(e.target) && e.target !== nav && !nav.contains(e.target)) {
+      document.body.classList.remove('nav-open');
+    }
+  });
+})();
+
 // --- Theme toggle (light / dark) -----------------------------------------
 // The 3-D globe itself is a WebGL scene that doesn't respect CSS, but the
 // HUD chrome around it switches palettes via body.light class overrides.
