@@ -242,7 +242,7 @@ async function loadAll() {
   // Top-of-HUD tracking total + "as of" date.
   document.getElementById('tracked-count').textContent = activeTLEs.length.toLocaleString();
   const asof = new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: '2-digit' });
-  document.getElementById('tracked-asof').textContent = `as of ${asof} · objects in active catalog`;
+  document.getElementById('tracked-asof').textContent = `as of ${asof}`;
 }
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({
@@ -258,68 +258,68 @@ function update() {
   if (!activeTLEs.length) return;
   const now = new Date();
 
-  const visible = [];
-  const cnList  = [];
-  const markers = [];
+  // Split visible-from-New-Delhi sats into PRC and non-PRC up-front; both
+  // lists feed their own HUD panel and the globe-marker layer pulls from
+  // their union.
+  const visibleNonCN = [];
+  const visibleCN    = [];
+  const markers      = [];
 
   for (const t of activeTLEs) {
     const r = propagate(t.rec, now, OBSERVER);
     if (!r || !Number.isFinite(r.lat) || !Number.isFinite(r.lon)) continue;
+    if (r.el <= 0) continue;  // ignore below-horizon objects
     const isCn = prcMeta.has(t.noradId);
-
-    if (r.el > 0) {
-      visible.push({
-        name: t.name, az: r.az, el: r.el, range: r.range,
-        alt: r.alt, lat: r.lat, lon: r.lon, cn: isCn,
-      });
-    }
+    const item = {
+      name: t.name, az: r.az, el: r.el, range: r.range,
+      alt: r.alt, lat: r.lat, lon: r.lon, cn: isCn,
+    };
     if (isCn) {
       const meta = prcMeta.get(t.noradId);
-      cnList.push({
-        name: t.name,
-        purpose: inferPurpose(t.name),
-        launch: meta.launch,
-        alt: r.alt, lat: r.lat, lon: r.lon, el: r.el,
-      });
+      item.purpose = inferPurpose(t.name);
+      item.launch  = meta?.launch || '—';
+      visibleCN.push(item);
+    } else {
+      visibleNonCN.push(item);
     }
   }
 
-  visible.sort((a, b) => b.el - a.el);
-  for (const s of visible.slice(0, MAX_VISIBLE_MARKERS)) {
+  // Globe markers — top-N highest elevations from the combined set.
+  const all = visibleNonCN.concat(visibleCN).sort((a, b) => b.el - a.el);
+  for (const s of all.slice(0, MAX_VISIBLE_MARKERS)) {
     markers.push({
       lat: s.lat, lon: s.lon, alt: s.alt,
       name: s.name, cn: s.cn,
       az: s.az, el: s.el,
     });
   }
-  for (const s of cnList) {
-    if (s.el <= 0) markers.push({ lat: s.lat, lon: s.lon, alt: s.alt, name: s.name, cn: true });
-  }
 
-  document.getElementById('vis-count').textContent = visible.length;
-  document.getElementById('cn-count').textContent  = cnList.length;
+  document.getElementById('vis-count').textContent = visibleNonCN.length;
+  document.getElementById('cn-count').textContent  = visibleCN.length;
 
-  document.getElementById('vis-list').innerHTML = visible.slice(0, 200).map(s => `
+  visibleNonCN.sort((a, b) => b.el - a.el);
+  document.getElementById('vis-list').innerHTML = visibleNonCN.slice(0, 200).map(s => `
     <div class="item">
-      <div class="name">${esc(s.name)}${s.cn ? ' <span class="tag cn">CN</span>' : ''}</div>
+      <div class="name">${esc(s.name)}</div>
       <div class="meta">
         Az <strong>${s.az.toFixed(1)}°</strong> ${compass(s.az)}
         · El <strong>${s.el.toFixed(1)}°</strong>
         · ${s.range.toFixed(0)} km
       </div>
       <div class="meta muted">Alt ${s.alt.toFixed(0)} km · sub-pt ${s.lat.toFixed(2)}°, ${s.lon.toFixed(2)}°</div>
-    </div>`).join('') || '<div class="hint">No satellites currently above the horizon.</div>';
+    </div>`).join('') || '<div class="hint">No non-Chinese satellites above the horizon.</div>';
 
-  cnList.sort((a, b) => a.name.localeCompare(b.name));
-  document.getElementById('cn-list').innerHTML = cnList.map(s => `
+  visibleCN.sort((a, b) => b.el - a.el);
+  document.getElementById('cn-list').innerHTML = visibleCN.map(s => `
     <div class="item">
       <div class="name">${esc(s.name)} <span class="tag cn">CN</span></div>
-      <div class="meta"><strong>${esc(s.purpose)}</strong></div>
-      <div class="meta muted">
-        Launched ${esc(s.launch)} · Alt ${s.alt.toFixed(0)} km
-        · Pos ${s.lat.toFixed(2)}°, ${s.lon.toFixed(2)}°
+      <div class="meta">
+        Az <strong>${s.az.toFixed(1)}°</strong> ${compass(s.az)}
+        · El <strong>${s.el.toFixed(1)}°</strong>
+        · ${s.range.toFixed(0)} km
       </div>
-    </div>`).join('') || '<div class="hint">No active Chinese payloads matched the active TLE catalog.</div>';
+      <div class="meta muted">${esc(s.purpose)} · Alt ${s.alt.toFixed(0)} km · sub-pt ${s.lat.toFixed(2)}°, ${s.lon.toFixed(2)}°</div>
+    </div>`).join('') || '<div class="hint">No Chinese payloads currently above the horizon.</div>';
 
   globe.pointsData(markers);
 

@@ -645,8 +645,9 @@ body.hud-open  .float-toggle.data-toggle {
 @media (max-width: 720px) {
   /* Pull the brand strip in so the MENU / DATA pills have room. */
   .topbar { padding: 10px 92px; text-align: center; pointer-events: none; }
-  .brand  { font-size: 12px; letter-spacing: 0.14em; }
-  .sub    { display: none; }
+  .brand  { font-size: 13px; letter-spacing: 0.18em; }
+  .brand .brand-long { display: none; }  /* full expansion is in <title> and on desktop only */
+  .sub    { font-size: 9px; font-style: italic; }
   .float-toggle { display: inline-flex; }
 
   /* Permanent nav + HUD hidden by default — they're surfaced via the

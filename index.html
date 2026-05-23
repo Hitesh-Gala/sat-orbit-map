@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4">
-  <title>Argos · Satellite Tracker</title>
+  <title>NAZAR — Nonchalantly Assembled Zero-Budget Assessment of Chinese Reconnaissance</title>
   <link rel="preconnect" href="https://celestrak.org">
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="styles.css">
@@ -20,26 +20,26 @@
   </button>
 
   <nav class="left-nav" aria-label="views">
-    <a class="btn-nav" href="2d-views.html" title="Open 2-D map projections">
+    <a class="btn-nav" href="2d-views.html" title="Flat-map projections">
       <span class="btn-nav-icon">⊞</span>
-      <span class="btn-nav-label">2-D Views</span>
+      <span class="btn-nav-label">2D View</span>
     </a>
-    <a class="btn-nav" href="orbits.html" title="Open the orbital-tracks view">
+    <a class="btn-nav" href="orbits.html" title="3-D orbital-track visualisation">
       <span class="btn-nav-icon">↻</span>
-      <span class="btn-nav-label">Orbits</span>
+      <span class="btn-nav-label">Orbit Visualisation</span>
     </a>
-    <a class="btn-nav" href="cone.html" title="Globe with custom-location centring">
+    <a class="btn-nav" href="cone.html" title="Globe with custom-location centring + cone">
       <span class="btn-nav-icon">△</span>
-      <span class="btn-nav-label">Cone</span>
+      <span class="btn-nav-label">Location Specific</span>
     </a>
     <a class="btn-nav btn-bl" href="chinrepo.html" title="Repository of active Chinese-payload satellites">
       <span class="btn-nav-icon">★</span>
-      <span class="btn-nav-label">ChinRepo</span>
+      <span class="btn-nav-label">China Sat Repo</span>
     </a>
   </nav>
 
   <div class="news-ticker" id="news-ticker" aria-label="Chinese-launch news ticker">
-    <div class="ticker-label">CN LAUNCH NEWS</div>
+    <div class="ticker-label">CHINA TICKER TAPE</div>
     <div class="ticker-viewport">
       <div class="ticker-track" id="ticker-track">
         <span class="ticker-status">Fetching latest items…</span>
@@ -48,8 +48,9 @@
   </div>
 
   <header class="topbar">
-    <div class="brand">ARGOS · SATELLITE TRACKER</div>
-    <div class="sub">CelesTrak · NORAD GP catalog · live propagation</div>
+    <div class="brand"><span class="brand-short">NAZAR</span><span class="brand-long"> — Nonchalantly Assembled Zero-Budget Assessment of Chinese Reconnaissance</span></div>
+    <div class="sub">Kyon ki NAZAR lagni chahiye!</div>
+    <div class="tagline">Kyon ki NAZAR lagni chahiye!</div>
   </header>
 
   <aside class="hud-tr">
@@ -70,35 +71,33 @@
 
     <section class="panel tracking-summary" aria-label="catalog tracking total">
       <div class="row">
-        <span class="label">Tracking</span>
+        <span class="label">Total SVs Tracked</span>
         <span id="tracked-count" class="count">…</span>
       </div>
       <div class="row date">
-        <span id="tracked-asof" class="dim">— · objects in active catalog</span>
+        <span id="tracked-asof" class="dim">as of —</span>
       </div>
     </section>
 
     <details class="panel sats" id="vis-panel">
       <summary>
         <span>
-          <span class="label">Visible · India</span>
-          <span class="hint-inline">above horizon</span>
+          <span class="label">Over Horizon Non-Chinese SVs</span>
         </span>
         <span id="vis-count" class="count">…</span>
       </summary>
-      <div class="hint">Az/El from New Delhi (28.61°N, 77.21°E). Sorted by elevation.</div>
+      <div class="hint">Above the horizon from New Delhi (28.61°N, 77.21°E). Sorted by elevation.</div>
       <div id="vis-list" class="list" role="listbox"></div>
     </details>
 
     <details class="panel sats" id="cn-panel">
       <summary>
         <span>
-          <span class="label">Chinese Sats</span>
-          <span class="hint-inline">active payloads</span>
+          <span class="label">Over Horizon Chinese SVs</span>
         </span>
         <span id="cn-count" class="count">…</span>
       </summary>
-      <div class="hint">SATCAT COUNTRY=PRC ∩ active TLEs. Purpose inferred from designation.</div>
+      <div class="hint">PRC payloads currently above the horizon from New Delhi. For the full PRC catalogue, open the China Sat Repo page.</div>
       <div id="cn-list" class="list" role="listbox"></div>
     </details>
 
@@ -123,7 +122,7 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=3"></script>
-  <script src="app.js?v=17"></script>
+  <script src="app.js?v=18"></script>
   <script src="news-ticker.js?v=12"></script>
 </body>
 </html>
