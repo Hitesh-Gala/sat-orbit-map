@@ -145,6 +145,11 @@ a:hover { text-decoration: underline; }
   flex-direction: column;
   gap: 8px;
   max-height: calc(100vh - 100px);
+  /* Allow internal scrolling when expanded <details> push the total
+     content past the viewport — otherwise the overflow is invisible. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .panel {
@@ -366,6 +371,9 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   flex-direction: column;
   gap: 8px;
   max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 .btn-nav {
   display: flex;

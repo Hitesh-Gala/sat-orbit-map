@@ -255,6 +255,14 @@ function refreshDots() {
   let lastMoveAt = 0;
   const energyHistory = [];
 
+  // Periodic "zoom pulse" — every 10-15 s a 3-4 s window where the
+  // camera altitude oscillates in / out continuously, overriding the
+  // beat-driven jolts for that window.
+  let nextPulseAt = 0;
+  let pulseStartAt = 0;
+  let pulseEndAt   = 0;
+  let pulseTimer   = null;
+
   function ensureGraph() {
     if (audioCtx) return;
     const AC = window.AudioContext || window.webkitAudioContext;
@@ -307,13 +315,11 @@ function refreshDots() {
   ];
 
   function jolt() {
-    // Rate-limit pointOfView calls.  At 350 ms (half the previous 700 ms)
-    // a new target lands roughly every 4-5 beats during dense passages,
-    // while each 1300-ms animation is still in flight — globe.gl just
-    // re-aims, so the camera path becomes a continuous flow of overlapping
-    // sweeps instead of a series of discrete snaps.
+    // Rate-limit pointOfView calls.  Dropped 350 → 180 ms — at that
+    // cadence new targets land mid-animation, so the camera is in near-
+    // continuous motion with the 1300-ms sweeps overlapping heavily.
     const now = performance.now();
-    if (now - lastMoveAt < 350) return;
+    if (now - lastMoveAt < 180) return;
     lastMoveAt = now;
 
     const pov = globe.pointOfView();
@@ -350,9 +356,38 @@ function refreshDots() {
     globe.pointOfView(pov, 1300);
   }
 
+  // Continuous in / out zoom step driven by a sinewave.  Runs on its
+  // own ~80 ms interval during a pulse window; pauses the beat-driven
+  // jolts so the camera doesn't fight itself.
+  function stepPulse() {
+    const now = performance.now();
+    if (now > pulseEndAt) {
+      clearInterval(pulseTimer);
+      pulseTimer = null;
+      return;
+    }
+    // Period ≈ 1.6 s → roughly 2 full in/out cycles in a 3.5-s pulse.
+    const t = (now - pulseStartAt) / 1000;
+    const altitude = 1.8 + Math.sin(t * Math.PI / 0.8) * 1.2;  // 0.6 ↔ 3.0 R
+    globe.pointOfView({ altitude }, 90);
+  }
+
+  function maybeStartPulse() {
+    const now = performance.now();
+    if (!nextPulseAt) nextPulseAt = now + 8000;  // first pulse ≈ 8 s into playback
+    if (now < nextPulseAt || pulseTimer) return;
+    pulseStartAt = now;
+    pulseEndAt   = now + 3000 + Math.random() * 1000;            // 3-4 s window
+    nextPulseAt  = pulseEndAt + 10000 + Math.random() * 5000;    // next 10-15 s later
+    pulseTimer   = setInterval(stepPulse, 80);
+  }
+
   function tick() {
     if (audio.paused) { beatLoopId = null; return; }
-    if (isBeat()) jolt();
+    maybeStartPulse();
+    // During the pulse window, the in/out oscillation owns the camera;
+    // beat jolts resume the moment the pulse ends.
+    if (!pulseTimer && isBeat()) jolt();
     beatLoopId = requestAnimationFrame(tick);
   }
 
@@ -380,6 +415,9 @@ function refreshDots() {
     }
   });
 
-  audio.addEventListener('pause', () => setUiPlaying(false));
+  audio.addEventListener('pause', () => {
+    setUiPlaying(false);
+    if (pulseTimer) { clearInterval(pulseTimer); pulseTimer = null; }
+  });
   audio.addEventListener('play',  () => setUiPlaying(true));
 })();
