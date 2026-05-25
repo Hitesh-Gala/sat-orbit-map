@@ -3,9 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4">
-  <title>Argos · Orbits</title>
+  <title>NAZAR · Orbit Visualisation</title>
   <link rel="preconnect" href="https://celestrak.org">
   <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -32,8 +35,8 @@
   <audio id="nazar-audio" src="audio/nazar-track.mp3" preload="auto" loop></audio>
 
   <header class="topbar">
-    <div class="brand">ARGOS · ORBITS</div>
-    <div class="sub">3-D orbital tracks · CelesTrak GP · SGP4 propagation</div>
+    <div class="brand"><span class="brand-short">NAZAR</span><span class="brand-long"> — Nonchalantly Assembled Zero-Budget Assessment of Chinese Reconnaissance</span></div>
+    <div class="sub">Kyon ki NAZAR lagni chahiye!</div>
   </header>
 
   <aside class="hud-tr">
@@ -66,6 +69,6 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=2"></script>
-  <script src="orbits.js?v=5"></script>
+  <script src="orbits.js?v=6"></script>
 </body>
 </html>

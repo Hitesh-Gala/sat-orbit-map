@@ -297,32 +297,38 @@ function refreshDots() {
 
   function jolt() {
     // Rate-limit pointOfView calls so very dense beat passages don't
-    // queue up rapid-fire camera moves that look chaotic.
+    // queue up rapid-fire camera moves that look chaotic.  The minimum
+    // gap is short enough to let the next move start before the previous
+    // one finishes, which keeps the motion feeling continuous.
     const now = performance.now();
-    if (now - lastMoveAt < 600) return;
+    if (now - lastMoveAt < 700) return;
     lastMoveAt = now;
 
     const pov = globe.pointOfView();
     const choice = Math.floor(Math.random() * 5);
+    // Each move covers roughly 2× the angular range / zoom step of the
+    // earlier version, and the pointOfView() animation runs for 1300 ms
+    // — both bigger and longer, so the rotation reads as a sweep rather
+    // than a snap, and feels smoother end-to-end.
     switch (choice) {
       case 0:  // left swing
-        pov.lng = ((pov.lng - 35 - Math.random() * 25) + 540) % 360 - 180;
+        pov.lng = ((pov.lng - 70 - Math.random() * 50) + 540) % 360 - 180;
         break;
       case 1:  // right swing
-        pov.lng = ((pov.lng + 35 + Math.random() * 25) + 540) % 360 - 180;
+        pov.lng = ((pov.lng + 70 + Math.random() * 50) + 540) % 360 - 180;
         break;
-      case 2:  // tilt up (toward equator from poles)
-        pov.lat = Math.max(-80, Math.min(80, pov.lat - 12 - Math.random() * 18));
+      case 2:  // tilt up
+        pov.lat = Math.max(-82, Math.min(82, pov.lat - 28 - Math.random() * 30));
         break;
       case 3:  // tilt down
-        pov.lat = Math.max(-80, Math.min(80, pov.lat + 12 + Math.random() * 18));
+        pov.lat = Math.max(-82, Math.min(82, pov.lat + 28 + Math.random() * 30));
         break;
       case 4:  // zoom — either in or out
-        pov.altitude = Math.max(0.7, Math.min(4.5,
-          pov.altitude * (Math.random() < 0.5 ? 0.78 : 1.28)));
+        pov.altitude = Math.max(0.6, Math.min(5.0,
+          pov.altitude * (Math.random() < 0.5 ? 0.55 : 1.65)));
         break;
     }
-    globe.pointOfView(pov, 650);
+    globe.pointOfView(pov, 1300);
   }
 
   function tick() {
