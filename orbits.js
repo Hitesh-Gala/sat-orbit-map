@@ -228,3 +228,133 @@ function refreshDots() {
     document.getElementById('orb-count').textContent = '!';
   }
 })();
+
+// --- NAZAR soundtrack + beat-driven globe motion -------------------------
+//
+// User taps Play NAZAR → we boot a Web Audio graph (AudioContext +
+// AnalyserNode tapping the <audio> element), then in every frame inspect
+// the low-frequency band for energy spikes against a running average.  A
+// spike that clears (mean + k·σ) within a 250-ms refractory window counts
+// as a beat, which animates globe.gl's pointOfView() to a randomly-picked
+// nearby camera — left/right swing, up/down tilt, or zoom in/out.
+//
+// All side-effects are no-ops if the audio element or AudioContext isn't
+// available (e.g. browser blocks autoplay before first gesture).
+
+(function setupNazarSoundtrack() {
+  const audio = document.getElementById('nazar-audio');
+  const btn   = document.getElementById('audio-toggle');
+  if (!audio || !btn) return;
+
+  const icoEl = btn.querySelector('.btn-nav-icon');
+  const lblEl = btn.querySelector('.btn-nav-label');
+
+  let audioCtx = null, analyser = null, srcNode = null, freq = null;
+  let beatLoopId = null;
+  let lastBeatAt = 0;
+  let lastMoveAt = 0;
+  const energyHistory = [];
+
+  function ensureGraph() {
+    if (audioCtx) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    audioCtx = new AC();
+    srcNode  = audioCtx.createMediaElementSource(audio);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 1024;
+    analyser.smoothingTimeConstant = 0.55;
+    freq = new Uint8Array(analyser.frequencyBinCount);
+    srcNode.connect(analyser);
+    analyser.connect(audioCtx.destination);
+  }
+
+  function isBeat() {
+    if (!analyser) return false;
+    analyser.getByteFrequencyData(freq);
+    // Bass / kick band: roughly bins 1-13 (≈ 40–550 Hz at 44.1 kHz / 1024 fft).
+    let sum = 0;
+    for (let i = 1; i < 14; i++) sum += freq[i];
+    const bass = sum / 13;
+
+    energyHistory.push(bass);
+    if (energyHistory.length > 48) energyHistory.shift();
+    let mean = 0;
+    for (const v of energyHistory) mean += v;
+    mean /= energyHistory.length;
+    let variance = 0;
+    for (const v of energyHistory) variance += (v - mean) * (v - mean);
+    const std = Math.sqrt(variance / energyHistory.length);
+
+    const now = performance.now();
+    const refractoryOk = now - lastBeatAt > 250;
+    if (refractoryOk && bass > mean + std * 1.6 && bass > 85) {
+      lastBeatAt = now;
+      return true;
+    }
+    return false;
+  }
+
+  function jolt() {
+    // Rate-limit pointOfView calls so very dense beat passages don't
+    // queue up rapid-fire camera moves that look chaotic.
+    const now = performance.now();
+    if (now - lastMoveAt < 600) return;
+    lastMoveAt = now;
+
+    const pov = globe.pointOfView();
+    const choice = Math.floor(Math.random() * 5);
+    switch (choice) {
+      case 0:  // left swing
+        pov.lng = ((pov.lng - 35 - Math.random() * 25) + 540) % 360 - 180;
+        break;
+      case 1:  // right swing
+        pov.lng = ((pov.lng + 35 + Math.random() * 25) + 540) % 360 - 180;
+        break;
+      case 2:  // tilt up (toward equator from poles)
+        pov.lat = Math.max(-80, Math.min(80, pov.lat - 12 - Math.random() * 18));
+        break;
+      case 3:  // tilt down
+        pov.lat = Math.max(-80, Math.min(80, pov.lat + 12 + Math.random() * 18));
+        break;
+      case 4:  // zoom — either in or out
+        pov.altitude = Math.max(0.7, Math.min(4.5,
+          pov.altitude * (Math.random() < 0.5 ? 0.78 : 1.28)));
+        break;
+    }
+    globe.pointOfView(pov, 650);
+  }
+
+  function tick() {
+    if (audio.paused) { beatLoopId = null; return; }
+    if (isBeat()) jolt();
+    beatLoopId = requestAnimationFrame(tick);
+  }
+
+  function setUiPlaying(playing) {
+    icoEl.textContent = playing ? '⏸' : '♪';
+    lblEl.textContent = playing ? 'Pause NAZAR' : 'Play NAZAR';
+    btn.style.color = playing ? 'var(--accent2)' : '';
+  }
+
+  btn.addEventListener('click', async () => {
+    try {
+      ensureGraph();
+      if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
+      if (audio.paused) {
+        await audio.play();
+        setUiPlaying(true);
+        if (!beatLoopId) tick();
+      } else {
+        audio.pause();
+        setUiPlaying(false);
+      }
+    } catch (e) {
+      console.warn('Soundtrack play failed:', e);
+      lblEl.textContent = 'Audio blocked';
+    }
+  });
+
+  audio.addEventListener('pause', () => setUiPlaying(false));
+  audio.addEventListener('play',  () => setUiPlaying(true));
+})();
