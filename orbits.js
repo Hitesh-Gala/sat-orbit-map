@@ -295,38 +295,57 @@ function refreshDots() {
     return false;
   }
 
+  // Country attractors used by the "zoom to country" jolt mode.  Centroids
+  // are eyeballed so the camera framing shows the country fully without
+  // cropping to a single city.
+  const COUNTRIES = [
+    { name: 'India',  lat: 22.0, lng:  78.0 },
+    { name: 'China',  lat: 35.0, lng: 105.0 },
+    { name: 'USA',    lat: 39.0, lng: -98.0 },
+    { name: 'Russia', lat: 60.0, lng:  90.0 },
+    { name: 'Israel', lat: 31.5, lng:  35.0 },
+  ];
+
   function jolt() {
-    // Rate-limit pointOfView calls so very dense beat passages don't
-    // queue up rapid-fire camera moves that look chaotic.  The minimum
-    // gap is short enough to let the next move start before the previous
-    // one finishes, which keeps the motion feeling continuous.
+    // Rate-limit pointOfView calls.  At 350 ms (half the previous 700 ms)
+    // a new target lands roughly every 4-5 beats during dense passages,
+    // while each 1300-ms animation is still in flight — globe.gl just
+    // re-aims, so the camera path becomes a continuous flow of overlapping
+    // sweeps instead of a series of discrete snaps.
     const now = performance.now();
-    if (now - lastMoveAt < 700) return;
+    if (now - lastMoveAt < 350) return;
     lastMoveAt = now;
 
     const pov = globe.pointOfView();
-    const choice = Math.floor(Math.random() * 5);
-    // Each move covers roughly 2× the angular range / zoom step of the
-    // earlier version, and the pointOfView() animation runs for 1300 ms
-    // — both bigger and longer, so the rotation reads as a sweep rather
-    // than a snap, and feels smoother end-to-end.
-    switch (choice) {
-      case 0:  // left swing
-        pov.lng = ((pov.lng - 70 - Math.random() * 50) + 540) % 360 - 180;
-        break;
-      case 1:  // right swing
-        pov.lng = ((pov.lng + 70 + Math.random() * 50) + 540) % 360 - 180;
-        break;
-      case 2:  // tilt up
-        pov.lat = Math.max(-82, Math.min(82, pov.lat - 28 - Math.random() * 30));
-        break;
-      case 3:  // tilt down
-        pov.lat = Math.max(-82, Math.min(82, pov.lat + 28 + Math.random() * 30));
-        break;
-      case 4:  // zoom — either in or out
-        pov.altitude = Math.max(0.6, Math.min(5.0,
-          pov.altitude * (Math.random() < 0.5 ? 0.55 : 1.65)));
-        break;
+    const r = Math.random();
+
+    if (r < 0.20) {
+      // Country zoom — drop into India / China / USA / Russia / Israel.
+      const c = COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)];
+      pov.lat = c.lat + (Math.random() - 0.5) * 6;     // small jitter
+      pov.lng = c.lng + (Math.random() - 0.5) * 8;
+      pov.altitude = 0.35 + Math.random() * 0.20;       // country-scale view
+    } else if (r < 0.35) {
+      // Big zoom out — frame the full orbit family (LEO + MEO + GEO).
+      pov.altitude = 3.6 + Math.random() * 1.4;         // 3.6 – 5.0 Earth radii
+      pov.lat = (Math.random() - 0.5) * 50;             // gentle viewpoint shift
+      pov.lng = (((pov.lng + (Math.random() - 0.5) * 90) + 540) % 360) - 180;
+    } else if (r < 0.60) {
+      // Diagonal sweep — combined lat + lng change so the rotation isn't
+      // purely horizontal or vertical.
+      pov.lng = (((pov.lng + (Math.random() - 0.5) * 240) + 540) % 360) - 180;
+      pov.lat = Math.max(-82, Math.min(82, pov.lat + (Math.random() - 0.5) * 90));
+    } else if (r < 0.75) {
+      // Pure horizontal swing for variety.
+      const dir = Math.random() < 0.5 ? -1 : 1;
+      pov.lng = (((pov.lng + dir * (70 + Math.random() * 60)) + 540) % 360) - 180;
+    } else if (r < 0.88) {
+      // Pure vertical tilt.
+      const dir = Math.random() < 0.5 ? -1 : 1;
+      pov.lat = Math.max(-82, Math.min(82, pov.lat + dir * (28 + Math.random() * 32)));
+    } else {
+      // Closer zoom-in on whatever's currently centred.
+      pov.altitude = Math.max(0.5, pov.altitude * (0.45 + Math.random() * 0.15));
     }
     globe.pointOfView(pov, 1300);
   }
