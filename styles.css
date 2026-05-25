@@ -8,6 +8,9 @@
   --accent2: #ff6b6b;
   --green: #67e8a4;
   --mono: 'JetBrains Mono', 'Fira Code', 'Consolas', ui-monospace, monospace;
+  /* Aesthetic display + script families for the brand + tagline. */
+  --display: 'Orbitron', 'JetBrains Mono', ui-monospace, monospace;
+  --script:  'Caveat', 'Brush Script MT', cursive;
 }
 
 * { box-sizing: border-box; }
@@ -99,25 +102,43 @@ a:hover { text-decoration: underline; }
   pointer-events: none;
 }
 .brand {
-  font-size: 17px;
-  letter-spacing: 0.18em;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.22em;
   color: var(--accent);
-  text-shadow: 0 0 12px rgba(103, 200, 255, 0.55);
+  text-shadow:
+    0 0 10px rgba(103, 200, 255, 0.55),
+    0 0 24px rgba(103, 200, 255, 0.18);
+}
+.brand .brand-short {
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: 0.34em;
+}
+.brand .brand-long {
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  color: var(--text);
+  opacity: 0.75;
 }
 .sub {
-  font-size: 13px;
-  color: var(--dim);
-  letter-spacing: 0.08em;
-  margin-top: 4px;
+  font-family: var(--script);
+  font-size: 22px;
+  color: var(--accent2);
+  letter-spacing: 0.02em;
+  margin-top: 2px;
+  font-style: normal;
+  text-shadow: 0 0 8px rgba(255, 107, 107, 0.35);
 }
 
 .hud-tr {
   position: fixed;
-  top: 86px;        /* slightly lower so it sits comfortably below the brand */
+  top: 86px;
   right: 14px;
-  /* ~70 % of the previous 320 px width — the existing text size stays
-     while the surrounding chrome takes less screen real-estate. */
-  width: 224px;
+  /* Symmetric with .left-nav — both panels are 240 px wide. */
+  width: 240px;
   max-width: calc(100vw - 28px);
   z-index: 10;
   display: flex;
@@ -336,8 +357,9 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
 .left-nav {
   position: fixed;
   left: 14px;
-  top: 86px;       /* mirrors .hud-tr so the two panels line up below the brand */
-  width: 200px;
+  top: 86px;
+  /* Symmetric with .hud-tr — both panels are 240 px wide. */
+  width: 240px;
   max-width: calc(100vw - 28px);
   z-index: 10;
   display: flex;
@@ -388,25 +410,18 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
 }
 
 
-/* --- Top-right theme toggle on the main page --- */
+/* --- Theme toggle sits inside .left-nav and inherits .btn-nav styling.
+   A small accent on the icon distinguishes it from the page links. */
 .btn-theme {
-  align-self: flex-end;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  /* ~2× the previous padding (5/10) so the button visibly doubles in
-     both length and height. */
-  padding: 11px 22px;
-  color: var(--accent);
-  font-family: var(--mono);
-  font-size: 14px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  margin-top: 4px;
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 5px 5px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  font-family: inherit;
 }
-.btn-theme:hover { border-color: var(--accent); }
+.btn-theme .btn-nav-icon { color: #ffd166; text-shadow: 0 0 8px rgba(255, 209, 102, 0.6); }
+body.light .btn-theme .btn-nav-icon { color: #6a1b9a; text-shadow: 0 0 8px rgba(106, 27, 154, 0.45); }
 
 /* --- Main page light theme ----------------------------------------------
    Re-defines the CSS custom properties scoped to body.light, so every rule
