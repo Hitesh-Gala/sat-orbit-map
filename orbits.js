@@ -416,6 +416,30 @@ function refreshDots() {
     btn.style.color = playing ? 'var(--accent2)' : '';
   }
 
+  // Immersive mode helpers: hide all chrome except the Pause toggle and
+  // request browser fullscreen.  ESC (or any other gesture that exits
+  // fullscreen) triggers the `fullscreenchange` listener below to lift
+  // the immersive class so the normal UI returns.
+  async function enterImmersive() {
+    document.body.classList.add('immersive');
+    try {
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch (e) {
+      console.warn('Fullscreen request denied:', e.message);
+    }
+  }
+  function exitImmersive() {
+    document.body.classList.remove('immersive');
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement) document.body.classList.remove('immersive');
+  });
+
   btn.addEventListener('click', async () => {
     try {
       ensureGraph();
@@ -426,6 +450,7 @@ function refreshDots() {
         // the first jolt fires immediately rather than after a stale gap.
         lastMoveAt = 0;
         if (!beatTimer) beatTimer = setInterval(beatTick, BEAT_MS);
+        await enterImmersive();
       } else {
         audio.pause();
         setUiPlaying(false);
@@ -442,6 +467,6 @@ function refreshDots() {
     if (flashTimer) { clearTimeout(flashTimer);  flashTimer = null; }
     globe.labelsData([]);
   }
-  audio.addEventListener('pause', () => { setUiPlaying(false); stopTimers(); });
+  audio.addEventListener('pause', () => { setUiPlaying(false); stopTimers(); exitImmersive(); });
   audio.addEventListener('play',  () => setUiPlaying(true));
 })();

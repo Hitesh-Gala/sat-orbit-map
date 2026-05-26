@@ -580,6 +580,48 @@ body.light .topbar .sub { color: var(--dim); }
 }
 .sat-dot.orbit { width: 5px; height: 5px; }
 
+/* --- Immersive mode (orbits.html, while NAZAR is playing) -------------
+   Hides the entire HUD / nav / topbar / ticker, leaving only the
+   pause toggle floating in the top-right corner.  Lifted automatically
+   when the user pauses or exits fullscreen (ESC). */
+body.immersive .topbar,
+body.immersive .hud-tr,
+body.immersive .news-ticker,
+body.immersive .float-toggle {
+  display: none !important;
+}
+/* Strip the .left-nav chrome and hide every child except the audio
+   toggle, so only the Pause control floats at top-right.
+   `display: flex` is forced here because the mobile drawer rule below
+   sets the nav to display: none unless body.nav-open. */
+body.immersive .left-nav {
+  display: flex !important;
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top, 0px));
+  right: 14px;
+  left: auto;
+  width: auto;
+  max-width: none;
+  max-height: none;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  gap: 0;
+  overflow: visible;
+  transform: none;
+}
+body.immersive .left-nav > a,
+body.immersive .left-nav > button:not(#audio-toggle) {
+  display: none !important;
+}
+body.immersive #audio-toggle {
+  display: flex;
+  background: rgba(2, 6, 13, 0.85);
+  border: 1px solid var(--accent2);
+  padding: 9px 14px;
+}
+
 /* --- Globe.gl scene-tooltip (the hover label container) --- */
 .scene-tooltip {
   pointer-events: none;
