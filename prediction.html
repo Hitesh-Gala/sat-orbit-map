@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4">
+  <title>NAZAR · Orbital Prediction</title>
+  <link rel="preconnect" href="https://celestrak.org">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="globe"></div>
+
+  <nav class="left-nav" aria-label="views">
+    <a class="btn-nav" href="index.html" title="Back to the main globe">
+      <span class="btn-nav-icon">◯</span>
+      <span class="btn-nav-label">Globe</span>
+    </a>
+    <a class="btn-nav" href="orbits.html" title="Orbital tracks visualisation">
+      <span class="btn-nav-icon">↻</span>
+      <span class="btn-nav-label">Orbit Visualisation</span>
+    </a>
+  </nav>
+
+  <header class="topbar">
+    <div class="brand"><span class="brand-short">NAZAR</span><span class="brand-long"> — Nonchalantly Assembled Zero-Budget Assessment of Chinese Reconnaissance</span></div>
+    <div class="sub">Kyon ki NAZAR lagni chahiye!</div>
+  </header>
+
+  <aside class="hud-tr">
+    <section class="panel clock" aria-label="clocks">
+      <div class="row"><span class="label">UTC</span><span id="utc-time" class="time">--:--:--</span></div>
+      <div class="row"><span class="label">IST</span><span id="ist-time" class="time">--:--:--</span></div>
+      <div class="row date"><span id="utc-date" class="dim">----</span></div>
+    </section>
+
+    <section class="panel">
+      <div class="row"><span class="label">Orbital Prediction</span></div>
+      <div class="hint">All active satellites rendered at their real orbital altitudes — LEO close, MEO further out, GEO ≈ 35 800 km, HEO beyond. Positions update every 100 ms via SGP4 propagation.</div>
+    </section>
+
+    <section class="panel" aria-label="legend">
+      <div class="label" style="margin-bottom:6px">Orbit class colours</div>
+      <div class="legend-row"><span class="legend-swatch" style="background:#99ff99"></span>LEO  &lt; 2 000 km</div>
+      <div class="legend-row"><span class="legend-swatch" style="background:#ffd966"></span>MEO  2 000 – 30 000 km</div>
+      <div class="legend-row"><span class="legend-swatch" style="background:#ff6666"></span>GEO  ≈ 35 786 km</div>
+      <div class="legend-row"><span class="legend-swatch" style="background:#b380ff"></span>HEO / elliptical</div>
+    </section>
+
+    <section class="panel">
+      <div class="row"><span class="label">Tracker</span><span id="track-count" class="count dim">…</span></div>
+      <div id="status" class="hint">Booting…</div>
+    </section>
+  </aside>
+
+  <!-- Explicit three.js so prediction.js can build a Points cloud Mesh.
+       Version matches globe.gl 2.32's bundled three (r157). -->
+  <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+  <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+  <script src="tle-loader.js?v=3"></script>
+  <script src="prediction.js?v=2"></script>
+</body>
+</html>

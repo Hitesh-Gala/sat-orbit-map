@@ -164,6 +164,30 @@ a:hover { text-decoration: underline; }
     0 6px 24px rgba(0, 0, 0, .45);
 }
 
+/* Panel that behaves as a navigation link rather than a details box. */
+.panel.panel-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-decoration: none;
+  color: var(--accent);
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.panel.panel-link:hover {
+  border-color: var(--accent);
+  background: rgba(103, 200, 255, 0.10);
+}
+.panel.panel-link .label {
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(103, 200, 255, 0.45);
+}
+.panel-link-arrow {
+  color: var(--accent);
+  font-size: 18px;
+  line-height: 1;
+}
+
 /* --- Clock --- */
 .clock .row {
   display: flex;
