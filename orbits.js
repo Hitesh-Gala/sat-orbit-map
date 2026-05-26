@@ -81,7 +81,19 @@ const globe = Globe()(document.getElementById('globe'))
   .pointResolution(6)
   .pointColor(d => d.color)
   .pointsMerge(false)
-  .pointLabel(satLabelHtml);
+  .pointLabel(satLabelHtml)
+  // Periodically-flashed satellite name labels (orbits.html only).
+  // Driven by maybeFlashLabels() while the NAZAR track is playing.
+  .labelsData([])
+  .labelLat(d => d.lat)
+  .labelLng(d => d.lng)
+  .labelAltitude(d => d.alt)
+  .labelText(d => d.name)
+  .labelColor(d => d.color)
+  .labelSize(1.0)
+  .labelDotRadius(0.28)
+  .labelResolution(2)
+  .labelIncludeDot(true);
 
 const controls = globe.controls();
 controls.enableDamping = true;
@@ -249,59 +261,35 @@ function refreshDots() {
   const icoEl = btn.querySelector('.btn-nav-icon');
   const lblEl = btn.querySelector('.btn-nav-label');
 
-  let audioCtx = null, analyser = null, srcNode = null, freq = null;
-  let beatLoopId = null;
-  let lastBeatAt = 0;
+  // The NAZAR track sits around 128-130 BPM, so we don't bother
+  // analysing the audio — we just lock the globe transitions to a
+  // fixed 129-BPM clock (≈ 465 ms per beat).  Set the BPM here if the
+  // track is ever swapped.
+  const TRACK_BPM = 129;
+  const BEAT_MS   = Math.round(60000 / TRACK_BPM);
+
+  let beatTimer = null;
   let lastMoveAt = 0;
-  const energyHistory = [];
 
   // Periodic "zoom pulse" — every 10-15 s a 3-4 s window where the
   // camera altitude oscillates in / out continuously, overriding the
   // beat-driven jolts for that window.
-  let nextPulseAt = 0;
+  let nextPulseAt  = 0;
   let pulseStartAt = 0;
   let pulseEndAt   = 0;
   let pulseTimer   = null;
 
-  function ensureGraph() {
-    if (audioCtx) return;
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return;
-    audioCtx = new AC();
-    srcNode  = audioCtx.createMediaElementSource(audio);
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 1024;
-    analyser.smoothingTimeConstant = 0.55;
-    freq = new Uint8Array(analyser.frequencyBinCount);
-    srcNode.connect(analyser);
-    analyser.connect(audioCtx.destination);
-  }
+  // Periodic "flash labels" — every 15 s, show the names of the
+  // selected satellites floating at their current 3-D positions for
+  // ~4.5 s, then clear them.
+  let nextFlashAt = 0;
+  let flashOffAt  = 0;
+  let flashTimer  = null;
 
-  function isBeat() {
-    if (!analyser) return false;
-    analyser.getByteFrequencyData(freq);
-    // Bass / kick band: roughly bins 1-13 (≈ 40–550 Hz at 44.1 kHz / 1024 fft).
-    let sum = 0;
-    for (let i = 1; i < 14; i++) sum += freq[i];
-    const bass = sum / 13;
-
-    energyHistory.push(bass);
-    if (energyHistory.length > 48) energyHistory.shift();
-    let mean = 0;
-    for (const v of energyHistory) mean += v;
-    mean /= energyHistory.length;
-    let variance = 0;
-    for (const v of energyHistory) variance += (v - mean) * (v - mean);
-    const std = Math.sqrt(variance / energyHistory.length);
-
-    const now = performance.now();
-    const refractoryOk = now - lastBeatAt > 250;
-    if (refractoryOk && bass > mean + std * 1.6 && bass > 85) {
-      lastBeatAt = now;
-      return true;
-    }
-    return false;
-  }
+  // No-op now that the cadence is BPM-locked; kept for the
+  // future-proofing path of restoring audio-reactive beat detection
+  // without rewriting the player UI.
+  function ensureGraph() {}
 
   // Country attractors used by the "zoom to country" jolt mode.  Centroids
   // are eyeballed so the camera framing shows the country fully without
@@ -382,13 +370,44 @@ function refreshDots() {
     pulseTimer   = setInterval(stepPulse, 80);
   }
 
-  function tick() {
-    if (audio.paused) { beatLoopId = null; return; }
+  // Fires every BEAT_MS while the soundtrack plays.
+  function beatTick() {
+    if (audio.paused) return;
     maybeStartPulse();
+    maybeFlashLabels();
     // During the pulse window, the in/out oscillation owns the camera;
-    // beat jolts resume the moment the pulse ends.
-    if (!pulseTimer && isBeat()) jolt();
-    beatLoopId = requestAnimationFrame(tick);
+    // jolts resume the moment the pulse ends.
+    if (!pulseTimer) jolt();
+  }
+
+  // --- Periodic label flash --------------------------------------------
+  // Surface the currently-tracked satellite names at their 3-D positions
+  // for ~4.5 s, then clear.  Repeats every 15 s while the track plays.
+  function flashOn() {
+    const now = new Date();
+    const labels = [];
+    for (const s of selected) {
+      const r = propagate(s.rec, now);
+      if (!r || !Number.isFinite(r.lat)) continue;
+      labels.push({
+        lat: r.lat, lng: r.lon, alt: r.alt / EARTH_R_KM,
+        name: s.name, color: s.color,
+      });
+    }
+    globe.labelsData(labels);
+  }
+  function flashOff() {
+    globe.labelsData([]);
+    flashTimer = null;
+  }
+  function maybeFlashLabels() {
+    const now = performance.now();
+    if (!nextFlashAt) nextFlashAt = now + 6000;  // first flash ~6 s in
+    if (now < nextFlashAt || flashTimer) return;
+    flashOn();
+    flashOffAt  = now + 4500;
+    nextFlashAt = flashOffAt + 10500;            // ≈ 15 s cadence
+    flashTimer  = setTimeout(flashOff, 4500);
   }
 
   function setUiPlaying(playing) {
@@ -400,11 +419,13 @@ function refreshDots() {
   btn.addEventListener('click', async () => {
     try {
       ensureGraph();
-      if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
       if (audio.paused) {
         await audio.play();
         setUiPlaying(true);
-        if (!beatLoopId) tick();
+        // Start (or re-start) the BPM-locked clock.  Reset gap timers so
+        // the first jolt fires immediately rather than after a stale gap.
+        lastMoveAt = 0;
+        if (!beatTimer) beatTimer = setInterval(beatTick, BEAT_MS);
       } else {
         audio.pause();
         setUiPlaying(false);
@@ -415,9 +436,12 @@ function refreshDots() {
     }
   });
 
-  audio.addEventListener('pause', () => {
-    setUiPlaying(false);
+  function stopTimers() {
+    if (beatTimer)  { clearInterval(beatTimer);  beatTimer  = null; }
     if (pulseTimer) { clearInterval(pulseTimer); pulseTimer = null; }
-  });
+    if (flashTimer) { clearTimeout(flashTimer);  flashTimer = null; }
+    globe.labelsData([]);
+  }
+  audio.addEventListener('pause', () => { setUiPlaying(false); stopTimers(); });
   audio.addEventListener('play',  () => setUiPlaying(true));
 })();

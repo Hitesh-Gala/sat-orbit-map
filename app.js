@@ -66,6 +66,53 @@ async function getInvertedSkyUrl() {
   return invertedSkyDataUrl;
 }
 
+// --- Click-to-toggle orbital ground tracks --------------------------------
+// Map<noradId, { points, name, color }> — one entry per orbit currently
+// drawn.  Clicking a sat dot adds/removes its entry; the path layer is
+// rebuilt from Map.values() each time.
+const shownOrbits = new Map();
+
+function orbitalPeriodMinutes(rec) {
+  // satellite.js's no is mean motion in radians/min; T = 2π / no.
+  return (2 * Math.PI) / rec.no;
+}
+
+function buildPathPoints(rec, now, periodMinutes) {
+  const periodMs = periodMinutes * 60 * 1000;
+  const N = 96;  // 96 samples around one full orbit
+  const pts = [];
+  let prevLon = null;
+  for (let i = 0; i <= N; i++) {
+    const t = new Date(now.getTime() + (i / N) * periodMs);
+    const r = propagate(rec, t);
+    if (!r || !Number.isFinite(r.lat)) continue;
+    // Avoid the path drawing a straight line across the dateline.
+    let lon = r.lon;
+    if (prevLon !== null && Math.abs(lon - prevLon) > 180) {
+      lon += lon < prevLon ? 360 : -360;
+    }
+    prevLon = lon;
+    pts.push([r.lat, lon, r.alt / EARTH_R_KM]);
+  }
+  return pts;
+}
+
+function toggleOrbit(d) {
+  if (!d || !d.rec || d.noradId == null) return;
+  if (shownOrbits.has(d.noradId)) {
+    shownOrbits.delete(d.noradId);
+  } else {
+    const period = orbitalPeriodMinutes(d.rec);
+    if (!Number.isFinite(period) || period <= 0) return;
+    shownOrbits.set(d.noradId, {
+      points: buildPathPoints(d.rec, new Date(), period),
+      name:   d.name,
+      color:  d.cn ? '#ff6b6b' : '#67e8a4',
+    });
+  }
+  globe.pathsData([...shownOrbits.values()]);
+}
+
 const globe = Globe()(document.getElementById('globe'))
   // Realistic Earth: NASA Blue Marble color texture + topology bump map for
   // shaded relief, against the night-sky starfield.
@@ -100,7 +147,19 @@ const globe = Globe()(document.getElementById('globe'))
   .pointResolution(8)
   .pointColor(d => d.cn ? '#ff6b6b' : '#67e8a4')
   .pointsMerge(false)
-  .pointLabel(satLabelHtml);
+  .pointLabel(satLabelHtml)
+  // Click a sat dot to toggle its full-orbit ground track on / off.
+  .onPointClick(d => toggleOrbit(d))
+  // Path layer for the click-to-show ground tracks.
+  .pathsData([])
+  .pathPoints(d => d.points)
+  .pathPointLat(p => p[0])
+  .pathPointLng(p => p[1])
+  .pathPointAlt(p => p[2])
+  .pathColor(d => [d.color, d.color])
+  .pathStroke(0.6)
+  .pathTransitionDuration(0)
+  .pathLabel(d => `<b>${d.name}</b><br>orbital ground track`);
 
 fetch(COUNTRIES_URL)
   .then(r => r.json())
@@ -273,6 +332,9 @@ function update() {
     const item = {
       name: t.name, az: r.az, el: r.el, range: r.range,
       alt: r.alt, lat: r.lat, lon: r.lon, cn: isCn,
+      // Carry the satrec + NORAD ID through to the globe-marker layer
+      // so onPointClick can propagate one orbital period on demand.
+      rec: t.rec, noradId: t.noradId,
     };
     if (isCn) {
       const meta = prcMeta.get(t.noradId);
@@ -291,6 +353,7 @@ function update() {
       lat: s.lat, lon: s.lon, alt: s.alt,
       name: s.name, cn: s.cn,
       az: s.az, el: s.el,
+      rec: s.rec, noradId: s.noradId,
     });
   }
 
