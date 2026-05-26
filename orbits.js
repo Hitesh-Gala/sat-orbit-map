@@ -286,6 +286,14 @@ function refreshDots() {
   let flashOffAt  = 0;
   let flashTimer  = null;
 
+  // Factoid rotator (immersive mode only).
+  let factoidData    = null;   // populated by fetch('data/cn-factoids.json')
+  let factoidTimer   = null;
+  let factoidIndex   = 0;
+  // Approximate India bounding box for the "over India" headcount.
+  const INDIA_BBOX   = { latMin: 6,  latMax: 37, lonMin: 68, lonMax: 97 };
+  fetch('data/cn-factoids.json').then(r => r.json()).then(d => { factoidData = d; }).catch(() => {});
+
   // No-op now that the cadence is BPM-locked; kept for the
   // future-proofing path of restoring audio-reactive beat detection
   // without rewriting the player UI.
@@ -422,6 +430,7 @@ function refreshDots() {
   // the immersive class so the normal UI returns.
   async function enterImmersive() {
     document.body.classList.add('immersive');
+    startFactoidRotation();
     try {
       if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
         await document.documentElement.requestFullscreen();
@@ -432,12 +441,16 @@ function refreshDots() {
   }
   function exitImmersive() {
     document.body.classList.remove('immersive');
+    stopFactoidRotation();
     if (document.fullscreenElement && document.exitFullscreen) {
       document.exitFullscreen().catch(() => {});
     }
   }
   document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement) document.body.classList.remove('immersive');
+    if (!document.fullscreenElement) {
+      document.body.classList.remove('immersive');
+      stopFactoidRotation();
+    }
   });
 
   btn.addEventListener('click', async () => {
@@ -462,10 +475,67 @@ function refreshDots() {
   });
 
   function stopTimers() {
-    if (beatTimer)  { clearInterval(beatTimer);  beatTimer  = null; }
-    if (pulseTimer) { clearInterval(pulseTimer); pulseTimer = null; }
-    if (flashTimer) { clearTimeout(flashTimer);  flashTimer = null; }
+    if (beatTimer)    { clearInterval(beatTimer);    beatTimer    = null; }
+    if (pulseTimer)   { clearInterval(pulseTimer);   pulseTimer   = null; }
+    if (flashTimer)   { clearTimeout(flashTimer);    flashTimer   = null; }
+    if (factoidTimer) { clearInterval(factoidTimer); factoidTimer = null; }
     globe.labelsData([]);
+  }
+
+  // --- Factoid rotator -----------------------------------------------------
+
+  function isOverIndia(lat, lon) {
+    return lat >= INDIA_BBOX.latMin && lat <= INDIA_BBOX.latMax
+        && lon >= INDIA_BBOX.lonMin && lon <= INDIA_BBOX.lonMax;
+  }
+
+  function countFamilyOverIndia(family) {
+    if (!activeTLEs || !activeTLEs.length) return 0;
+    const re = new RegExp(family.regex, 'i');
+    let n = 0;
+    const now = new Date();
+    for (const t of activeTLEs) {
+      if (!re.test(t.name)) continue;
+      const r = propagate(t.rec, now);
+      if (!r || !Number.isFinite(r.lat)) continue;
+      if (isOverIndia(r.lat, r.lon)) n++;
+    }
+    return n;
+  }
+
+  function nextFactoid() {
+    if (!factoidData) return 'Loading PRC space-programme factoids…';
+    const fams  = factoidData.families || [];
+    const facts = factoidData.facts    || [];
+    const pool  = fams.length + facts.length;
+    if (!pool) return '';
+    factoidIndex = (factoidIndex + 1) % pool;
+    if (factoidIndex < fams.length) {
+      const f = fams[factoidIndex];
+      const n = countFamilyOverIndia(f);
+      const plural = n === 1 ? 'satellite is' : 'satellites are';
+      const overhead = n > 0
+        ? `<strong>${n}</strong> ${f.name} ${plural} currently passing over India.`
+        : `No ${f.name} satellites are overhead India right now.`;
+      return `${overhead} The ${f.name} programme: <em>${f.purpose}</em>. First launched ${f.firstLaunch}.`;
+    }
+    return facts[factoidIndex - fams.length];
+  }
+
+  function showFactoid() {
+    const el = document.querySelector('#factoid .factoid-text');
+    if (!el) return;
+    el.innerHTML = nextFactoid();
+  }
+
+  function startFactoidRotation() {
+    if (factoidTimer) return;
+    factoidIndex = -1;  // so first ++ lands on 0
+    showFactoid();
+    factoidTimer = setInterval(showFactoid, 7000);
+  }
+  function stopFactoidRotation() {
+    if (factoidTimer) { clearInterval(factoidTimer); factoidTimer = null; }
   }
   audio.addEventListener('pause', () => { setUiPlaying(false); stopTimers(); exitImmersive(); });
   audio.addEventListener('play',  () => setUiPlaying(true));

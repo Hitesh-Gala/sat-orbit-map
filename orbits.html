@@ -34,6 +34,13 @@
        the user taps Play. -->
   <audio id="nazar-audio" src="audio/nazar-track.mp3" preload="auto" loop></audio>
 
+  <!-- Did-you-know factoid popup.  Hidden by default; revealed via the
+       body.immersive class while the NAZAR soundtrack is playing. -->
+  <aside id="factoid" class="factoid-popup" aria-live="polite" aria-label="Chinese space factoids">
+    <div class="factoid-prefix">Did you know…</div>
+    <div class="factoid-text">Loading…</div>
+  </aside>
+
   <header class="topbar">
     <div class="brand"><span class="brand-short">NAZAR</span><span class="brand-long"> — Nonchalantly Assembled Zero-Budget Assessment of Chinese Reconnaissance</span></div>
     <div class="sub">Kyon ki NAZAR lagni chahiye!</div>
@@ -69,6 +76,6 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=2"></script>
-  <script src="orbits.js?v=10"></script>
+  <script src="orbits.js?v=11"></script>
 </body>
 </html>

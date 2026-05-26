@@ -1,0 +1,34 @@
+{
+  "families": [
+    {"name": "Beidou",  "regex": "^BEIDOU",            "purpose": "Global satellite navigation — China's PNT system, equivalent to GPS",        "firstLaunch": "2000-10-31"},
+    {"name": "Fengyun", "regex": "^FENGYUN|^FY[- ]",   "purpose": "Meteorological (weather) observation",                                       "firstLaunch": "1988-09-07"},
+    {"name": "Gaofen",  "regex": "^GAOFEN",            "purpose": "High-resolution Earth observation under the CHEOS programme",               "firstLaunch": "2013-04-26"},
+    {"name": "Haiyang", "regex": "^HAIYANG|^HY[- ]",   "purpose": "Ocean colour, sea-surface temperature and wind observation",                "firstLaunch": "2002-05-15"},
+    {"name": "Jilin",   "regex": "^JILIN",             "purpose": "Commercial high-resolution Earth observation (CGSTL constellation)",        "firstLaunch": "2015-10-07"},
+    {"name": "Shijian", "regex": "^SHIJIAN|^SJ[- ]",   "purpose": "Experimental / technology-demonstration spacecraft",                        "firstLaunch": "1971-03-03"},
+    {"name": "Yaogan",  "regex": "^YAOGAN",            "purpose": "Reconnaissance and signals-intelligence (operated by the PLA)",             "firstLaunch": "2006-04-27"},
+    {"name": "Ziyuan",  "regex": "^ZIYUAN|^ZY[- ]",    "purpose": "Earth resources and mapping",                                                "firstLaunch": "1999-10-14"}
+  ],
+  "facts": [
+    "The China National Space Administration (CNSA) was founded on 22 April 1993.",
+    "China's Tiangong space station has been continuously crewed since June 2022.",
+    "Tiangong consists of three pressurised modules — Tianhe (core), Wentian and Mengtian — each ~22 tonnes.",
+    "Yang Liwei was the first Chinese national in orbit, aboard Shenzhou-5 in October 2003.",
+    "The BeiDou-3 constellation reached full global operational status on 23 June 2020.",
+    "The Long March 5 is China's most powerful operational rocket, capable of ~25 tonnes to low Earth orbit.",
+    "Chang'e-3 soft-landed on the Moon in December 2013 — the first lunar soft landing by any nation since 1976.",
+    "Chang'e-4 became the first spacecraft ever to land on the far side of the Moon (3 January 2019).",
+    "Chang'e-5 returned 1.731 kg of lunar samples to Earth on 16 December 2020 — the first sample return since 1976.",
+    "Tianwen-1's Zhurong rover landed on Mars on 15 May 2021 — China's first successful Mars surface mission.",
+    "Tiangong orbits Earth roughly every 92 minutes at ~400 km altitude.",
+    "Tianzhou cargo freighters resupply Tiangong autonomously, similar to the ISS Progress vehicles.",
+    "China is the third country to independently send humans to space, after the Soviet Union and the United States.",
+    "Wenchang Space Launch Site on Hainan is China's lowest-latitude (~19° N) pad, giving heavy rockets an Earth-spin boost.",
+    "BeiDou uses 24 satellites in MEO plus 3 in GEO and 3 in IGSO for global coverage.",
+    "Long March 8 first flew in December 2020 and is part of China's reusable-rocket research programme.",
+    "Tiangong-1 (2011-2018) and Tiangong-2 (2016-2019) preceded the current modular space station.",
+    "FAST — the Five-hundred-metre Aperture Spherical Telescope in Guizhou — is the world's largest single-dish radio telescope.",
+    "China launched its first satellite, Dongfanghong-1, on 24 April 1970 — the fifth nation to do so.",
+    "The Yaogan series exceeds 80 satellites and is widely believed to support naval surveillance, particularly tracking surface ships."
+  ]
+}
