@@ -10,7 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <!-- Orbitron: display caps for the brand.  Caveat: handwritten script
        for the Hinglish tagline.  JetBrains Mono stays for data/UI. -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Roboto:wght@300;400;500;700&family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="assets/takshashila-logo.svg">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="has-pill-nav">
@@ -57,6 +58,9 @@
   </div>
 
   <header class="topbar">
+    <a class="org-mark" href="https://takshashila.org.in/" target="_blank" rel="noopener" aria-label="Takshashila Institution">
+      <img src="assets/takshashila-logo.svg" alt="Takshashila Institution">
+    </a>
     <div class="brand"><span class="brand-short">NAZAR</span><span class="brand-long"> — Nonchalantly Assembled Zero-Budget Assessment of Chinese Reconnaissance</span></div>
     <div class="sub">Kyon ki NAZAR lagni chahiye!</div>
   </header>
@@ -118,7 +122,8 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=3"></script>
-  <script src="app.js?v=20"></script>
+  <script src="app.js?v=21"></script>
+  <script src="sw-register.js"></script>
   <script src="news-ticker.js?v=12"></script>
 </body>
 </html>

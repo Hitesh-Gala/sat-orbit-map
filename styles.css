@@ -1,16 +1,23 @@
 :root {
-  --bg: #02060d;
-  --panel: rgba(8, 16, 28, 0.78);
-  --line: rgba(110, 200, 255, 0.18);
-  --text: #cfe8ff;
-  --dim: #7891a8;
-  --accent: #67c8ff;
-  --accent2: #ff6b6b;
-  --green: #67e8a4;
-  --mono: 'JetBrains Mono', 'Fira Code', 'Consolas', ui-monospace, monospace;
-  /* Aesthetic display + script families for the brand + tagline. */
-  --display: 'Orbitron', 'JetBrains Mono', ui-monospace, monospace;
-  --script:  'Caveat', 'Brush Script MT', cursive;
+  /* NAZAR palette aligned with Takshashila Institution's brand colours
+     (deep maroon + gold + yellow from their official logo) overlaid on
+     the dark sky that the satellite globe needs for contrast. */
+  --bg:        #110308;                       /* deep maroon-tinged near-black */
+  --panel:     rgba(33, 10, 22, 0.84);        /* maroon translucent panels */
+  --line:      rgba(241, 153, 20, 0.30);      /* gold-tinted borders */
+  --text:      #f3e7c9;                       /* warm off-white */
+  --dim:       #b69985;                       /* dim sand */
+  --accent:    #f19914;                       /* Takshashila orange */
+  --accent2:   #c01b3f;                       /* deeper maroon (alerts, CN tag) */
+  --green:     #f4ec07;                       /* Takshashila highlight yellow */
+  --maroon:    #4f112e;                       /* Takshashila primary maroon */
+  --gold:      #fbc814;                       /* Takshashila gold */
+  --mono:     'JetBrains Mono', 'Fira Code', 'Consolas', ui-monospace, monospace;
+  /* Inter for headings (matches takshashila.org.in), Roboto for body,
+     Caveat retained for the Hinglish tagline. */
+  --display:  'Inter', 'Orbitron', system-ui, sans-serif;
+  --script:   'Caveat', 'Brush Script MT', cursive;
+  --body:     'Roboto', 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -24,9 +31,9 @@ html, body {
 }
 body {
   color: var(--text);
-  font-family: var(--mono);
-  /* Base bumped 12 → 14 (~+17 %) — combined with the per-component
-     bumps below, most HUD text reads ~30 % larger overall. */
+  /* Body uses Roboto (Takshashila site's primary text face); data /
+     numeric rows still use --mono via their own per-component rules. */
+  font-family: var(--body);
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
 }
@@ -101,6 +108,23 @@ a:hover { text-decoration: underline; }
   z-index: 10;
   pointer-events: none;
 }
+/* Takshashila Institution logo lives at the very top-left of every
+   page's topbar, just above the NAZAR brand line. */
+.org-mark {
+  display: inline-block;
+  height: 40px;
+  margin-bottom: 8px;
+  pointer-events: auto;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.55));
+}
+.org-mark img {
+  height: 100%;
+  width: auto;
+  display: block;
+}
+@media (max-width: 720px) {
+  .org-mark { height: 32px; margin-bottom: 6px; }
+}
 .brand {
   font-family: var(--display);
   font-weight: 700;
@@ -108,8 +132,8 @@ a:hover { text-decoration: underline; }
   letter-spacing: 0.22em;
   color: var(--accent);
   text-shadow:
-    0 0 10px rgba(103, 200, 255, 0.55),
-    0 0 24px rgba(103, 200, 255, 0.18);
+    0 0 10px rgba(241, 153, 20, 0.55),     /* gold glow (was cyan) */
+    0 0 24px rgba(251, 200, 20, 0.18);
 }
 .brand .brand-short {
   font-weight: 900;
