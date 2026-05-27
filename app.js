@@ -161,9 +161,26 @@ const globe = Globe()(document.getElementById('globe'))
   .pathTransitionDuration(0)
   .pathLabel(d => `<b>${d.name}</b><br>orbital ground track`);
 
-fetch(COUNTRIES_URL)
-  .then(r => r.json())
-  .then(geo => globe.polygonsData(geo.features.filter(f => f.properties.ISO_A2 !== 'AQ')))
+// World boundaries come from Natural Earth 50 m; the India boundary is
+// substituted with the Survey of India outline so the political map of
+// India shown on the globe matches the official Indian government
+// depiction (Aksai Chin, PoK, Arunachal Pradesh all shown as Indian
+// territory).  Antarctica is dropped (it dominates the south pole and
+// the user-facing globe doesn't gain from it).
+Promise.all([
+  fetch(COUNTRIES_URL).then(r => r.json()),
+  fetch('data/india-soi.geojson').then(r => r.json()),
+])
+  .then(([ne, soi]) => {
+    const world = ne.features.filter(f =>
+      f.properties.ISO_A2 !== 'AQ' && f.properties.ISO_A2 !== 'IN'
+    );
+    const india = soi.features.map(f => ({
+      ...f,
+      properties: { ...(f.properties || {}), ADMIN: 'India', source: 'Survey of India' },
+    }));
+    globe.polygonsData([...world, ...india]);
+  })
   .catch(e => console.warn('Country polygons failed to load:', e.message));
 
 // OrbitControls give pinch-zoom on touch and drag-rotate on mouse out of the box.

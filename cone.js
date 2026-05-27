@@ -82,10 +82,21 @@ controls.minDistance = 110;
 controls.maxDistance = 1500;  // ≈ 15 Earth radii — enough headroom for the
                               // 40 000-km Show cone to fit in view at alt 8
 
-fetch(COUNTRIES_URL)
-  .then(r => r.json())
-  .then(geo => globe.polygonsData(geo.features.filter(f => f.properties.ISO_A2 !== 'AQ')))
-  .catch(e => console.warn('Country polygons failed:', e.message));
+// Natural Earth 50 m for the world map; Survey of India outline
+// substituted for India so the political boundary matches the official
+// Indian government depiction (Aksai Chin, PoK, Arunachal Pradesh).
+Promise.all([
+  fetch(COUNTRIES_URL).then(r => r.json()),
+  fetch('data/india-soi.geojson').then(r => r.json()).catch(() => ({ features: [] })),
+]).then(([ne, soi]) => {
+  const world = ne.features.filter(f =>
+    f.properties.ISO_A2 !== 'AQ' && f.properties.ISO_A2 !== 'IN');
+  const india = soi.features.map(f => ({
+    ...f,
+    properties: { ...f.properties, ISO_A2: 'IN', NAME: 'India (Survey of India)' },
+  }));
+  globe.polygonsData([...world, ...india]);
+}).catch(e => console.warn('Country polygons failed:', e.message));
 
 window.addEventListener('resize', () => {
   globe.width(window.innerWidth).height(window.innerHeight);

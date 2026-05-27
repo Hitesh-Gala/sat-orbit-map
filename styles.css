@@ -100,6 +100,74 @@ a:hover { text-decoration: underline; }
   display: block;
 }
 
+/* --- Takshashila site header (logo strip + NAZAR maroon banner) ---
+   Sits at the very top of every page.  Logo bar carries the Takshashila
+   lighthouse on the left; the maroon brand banner below holds the NAZAR
+   name and the Hinglish tagline.  All HUD chrome (left-nav, right-HUD)
+   sits below this header. */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+.logo-bar {
+  background: rgba(2, 6, 13, 0.92);
+  border-bottom: 1px solid rgba(122, 19, 86, 0.45);
+  padding: 6px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  pointer-events: auto;
+}
+.logo-bar .tak-logo {
+  height: 36px;
+  width: auto;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+}
+.brand-banner {
+  background: linear-gradient(135deg, #7a1356 0%, #5c0e42 100%);
+  color: #fff5fa;
+  padding: 9px 24px 10px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  pointer-events: auto;
+}
+.brand-banner .brand {
+  color: #fff;
+  font-family: 'Cinzel', 'Orbitron', 'Inter', serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.18em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+.brand-banner .brand .brand-long {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  margin-left: 6px;
+  opacity: 0.88;
+}
+.brand-banner .sub {
+  margin-top: 2px;
+  color: #ffd9ec;
+  font-family: 'Caveat', cursive;
+  font-size: 17px;
+}
+@media (max-width: 720px) {
+  .logo-bar { padding: 5px 12px; gap: 10px; }
+  .logo-bar .tak-logo { height: 28px; }
+  .brand-banner { padding: 7px 14px 8px; }
+  .brand-banner .brand { font-size: 13px; letter-spacing: 0.14em; }
+  .brand-banner .brand .brand-long { display: none; }
+  .brand-banner .sub { font-size: 14px; }
+}
+
 .topbar {
   position: fixed;
   top: 0;
@@ -159,7 +227,7 @@ a:hover { text-decoration: underline; }
 
 .hud-tr {
   position: fixed;
-  top: 86px;
+  top: 122px;  /* clears the Takshashila logo strip (~46px) + maroon banner (~70px) */
   right: 14px;
   /* Symmetric with .left-nav — both panels are 240 px wide. */
   width: 240px;
@@ -410,7 +478,7 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
 .left-nav {
   position: fixed;
   left: 14px;
-  top: 86px;
+  top: 122px;  /* clears the Takshashila logo strip (~46px) + maroon banner (~70px) */
   /* Symmetric with .hud-tr — both panels are 240 px wide. */
   width: 240px;
   max-width: calc(100vw - 28px);
@@ -779,7 +847,8 @@ body.immersive .factoid-popup { opacity: 1; }
   align-items: center;
   gap: 6px;
   position: fixed;
-  top: 8px;
+  /* Sit just below the maroon brand banner, not behind it. */
+  top: 110px;
   padding: 7px 11px;
   z-index: 12;
   background: var(--panel);
@@ -816,7 +885,7 @@ body.hud-open  .float-toggle.data-toggle {
      block entirely so their .left-nav and .hud-tr stay visible on phones
      instead of being orphaned behind a non-existent toggle. */
   body.has-pill-nav .left-nav {
-    top: 56px;
+    top: 158px;  /* clear the maroon banner + pill row */
     bottom: auto;
     left: 8px;
     right: auto;
@@ -834,7 +903,7 @@ body.hud-open  .float-toggle.data-toggle {
   body.has-pill-nav.nav-open .left-nav { display: flex; }
 
   body.has-pill-nav .hud-tr {
-    top: 56px;
+    top: 158px;  /* clear the maroon banner + pill row */
     bottom: 12px;
     right: 8px;
     width: min(300px, 86vw);
@@ -873,13 +942,24 @@ body.hud-open  .float-toggle.data-toggle {
    under them.  Falls back to the plain 8 / 14 px values if the env()
    variables aren't supported. */
 @supports (padding: env(safe-area-inset-top)) {
-  .hud-tr     { top:    calc(86px + env(safe-area-inset-top));    right:  max(8px, env(safe-area-inset-right)); }
-  .left-nav   { top:    calc(86px + env(safe-area-inset-top));    left:   max(8px, env(safe-area-inset-left)); }
+  .hud-tr     { top:    calc(122px + env(safe-area-inset-top));   right:  max(8px, env(safe-area-inset-right)); }
+  .left-nav   { top:    calc(122px + env(safe-area-inset-top));   left:   max(8px, env(safe-area-inset-left)); }
   .btn-bl     { left:   max(8px,  env(safe-area-inset-left));   bottom: max(8px,  env(safe-area-inset-bottom)); }
   .news-ticker{ bottom: max(14px, env(safe-area-inset-bottom)); }
   @media (max-width: 720px) {
     .news-ticker { bottom: calc(60px + env(safe-area-inset-bottom)); }
   }
+}
+
+/* Shell pages (ChinRepo / 2-D Views) need their content shifted down so
+   the fixed Takshashila site-header doesn't overlay the inner page
+   header.  Layout pages with a fixed-position .hud-tr / .left-nav
+   already use the new top: 122px values further up. */
+body.page-repo .repo-shell,
+body.page-2d   .page-2d-shell { padding-top: 110px; }
+@media (max-width: 720px) {
+  body.page-repo .repo-shell,
+  body.page-2d   .page-2d-shell { padding-top: 84px; }
 }
 
 /* --- ChinRepo page (Chinese-payload repository view) -------------------- */

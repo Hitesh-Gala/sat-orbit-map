@@ -103,9 +103,20 @@ controls.zoomSpeed = 0.8;
 controls.minDistance = 150;
 controls.maxDistance = 1400;
 
-fetch(COUNTRIES_URL)
-  .then(r => r.json())
-  .then(geo => globe.polygonsData(geo.features.filter(f => f.properties.ISO_A2 !== 'AQ')))
+Promise.all([
+  fetch(COUNTRIES_URL).then(r => r.json()),
+  fetch('data/india-soi.geojson').then(r => r.json()),
+])
+  .then(([ne, soi]) => {
+    const world = ne.features.filter(f =>
+      f.properties.ISO_A2 !== 'AQ' && f.properties.ISO_A2 !== 'IN'
+    );
+    const india = soi.features.map(f => ({
+      ...f,
+      properties: { ...(f.properties || {}), ADMIN: 'India', source: 'Survey of India' },
+    }));
+    globe.polygonsData([...world, ...india]);
+  })
   .catch(e => console.warn('Country polygons failed:', e.message));
 
 window.addEventListener('resize', () => globe.width(window.innerWidth).height(window.innerHeight));
