@@ -159,6 +159,14 @@ a:hover { text-decoration: underline; }
   font-family: 'Caveat', cursive;
   font-size: 17px;
 }
+/* Saffron design strip directly under the maroon banner — the
+   institutional-style "ribbon" beneath the red. */
+.design-strip {
+  height: 5px;
+  background: linear-gradient(90deg, #f4a300 0%, #ffc14d 50%, #f4a300 100%);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+}
 @media (max-width: 720px) {
   .logo-bar { padding: 5px 12px; gap: 10px; }
   .logo-bar .tak-logo { height: 28px; }
@@ -166,6 +174,7 @@ a:hover { text-decoration: underline; }
   .brand-banner .brand { font-size: 13px; letter-spacing: 0.14em; }
   .brand-banner .brand .brand-long { display: none; }
   .brand-banner .sub { font-size: 14px; }
+  .design-strip { height: 4px; }
 }
 
 .topbar {
@@ -227,16 +236,17 @@ a:hover { text-decoration: underline; }
 
 .hud-tr {
   position: fixed;
-  top: 122px;  /* clears the Takshashila logo strip (~46px) + maroon banner (~70px) */
-  right: 14px;
-  /* Symmetric with .left-nav — both panels are 240 px wide. */
+  top: 138px;     /* mirrors .left-nav — clears header + saffron strip + 16 px gap */
+  right: 20px;
+  /* Symmetric with .left-nav — both panels are 240 px wide, anchored
+     20 px in from each side, and use the same gap between panels. */
   width: 240px;
-  max-width: calc(100vw - 28px);
+  max-width: calc(100vw - 40px);
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  max-height: calc(100vh - 100px);
+  gap: 10px;
+  max-height: calc(100vh - 158px);
   /* Allow internal scrolling when expanded <details> push the total
      content past the viewport — otherwise the overflow is invisible. */
   overflow-y: auto;
@@ -477,16 +487,17 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
    of the screen. */
 .left-nav {
   position: fixed;
-  left: 14px;
-  top: 122px;  /* clears the Takshashila logo strip (~46px) + maroon banner (~70px) */
-  /* Symmetric with .hud-tr — both panels are 240 px wide. */
+  left: 20px;
+  top: 138px;   /* clears logo bar (~46) + maroon banner (~70) + saffron strip (~6) + 16 px of breathing room */
+  /* Symmetric with .hud-tr — both panels are 240 px wide, anchored
+     20 px in from each side, and use the same gap between panels. */
   width: 240px;
-  max-width: calc(100vw - 28px);
+  max-width: calc(100vw - 40px);
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  max-height: calc(100vh - 100px);
+  gap: 10px;
+  max-height: calc(100vh - 158px);
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -942,8 +953,8 @@ body.hud-open  .float-toggle.data-toggle {
    under them.  Falls back to the plain 8 / 14 px values if the env()
    variables aren't supported. */
 @supports (padding: env(safe-area-inset-top)) {
-  .hud-tr     { top:    calc(122px + env(safe-area-inset-top));   right:  max(8px, env(safe-area-inset-right)); }
-  .left-nav   { top:    calc(122px + env(safe-area-inset-top));   left:   max(8px, env(safe-area-inset-left)); }
+  .hud-tr     { top:    calc(138px + env(safe-area-inset-top));   right:  max(14px, env(safe-area-inset-right)); }
+  .left-nav   { top:    calc(138px + env(safe-area-inset-top));   left:   max(14px, env(safe-area-inset-left)); }
   .btn-bl     { left:   max(8px,  env(safe-area-inset-left));   bottom: max(8px,  env(safe-area-inset-bottom)); }
   .news-ticker{ bottom: max(14px, env(safe-area-inset-bottom)); }
   @media (max-width: 720px) {
