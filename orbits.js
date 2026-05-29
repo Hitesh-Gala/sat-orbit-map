@@ -103,20 +103,9 @@ controls.zoomSpeed = 0.8;
 controls.minDistance = 150;
 controls.maxDistance = 1400;
 
-Promise.all([
-  fetch(COUNTRIES_URL).then(r => r.json()),
-  fetch('data/india-soi.geojson').then(r => r.json()),
-])
-  .then(([ne, soi]) => {
-    const world = ne.features.filter(f =>
-      f.properties.ISO_A2 !== 'AQ' && f.properties.ISO_A2 !== 'IN'
-    );
-    const india = soi.features.map(f => ({
-      ...f,
-      properties: { ...(f.properties || {}), ADMIN: 'India', source: 'Survey of India' },
-    }));
-    globe.polygonsData([...world, ...india]);
-  })
+fetch(COUNTRIES_URL)
+  .then(r => r.json())
+  .then(geo => globe.polygonsData(geo.features.filter(f => f.properties.ISO_A2 !== 'AQ')))
   .catch(e => console.warn('Country polygons failed:', e.message));
 
 window.addEventListener('resize', () => globe.width(window.innerWidth).height(window.innerHeight));
@@ -297,125 +286,6 @@ function refreshDots() {
   let flashOffAt  = 0;
   let flashTimer  = null;
 
-  // --- Did-you-know factoid popup (immersive only) ---------------------
-  //
-  // Sources for static facts: NASA SSDC, ESA Earth-online, CNSA English
-  // press releases, China Manned Space Agency (CMSA) bulletins.  These
-  // are facts that were public knowledge as of late 2024 — bundled
-  // locally so the popup works offline (no live scraping).
-  const STATIC_FACTS = [
-    "CNSA, the China National Space Administration, was established in April 1993.",
-    "China's first satellite, Dong Fang Hong 1, launched on 24 April 1970 — making China the fifth nation to orbit a satellite independently.",
-    "The Tiangong space station's core module, Tianhe, was launched on 29 April 2021 from Wenchang on a Long March 5B.",
-    "Wentian (24 July 2022) and Mengtian (31 October 2022) docked to Tianhe to complete the three-module, T-shaped Tiangong.",
-    "BeiDou-3, completed in 2020, gives China a 30-satellite global PNT constellation independent of GPS / Galileo / GLONASS.",
-    "Shenzhou 5 carried Yang Liwei — China's first astronaut — to orbit on 15 October 2003.",
-    "Chang'e 4 became the first probe to soft-land on the lunar far side, in Von Kármán crater, on 3 January 2019.",
-    "Long March 5 is China's heaviest operational launch vehicle, with a 25-tonne low-Earth-orbit payload capacity.",
-    "The Yaogan family — first launched in 2006 — is China's largest dedicated optical / SAR reconnaissance satellite line.",
-    "Tiangong orbits at roughly 340-450 km altitude and hosts a rotating three-person crew on six-month missions.",
-    "Chang'e 5 returned 1.731 kg of lunar regolith to Earth on 16 December 2020, the first lunar sample return since 1976.",
-    "The Tianwen-1 mission delivered the Zhurong rover to Mars in May 2021, making China the second nation to operate a rover on the planet.",
-    "The Wenchang Space Launch Site on Hainan island, opened in 2014, is the only Chinese launch facility at low latitude (~19° N) and the only one able to host Long March 5.",
-    "Mozi (QUESS), launched in 2016, was the world's first quantum-communications satellite.",
-    "The Gaofen series of high-resolution Earth-observation satellites underpins the China High-Resolution Earth Observation System (CHEOS).",
-  ];
-
-  // Active PRC programmes the factoid will count live above the India
-  // horizon.  inferred purpose mirrors the CN_PURPOSE table the rest of
-  // the site uses for satellite-name → mission inference.
-  const CN_PROGRAMS = [
-    { prefix: 'BEIDOU',  label: 'BeiDou',  purpose: 'global navigation (PNT)' },
-    { prefix: 'FENGYUN', label: 'Fengyun', purpose: 'meteorological observation' },
-    { prefix: 'GAOFEN',  label: 'Gaofen',  purpose: 'high-resolution Earth observation (CHEOS)' },
-    { prefix: 'HAIYANG', label: 'Haiyang', purpose: 'ocean observation' },
-    { prefix: 'JILIN',   label: 'Jilin-1', purpose: 'commercial Earth observation' },
-    { prefix: 'SHIJIAN', label: 'Shijian', purpose: 'in-orbit technology demonstration' },
-    { prefix: 'YAOGAN',  label: 'Yaogan',  purpose: 'reconnaissance / SIGINT' },
-    { prefix: 'ZIYUAN',  label: 'Ziyuan',  purpose: 'land-resources & mapping' },
-  ];
-
-  const OBSERVER = window.Argos?.OBSERVER || { lat: 28.6139, lon: 77.2090, alt: 0.216 };
-  const prcMeta = new Map();   // noradId → { launch }
-  let factoidTimer = null;
-
-  async function loadPrcMeta() {
-    if (prcMeta.size || !window.Argos) return;
-    try {
-      const records = await window.Argos.fetchChinaSatcat();
-      for (const r of records) {
-        const id = parseInt(r.NORAD_CAT_ID, 10);
-        if (!Number.isFinite(id)) continue;
-        prcMeta.set(id, { launch: r.LAUNCH_DATE || '' });
-      }
-    } catch (e) {
-      console.warn('Factoid: CN SATCAT load failed', e?.message);
-    }
-  }
-
-  function visibleCnAboveIndia() {
-    if (!activeTLEs.length || !prcMeta.size) return [];
-    const now = new Date();
-    const out = [];
-    for (const t of activeTLEs) {
-      if (!prcMeta.has(t.noradId)) continue;
-      const r = window.Argos.propagate(t.rec, now, OBSERVER);
-      if (!r || r.el <= 0) continue;
-      out.push({ name: t.name, noradId: t.noradId, meta: prcMeta.get(t.noradId) });
-    }
-    return out;
-  }
-
-  function buildFactoid() {
-    const r = Math.random();
-    const cnVis = visibleCnAboveIndia();
-    if (r < 0.18) {
-      const n = cnVis.filter(s => /^BEIDOU/i.test(s.name)).length;
-      return `${n} BeiDou navigation satellites are above India right now, beaming PNT signals on B1 / B2 / B3.`;
-    }
-    if (r < 0.55) {
-      const prog = CN_PROGRAMS[Math.floor(Math.random() * CN_PROGRAMS.length)];
-      const matches = cnVis.filter(s => new RegExp('^' + prog.prefix, 'i').test(s.name));
-      const launches = matches.map(s => s.meta.launch).filter(Boolean).sort();
-      const since = launches.length
-        ? ` Earliest above India right now has been in orbit since ${launches[0]}.`
-        : '';
-      return `${matches.length} ${prog.label} satellites — ${prog.purpose} — are above India right now.${since}`;
-    }
-    return STATIC_FACTS[Math.floor(Math.random() * STATIC_FACTS.length)];
-  }
-
-  function showNextFactoid() {
-    // The HTML uses <aside id="factoid" class="factoid-popup">
-    //   <div class="factoid-prefix">Did you know…</div>
-    //   <div class="factoid-text">…</div>
-    // Target the .factoid-text descendant for the rotating body copy.
-    const body = document.querySelector('#factoid .factoid-text')
-              || document.getElementById('factoid-body');
-    if (!body) return;
-    body.style.opacity = '0';
-    setTimeout(() => {
-      body.textContent = buildFactoid();
-      body.style.opacity = '1';
-    }, 200);
-  }
-  function startFactoidRotation() {
-    if (factoidTimer) return;
-    showNextFactoid();
-    factoidTimer = setInterval(showNextFactoid, 8000);
-  }
-  function stopFactoidRotation() {
-    if (factoidTimer) { clearInterval(factoidTimer); factoidTimer = null; }
-  }
-
-  // Factoid rotator (immersive mode only).
-  let factoidData    = null;   // populated by fetch('data/cn-factoids.json')
-  let factoidTimer   = null;
-  let factoidIndex   = 0;
-  // Approximate India bounding box for the "over India" headcount.
-  const INDIA_BBOX   = { latMin: 6,  latMax: 37, lonMin: 68, lonMax: 97 };
-  fetch('data/cn-factoids.json').then(r => r.json()).then(d => { factoidData = d; }).catch(() => {});
-
   // No-op now that the cadence is BPM-locked; kept for the
   // future-proofing path of restoring audio-reactive beat detection
   // without rewriting the player UI.
@@ -552,11 +422,6 @@ function refreshDots() {
   // the immersive class so the normal UI returns.
   async function enterImmersive() {
     document.body.classList.add('immersive');
-    // Lazy-load PRC SATCAT records (needed for the live-count factoids).
-    // Even if it's still pending the first factoid will be a static one,
-    // so the popup is never stuck empty.
-    loadPrcMeta();
-    startFactoidRotation();
     try {
       if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
         await document.documentElement.requestFullscreen();
@@ -567,26 +432,18 @@ function refreshDots() {
   }
   function exitImmersive() {
     document.body.classList.remove('immersive');
-    stopFactoidRotation();
     if (document.fullscreenElement && document.exitFullscreen) {
       document.exitFullscreen().catch(() => {});
     }
   }
   document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement) {
-      document.body.classList.remove('immersive');
-      stopFactoidRotation();
-    }
+    if (!document.fullscreenElement) document.body.classList.remove('immersive');
   });
 
   btn.addEventListener('click', async () => {
     try {
       ensureGraph();
       if (audio.paused) {
-        // With preload="none" the first Play tap needs a moment to start
-        // fetching the MP3.  Surface a "Buffering…" state so the user
-        // sees something happen between tap and audio start.
-        lblEl.textContent = 'Buffering…';
         await audio.play();
         setUiPlaying(true);
         // Start (or re-start) the BPM-locked clock.  Reset gap timers so
@@ -605,67 +462,10 @@ function refreshDots() {
   });
 
   function stopTimers() {
-    if (beatTimer)    { clearInterval(beatTimer);    beatTimer    = null; }
-    if (pulseTimer)   { clearInterval(pulseTimer);   pulseTimer   = null; }
-    if (flashTimer)   { clearTimeout(flashTimer);    flashTimer   = null; }
-    if (factoidTimer) { clearInterval(factoidTimer); factoidTimer = null; }
+    if (beatTimer)  { clearInterval(beatTimer);  beatTimer  = null; }
+    if (pulseTimer) { clearInterval(pulseTimer); pulseTimer = null; }
+    if (flashTimer) { clearTimeout(flashTimer);  flashTimer = null; }
     globe.labelsData([]);
-  }
-
-  // --- Factoid rotator -----------------------------------------------------
-
-  function isOverIndia(lat, lon) {
-    return lat >= INDIA_BBOX.latMin && lat <= INDIA_BBOX.latMax
-        && lon >= INDIA_BBOX.lonMin && lon <= INDIA_BBOX.lonMax;
-  }
-
-  function countFamilyOverIndia(family) {
-    if (!activeTLEs || !activeTLEs.length) return 0;
-    const re = new RegExp(family.regex, 'i');
-    let n = 0;
-    const now = new Date();
-    for (const t of activeTLEs) {
-      if (!re.test(t.name)) continue;
-      const r = propagate(t.rec, now);
-      if (!r || !Number.isFinite(r.lat)) continue;
-      if (isOverIndia(r.lat, r.lon)) n++;
-    }
-    return n;
-  }
-
-  function nextFactoid() {
-    if (!factoidData) return 'Loading PRC space-programme factoids…';
-    const fams  = factoidData.families || [];
-    const facts = factoidData.facts    || [];
-    const pool  = fams.length + facts.length;
-    if (!pool) return '';
-    factoidIndex = (factoidIndex + 1) % pool;
-    if (factoidIndex < fams.length) {
-      const f = fams[factoidIndex];
-      const n = countFamilyOverIndia(f);
-      const plural = n === 1 ? 'satellite is' : 'satellites are';
-      const overhead = n > 0
-        ? `<strong>${n}</strong> ${f.name} ${plural} currently passing over India.`
-        : `No ${f.name} satellites are overhead India right now.`;
-      return `${overhead} The ${f.name} programme: <em>${f.purpose}</em>. First launched ${f.firstLaunch}.`;
-    }
-    return facts[factoidIndex - fams.length];
-  }
-
-  function showFactoid() {
-    const el = document.querySelector('#factoid .factoid-text');
-    if (!el) return;
-    el.innerHTML = nextFactoid();
-  }
-
-  function startFactoidRotation() {
-    if (factoidTimer) return;
-    factoidIndex = -1;  // so first ++ lands on 0
-    showFactoid();
-    factoidTimer = setInterval(showFactoid, 7000);
-  }
-  function stopFactoidRotation() {
-    if (factoidTimer) { clearInterval(factoidTimer); factoidTimer = null; }
   }
   audio.addEventListener('pause', () => { setUiPlaying(false); stopTimers(); exitImmersive(); });
   audio.addEventListener('play',  () => setUiPlaying(true));

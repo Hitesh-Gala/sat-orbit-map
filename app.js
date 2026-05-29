@@ -161,26 +161,9 @@ const globe = Globe()(document.getElementById('globe'))
   .pathTransitionDuration(0)
   .pathLabel(d => `<b>${d.name}</b><br>orbital ground track`);
 
-// World boundaries come from Natural Earth 50 m; the India boundary is
-// substituted with the Survey of India outline so the political map of
-// India shown on the globe matches the official Indian government
-// depiction (Aksai Chin, PoK, Arunachal Pradesh all shown as Indian
-// territory).  Antarctica is dropped (it dominates the south pole and
-// the user-facing globe doesn't gain from it).
-Promise.all([
-  fetch(COUNTRIES_URL).then(r => r.json()),
-  fetch('data/india-soi.geojson').then(r => r.json()),
-])
-  .then(([ne, soi]) => {
-    const world = ne.features.filter(f =>
-      f.properties.ISO_A2 !== 'AQ' && f.properties.ISO_A2 !== 'IN'
-    );
-    const india = soi.features.map(f => ({
-      ...f,
-      properties: { ...(f.properties || {}), ADMIN: 'India', source: 'Survey of India' },
-    }));
-    globe.polygonsData([...world, ...india]);
-  })
+fetch(COUNTRIES_URL)
+  .then(r => r.json())
+  .then(geo => globe.polygonsData(geo.features.filter(f => f.properties.ISO_A2 !== 'AQ')))
   .catch(e => console.warn('Country polygons failed to load:', e.message));
 
 // OrbitControls give pinch-zoom on touch and drag-rotate on mouse out of the box.
@@ -402,7 +385,71 @@ function update() {
     </div>`).join('') || '<div class="hint">No Chinese payloads currently above the horizon.</div>';
 
   globe.pointsData(markers);
+
+  // Keep the Observer Lookup panel in sync with each tick while it's open.
+  if (document.getElementById('lookup-panel')?.open) runLookup();
 }
+
+// --- Observer Lookup ------------------------------------------------------
+// Propagates every satellite for the user-supplied lat/lon and lists those
+// currently above the horizon, sorted by elevation.
+
+function runLookup() {
+  if (!activeTLEs.length) return;
+  const latEl = document.getElementById('lookup-lat');
+  const lonEl = document.getElementById('lookup-lon');
+  const lat = parseFloat(latEl.value);
+  const lon = parseFloat(lonEl.value);
+  const countEl = document.getElementById('lookup-count');
+  const listEl  = document.getElementById('lookup-list');
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    countEl.textContent = '!';
+    listEl.innerHTML = '<div class="hint">Enter latitude in −90…90 and longitude in −180…180.</div>';
+    return;
+  }
+  const observer = { lat, lon, alt: 0 };
+  const now = new Date();
+  const above = [];
+  for (const t of activeTLEs) {
+    const r = propagate(t.rec, now, observer);
+    if (!r || !Number.isFinite(r.el)) continue;
+    if (r.el > 0) {
+      above.push({
+        name: t.name, az: r.az, el: r.el, range: r.range, alt: r.alt,
+        cn: prcMeta.has(t.noradId),
+      });
+    }
+  }
+  above.sort((a, b) => b.el - a.el);
+  countEl.textContent = above.length;
+  listEl.innerHTML = above.slice(0, 200).map(s => `
+    <div class="item">
+      <div class="name">${esc(s.name)}${s.cn ? ' <span class="tag cn">CN</span>' : ''}</div>
+      <div class="meta">
+        Az <strong>${s.az.toFixed(1)}°</strong> ${compass(s.az)}
+        · El <strong>${s.el.toFixed(1)}°</strong>
+        · ${s.range.toFixed(0)} km
+      </div>
+      <div class="meta muted">Alt ${s.alt.toFixed(0)} km</div>
+    </div>`).join('') || '<div class="hint">No satellites above this horizon right now.</div>';
+}
+
+// Wire up the lookup form: button, Enter-to-submit, and live re-compute on
+// edit.  The number inputs fire 'input' on each keystroke, which would be
+// chatty on the slower devices, so we debounce.
+(function setupLookup() {
+  const btn = document.getElementById('lookup-btn');
+  const lat = document.getElementById('lookup-lat');
+  const lon = document.getElementById('lookup-lon');
+  const panel = document.getElementById('lookup-panel');
+  if (!btn || !lat || !lon || !panel) return;
+  let timer = null;
+  const debounced = () => { clearTimeout(timer); timer = setTimeout(runLookup, 250); };
+  btn.addEventListener('click', runLookup);
+  lat.addEventListener('input', debounced);
+  lon.addEventListener('input', debounced);
+  panel.addEventListener('toggle', () => { if (panel.open) runLookup(); });
+})();
 
 // --- Boot -----------------------------------------------------------------
 

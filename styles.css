@@ -1,23 +1,16 @@
 :root {
-  /* NAZAR palette aligned with Takshashila Institution's brand colours
-     (deep maroon + gold + yellow from their official logo) overlaid on
-     the dark sky that the satellite globe needs for contrast. */
-  --bg:        #110308;                       /* deep maroon-tinged near-black */
-  --panel:     rgba(33, 10, 22, 0.84);        /* maroon translucent panels */
-  --line:      rgba(241, 153, 20, 0.30);      /* gold-tinted borders */
-  --text:      #f3e7c9;                       /* warm off-white */
-  --dim:       #b69985;                       /* dim sand */
-  --accent:    #f19914;                       /* Takshashila orange */
-  --accent2:   #c01b3f;                       /* deeper maroon (alerts, CN tag) */
-  --green:     #f4ec07;                       /* Takshashila highlight yellow */
-  --maroon:    #4f112e;                       /* Takshashila primary maroon */
-  --gold:      #fbc814;                       /* Takshashila gold */
-  --mono:     'JetBrains Mono', 'Fira Code', 'Consolas', ui-monospace, monospace;
-  /* Inter for headings (matches takshashila.org.in), Roboto for body,
-     Caveat retained for the Hinglish tagline. */
-  --display:  'Inter', 'Orbitron', system-ui, sans-serif;
-  --script:   'Caveat', 'Brush Script MT', cursive;
-  --body:     'Roboto', 'Inter', system-ui, -apple-system, sans-serif;
+  --bg: #02060d;
+  --panel: rgba(8, 16, 28, 0.78);
+  --line: rgba(110, 200, 255, 0.18);
+  --text: #cfe8ff;
+  --dim: #7891a8;
+  --accent: #67c8ff;
+  --accent2: #ff6b6b;
+  --green: #67e8a4;
+  --mono: 'JetBrains Mono', 'Fira Code', 'Consolas', ui-monospace, monospace;
+  /* Aesthetic display + script families for the brand + tagline. */
+  --display: 'Orbitron', 'JetBrains Mono', ui-monospace, monospace;
+  --script:  'Caveat', 'Brush Script MT', cursive;
 }
 
 * { box-sizing: border-box; }
@@ -31,9 +24,9 @@ html, body {
 }
 body {
   color: var(--text);
-  /* Body uses Roboto (Takshashila site's primary text face); data /
-     numeric rows still use --mono via their own per-component rules. */
-  font-family: var(--body);
+  font-family: var(--mono);
+  /* Base bumped 12 → 14 (~+17 %) — combined with the per-component
+     bumps below, most HUD text reads ~30 % larger overall. */
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
 }
@@ -100,94 +93,6 @@ a:hover { text-decoration: underline; }
   display: block;
 }
 
-/* --- Takshashila site header (logo strip + NAZAR maroon banner) ---
-   Sits at the very top of every page.  Logo bar carries the Takshashila
-   lighthouse on the left; the maroon brand banner below holds the NAZAR
-   name and the Hinglish tagline.  All HUD chrome (left-nav, right-HUD)
-   sits below this header. */
-.site-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  pointer-events: none;
-}
-/* The dark .logo-bar above the maroon was retired — the Takshashila
-   logo now lives inside the red banner alongside the NAZAR brand.
-   Selectors kept for any page still emitting the old markup. */
-.logo-bar { display: none; }
-.brand-banner {
-  background: linear-gradient(135deg, #7a1356 0%, #5c0e42 100%);
-  color: #fff5fa;
-  padding: 10px 24px 12px;
-  display: flex;
-  align-items: center;
-  gap: 22px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  pointer-events: auto;
-}
-.brand-banner .brand-logo {
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-  text-decoration: none;
-}
-.brand-banner .brand-logo .tak-logo {
-  height: 44px;
-  width: auto;
-  /* Logo asset is the dark/institutional version — invert so it reads
-     white on the maroon banner. */
-  filter: brightness(0) invert(1);
-  display: block;
-}
-.brand-banner .brand-text {
-  flex: 1;
-  text-align: center;
-  min-width: 0;
-}
-.brand-banner .brand {
-  color: #fff;
-  font-family: 'Cinzel', 'Orbitron', 'Inter', serif;
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: 0.18em;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-}
-.brand-banner .brand .brand-long {
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-  font-size: 14px;
-  letter-spacing: 0.06em;
-  margin-left: 6px;
-  opacity: 0.88;
-}
-.brand-banner .sub {
-  margin-top: 2px;
-  color: #ffd9ec;
-  font-family: 'Caveat', cursive;
-  font-size: 17px;
-}
-/* Saffron design strip directly under the maroon banner — the
-   institutional-style "ribbon" beneath the red. */
-.design-strip {
-  height: 5px;
-  background: linear-gradient(90deg, #f4a300 0%, #ffc14d 50%, #f4a300 100%);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
-  pointer-events: auto;
-}
-@media (max-width: 720px) {
-  .logo-bar { padding: 5px 12px; gap: 10px; }
-  .logo-bar .tak-logo { height: 28px; }
-  .brand-banner { padding: 7px 14px 8px; }
-  .brand-banner .brand { font-size: 13px; letter-spacing: 0.14em; }
-  .brand-banner .brand .brand-long { display: none; }
-  .brand-banner .sub { font-size: 14px; }
-  .design-strip { height: 4px; }
-}
-
 .topbar {
   position: fixed;
   top: 0;
@@ -196,23 +101,6 @@ a:hover { text-decoration: underline; }
   z-index: 10;
   pointer-events: none;
 }
-/* Takshashila Institution logo lives at the very top-left of every
-   page's topbar, just above the NAZAR brand line. */
-.org-mark {
-  display: inline-block;
-  height: 40px;
-  margin-bottom: 8px;
-  pointer-events: auto;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.55));
-}
-.org-mark img {
-  height: 100%;
-  width: auto;
-  display: block;
-}
-@media (max-width: 720px) {
-  .org-mark { height: 32px; margin-bottom: 6px; }
-}
 .brand {
   font-family: var(--display);
   font-weight: 700;
@@ -220,8 +108,8 @@ a:hover { text-decoration: underline; }
   letter-spacing: 0.22em;
   color: var(--accent);
   text-shadow:
-    0 0 10px rgba(241, 153, 20, 0.55),     /* gold glow (was cyan) */
-    0 0 24px rgba(251, 200, 20, 0.18);
+    0 0 10px rgba(103, 200, 255, 0.55),
+    0 0 24px rgba(103, 200, 255, 0.18);
 }
 .brand .brand-short {
   font-weight: 900;
@@ -247,17 +135,16 @@ a:hover { text-decoration: underline; }
 
 .hud-tr {
   position: fixed;
-  top: 138px;     /* mirrors .left-nav — clears header + saffron strip + 16 px gap */
-  right: 20px;
-  /* Symmetric with .left-nav — both panels are 240 px wide, anchored
-     20 px in from each side, and use the same gap between panels. */
+  top: 86px;
+  right: 14px;
+  /* Symmetric with .left-nav — both panels are 240 px wide. */
   width: 240px;
-  max-width: calc(100vw - 40px);
+  max-width: calc(100vw - 28px);
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-height: calc(100vh - 158px);
+  gap: 8px;
+  max-height: calc(100vh - 100px);
   /* Allow internal scrolling when expanded <details> push the total
      content past the viewport — otherwise the overflow is invisible. */
   overflow-y: auto;
@@ -275,30 +162,6 @@ a:hover { text-decoration: underline; }
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, .35) inset,
     0 6px 24px rgba(0, 0, 0, .45);
-}
-
-/* Panel that behaves as a navigation link rather than a details box. */
-.panel.panel-link {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  text-decoration: none;
-  color: var(--accent);
-  cursor: pointer;
-  transition: border-color .15s, background .15s;
-}
-.panel.panel-link:hover {
-  border-color: var(--accent);
-  background: rgba(103, 200, 255, 0.10);
-}
-.panel.panel-link .label {
-  color: var(--accent);
-  text-shadow: 0 0 8px rgba(103, 200, 255, 0.45);
-}
-.panel-link-arrow {
-  color: var(--accent);
-  font-size: 18px;
-  line-height: 1;
 }
 
 /* --- Clock --- */
@@ -498,17 +361,16 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
    of the screen. */
 .left-nav {
   position: fixed;
-  left: 20px;
-  top: 138px;   /* clears logo bar (~46) + maroon banner (~70) + saffron strip (~6) + 16 px of breathing room */
-  /* Symmetric with .hud-tr — both panels are 240 px wide, anchored
-     20 px in from each side, and use the same gap between panels. */
+  left: 14px;
+  top: 86px;
+  /* Symmetric with .hud-tr — both panels are 240 px wide. */
   width: 240px;
-  max-width: calc(100vw - 40px);
+  max-width: calc(100vw - 28px);
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-height: calc(100vh - 158px);
+  gap: 8px;
+  max-height: calc(100vh - 100px);
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -760,79 +622,6 @@ body.immersive #audio-toggle {
   padding: 9px 14px;
 }
 
-/* (Older #factoid rule removed — the page now uses the
-   .factoid-popup / .factoid-text styles defined further down.) */
-#factoid .factoid-text { transition: opacity 200ms ease; }
-
-/* --- Orbits page: keep the LHS nav (with Play NAZAR) visible on mobile
-   The default mobile rule hides .left-nav unless body.nav-open; that's
-   for index.html where MENU / DATA pills surface it.  Orbits.html has
-   no toggles, so we keep the nav permanently visible there. */
-@media (max-width: 720px) {
-  body.page-orbit .left-nav {
-    display: flex !important;
-    top: 56px;
-    left: 8px;
-    right: auto;
-    bottom: auto;
-    width: auto;
-    max-width: calc(100vw - 16px);
-    max-height: none;
-    padding: 0;
-    background: transparent;
-    border: none;
-    flex-direction: row;
-    flex-wrap: wrap;
-    transform: none;
-    gap: 6px;
-  }
-  body.page-orbit .left-nav .btn-nav { padding: 6px 10px; font-size: 12px; }
-}
-
-/* --- Did-you-know factoid popup (immersive mode only) ----------------- */
-.factoid-popup {
-  position: fixed;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(720px, 92vw);
-  padding: 16px 22px;
-  background: rgba(2, 6, 13, 0.92);
-  border: 1px solid var(--accent2);
-  border-radius: 8px;
-  color: var(--text);
-  font-family: var(--mono);
-  text-align: center;
-  z-index: 11;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.45s ease;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.55);
-}
-.factoid-prefix {
-  color: var(--accent2);
-  font-family: var(--display, var(--mono));
-  font-size: 12px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-  text-shadow: 0 0 8px rgba(255, 107, 107, 0.45);
-}
-.factoid-text {
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--text);
-}
-.factoid-text strong { color: var(--accent); font-weight: 600; }
-.factoid-text em     { color: var(--accent); font-style: normal; }
-body.immersive .factoid-popup { opacity: 1; }
-@media (max-width: 720px) {
-  .factoid-popup { padding: 12px 16px; bottom: 16px; }
-  .factoid-text  { font-size: 12px; }
-}
-
 /* --- Globe.gl scene-tooltip (the hover label container) --- */
 .scene-tooltip {
   pointer-events: none;
@@ -898,8 +687,7 @@ body.immersive .factoid-popup { opacity: 1; }
   align-items: center;
   gap: 6px;
   position: fixed;
-  /* Sit just below the maroon brand banner, not behind it. */
-  top: 110px;
+  top: 8px;
   padding: 7px 11px;
   z-index: 12;
   background: var(--panel);
@@ -931,12 +719,10 @@ body.hud-open  .float-toggle.data-toggle {
   .sub    { font-size: 9px; font-style: italic; }
   .float-toggle { display: inline-flex; }
 
-  /* Mobile-drawer overrides apply ONLY to the index page (which has the
-     pill toggles).  Other pages (orbits.html, cone.html, etc.) skip this
-     block entirely so their .left-nav and .hud-tr stay visible on phones
-     instead of being orphaned behind a non-existent toggle. */
-  body.has-pill-nav .left-nav {
-    top: 158px;  /* clear the maroon banner + pill row */
+  /* Permanent nav + HUD hidden by default — they're surfaced via the
+     pills.  body.{nav,hud}-open swap them back to visible / slid-in. */
+  body .left-nav {
+    top: 56px;
     bottom: auto;
     left: 8px;
     right: auto;
@@ -951,10 +737,10 @@ body.hud-open  .float-toggle.data-toggle {
     padding: 8px;
     gap: 6px;
   }
-  body.has-pill-nav.nav-open .left-nav { display: flex; }
+  body.nav-open .left-nav { display: flex; }
 
-  body.has-pill-nav .hud-tr {
-    top: 158px;  /* clear the maroon banner + pill row */
+  body .hud-tr {
+    top: 56px;
     bottom: 12px;
     right: 8px;
     width: min(300px, 86vw);
@@ -967,7 +753,7 @@ body.hud-open  .float-toggle.data-toggle {
     padding: 10px;
     overflow-y: auto;
   }
-  body.has-pill-nav.hud-open .hud-tr { display: flex; }
+  body.hud-open .hud-tr { display: flex; }
 
   .btn-nav { padding: 7px 12px; font-size: 12px; gap: 6px; }
   .btn-nav-icon { font-size: 14px; }
@@ -993,24 +779,13 @@ body.hud-open  .float-toggle.data-toggle {
    under them.  Falls back to the plain 8 / 14 px values if the env()
    variables aren't supported. */
 @supports (padding: env(safe-area-inset-top)) {
-  .hud-tr     { top:    calc(138px + env(safe-area-inset-top));   right:  max(14px, env(safe-area-inset-right)); }
-  .left-nav   { top:    calc(138px + env(safe-area-inset-top));   left:   max(14px, env(safe-area-inset-left)); }
+  .hud-tr     { top:    calc(86px + env(safe-area-inset-top));    right:  max(8px, env(safe-area-inset-right)); }
+  .left-nav   { top:    calc(86px + env(safe-area-inset-top));    left:   max(8px, env(safe-area-inset-left)); }
   .btn-bl     { left:   max(8px,  env(safe-area-inset-left));   bottom: max(8px,  env(safe-area-inset-bottom)); }
   .news-ticker{ bottom: max(14px, env(safe-area-inset-bottom)); }
   @media (max-width: 720px) {
     .news-ticker { bottom: calc(60px + env(safe-area-inset-bottom)); }
   }
-}
-
-/* Shell pages (ChinRepo / 2-D Views) need their content shifted down so
-   the fixed Takshashila site-header doesn't overlay the inner page
-   header.  Layout pages with a fixed-position .hud-tr / .left-nav
-   already use the new top: 122px values further up. */
-body.page-repo .repo-shell,
-body.page-2d   .page-2d-shell { padding-top: 110px; }
-@media (max-width: 720px) {
-  body.page-repo .repo-shell,
-  body.page-2d   .page-2d-shell { padding-top: 84px; }
 }
 
 /* --- ChinRepo page (Chinese-payload repository view) -------------------- */
