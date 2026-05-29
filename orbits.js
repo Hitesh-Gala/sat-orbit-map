@@ -583,6 +583,10 @@ function refreshDots() {
     try {
       ensureGraph();
       if (audio.paused) {
+        // With preload="none" the first Play tap needs a moment to start
+        // fetching the MP3.  Surface a "Buffering…" state so the user
+        // sees something happen between tap and audio start.
+        lblEl.textContent = 'Buffering…';
         await audio.play();
         setUiPlaying(true);
         // Start (or re-start) the BPM-locked clock.  Reset gap timers so

@@ -29,10 +29,10 @@
     </button>
   </nav>
 
-  <!-- Soundtrack.  Plays on demand; browsers block autoplay-with-sound
-       until the user gestures.  preload=auto so the file is ready when
-       the user taps Play. -->
-  <audio id="nazar-audio" src="audio/nazar-track.mp3" preload="auto" loop></audio>
+  <!-- Soundtrack.  preload="none" so the 5.5 MB file does NOT download
+       on every page load — it only starts streaming when the user taps
+       Play.  Page load is otherwise blocked behind that fetch. -->
+  <audio id="nazar-audio" src="audio/nazar-track.mp3" preload="none" loop></audio>
 
   <!-- Did-you-know factoid popup.  Hidden by default; revealed via the
        body.immersive class while the NAZAR soundtrack is playing. -->
@@ -84,7 +84,7 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=2"></script>
-  <script src="orbits.js?v=13"></script>
+  <script src="orbits.js?v=14"></script>
   <script src="sw-register.js"></script>
 </body>
 </html>
