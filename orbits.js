@@ -297,6 +297,117 @@ function refreshDots() {
   let flashOffAt  = 0;
   let flashTimer  = null;
 
+  // --- Did-you-know factoid popup (immersive only) ---------------------
+  //
+  // Sources for static facts: NASA SSDC, ESA Earth-online, CNSA English
+  // press releases, China Manned Space Agency (CMSA) bulletins.  These
+  // are facts that were public knowledge as of late 2024 — bundled
+  // locally so the popup works offline (no live scraping).
+  const STATIC_FACTS = [
+    "CNSA, the China National Space Administration, was established in April 1993.",
+    "China's first satellite, Dong Fang Hong 1, launched on 24 April 1970 — making China the fifth nation to orbit a satellite independently.",
+    "The Tiangong space station's core module, Tianhe, was launched on 29 April 2021 from Wenchang on a Long March 5B.",
+    "Wentian (24 July 2022) and Mengtian (31 October 2022) docked to Tianhe to complete the three-module, T-shaped Tiangong.",
+    "BeiDou-3, completed in 2020, gives China a 30-satellite global PNT constellation independent of GPS / Galileo / GLONASS.",
+    "Shenzhou 5 carried Yang Liwei — China's first astronaut — to orbit on 15 October 2003.",
+    "Chang'e 4 became the first probe to soft-land on the lunar far side, in Von Kármán crater, on 3 January 2019.",
+    "Long March 5 is China's heaviest operational launch vehicle, with a 25-tonne low-Earth-orbit payload capacity.",
+    "The Yaogan family — first launched in 2006 — is China's largest dedicated optical / SAR reconnaissance satellite line.",
+    "Tiangong orbits at roughly 340-450 km altitude and hosts a rotating three-person crew on six-month missions.",
+    "Chang'e 5 returned 1.731 kg of lunar regolith to Earth on 16 December 2020, the first lunar sample return since 1976.",
+    "The Tianwen-1 mission delivered the Zhurong rover to Mars in May 2021, making China the second nation to operate a rover on the planet.",
+    "The Wenchang Space Launch Site on Hainan island, opened in 2014, is the only Chinese launch facility at low latitude (~19° N) and the only one able to host Long March 5.",
+    "Mozi (QUESS), launched in 2016, was the world's first quantum-communications satellite.",
+    "The Gaofen series of high-resolution Earth-observation satellites underpins the China High-Resolution Earth Observation System (CHEOS).",
+  ];
+
+  // Active PRC programmes the factoid will count live above the India
+  // horizon.  inferred purpose mirrors the CN_PURPOSE table the rest of
+  // the site uses for satellite-name → mission inference.
+  const CN_PROGRAMS = [
+    { prefix: 'BEIDOU',  label: 'BeiDou',  purpose: 'global navigation (PNT)' },
+    { prefix: 'FENGYUN', label: 'Fengyun', purpose: 'meteorological observation' },
+    { prefix: 'GAOFEN',  label: 'Gaofen',  purpose: 'high-resolution Earth observation (CHEOS)' },
+    { prefix: 'HAIYANG', label: 'Haiyang', purpose: 'ocean observation' },
+    { prefix: 'JILIN',   label: 'Jilin-1', purpose: 'commercial Earth observation' },
+    { prefix: 'SHIJIAN', label: 'Shijian', purpose: 'in-orbit technology demonstration' },
+    { prefix: 'YAOGAN',  label: 'Yaogan',  purpose: 'reconnaissance / SIGINT' },
+    { prefix: 'ZIYUAN',  label: 'Ziyuan',  purpose: 'land-resources & mapping' },
+  ];
+
+  const OBSERVER = window.Argos?.OBSERVER || { lat: 28.6139, lon: 77.2090, alt: 0.216 };
+  const prcMeta = new Map();   // noradId → { launch }
+  let factoidTimer = null;
+
+  async function loadPrcMeta() {
+    if (prcMeta.size || !window.Argos) return;
+    try {
+      const records = await window.Argos.fetchChinaSatcat();
+      for (const r of records) {
+        const id = parseInt(r.NORAD_CAT_ID, 10);
+        if (!Number.isFinite(id)) continue;
+        prcMeta.set(id, { launch: r.LAUNCH_DATE || '' });
+      }
+    } catch (e) {
+      console.warn('Factoid: CN SATCAT load failed', e?.message);
+    }
+  }
+
+  function visibleCnAboveIndia() {
+    if (!activeTLEs.length || !prcMeta.size) return [];
+    const now = new Date();
+    const out = [];
+    for (const t of activeTLEs) {
+      if (!prcMeta.has(t.noradId)) continue;
+      const r = window.Argos.propagate(t.rec, now, OBSERVER);
+      if (!r || r.el <= 0) continue;
+      out.push({ name: t.name, noradId: t.noradId, meta: prcMeta.get(t.noradId) });
+    }
+    return out;
+  }
+
+  function buildFactoid() {
+    const r = Math.random();
+    const cnVis = visibleCnAboveIndia();
+    if (r < 0.18) {
+      const n = cnVis.filter(s => /^BEIDOU/i.test(s.name)).length;
+      return `${n} BeiDou navigation satellites are above India right now, beaming PNT signals on B1 / B2 / B3.`;
+    }
+    if (r < 0.55) {
+      const prog = CN_PROGRAMS[Math.floor(Math.random() * CN_PROGRAMS.length)];
+      const matches = cnVis.filter(s => new RegExp('^' + prog.prefix, 'i').test(s.name));
+      const launches = matches.map(s => s.meta.launch).filter(Boolean).sort();
+      const since = launches.length
+        ? ` Earliest above India right now has been in orbit since ${launches[0]}.`
+        : '';
+      return `${matches.length} ${prog.label} satellites — ${prog.purpose} — are above India right now.${since}`;
+    }
+    return STATIC_FACTS[Math.floor(Math.random() * STATIC_FACTS.length)];
+  }
+
+  function showNextFactoid() {
+    // The HTML uses <aside id="factoid" class="factoid-popup">
+    //   <div class="factoid-prefix">Did you know…</div>
+    //   <div class="factoid-text">…</div>
+    // Target the .factoid-text descendant for the rotating body copy.
+    const body = document.querySelector('#factoid .factoid-text')
+              || document.getElementById('factoid-body');
+    if (!body) return;
+    body.style.opacity = '0';
+    setTimeout(() => {
+      body.textContent = buildFactoid();
+      body.style.opacity = '1';
+    }, 200);
+  }
+  function startFactoidRotation() {
+    if (factoidTimer) return;
+    showNextFactoid();
+    factoidTimer = setInterval(showNextFactoid, 8000);
+  }
+  function stopFactoidRotation() {
+    if (factoidTimer) { clearInterval(factoidTimer); factoidTimer = null; }
+  }
+
   // Factoid rotator (immersive mode only).
   let factoidData    = null;   // populated by fetch('data/cn-factoids.json')
   let factoidTimer   = null;
@@ -441,6 +552,10 @@ function refreshDots() {
   // the immersive class so the normal UI returns.
   async function enterImmersive() {
     document.body.classList.add('immersive');
+    // Lazy-load PRC SATCAT records (needed for the live-count factoids).
+    // Even if it's still pending the first factoid will be a static one,
+    // so the popup is never stuck empty.
+    loadPrcMeta();
     startFactoidRotation();
     try {
       if (!document.fullscreenElement && document.documentElement.requestFullscreen) {

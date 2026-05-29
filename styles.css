@@ -115,27 +115,38 @@ a:hover { text-decoration: underline; }
   flex-direction: column;
   pointer-events: none;
 }
-.logo-bar {
-  background: rgba(2, 6, 13, 0.92);
-  border-bottom: 1px solid rgba(122, 19, 86, 0.45);
-  padding: 6px 18px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  pointer-events: auto;
-}
-.logo-bar .tak-logo {
-  height: 36px;
-  width: auto;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
-}
+/* The dark .logo-bar above the maroon was retired — the Takshashila
+   logo now lives inside the red banner alongside the NAZAR brand.
+   Selectors kept for any page still emitting the old markup. */
+.logo-bar { display: none; }
 .brand-banner {
   background: linear-gradient(135deg, #7a1356 0%, #5c0e42 100%);
   color: #fff5fa;
-  padding: 9px 24px 10px;
-  text-align: center;
+  padding: 10px 24px 12px;
+  display: flex;
+  align-items: center;
+  gap: 22px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   pointer-events: auto;
+}
+.brand-banner .brand-logo {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.brand-banner .brand-logo .tak-logo {
+  height: 44px;
+  width: auto;
+  /* Logo asset is the dark/institutional version — invert so it reads
+     white on the maroon banner. */
+  filter: brightness(0) invert(1);
+  display: block;
+}
+.brand-banner .brand-text {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
 }
 .brand-banner .brand {
   color: #fff;
@@ -747,6 +758,35 @@ body.immersive #audio-toggle {
   background: rgba(2, 6, 13, 0.85);
   border: 1px solid var(--accent2);
   padding: 9px 14px;
+}
+
+/* (Older #factoid rule removed — the page now uses the
+   .factoid-popup / .factoid-text styles defined further down.) */
+#factoid .factoid-text { transition: opacity 200ms ease; }
+
+/* --- Orbits page: keep the LHS nav (with Play NAZAR) visible on mobile
+   The default mobile rule hides .left-nav unless body.nav-open; that's
+   for index.html where MENU / DATA pills surface it.  Orbits.html has
+   no toggles, so we keep the nav permanently visible there. */
+@media (max-width: 720px) {
+  body.page-orbit .left-nav {
+    display: flex !important;
+    top: 56px;
+    left: 8px;
+    right: auto;
+    bottom: auto;
+    width: auto;
+    max-width: calc(100vw - 16px);
+    max-height: none;
+    padding: 0;
+    background: transparent;
+    border: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+    transform: none;
+    gap: 6px;
+  }
+  body.page-orbit .left-nav .btn-nav { padding: 6px 10px; font-size: 12px; }
 }
 
 /* --- Did-you-know factoid popup (immersive mode only) ----------------- */
