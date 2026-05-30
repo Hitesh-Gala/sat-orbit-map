@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4">
+  <title>NAZAR · Game of Cones</title>
+  <link rel="preconnect" href="https://celestrak.org">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Game-of-Cones-only chrome: a single left-edge HUD card with mode
+       tabs, sliders, results.  The shared styles already supply the
+       panel / list / hint-form CSS — this block is just the bits that
+       don't fit anywhere reusable. */
+    .goc-shell {
+      position: fixed;
+      top: 86px;
+      left: 14px;
+      width: 320px;
+      max-width: calc(100vw - 28px);
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .goc-tabs { display: flex; gap: 6px; }
+    .goc-tabs button {
+      flex: 1;
+      background: rgba(103, 200, 255, 0.08);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 6px 8px;
+      cursor: pointer;
+    }
+    .goc-tabs button.active {
+      background: rgba(103, 200, 255, 0.22);
+      border-color: var(--accent);
+      color: var(--text);
+    }
+    .goc-slider {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin: 8px 0;
+      font-size: 12px;
+      color: var(--dim);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .goc-slider .slider-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .goc-slider .slider-value {
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      text-transform: none;
+    }
+    .goc-slider input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .goc-search {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.32);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 6px 8px;
+      outline: none;
+      margin: 6px 0 4px;
+    }
+    .goc-search:focus { border-color: var(--accent); }
+    .goc-hits {
+      max-height: 140px;
+      overflow-y: auto;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: rgba(0, 0, 0, 0.22);
+    }
+    .goc-hits .item { padding: 4px 8px; cursor: pointer; font-size: 12px; }
+    .goc-hits .item:hover { background: rgba(103, 200, 255, 0.12); }
+    .goc-hits .item.selected { background: rgba(103, 200, 255, 0.22); color: var(--text); }
+    .goc-status { font-size: 11px; color: var(--dim); margin-top: 4px; }
+    .goc-status strong { color: var(--accent); font-weight: normal; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body class="page-goc">
+  <div id="globe"></div>
+
+  <nav class="left-nav" aria-label="back">
+    <a class="btn-nav" href="index.html" title="Back to the 3-D globe">
+      <span class="btn-nav-icon">◯</span>
+      <span class="btn-nav-label">Globe</span>
+    </a>
+  </nav>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-short">NAZAR</span>
+      <span class="brand-long"> · Game of Cones</span>
+    </div>
+    <div class="sub">Two satellite-geometry puzzles, one globe.</div>
+  </header>
+
+  <aside class="goc-shell" aria-label="Game of Cones controls">
+    <section class="panel">
+      <div class="goc-tabs" role="tablist">
+        <button id="tab-land" type="button" role="tab" aria-selected="true"  class="active">Land Cone</button>
+        <button id="tab-sat"  type="button" role="tab" aria-selected="false">Sat Cone</button>
+      </div>
+      <div id="goc-status" class="goc-status">Booting…</div>
+    </section>
+
+    <!-- Land Cone mode: cone vertex on the ground; find sats inside. -->
+    <section class="panel" id="mode-land">
+      <div class="hint">From a ground point, find every satellite inside an upward cone of half-angle θ that doesn't extend past <em>maxHeight</em>.</div>
+      <div class="lookup-form">
+        <label>Lat
+          <input type="number" id="land-lat" value="28.61" step="0.1" min="-90"  max="90"  inputmode="decimal">
+        </label>
+        <label>Lon
+          <input type="number" id="land-lng" value="77.21" step="0.1" min="-180" max="180" inputmode="decimal">
+        </label>
+      </div>
+      <div class="goc-slider">
+        <div class="slider-row">
+          <span>Half-angle</span>
+          <span class="slider-value"><span id="land-angle-val">30</span>°</span>
+        </div>
+        <input type="range" id="land-angle" min="1" max="90" value="30">
+      </div>
+      <div class="goc-slider">
+        <div class="slider-row">
+          <span>Max height</span>
+          <span class="slider-value"><span id="land-height-val">2000</span> km</span>
+        </div>
+        <input type="range" id="land-height" min="100" max="40000" step="100" value="2000">
+      </div>
+      <div class="goc-status">
+        <strong id="land-count">0</strong> satellites inside the cone
+      </div>
+      <div id="land-list" class="list" role="listbox"></div>
+    </section>
+
+    <!-- Sat Cone mode: cone vertex at a chosen sat; show the surface footprint. -->
+    <section class="panel" id="mode-sat" hidden>
+      <div class="hint">Pick a satellite, set the sensor half-angle, see the cone projected onto Earth's surface as a polygon.</div>
+      <input type="search" id="sat-search" class="goc-search" placeholder="Search satellite (e.g. ISS, BEIDOU)…" autocomplete="off">
+      <div id="sat-hits" class="goc-hits" hidden></div>
+      <div class="goc-slider">
+        <div class="slider-row">
+          <span>Half-angle</span>
+          <span class="slider-value"><span id="sat-angle-val">20</span>°</span>
+        </div>
+        <input type="range" id="sat-angle" min="1" max="70" value="20">
+      </div>
+      <div class="goc-status" id="sat-status">No satellite selected.</div>
+    </section>
+  </aside>
+
+  <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+  <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+  <script src="tle-loader.js?v=3"></script>
+  <script src="game-of-cones.js?v=1"></script>
+</body>
+</html>

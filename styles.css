@@ -788,6 +788,27 @@ body.hud-open  .float-toggle.data-toggle {
   }
 }
 
+/* --- Game of Cones page ------------------------------------------------- */
+/* The page only has a single nav button (Globe back-link) and no menu-pill
+   toggle, so override the 720-px drawer rule that hides .left-nav by
+   default — otherwise mobile users would be stranded with no way back. */
+@media (max-width: 720px) {
+  body.page-goc .left-nav {
+    display: flex;
+    top: 8px;
+    left: 8px;
+    background: transparent;
+    border: 0;
+    padding: 0;
+  }
+  body.page-goc .goc-shell {
+    top: 56px;
+    left: 8px;
+    width: calc(100vw - 16px);
+    max-height: calc(100vh - 120px);
+  }
+}
+
 /* --- ChinRepo page (Chinese-payload repository view) -------------------- */
 body.page-repo { overflow: auto; }
 body.page-repo #globe { display: none; }
