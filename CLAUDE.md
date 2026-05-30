@@ -1,0 +1,79 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What this project is
+
+**NAZAR** — a static, client-only satellite tracker focused on Chinese spacecraft visibility. Deployed via GitHub Pages from the `main` branch of `https://github.com/hdgala-cpu/Third-Trial` to `https://hdgala-cpu.github.io/Third-Trial/`. No backend; everything runs in the browser.
+
+Every page consumes the same NORAD/CelesTrak TLE catalog and propagates orbits with SGP4 (satellite.js) locally. There is no JSON tracker API in the loop — `satellitetracker3d.com` is referenced in comments but not called.
+
+## Where the code actually lives
+
+The site is the contents of the **`Third-Trial/`** directory (this directory). The sibling `../Argos/` folder is a different, unrelated project that just happens to share the parent workspace — do not edit it when working on NAZAR.
+
+`../.claude/launch.json` defines two preview servers — port **8090** serves NAZAR, port 8080 serves the unrelated Argos project.
+
+## Running locally
+
+The preview tool (`mcp__Claude_Preview__preview_start`) starts the static server defined in `../.claude/launch.json`:
+
+```
+name: "Third-Trial static server"  →  python -m http.server 8090 --directory Third-Trial
+```
+
+Equivalent ad-hoc command from the workspace root: `python -m http.server 8090 --directory Third-Trial`.
+
+There is no build step, no bundler, no test suite, no linter. Edit a file → reload the browser.
+
+## Deployment & cache busting
+
+Push to `main` → GitHub Pages auto-rebuilds (~30-60 s). Verify the live commit with `gh api repos/hdgala-cpu/Third-Trial/pages/builds --jq '.[0]'`.
+
+Local script tags carry a manual `?v=N` query string (e.g. `<script src="app.js?v=19">`). **Bump that integer whenever you change the corresponding JS file** — without it, browsers serve the previous cached copy and the page silently runs old code. After deploy, users still need a hard refresh to pick up `index.html` changes (Pages sets a 10-min cache header on HTML).
+
+## Architecture — shared data layer
+
+All page scripts read from one shared module:
+
+- **`tle-loader.js`** exposes the global `window.Argos = { OBSERVER, EARTH_R_KM, fetchTLEs, fetchChinaSatcat, propagate, makeSatrecs, inferPurpose, parseTLE }`. Loaded on every page that needs satellite data.
+- `fetchTLEs()` hits CelesTrak `gp.php?GROUP=active&FORMAT=tle`, caches the result in `localStorage` (6 h TTL), and **falls back to the bundled `data/active.tle` snapshot** when CelesTrak rate-limits the IP (returns 403 — common during dev). Always returns `{ tles, source: 'celestrak' | 'cache' | 'bundled' }`.
+- `fetchChinaSatcat()` fans `?NAME=<prefix>` queries across the `CN_NAME_PREFIXES` list (~50 entries) at concurrency 4 (`pmap`) — CelesTrak's `records.php` requires a name prefix per call, and 4-in-flight stays inside their polite-use threshold. Results are filtered to `OWNER === 'PRC'` and `OBJECT_TYPE === 'PAY'`, deduped by NORAD ID, and cached 24 h.
+- `propagate(satrec, date, observer)` returns `{ lat, lon, alt, az, el, range }` — lat/lon are sub-point, az/el are look-angles from the observer (defaults to New Delhi 28.61° N, 77.21° E).
+- `makeSatrecs(tles)` runs each TLE through `satellite.twoline2satrec` and **dedupes by NORAD ID** — the raw feed sometimes carries the same object twice.
+
+## Architecture — pages
+
+Each `.html` is paired with a same-name `.js`. All pages share `styles.css` and most also load `tle-loader.js`.
+
+| Page | Script | Globe library | What it does |
+|------|--------|---------------|--------------|
+| `index.html` | `app.js` | globe.gl | Realistic Earth + live sat dots, top-right HUD with clocks + over-horizon counts (split by PRC flag) + custom-lat/lon lookup |
+| `orbits.html` | `orbits.js` | globe.gl | 3-D orbital tracks (one polyline per sat, sampled across one period) + NAZAR soundtrack with beat-driven camera moves + immersive fullscreen |
+| `2d-views.html` | `2d-views.js` | **amCharts 5** maps | Equirectangular projection over NASA Blue Marble raster, polygons aligned pixel-perfect with the basemap |
+| `cone.html` | `cone.js` | globe.gl + **bare three.js r157** | Custom-location centring, 40°-tangent cone overlay (ConeGeometry mesh added directly to `globe.scene()`), optional Google Maps satellite zoom-in via a user-supplied Maps JS API key in localStorage |
+| `chinrepo.html` | `chinrepo.js` | none | Filterable table of every active PRC payload (joins CelesTrak SATCAT `OWNER=PRC` with active TLEs) |
+| `compendium.html` | (inline) | none | Self-contained PRC-program reference catalogue with embedded styles |
+| `news-ticker.js` | (included on `index.html`) | none | Scrolling ticker that fetches Chinese-launch RSS via `api.rss2json.com`, filtered by a keyword regex, 30-min localStorage cache |
+
+`styles.css` is shared. Page-specific rules are scoped by `body.page-2d`, `body.page-repo`, `body.page-orbit`, etc. CSS custom properties (`:root`) drive the dark theme; light-mode is implemented by re-defining the same properties under `body.light`.
+
+## Globe.gl quirks to remember
+
+Globe.gl 2.32.0 has known issues with its `htmlElementsData` layer when the chain is configured after the initial `Globe()(...)` call — the per-item callback silently never fires. Workarounds used in this codebase:
+
+- For dot markers, use `pointsData` (a single merged cylinder mesh) — see `app.js`, `orbits.js`.
+- For 3-D meshes with hover tooltips, use `objectsData` with a returned `THREE.Mesh` — see `cone.js`.
+- A single, non-data-driven HTML element (e.g. the pink arrow on cone.html) does work, even with `htmlElementsData([{...}])`.
+
+`cone.js` loads `three@0.157.0` from CDN explicitly so it can construct `ConeGeometry`/`MeshBasicMaterial` directly and `globe.scene().add(mesh)` them — globe.gl bundles its own three internally but does not expose it.
+
+## Git practice that matters here
+
+- **Never force-push `main`**. If you must roll back state, use the non-destructive `git read-tree -u --reset <commit>` then commit on top of HEAD — this preserves history and lets the user `git checkout <old-sha> -- path` to cherry-pick discarded work. There is precedent in the history (commit `f84faed`).
+- The user's local `core.autocrlf` rewrites line endings on commit; the `LF will be replaced by CRLF` warnings are expected and not actionable.
+- Commits land directly on `main` (no PR workflow). The author identity is set per-repo via `git -C Third-Trial config user.name/email`.
+
+## CelesTrak rate-limit reality
+
+CelesTrak's `gp.php` aggressively 403s repeat callers from the same IP. During dev, expect to hit the limit after a handful of reloads. The localStorage cache + bundled `data/active.tle` snapshot keep the site working through outages, but any new dev test should also confirm with `data/active.tle` deleted from cache to make sure the live path still works.
