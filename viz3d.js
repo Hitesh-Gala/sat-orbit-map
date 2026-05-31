@@ -593,37 +593,54 @@ function removePath() {
 }
 
 // Sample one full revolution by stepping the propagation time across
-// the sat's period.  Closed via THREE.LineLoop so the apogee→perigee
-// arc joins back at the start.  Uniform-in-time sampling means HEO/
-// Molniya orbits get denser samples near apogee where the sat moves
-// slowly — that's the right perceptual outcome too.
+// the sat's period, then sweep a TubeGeometry along a Catmull-Rom curve
+// through the samples.  A plain THREE.LineLoop renders as a 1-px
+// hairline on most browsers (WebGL clamps `linewidth`), which is
+// invisible against the night-sky texture — a real 3-D tube mesh has
+// guaranteed visible thickness and looks like an orbit ring.
+//
+// Uniform-in-time sampling: HEO / Molniya orbits naturally get denser
+// samples near apogee where the sat moves slowly — that's actually the
+// right perceptual outcome (smoother curve where it matters).
 function buildOrbitalPath(id) {
   const t = allSats[id];
   const period = satPeriod[id];
   if (!t || !period || !Number.isFinite(period)) return null;
   const N = PATH_SAMPLES;
-  const positions = new Float32Array(N * 3);
+  const points = [];
   const baseTime = (propNow || new Date()).getTime();
   const periodMs = period * 60 * 1000;
   for (let i = 0; i < N; i++) {
     const tt = new Date(baseTime + periodMs * (i / N));
     const r = propagate(t.rec, tt);
-    if (!r || !Number.isFinite(r.lat) || !Number.isFinite(r.alt)) continue;
+    if (!r || !Number.isFinite(r.lat) || !Number.isFinite(r.lon) || !Number.isFinite(r.alt)) continue;
     const altFrac = (r.alt / EARTH_R_KM) * altScale;
     const p = globe.getCoords(r.lat, r.lon, altFrac);
-    positions[i * 3]     = p.x;
-    positions[i * 3 + 1] = p.y;
-    positions[i * 3 + 2] = p.z;
+    points.push(new THREE.Vector3(p.x, p.y, p.z));
   }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  if (points.length < 4) return null;
+
+  const curve = new THREE.CatmullRomCurve3(points, /* closed */ true);
+  // Tube radius scales with the orbit's mean distance from origin so a
+  // GEO ring (~660 units across) and a LEO swarm (~108 units across)
+  // both get a tube that's visible without being bulky.  Floor of
+  // 0.6 units keeps even the tightest LEO orbit picky-able.
+  const meanRadius = points.reduce((a, v) => a + v.length(), 0) / points.length;
+  const tubeRadius = Math.max(0.6, meanRadius * 0.008);
+  const tubeGeo = new THREE.TubeGeometry(curve, Math.max(N, 192), tubeRadius, 8, true);
+
   const cls = satClass[id];
   const colour = (cls && ORBIT_COLOR[cls]) ? ORBIT_COLOR[cls].clone() : new THREE.Color(0xffffff);
-  const mat = new THREE.LineBasicMaterial({
+  const mat = new THREE.MeshBasicMaterial({
     color: colour,
     transparent: true,
     opacity: 0,
     depthWrite: false,
   });
-  return new THREE.LineLoop(geo, mat);
+  const mesh = new THREE.Mesh(tubeGeo, mat);
+  // Force the tube to render after the dimmed-down catalogue dots so
+  // it sits visibly on top.  Earth (opaque, depthWrite:true) still
+  // occludes the back half of the orbit via the depth test.
+  mesh.renderOrder = 2;
+  return mesh;
 }
