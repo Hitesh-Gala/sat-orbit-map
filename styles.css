@@ -796,6 +796,45 @@ body.hud-open  .float-toggle.data-toggle {
 }
 body.light .btn-viz3d .btn-nav-icon { color: #6a1b9a; text-shadow: none; }
 
+/* --- Cursor-tracking tooltip on the 3-D Visualiser page.
+   pointer-events:none so it never absorbs the mousemove events that drive
+   itself; raycasting lives in viz3d.js. */
+.sat-tip-3d {
+  position: fixed;
+  pointer-events: none;
+  z-index: 100;
+  max-width: 280px;
+  background: rgba(2, 6, 13, 0.94);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 10px 12px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.55;
+  letter-spacing: 0.03em;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.sat-tip-3d b {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--accent);
+  font-size: 13px;
+  letter-spacing: 0.05em;
+}
+.sat-tip-3d .cls {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  margin: 2px 0 4px;
+}
+.sat-tip-3d strong { color: var(--accent); font-weight: normal; font-variant-numeric: tabular-nums; }
+.sat-tip-3d .muted { color: var(--dim); }
+
 /* --- Game of Cones page ------------------------------------------------- */
 /* The page only has a single nav button (Globe back-link) and no menu-pill
    toggle, so override the 720-px drawer rule that hides .left-nav by

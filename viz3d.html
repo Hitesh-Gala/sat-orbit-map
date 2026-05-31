@@ -160,10 +160,14 @@
     </section>
   </aside>
 
+  <!-- Cursor-following tooltip populated by viz3d.js's raycaster.
+       Fixed-position + pointer-events:none so it never blocks orbit-drag. -->
+  <div id="sat-tip" class="sat-tip-3d" hidden></div>
+
   <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=3"></script>
-  <script src="viz3d.js?v=1"></script>
+  <script src="viz3d.js?v=2"></script>
 </body>
 </html>
