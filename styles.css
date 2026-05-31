@@ -809,6 +809,253 @@ body.hud-open  .float-toggle.data-toggle {
   }
 }
 
+/* --- SAT-STATS launcher on the main-page tracking-summary panel.
+   Sits below the count + as-of date, hugs the panel chrome, and styles
+   itself as a CTA bar with a chevron pointing at the new page. */
+.btn-statsline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 7px 10px;
+  background: linear-gradient(90deg, rgba(103, 200, 255, 0.10), rgba(103, 232, 164, 0.05));
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.btn-statsline:hover {
+  border-color: var(--accent);
+  background: linear-gradient(90deg, rgba(103, 200, 255, 0.20), rgba(103, 232, 164, 0.10));
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+.btn-statsline-icon { color: var(--green); font-size: 16px; line-height: 1; }
+.btn-statsline-label { flex: 1; }
+.btn-statsline-arrow {
+  color: var(--accent);
+  font-size: 18px;
+  transition: transform .15s;
+}
+.btn-statsline:hover .btn-statsline-arrow { transform: translateX(2px); }
+
+/* --- Sat-Stats page (cumulative catalogue + graphs view) ----------------
+   Inherits most chrome from .repo-* but adds a tab strip, the photo
+   thumbnail column, country-cell flag composition, and the charts grid. */
+body.page-stats { overflow: auto; }
+body.page-stats #globe { display: none; }
+.stats-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(ellipse at top, rgba(103, 200, 255, 0.06), transparent 60%),
+    var(--bg);
+}
+body.page-stats .repo-header .brand {
+  color: var(--accent);
+  text-shadow: 0 0 12px rgba(103, 200, 255, 0.55);
+}
+.stats-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 10px 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+.stats-tabs button {
+  background: rgba(103, 200, 255, 0.05);
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 8px 18px;
+  cursor: pointer;
+  position: relative;
+  top: 1px;
+}
+.stats-tabs button.active {
+  background: var(--bg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.stats-view { flex: 1; display: flex; flex-direction: column; }
+.stats-table-wrap {
+  flex: 1;
+  overflow: auto;
+  padding: 0 20px 20px;
+}
+.stats-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.stats-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  color: var(--dim);
+  font-weight: normal;
+  text-align: left;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 10px;
+  padding: 10px 8px;
+  white-space: nowrap;
+}
+.stats-table tbody td {
+  padding: 8px;
+  border-bottom: 1px solid rgba(110, 200, 255, 0.06);
+  color: var(--text);
+  vertical-align: middle;
+}
+.stats-table tbody tr:hover td { background: rgba(103, 200, 255, 0.05); }
+.stats-table .col-photo { width: 60px; padding: 6px 8px; }
+.stats-table .col-name { color: var(--accent); letter-spacing: 0.03em; min-width: 180px; }
+.stats-table .col-country { min-width: 160px; }
+.stats-table .col-status { width: 90px; text-align: center; }
+
+/* Photo column composition: link wraps the <img> so clicks open
+   Wikipedia in a new tab.  Placeholder card for "loading"/"no series". */
+.photo-thumb {
+  width: 48px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.4);
+}
+.photo-link { display: inline-block; line-height: 0; }
+.photo-link:hover .photo-thumb { border-color: var(--accent); }
+.photo-ph {
+  width: 48px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--line);
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--dim);
+  font-size: 16px;
+}
+
+/* Country cell: flag + name, side-by-side.  Globe glyph for multinational
+   / unknown owners.  flagcdn.com PNGs are 24×18 — match that aspect. */
+.flag {
+  width: 22px;
+  height: 16px;
+  vertical-align: middle;
+  margin-right: 6px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+}
+.flag-glyph {
+  display: inline-block;
+  width: 22px;
+  height: 16px;
+  vertical-align: middle;
+  margin-right: 6px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 16px;
+}
+.ctry-name { color: var(--text); font-size: 11px; }
+.ctry-name.muted { color: var(--dim); }
+
+/* Tiny ACTIVE / DECAYED badge in the rightmost column. */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.badge-active { background: rgba(103, 232, 164, 0.18); color: var(--green); }
+.badge-decay  { background: rgba(255, 107, 107, 0.18); color: var(--accent2); }
+
+/* Inline pagination buttons inside the toolbar pill. */
+.pill.nowrap { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.page-btn {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 12px;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+.page-btn:hover { border-color: var(--accent); background: rgba(103, 200, 255, 0.12); }
+
+/* Graphs view: responsive grid of cards.  Each card hosts a Chart.js
+   canvas inside a fixed-height box so the canvases don't stretch
+   unboundedly. */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 16px;
+  padding: 20px;
+}
+.chart-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px 18px 12px;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, .35) inset,
+    0 6px 24px rgba(0, 0, 0, .35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.chart-card.chart-wide { grid-column: 1 / -1; }
+.chart-card h3 {
+  margin: 0 0 4px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(103, 200, 255, 0.35);
+}
+.chart-card .chart-sub {
+  margin: 0 0 12px;
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 0.04em;
+}
+.chart-card .chart-sub code {
+  font-size: 10px;
+  background: rgba(103, 200, 255, 0.10);
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+.chart-box {
+  position: relative;
+  height: 280px;
+}
+.chart-card.chart-wide .chart-box { height: 240px; }
+
+@media (max-width: 720px) {
+  .stats-tabs { padding: 8px 12px 0; }
+  .stats-tabs button { padding: 6px 12px; font-size: 10px; }
+  .stats-table-wrap { padding: 0 12px 12px; }
+  .stats-table .col-name { min-width: 140px; }
+  .stats-table .col-country { min-width: 120px; }
+  .charts-grid { grid-template-columns: 1fr; padding: 12px; gap: 12px; }
+  .chart-card { padding: 12px; }
+  .chart-box { height: 240px; }
+}
+
 /* --- ChinRepo page (Chinese-payload repository view) -------------------- */
 body.page-repo { overflow: auto; }
 body.page-repo #globe { display: none; }

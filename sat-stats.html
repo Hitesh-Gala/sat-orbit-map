@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4">
+  <title>NAZAR · Sat Stats</title>
+  <link rel="preconnect" href="https://celestrak.org">
+  <link rel="preconnect" href="https://en.wikipedia.org">
+  <link rel="preconnect" href="https://upload.wikimedia.org" crossorigin>
+  <link rel="preconnect" href="https://flagcdn.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="page-stats">
+  <div class="stats-shell">
+    <header class="repo-header">
+      <div class="brand">NAZAR · SAT-STATS · CUMULATIVE CATALOGUE</div>
+      <div class="right">
+        <span id="stats-status">Booting…</span>
+        <a class="btn-back" href="index.html">← Globe</a>
+      </div>
+    </header>
+
+    <nav class="stats-tabs" role="tablist">
+      <button id="tab-table"  type="button" role="tab" aria-selected="true"  class="active">Table</button>
+      <button id="tab-graphs" type="button" role="tab" aria-selected="false">Graphs</button>
+    </nav>
+
+    <!-- ============================================================
+         TABLE VIEW — paginated catalogue with name, NORAD, int'l ID,
+         owner-country flag, launch-country flag, and a Wikipedia
+         thumbnail per satellite series.
+         ============================================================ -->
+    <section id="view-table" class="stats-view">
+      <div class="repo-toolbar">
+        <input type="search" id="filter" placeholder="Filter by name, NORAD, country…" autocomplete="off">
+        <span class="pill">Showing <strong id="stats-shown">…</strong> / <strong id="stats-filtered">…</strong></span>
+        <span class="pill">Cumulative <strong id="stats-cumulative">…</strong></span>
+        <span class="pill nowrap">Page
+          <button class="page-btn" id="prev-page" aria-label="Previous page">‹</button>
+          <strong id="page-current">1</strong>/<strong id="page-total">1</strong>
+          <button class="page-btn" id="next-page" aria-label="Next page">›</button>
+        </span>
+      </div>
+
+      <div class="stats-table-wrap">
+        <table class="repo-table stats-table">
+          <thead>
+            <tr>
+              <th class="col-photo">Photo</th>
+              <th>Name</th>
+              <th>NORAD</th>
+              <th>Int'l ID</th>
+              <th>Country of Origin</th>
+              <th>Launch Country</th>
+              <th class="col-status">Status</th>
+            </tr>
+          </thead>
+          <tbody id="stats-rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         GRAPHS VIEW — Chart.js canvases.  All four charts share the
+         same theme palette derived from CSS custom properties.
+         ============================================================ -->
+    <section id="view-graphs" class="stats-view" hidden>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>Orbit-Class Distribution</h3>
+          <div class="chart-sub">LEO &lt; 2000 km · MEO 2000–30 000 km · GEO ~35 786 km · HEO / elliptical</div>
+          <div class="chart-box"><canvas id="chart-orbits"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>Top 12 Operators</h3>
+          <div class="chart-sub">Country / organisation that owns the satellite (SATCAT <code>OWNER</code>).</div>
+          <div class="chart-box"><canvas id="chart-owners"></canvas></div>
+        </div>
+        <div class="chart-card chart-wide">
+          <h3>Launches Per Year</h3>
+          <div class="chart-sub">From SATCAT <code>LAUNCH_DATE</code>.  Year of first object catalogued.</div>
+          <div class="chart-box"><canvas id="chart-launches"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>Top 10 Launch Sites</h3>
+          <div class="chart-sub">Where the satellite was lofted from.</div>
+          <div class="chart-box"><canvas id="chart-sites"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>Orbital Inclination</h3>
+          <div class="chart-sub">Distribution in 10° buckets, 0° = equatorial → 180° = retrograde.</div>
+          <div class="chart-box"><canvas id="chart-inclination"></canvas></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+  <script src="tle-loader.js?v=3"></script>
+  <script src="sat-stats.js?v=1"></script>
+</body>
+</html>
