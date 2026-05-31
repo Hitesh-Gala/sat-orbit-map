@@ -788,12 +788,21 @@ body.hud-open  .float-toggle.data-toggle {
   }
 }
 
+/* --- 3-D Visualiser launcher icon tint (.left-nav main page).
+   Keeps the hex glyph distinct from the green ◯ Globe icon. */
+.btn-viz3d .btn-nav-icon {
+  color: #d77eff;
+  text-shadow: 0 0 8px rgba(215, 126, 255, 0.55);
+}
+body.light .btn-viz3d .btn-nav-icon { color: #6a1b9a; text-shadow: none; }
+
 /* --- Game of Cones page ------------------------------------------------- */
 /* The page only has a single nav button (Globe back-link) and no menu-pill
    toggle, so override the 720-px drawer rule that hides .left-nav by
    default — otherwise mobile users would be stranded with no way back. */
 @media (max-width: 720px) {
-  body.page-goc .left-nav {
+  body.page-goc .left-nav,
+  body.page-viz3d .left-nav {
     display: flex;
     top: 8px;
     left: 8px;
@@ -802,6 +811,12 @@ body.hud-open  .float-toggle.data-toggle {
     padding: 0;
   }
   body.page-goc .goc-shell {
+    top: 56px;
+    left: 8px;
+    width: calc(100vw - 16px);
+    max-height: calc(100vh - 120px);
+  }
+  body.page-viz3d .viz-shell {
     top: 56px;
     left: 8px;
     width: calc(100vw - 16px);

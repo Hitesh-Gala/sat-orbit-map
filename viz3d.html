@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4">
+  <title>NAZAR · 3-D Visualiser</title>
+  <link rel="preconnect" href="https://celestrak.org">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Page-specific HUD — a left-edge legend / stats card that mirrors
+       the visual language of game-of-cones .goc-shell but with a wider
+       slate to fit the four-row orbit-class legend.  All other chrome
+       (globe canvas, nav button, topbar) reuses the shared styles. */
+    .viz-shell {
+      position: fixed;
+      top: 86px;
+      left: 14px;
+      width: 280px;
+      max-width: calc(100vw - 28px);
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .viz-legend-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 0;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid rgba(110, 200, 255, 0.07);
+    }
+    .viz-legend-row:last-child { border-bottom: 0; }
+    .viz-legend-row .swatch {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+      box-shadow: 0 0 8px currentColor;
+    }
+    .viz-legend-row .desc { flex: 1; color: var(--text); }
+    .viz-legend-row .desc small { color: var(--dim); margin-left: 6px; font-size: 11px; }
+    .viz-legend-row .count {
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+    }
+    .viz-controls { display: flex; flex-direction: column; gap: 6px; }
+    .viz-controls label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--dim);
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      user-select: none;
+    }
+    .viz-controls input[type="checkbox"] { accent-color: var(--accent); }
+    .viz-controls .slider-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .viz-controls .slider-row .v {
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      text-transform: none;
+    }
+    .viz-controls input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+    .viz-status { font-size: 11px; color: var(--dim); }
+    .viz-status strong { color: var(--accent); font-weight: normal; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body class="page-viz3d">
+  <div id="globe"></div>
+
+  <nav class="left-nav" aria-label="back">
+    <a class="btn-nav" href="index.html" title="Back to the main globe">
+      <span class="btn-nav-icon">◯</span>
+      <span class="btn-nav-label">Globe</span>
+    </a>
+  </nav>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-short">NAZAR</span>
+      <span class="brand-long"> · 3-D Visualiser</span>
+    </div>
+    <div class="sub">Every active satellite, placed at its real altitude.</div>
+  </header>
+
+  <aside class="viz-shell" aria-label="3-D visualiser controls">
+    <section class="panel">
+      <div class="label" style="margin-bottom: 6px">Orbit-class legend</div>
+      <div class="viz-legend-row">
+        <span><span class="swatch" style="background:#67e8a4;color:#67e8a4"></span>
+          <span class="desc">LEO <small>&lt; 2 000 km</small></span></span>
+        <span class="count" id="cnt-leo">…</span>
+      </div>
+      <div class="viz-legend-row">
+        <span><span class="swatch" style="background:#f9d24c;color:#f9d24c"></span>
+          <span class="desc">MEO <small>2–30 000 km</small></span></span>
+        <span class="count" id="cnt-meo">…</span>
+      </div>
+      <div class="viz-legend-row">
+        <span><span class="swatch" style="background:#ff9966;color:#ff9966"></span>
+          <span class="desc">GEO <small>~35 786 km</small></span></span>
+        <span class="count" id="cnt-geo">…</span>
+      </div>
+      <div class="viz-legend-row">
+        <span><span class="swatch" style="background:#d77eff;color:#d77eff"></span>
+          <span class="desc">HEO <small>elliptical</small></span></span>
+        <span class="count" id="cnt-heo">…</span>
+      </div>
+    </section>
+
+    <section class="panel viz-controls">
+      <div class="label" style="margin-bottom: 6px">Filter by orbit class</div>
+      <label><input type="checkbox" id="f-leo" checked> Show LEO</label>
+      <label><input type="checkbox" id="f-meo" checked> Show MEO</label>
+      <label><input type="checkbox" id="f-geo" checked> Show GEO</label>
+      <label><input type="checkbox" id="f-heo" checked> Show HEO</label>
+
+      <div class="slider-row">
+        <span>Altitude scale</span>
+        <span class="v"><span id="alt-scale-val">1.0</span>×</span>
+      </div>
+      <input type="range" id="alt-scale" min="0.2" max="3" step="0.1" value="1">
+      <div class="slider-row">
+        <span>Sat size</span>
+        <span class="v"><span id="dot-size-val">1.0</span>×</span>
+      </div>
+      <input type="range" id="dot-size" min="0.3" max="3" step="0.1" value="1">
+    </section>
+
+    <section class="panel">
+      <div id="viz-status" class="viz-status">Booting…</div>
+    </section>
+  </aside>
+
+  <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+  <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+  <script src="tle-loader.js?v=3"></script>
+  <script src="viz3d.js?v=1"></script>
+</body>
+</html>
