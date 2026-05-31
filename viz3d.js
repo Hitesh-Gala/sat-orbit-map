@@ -87,7 +87,15 @@ const SAT_GEOM = new THREE.SphereGeometry(1.0, 6, 6);
 // through the USE_INSTANCING_COLOR shader define.  No vertexColors flag
 // needed; that flag wires per-vertex geometry colour, which is a
 // different pathway.
-const SAT_MAT  = new THREE.MeshBasicMaterial({ color: 0xffffff });
+// transparent + depthWrite:false lets the click-to-select code tween
+// the whole catalogue's opacity down to ~12% without re-touching 16 k
+// per-instance entries each frame — one uniform update covers it.
+const SAT_MAT  = new THREE.MeshBasicMaterial({
+  color: 0xffffff,
+  transparent: true,
+  opacity: 1.0,
+  depthWrite: false,
+});
 const instMesh = new THREE.InstancedMesh(SAT_GEOM, SAT_MAT, MAX_INSTANCES);
 instMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 instMesh.frustumCulled = false;   // bulk update; cheaper to render than to cull
@@ -99,6 +107,28 @@ for (let i = 0; i < MAX_INSTANCES; i++) instMesh.setMatrixAt(i, HIDE_MATRIX);
 instMesh.instanceMatrix.needsUpdate = true;
 
 globe.scene().add(instMesh);
+
+// --- Selection: highlight sphere + orbital-path line ----------------------
+//
+// When a sat is clicked, the corresponding instance in instMesh gets
+// hidden (HIDE_MATRIX) and `highlightSphere` is positioned at the sat's
+// scene-space coordinates — a larger, full-brightness stand-in that
+// remains crisp while the main instMesh fades to FADE_DIM_OPACITY.
+
+const HIGHLIGHT_RADIUS = 2.0;
+const highlightSphere = new THREE.Mesh(
+  new THREE.SphereGeometry(HIGHLIGHT_RADIUS, 16, 16),
+  new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 })
+);
+highlightSphere.visible = false;
+globe.scene().add(highlightSphere);
+
+let pathLine = null;       // THREE.LineLoop or null when no selection
+let selectedId = -1;       // index into allSats, or -1
+const FADE_DURATION_MS = 350;
+const FADE_DIM_OPACITY = 0.12;
+const PATH_OPACITY     = 0.85;
+const PATH_SAMPLES     = 128;
 
 // --- App state ------------------------------------------------------------
 
@@ -151,16 +181,25 @@ function propagateChunk() {
     satClass[i] = cls;
     satState[i] = { lat: r.lat, lon: r.lon, alt: r.alt };
     tally[cls]++;
-    if (!filter[cls]) {
-      instMesh.setMatrixAt(i, HIDE_MATRIX);
-      continue;
-    }
+
     // Map satellite alt (km) → globe.gl altitude fraction, then to a
     // scene-space position via the globe's own coord helper.  altScale
     // lets the user exaggerate the radial spread without distorting
     // the angular positions.
     const altFrac = (r.alt / EARTH_R_KM) * altScale;
     const p = globe.getCoords(r.lat, r.lon, altFrac);
+
+    // Selected sat: the highlightSphere stands in at full brightness;
+    // hide the instance in the main mesh so it doesn't double up.
+    if (i === selectedId) {
+      instMesh.setMatrixAt(i, HIDE_MATRIX);
+      highlightSphere.position.set(p.x, p.y, p.z);
+      continue;
+    }
+    if (!filter[cls]) {
+      instMesh.setMatrixAt(i, HIDE_MATRIX);
+      continue;
+    }
     _pos.set(p.x, p.y, p.z);
     _scale.setScalar(sizeUnit);
     _mat.compose(_pos, _quat, _scale);
@@ -224,6 +263,9 @@ $('alt-scale').addEventListener('input', e => {
   // Altitude scale changes positions, not just visibility — need a full
   // SGP4 redo (cheap enough; already chunked).
   startPropagationTick();
+  // If a sat is selected, rebuild its orbital path at the new scale so
+  // the line matches the highlight sphere's new radius.
+  if (selectedId !== -1) rebuildSelectionPath();
 });
 $('dot-size').addEventListener('input', e => {
   dotScale = parseFloat(e.target.value) || 1;
@@ -323,13 +365,22 @@ function processHover() {
   ndc.x = ((ev.clientX - rect.left) / rect.width)  *  2 - 1;
   ndc.y = ((ev.clientY - rect.top)  / rect.height) * -2 + 1;
   raycaster.setFromCamera(ndc, globe.camera());
-  const hits = raycaster.intersectObject(instMesh, false);
+  // Also raycast against the highlight sphere so hovering over the
+  // selected sat (which is hidden in the InstancedMesh) still tooltips.
+  const targets = highlightSphere.visible
+    ? [instMesh, highlightSphere]
+    : [instMesh];
+  const hits = raycaster.intersectObjects(targets, false);
   // Skip hits on hidden / invalid / filtered-out instances.  Zero-scaled
   // instances collapse to the scene origin (Earth's centre) — they're
   // visually invisible but a ray passing through the centre can still
   // pick one up, so the explicit filter + satState guards matter.
   let id = -1;
   for (const h of hits) {
+    if (h.object === highlightSphere) {
+      if (selectedId !== -1 && satState[selectedId]) { id = selectedId; break; }
+      continue;
+    }
     if (h.instanceId === undefined) continue;
     const i = h.instanceId;
     if (!satState[i]) continue;
@@ -379,4 +430,200 @@ function onMouseLeave() {
   if (!cv) { requestAnimationFrame(attachHover); return; }
   cv.addEventListener('mousemove',  onMouseMove);
   cv.addEventListener('mouseleave', onMouseLeave);
+  // Click → select / deselect.  The browser only fires 'click' when
+  // pointerdown and pointerup are at near-the-same screen position, so
+  // a drag-rotation of the globe won't trigger it.  No manual
+  // drag-distance heuristic needed.
+  cv.addEventListener('click', onCanvasClick);
 })();
+
+// --- Tween helper --------------------------------------------------------
+//
+// Ease-out-quad lerp of a property on an object over `dur` ms, driven by
+// requestAnimationFrame.  Concurrent tweens stack — each one schedules
+// its own rAF chain, so the main-mesh opacity and the path opacity can
+// animate independently.
+
+function tween(target, prop, to, dur, onDone) {
+  const start = performance.now();
+  const from = target[prop];
+  function step() {
+    const t = Math.min(1, (performance.now() - start) / dur);
+    const eased = 1 - Math.pow(1 - t, 2);
+    target[prop] = from + (to - from) * eased;
+    if (t < 1) requestAnimationFrame(step);
+    else if (onDone) onDone();
+  }
+  step();
+}
+
+// --- Click selection -----------------------------------------------------
+
+function onCanvasClick(ev) {
+  const cv = ev.currentTarget;
+  const rect = cv.getBoundingClientRect();
+  ndc.x = ((ev.clientX - rect.left) / rect.width)  *  2 - 1;
+  ndc.y = ((ev.clientY - rect.top)  / rect.height) * -2 + 1;
+  raycaster.setFromCamera(ndc, globe.camera());
+  const targets = highlightSphere.visible
+    ? [instMesh, highlightSphere]
+    : [instMesh];
+  const hits = raycaster.intersectObjects(targets, false);
+  let id = -1;
+  for (const h of hits) {
+    if (h.object === highlightSphere) {
+      // Clicking the highlight sphere itself is a no-op (it's already
+      // the selected sat).
+      if (selectedId !== -1) return;
+      continue;
+    }
+    if (h.instanceId === undefined) continue;
+    const i = h.instanceId;
+    if (!satState[i]) continue;
+    const cls = satClass[i];
+    if (!cls || !filter[cls]) continue;
+    id = i;
+    break;
+  }
+  if (id !== -1) selectSat(id);
+  else           deselectSat();
+}
+
+function selectSat(id) {
+  // No-op if clicking the already-selected sat.
+  if (id === selectedId) return;
+
+  // If we already had a selection, hand its instance back to the main
+  // mesh so the next propagation tick (or anything in between) doesn't
+  // leave a hole where the old sat used to be.
+  const prevId = selectedId;
+  selectedId = id;
+  if (prevId !== -1) restoreInstance(prevId);
+
+  // Hide the new selection's instance — the highlight sphere will
+  // stand in for it at full brightness.
+  instMesh.setMatrixAt(id, HIDE_MATRIX);
+  instMesh.instanceMatrix.needsUpdate = true;
+
+  // Position + colour the highlight sphere right now (don't wait for
+  // the next propagation tick, which can be up to REFRESH_MS away).
+  const st = satState[id];
+  if (st) {
+    const altFrac = (st.alt / EARTH_R_KM) * altScale;
+    const p = globe.getCoords(st.lat, st.lon, altFrac);
+    highlightSphere.position.set(p.x, p.y, p.z);
+  }
+  const cls = satClass[id];
+  if (cls && ORBIT_COLOR[cls]) highlightSphere.material.color.copy(ORBIT_COLOR[cls]);
+  highlightSphere.visible = true;
+  tween(highlightSphere.material, 'opacity', 1.0, FADE_DURATION_MS);
+
+  // Fade the rest of the catalogue to background dim — single uniform
+  // update per frame, no per-instance work.
+  tween(instMesh.material, 'opacity', FADE_DIM_OPACITY, FADE_DURATION_MS);
+
+  // (Re-)build the orbital path and fade it in.  We rebuild rather
+  // than reusing the previous selection's geometry because each sat's
+  // orbit is different.
+  rebuildSelectionPath();
+}
+
+function deselectSat() {
+  if (selectedId === -1) return;
+  const id = selectedId;
+  selectedId = -1;
+  // Restore the instance back into the main mesh immediately — the
+  // fade-up of instMesh.material.opacity will smooth the visual
+  // transition for the entire catalogue including this sat.
+  restoreInstance(id);
+  tween(instMesh.material, 'opacity', 1.0, FADE_DURATION_MS);
+  tween(highlightSphere.material, 'opacity', 0, FADE_DURATION_MS, () => {
+    if (selectedId === -1) highlightSphere.visible = false;
+  });
+  if (pathLine) {
+    const lineRef = pathLine;
+    tween(pathLine.material, 'opacity', 0, FADE_DURATION_MS, () => {
+      // Guard against a new selection taking over mid-fade.
+      if (lineRef === pathLine) removePath();
+    });
+  }
+}
+
+// Push a previously-hidden instance's matrix back into the main mesh
+// based on the latest satState + filter + dotScale.  Called when a
+// sat is deselected, or when a different sat is being selected and we
+// need to restore the previous one.
+function restoreInstance(i) {
+  const st = satState[i];
+  const cls = satClass[i];
+  if (!st || !cls || !filter[cls]) {
+    instMesh.setMatrixAt(i, HIDE_MATRIX);
+  } else {
+    const altFrac = (st.alt / EARTH_R_KM) * altScale;
+    const p = globe.getCoords(st.lat, st.lon, altFrac);
+    _pos.set(p.x, p.y, p.z);
+    _scale.setScalar(dotScale);
+    _mat.compose(_pos, _quat, _scale);
+    instMesh.setMatrixAt(i, _mat);
+    instMesh.setColorAt(i, ORBIT_COLOR[cls]);
+  }
+  instMesh.instanceMatrix.needsUpdate = true;
+  if (instMesh.instanceColor) instMesh.instanceColor.needsUpdate = true;
+}
+
+function rebuildSelectionPath() {
+  // Take down the existing path geometry without fading — when the user
+  // moves the altScale slider mid-selection we just snap to the new
+  // shape rather than animate.
+  removePath();
+  if (selectedId === -1) return;
+  const newPath = buildOrbitalPath(selectedId);
+  if (!newPath) return;
+  pathLine = newPath;
+  globe.scene().add(pathLine);
+  tween(pathLine.material, 'opacity', PATH_OPACITY, FADE_DURATION_MS);
+}
+
+function removePath() {
+  if (!pathLine) return;
+  globe.scene().remove(pathLine);
+  pathLine.geometry.dispose();
+  pathLine.material.dispose();
+  pathLine = null;
+}
+
+// Sample one full revolution by stepping the propagation time across
+// the sat's period.  Closed via THREE.LineLoop so the apogee→perigee
+// arc joins back at the start.  Uniform-in-time sampling means HEO/
+// Molniya orbits get denser samples near apogee where the sat moves
+// slowly — that's the right perceptual outcome too.
+function buildOrbitalPath(id) {
+  const t = allSats[id];
+  const period = satPeriod[id];
+  if (!t || !period || !Number.isFinite(period)) return null;
+  const N = PATH_SAMPLES;
+  const positions = new Float32Array(N * 3);
+  const baseTime = (propNow || new Date()).getTime();
+  const periodMs = period * 60 * 1000;
+  for (let i = 0; i < N; i++) {
+    const tt = new Date(baseTime + periodMs * (i / N));
+    const r = propagate(t.rec, tt);
+    if (!r || !Number.isFinite(r.lat) || !Number.isFinite(r.alt)) continue;
+    const altFrac = (r.alt / EARTH_R_KM) * altScale;
+    const p = globe.getCoords(r.lat, r.lon, altFrac);
+    positions[i * 3]     = p.x;
+    positions[i * 3 + 1] = p.y;
+    positions[i * 3 + 2] = p.z;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const cls = satClass[id];
+  const colour = (cls && ORBIT_COLOR[cls]) ? ORBIT_COLOR[cls].clone() : new THREE.Color(0xffffff);
+  const mat = new THREE.LineBasicMaterial({
+    color: colour,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+  });
+  return new THREE.LineLoop(geo, mat);
+}
