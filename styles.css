@@ -796,6 +796,49 @@ body.hud-open  .float-toggle.data-toggle {
 }
 body.light .btn-viz3d .btn-nav-icon { color: #6a1b9a; text-shadow: none; }
 
+/* --- Takshashila Institution logo — top-right corner on every page.
+   Fixed position with z-50 so it floats above all page chrome
+   (topbar, hud-tr, repo-header, page-2d-header, etc.).  Clicking
+   opens https://takshashila.org.in/ in a new tab. */
+.top-logo {
+  position: fixed;
+  top: 10px;
+  right: 14px;
+  z-index: 50;
+  display: block;
+  text-decoration: none;
+  opacity: 0.94;
+  transition: opacity .15s, transform .15s;
+}
+.top-logo:hover  { opacity: 1; transform: scale(1.04); }
+.top-logo:active { transform: scale(0.98); }
+.top-logo img {
+  height: 40px;
+  width: auto;
+  display: block;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.55));
+}
+/* Full-width headers (chinrepo, sat-stats, 2d-views, compendium)
+   already pack content right-of-flex.  Reserve ~130 px on the right
+   so the logo sits over empty space, not on top of the header
+   buttons. */
+body.page-repo  .repo-header,
+body.page-stats .repo-header,
+body.page-2d    .page-2d-header { padding-right: 130px; }
+body.page-compendium .header-inner { padding-right: 130px; }
+
+@media (max-width: 720px) {
+  .top-logo img { height: 30px; }
+  /* On mobile, drop below the float-toggle pills (z=12) so the home
+     page's MENU / DATA buttons stay tappable even when the logo
+     overlaps their corner. */
+  .top-logo { z-index: 11; }
+  body.page-repo  .repo-header,
+  body.page-stats .repo-header,
+  body.page-2d    .page-2d-header,
+  body.page-compendium .header-inner { padding-right: 96px; }
+}
+
 /* --- Cursor-tracking tooltip on the 3-D Visualiser page.
    pointer-events:none so it never absorbs the mousemove events that drive
    itself; raycasting lives in viz3d.js. */
