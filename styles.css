@@ -799,7 +799,11 @@ body.light .btn-viz3d .btn-nav-icon { color: #6a1b9a; text-shadow: none; }
 /* --- Takshashila Institution logo — top-right corner on every page.
    Fixed position with z-50 so it floats above all page chrome
    (topbar, hud-tr, repo-header, page-2d-header, etc.).  Clicking
-   opens https://takshashila.org.in/ in a new tab. */
+   opens https://takshashila.org.in/ in a new tab.
+
+   The logo sits inside a thin dark panel so it reads cleanly whether
+   the canvas behind is the bright Blue-Marble atmosphere, the
+   night-sky stars, a light-theme table page, or anything else. */
 .top-logo {
   position: fixed;
   top: 10px;
@@ -807,36 +811,40 @@ body.light .btn-viz3d .btn-nav-icon { color: #6a1b9a; text-shadow: none; }
   z-index: 50;
   display: block;
   text-decoration: none;
-  opacity: 0.94;
-  transition: opacity .15s, transform .15s;
+  padding: 6px 10px;
+  background: rgba(2, 6, 13, 0.78);
+  border: 1px solid rgba(110, 200, 255, 0.25);
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  transition: opacity .15s, transform .15s, border-color .15s;
 }
-.top-logo:hover  { opacity: 1; transform: scale(1.04); }
+.top-logo:hover  { transform: scale(1.04); border-color: var(--accent); }
 .top-logo:active { transform: scale(0.98); }
 .top-logo img {
-  height: 40px;
+  height: 56px;
   width: auto;
   display: block;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.55));
 }
 /* Full-width headers (chinrepo, sat-stats, 2d-views, compendium)
-   already pack content right-of-flex.  Reserve ~130 px on the right
-   so the logo sits over empty space, not on top of the header
-   buttons. */
+   already pack content right-of-flex.  Reserve ~180 px on the right
+   so the logo panel (≈160 px wide at 56 px image) sits over empty
+   space, not on top of the header buttons. */
 body.page-repo  .repo-header,
 body.page-stats .repo-header,
-body.page-2d    .page-2d-header { padding-right: 130px; }
-body.page-compendium .header-inner { padding-right: 130px; }
+body.page-2d    .page-2d-header { padding-right: 180px; }
+body.page-compendium .header-inner { padding-right: 180px; }
 
 @media (max-width: 720px) {
-  .top-logo img { height: 30px; }
-  /* On mobile, drop below the float-toggle pills (z=12) so the home
-     page's MENU / DATA buttons stay tappable even when the logo
-     overlaps their corner. */
-  .top-logo { z-index: 11; }
+  .top-logo { padding: 4px 8px; z-index: 11; }
+  .top-logo img { height: 34px; }
+  /* z-index drop on mobile keeps the home page's MENU / DATA float
+     pills (z=12) tappable even where the logo overlaps their corner. */
   body.page-repo  .repo-header,
   body.page-stats .repo-header,
   body.page-2d    .page-2d-header,
-  body.page-compendium .header-inner { padding-right: 96px; }
+  body.page-compendium .header-inner { padding-right: 110px; }
 }
 
 /* --- Cursor-tracking tooltip on the 3-D Visualiser page.
