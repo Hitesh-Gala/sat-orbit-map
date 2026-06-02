@@ -223,10 +223,20 @@ function launchCountryCell(siteCode) {
   }
   const site = LAUNCH_SITE[siteCode];
   if (!site) {
-    return `<span class="flag-glyph" title="unknown">🌐</span><span class="ctry-name muted">${esc(siteCode)}</span>`;
+    // Unknown site code — show the raw code as the site name and a
+    // globe glyph for the unknown country.
+    return `<span class="flag-glyph" title="unknown">🌐</span><span class="ctry-name muted">
+      <span class="ctry-main">—</span>
+      <span class="site-name">${esc(siteCode)}</span>
+    </span>`;
   }
   const c = COUNTRY[site.owner];
-  return `${flagImg(c)}<span class="ctry-name" title="${esc(site.name)}">${esc(c ? c.name : site.owner)}</span>`;
+  // Two-line layout: bold country name, then the dim physical-site
+  // name underneath (e.g. "Baikonur, Kazakhstan").
+  return `${flagImg(c)}<span class="ctry-name">
+    <span class="ctry-main">${esc(c ? c.name : site.owner)}</span>
+    <span class="site-name">${esc(site.name)}</span>
+  </span>`;
 }
 
 // =========================================================================
@@ -611,10 +621,14 @@ let currentPage = 0;
 
 function rebuildFiltered(db) {
   const q = $('filter').value.trim().toLowerCase();
+  const ownerFilter = $('filter-owner').value;
   const out = [];
   for (const id of Object.keys(db)) {
     const r = db[id];
     if (!r.name) continue;
+    // Country dropdown: hard-filter by OWNER code if selected.  Empty
+    // value (default option) matches everything.
+    if (ownerFilter && r.owner !== ownerFilter) continue;
     if (q) {
       const hay = `${r.name} ${r.norad} ${r.intlId || ''} ${r.owner || ''} ${COUNTRY[r.owner]?.name || ''}`.toLowerCase();
       if (!hay.includes(q)) continue;
@@ -631,6 +645,36 @@ function rebuildFiltered(db) {
   out.sort((a, b) => a.name.localeCompare(b.name));
   filteredRows = out;
   if (currentPage * PAGE_SIZE >= filteredRows.length) currentPage = 0;
+}
+
+// Build the Country-of-Origin filter dropdown from whatever owner
+// codes are present in the cumulative DB right now.  Sorted by
+// displayed country name, not by raw code, so users scan it as
+// "Argentina, Austria, Australia…" rather than "ARGN, ASRA, AUS…".
+// Preserves the current selection across re-populates.
+function populateOwnerDropdown(db) {
+  const select = $('filter-owner');
+  if (!select) return;
+  const currentValue = select.value;
+  const owners = new Set();
+  for (const id of Object.keys(db)) {
+    const o = db[id].owner;
+    if (o) owners.add(o);
+  }
+  const sorted = [...owners].sort((a, b) => {
+    const na = COUNTRY[a]?.name || a;
+    const nb = COUNTRY[b]?.name || b;
+    return na.localeCompare(nb);
+  });
+  const opts = ['<option value="">Country of Origin · All</option>'];
+  for (const o of sorted) {
+    const name = COUNTRY[o]?.name || o;
+    opts.push(`<option value="${esc(o)}">${esc(name)}</option>`);
+  }
+  select.innerHTML = opts.join('');
+  // Restore prior selection if the country is still represented in
+  // the DB; otherwise fall back to "All".
+  select.value = sorted.includes(currentValue) ? currentValue : '';
 }
 
 function renderTable(db) {
@@ -910,6 +954,7 @@ async function boot() {
   // Render whatever's in the cumulative DB immediately — instant first paint
   // even before the network round-trips complete.
   if (Object.keys(db).length) {
+    populateOwnerDropdown(db);
     renderTable(db);
     renderCharts(db);
   }
@@ -926,11 +971,13 @@ async function boot() {
               : 'bundled snapshot';
   setStatus(`${tles.length.toLocaleString()} TLEs (${tleTag}) · ${satrec.length.toLocaleString()} SATCAT (${scSource}) · cumulative ${Object.keys(db).length.toLocaleString()} sats (+${added} new)`);
 
+  populateOwnerDropdown(db);
   renderTable(db);
   renderCharts(db);
 }
 
 $('filter').addEventListener('input', () => { currentPage = 0; renderTable(db); });
+$('filter-owner').addEventListener('change', () => { currentPage = 0; renderTable(db); });
 $('prev-page').addEventListener('click', () => { if (currentPage > 0) { currentPage--; renderTable(db); } });
 $('next-page').addEventListener('click', () => {
   const pages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));

@@ -1227,8 +1227,63 @@ body.page-stats .repo-header .brand {
   font-size: 13px;
   line-height: 16px;
 }
-.ctry-name { color: var(--text); font-size: 11px; }
+.ctry-name { color: var(--text); font-size: 11px; display: inline-block; vertical-align: middle; }
 .ctry-name.muted { color: var(--dim); }
+/* Two-line variant used by the Launch Country column: bold country
+   on top, dim launch-site name below.  Both lines wrap inside the
+   same cell so the table layout doesn't shift. */
+.ctry-name .ctry-main { display: block; line-height: 1.3; }
+.ctry-name .site-name {
+  display: block;
+  margin-top: 1px;
+  color: var(--dim);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+}
+
+/* Filter dropdown styled as a column header — looks like a thead cell
+   until you hover it, then surfaces as an interactive control. */
+.col-filter {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: var(--dim);
+  font-family: var(--mono);
+  font-weight: normal;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 4px 24px 4px 6px;
+  cursor: pointer;
+  outline: none;
+  max-width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  /* Hand-built chevron in the right padding via background-image so
+     the dropdown reads as filterable without relying on the native
+     <select> arrow (which varies wildly across browsers). */
+  background-image: linear-gradient(45deg, transparent 50%, var(--dim) 50%),
+                    linear-gradient(135deg, var(--dim) 50%, transparent 50%);
+  background-position: calc(100% - 12px) calc(50% - 1px),
+                       calc(100% - 7px)  calc(50% - 1px);
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+.col-filter:hover,
+.col-filter:focus {
+  border-color: var(--accent);
+  background-color: rgba(103, 200, 255, 0.10);
+  color: var(--accent);
+  background-image: linear-gradient(45deg, transparent 50%, var(--accent) 50%),
+                    linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+  background-position: calc(100% - 12px) calc(50% - 1px),
+                       calc(100% - 7px)  calc(50% - 1px);
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+.col-filter option { background: var(--bg); color: var(--text); }
 
 /* Tiny ACTIVE / DECAYED badge in the rightmost column. */
 .badge {

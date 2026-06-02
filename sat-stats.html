@@ -58,7 +58,15 @@
               <th>Name</th>
               <th>NORAD</th>
               <th>Int'l ID</th>
-              <th>Country of Origin</th>
+              <th class="col-country">
+                <!-- Dropdown doubles as column header; default option
+                     reads "Country of Origin" and shows the full
+                     catalogue.  Populated at runtime by sat-stats.js
+                     from the unique OWNER codes in the cumulative DB. -->
+                <select id="filter-owner" class="col-filter" aria-label="Filter by country of origin">
+                  <option value="">Country of Origin · All</option>
+                </select>
+              </th>
               <th>Launch Country</th>
               <th class="col-status">Status</th>
             </tr>
@@ -106,7 +114,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=3"></script>
-  <script src="sat-stats.js?v=2"></script>
+  <script src="sat-stats.js?v=3"></script>
   <script src="mobile-menu.js?v=1"></script>
 </body>
 </html>
