@@ -429,11 +429,22 @@ function photoCellHtml(r) {
 // SATCAT fetch
 // =========================================================================
 //
-// CelesTrak's satcat/records.php supports the same GROUP filter as gp.php.
-// One call returns ~16 k JSON records — heavy but sufficient.  Cached 24 h
-// in localStorage so we don't spam CelesTrak on every page load.
+// Three-stage cascade:
+//   1. localStorage cache (24 h TTL) — fastest, no network.
+//   2. CelesTrak records.php?GROUP=active — fresh JSON from the source.
+//   3. Bundled data/satcat-active.json snapshot — pre-trimmed to active
+//      payloads only.  ~2.6 MB raw / ~700 KB gzipped.  Always available,
+//      survives the CelesTrak 403 rate-limit that hits records.php
+//      surprisingly often.
+//
+// Without stage 3 the page used to show empty country/launch columns
+// and blank charts whenever CelesTrak was rate-limiting (the user's
+// "graphs and statistics aren't loading" report).
+
+const SATCAT_BUNDLED_URL = 'data/satcat-active.json';
 
 async function fetchActiveSatcat() {
+  // Stage 1: localStorage cache.
   try {
     const raw = localStorage.getItem(SATCAT_KEY);
     if (raw) {
@@ -442,6 +453,7 @@ async function fetchActiveSatcat() {
     }
   } catch {}
 
+  // Stage 2: live CelesTrak.
   try {
     const r = await fetch('https://celestrak.org/satcat/records.php?GROUP=active&FORMAT=json');
     if (r.ok) {
@@ -462,16 +474,37 @@ async function fetchActiveSatcat() {
           a:  x.APOGEE,
           pe: x.PERIGEE,
         }));
-        try { localStorage.setItem(SATCAT_KEY, JSON.stringify({ t: Date.now(), v: trimmed })); }
-        catch (e) { console.warn('SATCAT cache write failed (over quota?):', e.message); }
+        cacheSatcat(trimmed);
         return { records: trimmed, source: 'celestrak' };
       }
+    } else {
+      console.warn(`SATCAT live fetch HTTP ${r.status}; falling back to bundled snapshot.`);
     }
-    console.warn(`SATCAT fetch HTTP ${r.status}; using whatever's in the cumulative DB.`);
   } catch (e) {
-    console.warn(`SATCAT fetch threw: ${e.message}; using whatever's in the cumulative DB.`);
+    console.warn(`SATCAT live fetch threw: ${e.message}; falling back to bundled snapshot.`);
+  }
+
+  // Stage 3: bundled snapshot.  Already in the trimmed { n, c, i, ... }
+  // shape we serialise into localStorage — no per-record rewrite needed.
+  try {
+    const r2 = await fetch(SATCAT_BUNDLED_URL);
+    if (r2.ok) {
+      const arr = await r2.json();
+      if (Array.isArray(arr) && arr.length) {
+        cacheSatcat(arr);
+        return { records: arr, source: 'bundled' };
+      }
+    }
+    console.warn(`Bundled SATCAT fetch HTTP ${r2.status}; page will run with no SATCAT data.`);
+  } catch (e) {
+    console.warn(`Bundled SATCAT fetch threw: ${e.message}; page will run with no SATCAT data.`);
   }
   return { records: [], source: 'failed' };
+}
+
+function cacheSatcat(records) {
+  try { localStorage.setItem(SATCAT_KEY, JSON.stringify({ t: Date.now(), v: records })); }
+  catch (e) { console.warn('SATCAT cache write failed (over quota?):', e.message); }
 }
 
 // =========================================================================
