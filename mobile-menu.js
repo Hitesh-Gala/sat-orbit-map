@@ -1,0 +1,144 @@
+// Universal mobile menu — loaded on every page.
+//
+// On phones (≤ 720 px) the page is otherwise unreadable because the
+// globe + satellites get covered by stacked HUD panels and nav bars.
+// This script:
+//   1. Injects a single ☰ MENU button at the top-left.
+//   2. Moves every chrome panel on the page (.left-nav, .hud-tr, .hud-tl,
+//      .viz-shell, .goc-shell, .repo-header .right, .page-2d-header
+//      .right, compendium .header-right) into a unified drop-down drawer.
+//   3. Hides that drawer (and therefore everything in it) by default so
+//      the globe canvas is the dominant visual element.
+//   4. Toggles the drawer via the ☰ button, a backdrop tap, or Escape.
+//   5. Auto-closes when the user taps a navigation link inside the
+//      drawer (so they don't have to dismiss the menu manually before
+//      the next page loads).
+//
+// On desktop the script is a no-op — panels stay in their original DOM
+// positions and the button + backdrop are absent.
+
+(function () {
+  const MOBILE_MQ = window.matchMedia('(max-width: 720px)');
+
+  // Order matters: this is the top-to-bottom stacking order inside the
+  // drawer.  Navigation first, then page-specific controls, then HUD.
+  const PANEL_SELECTORS = [
+    '.left-nav',
+    '.viz-shell',
+    '.goc-shell',
+    '.hud-tl',
+    '.hud-tr',
+    '.repo-header .right',
+    '.page-2d-header .right',
+    '.header-inner .header-right',
+  ];
+
+  let menuBtn = null;
+  let backdrop = null;
+  let drawer = null;
+  const moved = [];   // [{ elem, parent, nextSibling }, …]
+
+  function build() {
+    if (menuBtn) return;
+
+    menuBtn = document.createElement('button');
+    menuBtn.type = 'button';
+    menuBtn.className = 'mobile-menu-btn';
+    menuBtn.setAttribute('aria-label', 'Toggle navigation menu');
+    menuBtn.setAttribute('aria-expanded', 'false');
+    menuBtn.innerHTML = '<span class="ico">☰</span><span class="lbl">MENU</span>';
+
+    backdrop = document.createElement('div');
+    backdrop.className = 'mobile-backdrop';
+    backdrop.setAttribute('aria-hidden', 'true');
+
+    drawer = document.createElement('div');
+    drawer.className = 'mobile-drawer';
+    drawer.setAttribute('role', 'menu');
+    drawer.setAttribute('aria-hidden', 'true');
+
+    document.body.appendChild(menuBtn);
+    document.body.appendChild(backdrop);
+    document.body.appendChild(drawer);
+
+    // Relocate every existing chrome panel into the drawer.  Remember
+    // each one's previous home so we can restore it if the viewport
+    // grows back to desktop width.
+    for (const sel of PANEL_SELECTORS) {
+      const elems = document.querySelectorAll(sel);
+      for (const elem of elems) {
+        moved.push({
+          elem,
+          parent: elem.parentNode,
+          nextSibling: elem.nextSibling,
+        });
+        drawer.appendChild(elem);
+      }
+    }
+
+    menuBtn.addEventListener('click', toggle);
+    backdrop.addEventListener('click', close);
+    document.addEventListener('keydown', onKey);
+    drawer.addEventListener('click', onDrawerClick);
+  }
+
+  function destroy() {
+    if (!menuBtn) return;
+    close();
+    document.removeEventListener('keydown', onKey);
+
+    // Restore moved panels to their original DOM positions.
+    for (const { elem, parent, nextSibling } of moved) {
+      if (!parent || !parent.isConnected) continue;
+      if (nextSibling && nextSibling.isConnected) parent.insertBefore(elem, nextSibling);
+      else                                        parent.appendChild(elem);
+    }
+    moved.length = 0;
+
+    menuBtn.remove();
+    backdrop.remove();
+    drawer.remove();
+    menuBtn = backdrop = drawer = null;
+  }
+
+  function setOpen(open) {
+    document.body.classList.toggle('menu-open', open);
+    if (menuBtn) {
+      menuBtn.setAttribute('aria-expanded', String(open));
+      menuBtn.querySelector('.ico').textContent = open ? '✕' : '☰';
+      menuBtn.querySelector('.lbl').textContent = open ? 'CLOSE' : 'MENU';
+    }
+    if (drawer)   drawer.setAttribute('aria-hidden', String(!open));
+    if (backdrop) backdrop.setAttribute('aria-hidden', String(!open));
+  }
+  function toggle() { setOpen(!document.body.classList.contains('menu-open')); }
+  function close()  { setOpen(false); }
+
+  function onKey(e) {
+    if (e.key === 'Escape' && document.body.classList.contains('menu-open')) close();
+  }
+
+  // Tap on an <a> inside the drawer → close after the navigation kicks
+  // in.  Buttons (theme toggle, tab switches, sliders) leave the menu
+  // open so the user can keep adjusting controls.
+  function onDrawerClick(e) {
+    const link = e.target.closest('a');
+    if (!link) return;
+    setTimeout(close, 50);
+  }
+
+  function apply() {
+    if (MOBILE_MQ.matches) build();
+    else                   destroy();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', apply);
+  } else {
+    apply();
+  }
+  // matchMedia.addEventListener is the modern API; the older addListener
+  // is needed for Safari < 14.
+  if (MOBILE_MQ.addEventListener) MOBILE_MQ.addEventListener('change', apply);
+  else                            MOBILE_MQ.addListener(apply);
+})();

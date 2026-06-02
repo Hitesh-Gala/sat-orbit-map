@@ -712,52 +712,171 @@ body.hud-open  .float-toggle.data-toggle {
 }
 
 @media (max-width: 720px) {
-  /* Pull the brand strip in so the MENU / DATA pills have room. */
-  .topbar { padding: 10px 92px; text-align: center; pointer-events: none; }
+  /* Topbar squeezed between the MENU button (top-left) and Takshashila
+     logo (top-right) — clear the 88 px the button needs on the left
+     and ~110 px the logo needs on the right. */
+  .topbar { padding: 10px 110px 10px 92px; text-align: center; pointer-events: none; }
   .brand  { font-size: 13px; letter-spacing: 0.18em; }
   .brand .brand-long { display: none; }  /* full expansion is in <title> and on desktop only */
   .sub    { font-size: 9px; font-style: italic; }
-  .float-toggle { display: inline-flex; }
 
-  /* Permanent nav + HUD hidden by default — they're surfaced via the
-     pills.  body.{nav,hud}-open swap them back to visible / slid-in. */
-  body .left-nav {
-    top: 56px;
-    bottom: auto;
-    left: 8px;
-    right: auto;
-    width: auto;
-    max-width: 70vw;
-    max-height: none;
-    flex-direction: column;
-    display: none;
-    background: rgba(2, 6, 13, 0.96);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 8px;
-    gap: 6px;
-  }
-  body.nav-open .left-nav { display: flex; }
-
-  body .hud-tr {
-    top: 56px;
-    bottom: 12px;
-    right: 8px;
-    width: min(300px, 86vw);
-    max-width: 86vw;
-    max-height: none;
-    display: none;
-    background: rgba(2, 6, 13, 0.96);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 10px;
-    overflow-y: auto;
-  }
-  body.hud-open .hud-tr { display: flex; }
+  /* The legacy MENU/DATA pills are obsolete — the universal
+     mobile-menu.js drop-down replaces them.  Keep them in markup for
+     any direct callers but hide on every viewport-mobile case. */
+  .float-toggle { display: none !important; }
 
   .btn-nav { padding: 7px 12px; font-size: 12px; gap: 6px; }
   .btn-nav-icon { font-size: 14px; }
   .panel { padding: 7px 10px; }
+}
+
+/* ===========================================================
+   Universal mobile drop-down menu (mobile-menu.js).
+
+   - Hidden on desktop (display:none below the media query).
+   - On mobile the script moves every chrome panel into .mobile-drawer
+     so the globe canvas fills the screen.  The drawer is toggled
+     open / closed by the ☰ button and a tap on the backdrop.
+   =========================================================== */
+.mobile-menu-btn,
+.mobile-backdrop,
+.mobile-drawer { display: none; }
+
+@media (max-width: 720px) {
+  /* ☰ MENU button — top-left, primary CTA chrome. */
+  .mobile-menu-btn {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    z-index: 100;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: rgba(2, 6, 13, 0.88);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-shadow: 0 0 8px rgba(103, 200, 255, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .mobile-menu-btn .ico { font-size: 14px; line-height: 1; }
+  body.menu-open .mobile-menu-btn { background: rgba(103, 200, 255, 0.28); }
+
+  /* Backdrop dims + blurs the globe while the drawer is open. */
+  .mobile-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 95;
+    display: block;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .22s;
+  }
+  body.menu-open .mobile-backdrop { opacity: 1; pointer-events: auto; }
+
+  /* The drop-down drawer itself.  Sits below the menu button,
+     full-width minus 16 px of margin, scrollable if its contents are
+     taller than the viewport. */
+  .mobile-drawer {
+    position: fixed;
+    top: 52px;
+    left: 8px;
+    width: calc(100vw - 16px);
+    max-height: calc(100vh - 70px);
+    z-index: 96;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(2, 6, 13, 0.95);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+    transform: translateY(-12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform .22s ease-out, opacity .22s ease-out;
+  }
+  body.menu-open .mobile-drawer {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Panels are absolutely-positioned on desktop; reset everything when
+     they're sitting inside the drawer so they flow as natural blocks. */
+  .mobile-drawer > .left-nav,
+  .mobile-drawer > .hud-tr,
+  .mobile-drawer > .hud-tl,
+  .mobile-drawer > .goc-shell,
+  .mobile-drawer > .viz-shell,
+  .mobile-drawer > .right,
+  .mobile-drawer > .header-right {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    transform: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    overflow: visible !important;
+    background: transparent !important;
+    border: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Each .panel inside a drawer gets full width and reasonable padding. */
+  .mobile-drawer .panel {
+    width: 100%;
+    padding: 10px 12px;
+  }
+  .mobile-drawer .btn-nav,
+  .mobile-drawer .btn-back,
+  .mobile-drawer .btn-nazar { width: 100%; justify-content: flex-start; }
+
+  /* News ticker covers the bottom strip — keep it visible but slim. */
+  .news-ticker { font-size: 10px; }
+
+  /* Hide the in-header right section on table pages when its contents
+     are already cloned into the drawer.  The page brand alone stays
+     visible at the top so the user knows what page they're on. */
+  body.menu-open .repo-header,
+  body.menu-open .page-2d-header,
+  body.menu-open .header-inner {
+    /* No special override needed — the .right child has been moved out. */
+  }
+
+  /* Re-restore Takshashila logo z-index — without the legacy float
+     pills there's no longer a need to drop below z=12 on mobile.  Keep
+     it just under the drawer (z=96) so the drawer floats on top. */
+  .top-logo { z-index: 50; }
 }
 
 @media (max-width: 600px) {
@@ -872,10 +991,12 @@ body.page-2d    .page-2d-header { padding-right: 180px; }
 body.page-compendium .header-inner { padding-right: 180px; }
 
 @media (max-width: 720px) {
-  .top-logo { padding: 4px 8px; z-index: 11; }
+  /* Smaller, tighter logo panel on phones — drops below the drawer
+     so the open menu visually sits in front of it.  The legacy
+     MENU/DATA pill conflict no longer applies; mobile-menu.js owns
+     the menu chrome. */
+  .top-logo { padding: 4px 8px; z-index: 50; }
   .top-logo img { height: 34px; }
-  /* z-index drop on mobile keeps the home page's MENU / DATA float
-     pills (z=12) tappable even where the logo overlaps their corner. */
   body.page-repo  .repo-header,
   body.page-stats .repo-header,
   body.page-2d    .page-2d-header,
