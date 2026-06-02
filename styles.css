@@ -796,6 +796,41 @@ body.hud-open  .float-toggle.data-toggle {
 }
 body.light .btn-viz3d .btn-nav-icon { color: #6a1b9a; text-shadow: none; }
 
+/* --- NAZAR back-button — primary CTA style used on china-sat-repo
+   pages and any other page where the muted .btn-back doesn't read
+   clearly enough as "go home".  Cyan-accent background + border so it
+   looks like a navigation primary, not a generic back-arrow link. */
+.btn-nazar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(103, 200, 255, 0.16);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-decoration: none;
+  text-shadow: 0 0 8px rgba(103, 200, 255, 0.45);
+  transition: background .15s, transform .15s, border-color .15s;
+}
+.btn-nazar:hover {
+  background: rgba(103, 200, 255, 0.28);
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+body.light .btn-nazar {
+  background: rgba(21, 101, 192, 0.10);
+  border-color: var(--accent);
+  color: var(--accent);
+  text-shadow: none;
+}
+body.light .btn-nazar:hover { background: rgba(21, 101, 192, 0.18); }
+
 /* --- Takshashila Institution logo — top-right corner on every page.
    Fixed position with z-50 so it floats above all page chrome
    (topbar, hud-tr, repo-header, page-2d-header, etc.).  Clicking
