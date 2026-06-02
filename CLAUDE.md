@@ -77,3 +77,15 @@ Globe.gl 2.32.0 has known issues with its `htmlElementsData` layer when the chai
 ## CelesTrak rate-limit reality
 
 CelesTrak's `gp.php` aggressively 403s repeat callers from the same IP. During dev, expect to hit the limit after a handful of reloads. The localStorage cache + bundled `data/active.tle` snapshot keep the site working through outages, but any new dev test should also confirm with `data/active.tle` deleted from cache to make sure the live path still works.
+
+**SATCAT** suffers the same problem on `records.php`. Sat-Stats uses a three-stage fallback: localStorage cache → live `records.php?GROUP=active` → bundled `data/satcat-active.json` (active payloads, ~2.6 MB pre-trimmed).
+
+## Auto-refresh workflow
+
+`.github/workflows/refresh-data.yml` runs every 6 hours (cron `17 */6 * * *`) and on manual `workflow_dispatch`. It:
+
+1. Pulls the latest `/pub/satcat.csv` (CelesTrak's *static* file — NOT subject to the dynamic-endpoint 403 limit), filters to active payloads, and writes `data/satcat-active.json`.
+2. Best-effort fetches fresh TLEs from `gp.php?GROUP=active` and overwrites `data/active.tle`. This step is `continue-on-error: true` — a 403 just means we keep the previous snapshot and try again next cycle.
+3. Commits + pushes only if at least one file changed. Push is by `github-actions[bot]` with `contents: write` permission. GitHub Pages auto-rebuilds on the push.
+
+The job has a sanity floor (≥10 000 SATCAT records, ≥30 000 TLE lines) — if the response is truncated or replaced by an error page, the job aborts rather than commit a regressed file.

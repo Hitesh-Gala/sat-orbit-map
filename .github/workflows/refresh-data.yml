@@ -1,0 +1,136 @@
+# Refresh the bundled CelesTrak snapshots that NAZAR ships with.
+#
+# Why this exists
+# ---------------
+# CelesTrak's dynamic `records.php` and `gp.php` endpoints are rate-
+# limited per-IP and frequently return HTTP 403 to repeat callers.
+# When that happens the sat-stats and globe pages used to fall back to
+# whatever was bundled at last commit time — fine until the bundle got
+# stale.  This workflow refreshes the two bundled snapshots every six
+# hours so the offline fallback is never more than ~6h behind live:
+#
+#   * data/satcat-active.json — active payloads from /pub/satcat.csv
+#     (a static file, NOT rate-limited).
+#   * data/active.tle         — active TLE catalogue from gp.php
+#     (rate-limited; this step is best-effort and skipped on 403).
+#
+# Pages auto-rebuilds on push to main, so within ~6h+the Pages build
+# delay (~1 min) every visitor gets the latest data.
+
+name: Refresh CelesTrak snapshots
+
+on:
+  # Stagger off the top of the hour to dodge the cluster of cron jobs
+  # that fire at :00 worldwide.
+  schedule:
+    - cron: '17 */6 * * *'
+  # Manual trigger button in the Actions tab.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      # ---- SATCAT ------------------------------------------------------
+      # /pub/satcat.csv is a flat static file CelesTrak serves directly
+      # from nginx — not the dynamic records.php endpoint — so it isn't
+      # subject to the same 403 rate-limit.  We download the whole 6 MB
+      # CSV, then filter + trim to the ~19 k active payloads in the
+      # same compact { n, c, i, o, ls, ld, dd, p, inc, a, pe } shape
+      # that sat-stats.js already caches in localStorage.
+      - name: Fetch + trim SATCAT
+        run: |
+          set -euo pipefail
+          curl -fsS "https://celestrak.org/pub/satcat.csv" -o /tmp/satcat.csv
+          echo "SATCAT downloaded: $(wc -c < /tmp/satcat.csv) bytes"
+          python3 << 'PY'
+          import csv, json, os, sys
+          out = []
+          with open('/tmp/satcat.csv', encoding='utf-8') as f:
+              for r in csv.DictReader(f):
+                  if r.get('DECAY_DATE', '').strip():
+                      continue
+                  if r.get('OBJECT_TYPE', '').strip() != 'PAY':
+                      continue
+                  try:
+                      norad = int(r.get('NORAD_CAT_ID', 0) or 0)
+                  except ValueError:
+                      continue
+                  if not norad:
+                      continue
+                  out.append({
+                      'n':   r.get('OBJECT_NAME', '').strip(),
+                      'c':   norad,
+                      'i':   r.get('OBJECT_ID', '').strip(),
+                      'o':   r.get('OWNER', '').strip(),
+                      'ls':  r.get('LAUNCH_SITE', '').strip(),
+                      'ld':  r.get('LAUNCH_DATE', '').strip(),
+                      'dd':  '',
+                      'p':   r.get('PERIOD', '').strip(),
+                      'inc': r.get('INCLINATION', '').strip(),
+                      'a':   r.get('APOGEE', '').strip(),
+                      'pe':  r.get('PERIGEE', '').strip(),
+                  })
+          os.makedirs('data', exist_ok=True)
+          with open('data/satcat-active.json', 'w', encoding='utf-8') as f:
+              json.dump(out, f, separators=(',', ':'))
+          print(f'Wrote {len(out):,} active payloads → data/satcat-active.json')
+          if len(out) < 10000:
+              # Sanity floor — current count is ~19 k.  If we got less
+              # than 10 k something's wrong (truncated CSV?), abort
+              # rather than commit a regressed file.
+              print('FATAL: payload count below sanity floor of 10 000', file=sys.stderr)
+              sys.exit(1)
+          PY
+
+      # ---- TLEs (best-effort) -----------------------------------------
+      # gp.php is the dynamic endpoint and *is* rate-limited.  This step
+      # is intentionally non-fatal: if it 403s we just keep the existing
+      # snapshot and try again next run.  A 6-hour cadence gives us four
+      # chances per day to catch CelesTrak in a good mood.
+      - name: Fetch fresh TLEs (best-effort)
+        continue-on-error: true
+        run: |
+          set -uo pipefail   # no -e: we WANT to swallow a 403 here
+          if curl -fsS -o /tmp/active.tle \
+              "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle"; then
+              lines=$(wc -l < /tmp/active.tle)
+              # 3 lines per TLE; >30 000 lines ≈ >10 000 sats — sanity
+              # floor against truncated / error-page responses.
+              if [ "$lines" -gt 30000 ]; then
+                  cp /tmp/active.tle data/active.tle
+                  echo "TLE refresh: $lines lines (~$((lines/3)) sats)"
+              else
+                  echo "TLE response too small ($lines lines) — keeping existing snapshot"
+              fi
+          else
+              echo "TLE fetch failed (probably rate-limited 403) — keeping existing snapshot"
+          fi
+
+      # ---- Commit + push ----------------------------------------------
+      # Only commit if at least one of the snapshots actually changed.
+      # Use git status --porcelain rather than git diff so we catch new
+      # files too.
+      - name: Commit + push if anything changed
+        run: |
+          if [ -z "$(git status --porcelain data/)" ]; then
+              echo "No changes in data/ — nothing to commit"
+              exit 0
+          fi
+          git status --short data/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git commit -m "Auto-refresh CelesTrak snapshots ($(date -u +'%Y-%m-%d %H:%M UTC'))"
+          git push
