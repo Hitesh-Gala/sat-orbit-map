@@ -908,6 +908,123 @@ body.hud-open  .float-toggle.data-toggle {
 }
 
 /* =======================================================================
+   Welcome flash popup (flash-popup.js, main page only)
+
+   A red announcement card that fades in over a dim backdrop, sits
+   centred on top of the globe for AUTO_CLOSE_MS, and fades out via
+   the .closing class.  Inert before .shown is applied so the entrance
+   animation can run from a known state.
+   ======================================================================= */
+.flash-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 199;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .28s ease-out;
+}
+.flash-backdrop.shown {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.flash-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 200;
+  width: min(520px, calc(100vw - 32px));
+  padding: 38px 56px 32px;
+  text-align: center;
+  color: #ffffff;
+  background:
+    radial-gradient(ellipse at top, rgba(255, 180, 180, 0.18) 0%, transparent 60%),
+    linear-gradient(135deg, #d32f2f 0%, #9a1414 100%);
+  border: 2px solid #ff6b6b;
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.10) inset,
+    0 0 80px rgba(255, 50, 50, 0.55),
+    0 18px 48px rgba(0, 0, 0, 0.65);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.88);
+  transition: opacity .32s ease-out, transform .32s ease-out;
+}
+.flash-popup.shown {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+.flash-popup.closing {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.94);
+}
+
+.flash-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  color: #ffffff;
+  font-family: var(--mono);
+  font-size: 22px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  transition: background .15s, transform .15s;
+}
+.flash-close:hover {
+  background: rgba(255, 255, 255, 0.26);
+  transform: scale(1.06);
+}
+.flash-close:active { transform: scale(0.96); }
+
+.flash-eye {
+  font-size: 44px;
+  line-height: 1;
+  margin-bottom: 14px;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.55));
+}
+.flash-title {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 40px;
+  letter-spacing: 0.3em;
+  margin: 0 0 10px;
+  text-shadow: 0 0 18px rgba(255, 255, 255, 0.65);
+}
+.flash-subtitle {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.94;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.42);
+}
+
+@media (max-width: 720px) {
+  .flash-popup {
+    padding: 28px 32px 24px;
+    width: calc(100vw - 24px);
+  }
+  .flash-eye     { font-size: 34px; margin-bottom: 10px; }
+  .flash-title   { font-size: 28px; letter-spacing: 0.22em; }
+  .flash-subtitle{ font-size: 10px; letter-spacing: 0.18em; }
+}
+
+/* =======================================================================
    About / landing page (about.html)
    ======================================================================= */
 body.page-about {
