@@ -1,3 +1,32 @@
+// ---------------------------------------------------------------------------
+// Service-worker cleanup (defensive belt-and-braces).
+//
+// The site used to ship a cache-first SW at /service-worker.js between
+// 2026-05-27 and 2026-06-01.  The SW was removed from the repo by a
+// rollback, but it remains installed in any browser that visited
+// during that window — serving stale HTML / JS / data on every visit
+// (the "second laptop only sees 725 sats" report).
+//
+// The primary fix is the kill-switch service-worker.js at the site
+// root, which uninstalls itself when the browser revalidates the SW
+// JS.  This block here is the secondary safety net: any fresh HTML
+// that successfully loads mobile-menu.js gets an immediate cleanup,
+// so even users whose SW revalidation lags behind end up SW-free.
+// No-op for users who never had the legacy SW.
+// ---------------------------------------------------------------------------
+(function killLegacySW() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations()
+      .then((regs) => { for (const r of regs) r.unregister(); })
+      .catch(() => {});
+  }
+  if (window.caches && caches.keys) {
+    caches.keys()
+      .then((keys) => keys.forEach((k) => caches.delete(k)))
+      .catch(() => {});
+  }
+})();
+
 // Universal mobile menu — loaded on every page.
 //
 // On phones (≤ 720 px) the page is otherwise unreadable because the
