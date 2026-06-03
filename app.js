@@ -26,6 +26,14 @@ const MAX_MARKERS   = 120;          // top-N highest-elevation sats shown
 const CHUNK_SIZE    = 2000;         // sats per propagation slice
 const HUD_LIST_MAX  = 200;          // capped to keep DOM cheap when open
 
+// Selection / ground-track parameters (click a sat to isolate it).
+const TRACK_PAST_MIN     = 30;       // minutes of past trajectory shown
+const TRACK_SAMPLES      = 60;       // 60 samples × 30 min = one point every 30 s
+const TRACK_ALT          = 0.008;    // path altitude as fraction of Earth-radius
+const DIMMED_OPACITY     = 0.25;     // opacity of non-selected sats while one is selected
+const ARROW_LENGTH       = 3.5;      // scene-space length of the direction arrow
+const ARROW_RADIUS       = 1.2;
+
 const NIGHT_SKY_URL = 'https://unpkg.com/three-globe@2.31.1/example/img/night-sky.png';
 const COLOR_NONCN   = '#67e8a4';    // green
 const COLOR_CN      = '#ff6b6b';    // red
@@ -43,9 +51,6 @@ function esc(s) {
 
 const COMPASS_DIRS = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
 const compass = az => COMPASS_DIRS[Math.round((az % 360) / 22.5) % 16];
-
-// satellite.js stores mean motion in rad/min; T = 2π / no.
-const orbitalPeriodMinutes = rec => (2 * Math.PI) / rec.no;
 
 function setStatus(msg, cls = '') {
   const el = $('status');
@@ -68,29 +73,40 @@ const globe = Globe()($('globe'))
   .pointOfView({ lat: 22, lng: 80, altitude: 2.4 }, 0)
   // Satellite markers — small sphere meshes just above the surface.
   // objectsData is the same layer game-of-cones uses; one Mesh per
-  // marker, capped at MAX_MARKERS = 120 (Mesh-per-item only becomes a
-  // bottleneck in the thousands).
+  // marker, capped at MAX_MARKERS = 120.  When a sat is selected the
+  // mesh material is built with transparent:true + opacity:0.25 so
+  // every non-selected sat fades to background.
   .objectsData([])
   .objectLat(d => d.lat)
   .objectLng(d => d.lon)
   .objectAltitude(0.01)
-  .objectThreeObject(d => new THREE.Mesh(
-    new THREE.SphereGeometry(0.6, 12, 12),
-    new THREE.MeshBasicMaterial({ color: d.cn ? COLOR_CN : COLOR_NONCN })
-  ))
+  .objectThreeObject(d => {
+    const dim = selectedSat !== null;
+    return new THREE.Mesh(
+      new THREE.SphereGeometry(0.6, 12, 12),
+      new THREE.MeshBasicMaterial({
+        color: d.cn ? COLOR_CN : COLOR_NONCN,
+        transparent: dim,
+        opacity: dim ? DIMMED_OPACITY : 1.0,
+        depthWrite: !dim,
+      }),
+    );
+  })
   .objectLabel(satTipHtml)
-  .onObjectClick(d => toggleOrbit(d))
-  // Path layer for click-to-show ground tracks (one polyline per
-  // selected sat, sampled across its full orbital period).
+  .onObjectClick(onObjectClick)
+  // Past 30-min ground track of the selected sat — at most one line.
+  // Sampled at 30-sec resolution.
   .pathsData([])
   .pathPoints(d => d.points)
   .pathPointLat(p => p[0])
   .pathPointLng(p => p[1])
   .pathPointAlt(p => p[2])
   .pathColor(d => [d.color, d.color])
-  .pathStroke(0.6)
+  .pathStroke(0.8)
   .pathTransitionDuration(0)
-  .pathLabel(d => `<b>${esc(d.name)}</b><br>orbital ground track`);
+  .pathLabel(d => `<b>${esc(d.name)}</b><br>past ${TRACK_PAST_MIN} min ground track`)
+  // Click empty globe → drop the current selection.
+  .onGlobeClick(onGlobeClick);
 
 const controls = globe.controls();
 controls.enableDamping = true;
@@ -115,46 +131,135 @@ function satTipHtml(d) {
 }
 
 // =========================================================================
-// Click-to-show orbital ground tracks
+// Click-to-isolate selection: past 30-min ground track + direction arrow
 // =========================================================================
+//
+// At most one sat can be selected at a time.  When a sat is selected:
+//   * every other sat marker fades to DIMMED_OPACITY
+//   * a polyline traces its sub-point over the last TRACK_PAST_MIN
+//     minutes, lifted ~50 km above the surface to avoid z-fighting
+//   * a THREE.ConeGeometry arrow sits at the current sub-point with
+//     its tip pointing along the immediate sub-point velocity vector
+// Clicking the selected sat again, or anywhere on the empty globe,
+// drops the selection.
 
-const shownOrbits = new Map();   // noradId → { points, name, color }
+let selectedSat   = null;    // { rec, noradId, name, cn } or null
+let currentMarkers = [];     // last full marker set sent to objectsData
+let arrowMesh    = null;     // THREE.Mesh of the direction arrow, or null
 
-function toggleOrbit(d) {
+function onObjectClick(d) {
   if (!d || !d.rec || d.noradId == null) return;
-  if (shownOrbits.has(d.noradId)) {
-    shownOrbits.delete(d.noradId);
-  } else {
-    const period = orbitalPeriodMinutes(d.rec);
-    if (!Number.isFinite(period) || period <= 0) return;
-    shownOrbits.set(d.noradId, {
-      points: buildPathPoints(d.rec, new Date(), period),
-      name:   d.name,
-      color:  d.cn ? COLOR_CN : COLOR_NONCN,
-    });
-  }
-  globe.pathsData([...shownOrbits.values()]);
+  if (selectedSat && selectedSat.noradId === d.noradId) deselect();
+  else                                                  select(d);
 }
 
-function buildPathPoints(rec, now, periodMinutes) {
-  const periodMs = periodMinutes * 60 * 1000;
-  const N = 96;
+function onGlobeClick() {
+  if (selectedSat) deselect();
+}
+
+function select(d) {
+  selectedSat = { rec: d.rec, noradId: d.noradId, name: d.name, cn: !!d.cn };
+  rerenderMarkers();
+  refreshSelectionVisuals();
+}
+
+function deselect() {
+  selectedSat = null;
+  removeArrow();
+  globe.pathsData([]);
+  rerenderMarkers();
+}
+
+// Re-emit the objectsData with the selected sat filtered out — the
+// arrow stands in for it — and rebuild every mesh so the dim/full
+// opacity material change takes effect.
+function rerenderMarkers() {
+  const data = selectedSat
+    ? currentMarkers.filter(m => m.noradId !== selectedSat.noradId)
+    : currentMarkers;
+  globe.objectsData(data);
+}
+
+// Rebuild the past-30-min path + reposition the arrow.  Called once
+// on selection and again on every REFRESH_MS tick, so the trailing
+// window slides forward in real time.
+function refreshSelectionVisuals() {
+  if (!selectedSat) return;
+  const now = new Date();
+  const points = buildPastTrack(selectedSat.rec, now, TRACK_PAST_MIN);
+  if (points.length < 2) {
+    globe.pathsData([]);
+    removeArrow();
+    return;
+  }
+  globe.pathsData([{
+    points,
+    name:  selectedSat.name,
+    color: selectedSat.cn ? COLOR_CN : COLOR_NONCN,
+  }]);
+  placeArrow(selectedSat, now);
+}
+
+function buildPastTrack(rec, now, pastMinutes) {
+  const pastMs = pastMinutes * 60 * 1000;
   const pts = [];
   let prevLon = null;
-  for (let i = 0; i <= N; i++) {
-    const t = new Date(now.getTime() + (i / N) * periodMs);
+  for (let i = 0; i <= TRACK_SAMPLES; i++) {
+    const t = new Date(now.getTime() - pastMs + (i / TRACK_SAMPLES) * pastMs);
     const r = propagate(rec, t);
-    if (!r || !Number.isFinite(r.lat)) continue;
-    // Wrap longitudes so the polyline doesn't draw a chord across
-    // the dateline.
+    if (!r || !Number.isFinite(r.lat) || !Number.isFinite(r.lon)) continue;
+    // Wrap longitudes so the polyline doesn't draw a chord across the dateline.
     let lon = r.lon;
     if (prevLon !== null && Math.abs(lon - prevLon) > 180) {
       lon += lon < prevLon ? 360 : -360;
     }
     prevLon = lon;
-    pts.push([r.lat, lon, r.alt / EARTH_R_KM]);
+    pts.push([r.lat, lon, TRACK_ALT]);
   }
   return pts;
+}
+
+// Drop a cone at the sat's current sub-point, oriented so its tip
+// points in the direction the sub-point is moving (sampled with a
+// 60-second look-ahead).  Cone base is translated to local origin so
+// the mesh anchors at the sub-point rather than at the cone's centre.
+function placeArrow(sat, now) {
+  removeArrow();
+  const r1 = propagate(sat.rec, now);
+  const r2 = propagate(sat.rec, new Date(now.getTime() + 60_000));
+  if (!r1 || !r2 || !Number.isFinite(r1.lat) || !Number.isFinite(r2.lat)) return;
+  const p1 = globe.getCoords(r1.lat, r1.lon, TRACK_ALT);
+  const p2 = globe.getCoords(r2.lat, r2.lon, TRACK_ALT);
+
+  const geo = new THREE.ConeGeometry(ARROW_RADIUS, ARROW_LENGTH, 10);
+  // Default: tip at +Y·(h/2), base at -Y·(h/2).  Translate so base sits
+  // at the local origin → mesh.position is the back of the arrow.
+  geo.translate(0, ARROW_LENGTH / 2, 0);
+
+  const mat = new THREE.MeshBasicMaterial({
+    color: sat.cn ? COLOR_CN : COLOR_NONCN,
+    depthWrite: false,
+  });
+  arrowMesh = new THREE.Mesh(geo, mat);
+  arrowMesh.position.set(p1.x, p1.y, p1.z);
+
+  // Orient local +Y to the velocity direction (p2 − p1) so the tip
+  // points where the sat is going.
+  const dir = new THREE.Vector3(p2.x - p1.x, p2.y - p1.y, p2.z - p1.z);
+  if (dir.lengthSq() > 0) {
+    dir.normalize();
+    arrowMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+  }
+  arrowMesh.renderOrder = 5;   // sit on top of the dim sat dots
+  globe.scene().add(arrowMesh);
+}
+
+function removeArrow() {
+  if (!arrowMesh) return;
+  globe.scene().remove(arrowMesh);
+  arrowMesh.geometry.dispose();
+  arrowMesh.material.dispose();
+  arrowMesh = null;
 }
 
 // =========================================================================
@@ -312,7 +417,13 @@ function processChunk() {
     }
   }
   if (updateIdx < activeTLEs.length) {
-    requestAnimationFrame(processChunk);
+    // Visible tab → rAF for frame-paced chunking (smooth, no jank).
+    // Hidden / minimised tab → rAF stalls indefinitely, so fall back
+    // to a microtask-ish setTimeout so the pipeline still completes
+    // (otherwise updateActive stays true forever and every subsequent
+    // REFRESH_MS tick is dropped).
+    if (document.hidden) setTimeout(processChunk, 0);
+    else                 requestAnimationFrame(processChunk);
   } else {
     finishUpdate();
   }
@@ -322,7 +433,11 @@ function finishUpdate() {
   // Globe markers: top-N by elevation.  One shared sort serves both
   // the marker selection and the per-list ordering.
   const all = updateNonCN.concat(updateCN).sort((a, b) => b.el - a.el);
-  globe.objectsData(all.slice(0, MAX_MARKERS));
+  currentMarkers = all.slice(0, MAX_MARKERS);
+  rerenderMarkers();
+  // Slide the past-30-min window forward + reposition the arrow if a
+  // sat is currently selected.  No-op otherwise.
+  refreshSelectionVisuals();
 
   $('vis-count').textContent = updateNonCN.length;
   $('cn-count').textContent  = updateCN.length;
