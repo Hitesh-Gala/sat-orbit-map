@@ -497,7 +497,10 @@ async function fetchActiveSatcat() {
   // Stage 3: bundled snapshot.  Already in the trimmed { n, c, i, ... }
   // shape we serialise into localStorage — no per-record rewrite needed.
   try {
-    const r2 = await fetch(SATCAT_BUNDLED_URL);
+    // cache:'no-cache' so the 6-hourly refresh-data workflow's updates
+    // to data/satcat-active.json actually reach the user — without it
+    // the browser keeps serving its first-cached snapshot forever.
+    const r2 = await fetch(SATCAT_BUNDLED_URL, { cache: 'no-cache' });
     if (r2.ok) {
       const arr = await r2.json();
       if (Array.isArray(arr) && arr.length) {

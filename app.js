@@ -1,55 +1,183 @@
-// 3-D globe view. Data layer lives in tle-loader.js (window.Argos).
+// 3-D globe view — the NAZAR main page.
+// Data layer lives in tle-loader.js (window.Argos).
+//
+// Visual style mirrors game-of-cones.js: Blue Marble + topology bump
+// against the night-sky starfield, an atmosphere rim glow, and small
+// sphere meshes for the satellite markers.  Country polygons (the old
+// 3 MB Natural Earth GeoJSON) have been removed — they were the single
+// largest per-frame render cost on this page and game-of-cones doesn't
+// draw them either, so the two globes now match visually.
+//
+// Performance: SGP4 propagation across ~16 k active TLEs is ~150 ms of
+// synchronous work, which used to lock the main thread on every 10 s
+// refresh.  The new update loop slices that work across rAF callbacks
+// at 2 000 sats per slice, keeping each frame inside its budget.
 
 const { OBSERVER, EARTH_R_KM, inferPurpose, propagate, makeSatrecs,
         fetchTLEs, fetchChinaSatcat } = window.Argos;
 
-const REFRESH_MS = 10_000;
+// =========================================================================
+// Constants
+// =========================================================================
+
+const REFRESH_MS    = 10_000;
 const RELOAD_TLE_MS = 6 * 3600 * 1000;
-const MAX_VISIBLE_MARKERS = 120;
+const MAX_MARKERS   = 120;          // top-N highest-elevation sats shown
+const CHUNK_SIZE    = 2000;         // sats per propagation slice
+const HUD_LIST_MAX  = 200;          // capped to keep DOM cheap when open
 
-// --- Globe -----------------------------------------------------------------
+const NIGHT_SKY_URL = 'https://unpkg.com/three-globe@2.31.1/example/img/night-sky.png';
+const COLOR_NONCN   = '#67e8a4';    // green
+const COLOR_CN      = '#ff6b6b';    // red
 
-// Natural Earth 50 m countries — ~3 MB but coastlines and country borders
-// trace the Blue Marble texture far more accurately than the bundled 110 m
-// (the latter visibly drifts inland from the coast on small islands and
-// peninsulas).
-const COUNTRIES_URL = 'https://raw.githubusercontent.com/martynafford/natural-earth-geojson/master/50m/cultural/ne_50m_admin_0_countries.json';
+// =========================================================================
+// Small helpers
+// =========================================================================
 
-function escapeHtml(s) {
+const $ = id => document.getElementById(id);
+
+function esc(s) {
   return String(s).replace(/[&<>"']/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-// Tooltip content for a satellite marker — globe.gl injects this into its
-// built-in .scene-tooltip overlay on hover, matching the 2-D map UX.
-function satLabelHtml(d) {
-  let h = `<div class="sat-tip">`;
-  h += `<b>${escapeHtml(d.name)}</b>`;
+const COMPASS_DIRS = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+const compass = az => COMPASS_DIRS[Math.round((az % 360) / 22.5) % 16];
+
+// satellite.js stores mean motion in rad/min; T = 2π / no.
+const orbitalPeriodMinutes = rec => (2 * Math.PI) / rec.no;
+
+function setStatus(msg, cls = '') {
+  const el = $('status');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = cls;
+}
+
+// =========================================================================
+// Globe — mirrors game-of-cones.js
+// =========================================================================
+
+const globe = Globe()($('globe'))
+  .globeImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg')
+  .bumpImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-topology.png')
+  .backgroundImageUrl(NIGHT_SKY_URL)
+  .showAtmosphere(true)
+  .atmosphereColor('#4ea8ff')
+  .atmosphereAltitude(0.18)
+  .pointOfView({ lat: 22, lng: 80, altitude: 2.4 }, 0)
+  // Satellite markers — small sphere meshes just above the surface.
+  // objectsData is the same layer game-of-cones uses; one Mesh per
+  // marker, capped at MAX_MARKERS = 120 (Mesh-per-item only becomes a
+  // bottleneck in the thousands).
+  .objectsData([])
+  .objectLat(d => d.lat)
+  .objectLng(d => d.lon)
+  .objectAltitude(0.01)
+  .objectThreeObject(d => new THREE.Mesh(
+    new THREE.SphereGeometry(0.6, 12, 12),
+    new THREE.MeshBasicMaterial({ color: d.cn ? COLOR_CN : COLOR_NONCN })
+  ))
+  .objectLabel(satTipHtml)
+  .onObjectClick(d => toggleOrbit(d))
+  // Path layer for click-to-show ground tracks (one polyline per
+  // selected sat, sampled across its full orbital period).
+  .pathsData([])
+  .pathPoints(d => d.points)
+  .pathPointLat(p => p[0])
+  .pathPointLng(p => p[1])
+  .pathPointAlt(p => p[2])
+  .pathColor(d => [d.color, d.color])
+  .pathStroke(0.6)
+  .pathTransitionDuration(0)
+  .pathLabel(d => `<b>${esc(d.name)}</b><br>orbital ground track`);
+
+const controls = globe.controls();
+controls.enableDamping = true;
+controls.dampingFactor = 0.1;
+controls.rotateSpeed   = 0.5;
+controls.zoomSpeed     = 0.8;
+controls.minDistance   = 110;
+controls.maxDistance   = 800;
+
+window.addEventListener('resize', () => {
+  globe.width(window.innerWidth).height(window.innerHeight);
+});
+
+function satTipHtml(d) {
+  let h = `<div class="sat-tip"><b>${esc(d.name)}</b>`;
   h += `<div>${d.alt.toFixed(0)} km · ${d.lat.toFixed(2)}°, ${d.lon.toFixed(2)}°</div>`;
   if (Number.isFinite(d.az) && Number.isFinite(d.el)) {
     h += `<div>Az ${d.az.toFixed(1)}° · El ${d.el.toFixed(1)}°</div>`;
   }
   if (d.cn) h += `<div class="cn">Chinese payload</div>`;
-  h += `</div>`;
-  return h;
+  return h + `</div>`;
 }
 
-const NIGHT_SKY_URL = 'https://unpkg.com/three-globe@2.31.1/example/img/night-sky.png';
+// =========================================================================
+// Click-to-show orbital ground tracks
+// =========================================================================
 
-// Pixel-invert the night-sky texture on the fly to produce a "day-sky"
-// equivalent (black stars on a white background) for the light theme.
-// Generated lazily and memoised — unpkg sends Access-Control-Allow-Origin:
-// *, so the canvas read isn't tainted.
+const shownOrbits = new Map();   // noradId → { points, name, color }
+
+function toggleOrbit(d) {
+  if (!d || !d.rec || d.noradId == null) return;
+  if (shownOrbits.has(d.noradId)) {
+    shownOrbits.delete(d.noradId);
+  } else {
+    const period = orbitalPeriodMinutes(d.rec);
+    if (!Number.isFinite(period) || period <= 0) return;
+    shownOrbits.set(d.noradId, {
+      points: buildPathPoints(d.rec, new Date(), period),
+      name:   d.name,
+      color:  d.cn ? COLOR_CN : COLOR_NONCN,
+    });
+  }
+  globe.pathsData([...shownOrbits.values()]);
+}
+
+function buildPathPoints(rec, now, periodMinutes) {
+  const periodMs = periodMinutes * 60 * 1000;
+  const N = 96;
+  const pts = [];
+  let prevLon = null;
+  for (let i = 0; i <= N; i++) {
+    const t = new Date(now.getTime() + (i / N) * periodMs);
+    const r = propagate(rec, t);
+    if (!r || !Number.isFinite(r.lat)) continue;
+    // Wrap longitudes so the polyline doesn't draw a chord across
+    // the dateline.
+    let lon = r.lon;
+    if (prevLon !== null && Math.abs(lon - prevLon) > 180) {
+      lon += lon < prevLon ? 360 : -360;
+    }
+    prevLon = lon;
+    pts.push([r.lat, lon, r.alt / EARTH_R_KM]);
+  }
+  return pts;
+}
+
+// =========================================================================
+// Theme toggle (light / dark)
+// =========================================================================
+//
+// The WebGL globe doesn't read CSS variables.  We instead swap the
+// background skybox between the night-sky texture and a pixel-inverted
+// "day-sky" version (memoised after first generation).
+
 let invertedSkyDataUrl = null;
-async function getInvertedSkyUrl() {
-  if (invertedSkyDataUrl) return invertedSkyDataUrl;
-  const img = await new Promise((resolve, reject) => {
+function loadImage(url) {
+  return new Promise((resolve, reject) => {
     const i = new Image();
     i.crossOrigin = 'anonymous';
     i.onload = () => resolve(i);
-    i.onerror = () => reject(new Error('night-sky load failed'));
-    i.src = NIGHT_SKY_URL;
+    i.onerror = () => reject(new Error('image load failed: ' + url));
+    i.src = url;
   });
+}
+async function getInvertedSkyUrl() {
+  if (invertedSkyDataUrl) return invertedSkyDataUrl;
+  const img = await loadImage(NIGHT_SKY_URL);
   const c = document.createElement('canvas');
   c.width = img.naturalWidth;
   c.height = img.naturalHeight;
@@ -66,167 +194,22 @@ async function getInvertedSkyUrl() {
   return invertedSkyDataUrl;
 }
 
-// --- Click-to-toggle orbital ground tracks --------------------------------
-// Map<noradId, { points, name, color }> — one entry per orbit currently
-// drawn.  Clicking a sat dot adds/removes its entry; the path layer is
-// rebuilt from Map.values() each time.
-const shownOrbits = new Map();
-
-function orbitalPeriodMinutes(rec) {
-  // satellite.js's no is mean motion in radians/min; T = 2π / no.
-  return (2 * Math.PI) / rec.no;
-}
-
-function buildPathPoints(rec, now, periodMinutes) {
-  const periodMs = periodMinutes * 60 * 1000;
-  const N = 96;  // 96 samples around one full orbit
-  const pts = [];
-  let prevLon = null;
-  for (let i = 0; i <= N; i++) {
-    const t = new Date(now.getTime() + (i / N) * periodMs);
-    const r = propagate(rec, t);
-    if (!r || !Number.isFinite(r.lat)) continue;
-    // Avoid the path drawing a straight line across the dateline.
-    let lon = r.lon;
-    if (prevLon !== null && Math.abs(lon - prevLon) > 180) {
-      lon += lon < prevLon ? 360 : -360;
-    }
-    prevLon = lon;
-    pts.push([r.lat, lon, r.alt / EARTH_R_KM]);
-  }
-  return pts;
-}
-
-function toggleOrbit(d) {
-  if (!d || !d.rec || d.noradId == null) return;
-  if (shownOrbits.has(d.noradId)) {
-    shownOrbits.delete(d.noradId);
-  } else {
-    const period = orbitalPeriodMinutes(d.rec);
-    if (!Number.isFinite(period) || period <= 0) return;
-    shownOrbits.set(d.noradId, {
-      points: buildPathPoints(d.rec, new Date(), period),
-      name:   d.name,
-      color:  d.cn ? '#ff6b6b' : '#67e8a4',
-    });
-  }
-  globe.pathsData([...shownOrbits.values()]);
-}
-
-const globe = Globe()(document.getElementById('globe'))
-  // Realistic Earth: NASA Blue Marble color texture + topology bump map for
-  // shaded relief, against the night-sky starfield.
-  .globeImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg')
-  .bumpImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-topology.png')
-  .backgroundImageUrl(NIGHT_SKY_URL)
-  .showAtmosphere(true)
-  .atmosphereColor('#4ea8ff')
-  .atmosphereAltitude(0.18)
-  .pointOfView({ lat: 22, lng: 80, altitude: 2.4 }, 0)
-  // Country polygons act as thin political borders overlaid on the texture.
-  // polygonAltitude is held at a hair above the surface (≈6 km) — small
-  // enough to avoid the parallax offset that 32 km caused, large enough to
-  // avoid z-fighting with the textured globe.  Stroke is a soft pale cyan
-  // for clean contrast against the Blue Marble's blues and greens.
-  .polygonsData([])
-  .polygonAltitude(0.001)
-  .polygonCapColor(() => 'rgba(255, 255, 255, 0)')
-  .polygonSideColor(() => 'rgba(255, 255, 255, 0)')
-  .polygonStrokeColor(() => 'rgba(220, 240, 255, 0.65)')
-  // Satellite markers — flat dots floating just above the surface (we
-  // collapse the point altitude so globe.gl renders a low disc rather
-  // than a long radial bar).  Refresh is driven by update() below, which
-  // re-applies pointsData(markers) every REFRESH_MS.  Hover surfaces the
-  // satellite name + altitude + lat/lon (+ Az/El when above the New
-  // Delhi horizon) via globe.gl's built-in pointLabel tooltip.
-  .pointsData([])
-  .pointLat(d => d.lat)
-  .pointLng(d => d.lon)
-  .pointAltitude(0.003)
-  .pointRadius(0.35)
-  .pointResolution(8)
-  .pointColor(d => d.cn ? '#ff6b6b' : '#67e8a4')
-  .pointsMerge(false)
-  .pointLabel(satLabelHtml)
-  // Click a sat dot to toggle its full-orbit ground track on / off.
-  .onPointClick(d => toggleOrbit(d))
-  // Path layer for the click-to-show ground tracks.
-  .pathsData([])
-  .pathPoints(d => d.points)
-  .pathPointLat(p => p[0])
-  .pathPointLng(p => p[1])
-  .pathPointAlt(p => p[2])
-  .pathColor(d => [d.color, d.color])
-  .pathStroke(0.6)
-  .pathTransitionDuration(0)
-  .pathLabel(d => `<b>${d.name}</b><br>orbital ground track`);
-
-fetch(COUNTRIES_URL)
-  .then(r => r.json())
-  .then(geo => globe.polygonsData(geo.features.filter(f => f.properties.ISO_A2 !== 'AQ')))
-  .catch(e => console.warn('Country polygons failed to load:', e.message));
-
-// OrbitControls give pinch-zoom on touch and drag-rotate on mouse out of the box.
-const controls = globe.controls();
-controls.enableDamping = true;
-controls.dampingFactor = 0.1;
-controls.rotateSpeed = 0.5;
-controls.zoomSpeed = 0.8;
-controls.minDistance = 110;
-controls.maxDistance = 800;
-
-window.addEventListener('resize', () => {
-  globe.width(window.innerWidth).height(window.innerHeight);
-});
-
-// --- Clocks ---------------------------------------------------------------
-
-const fmtTime = (d, tz) => d.toLocaleTimeString('en-GB', {
-  hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: tz,
-});
-const fmtDate = (d, tz) => d.toLocaleDateString('en-GB', {
-  year: 'numeric', month: 'short', day: '2-digit', timeZone: tz,
-});
-const utcEl  = document.getElementById('utc-time');
-const istEl  = document.getElementById('ist-time');
-const dateEl = document.getElementById('utc-date');
-function tickClocks() {
-  const now = new Date();
-  utcEl.textContent  = fmtTime(now, 'UTC');
-  istEl.textContent  = fmtTime(now, 'Asia/Kolkata');
-  dateEl.textContent = fmtDate(now, 'UTC') + ' UTC';
-}
-tickClocks();
-setInterval(tickClocks, 1000);
-
-// Legacy MENU / DATA pill toggles removed — mobile-menu.js now
-// provides a single universal drop-down across all pages.
-
-// --- Theme toggle (light / dark) -----------------------------------------
-// The 3-D globe itself is a WebGL scene that doesn't respect CSS, but the
-// HUD chrome around it switches palettes via body.light class overrides.
 (function setupTheme() {
   const KEY = 'argos.main.theme';
-  const btn = document.getElementById('theme-toggle');
+  const btn = $('theme-toggle');
   if (!btn) return;
   async function apply(mode) {
     document.body.classList.toggle('light', mode === 'light');
     btn.textContent = mode === 'light' ? '☾ Dark' : '☀ Light';
-    // Swap the WebGL skybox: white sky + black stars in light mode, the
-    // original night sky in dark mode.  Atmosphere tint shifts to a
-    // muted gold so the rim glow still reads against the white sky.
     try {
       if (mode === 'light') {
-        const url = await getInvertedSkyUrl();
-        globe.backgroundImageUrl(url);
+        globe.backgroundImageUrl(await getInvertedSkyUrl());
         globe.atmosphereColor('#7a8aa0');
       } else {
         globe.backgroundImageUrl(NIGHT_SKY_URL);
         globe.atmosphereColor('#4ea8ff');
       }
-    } catch (e) {
-      console.warn('Theme: skybox swap failed:', e.message);
-    }
+    } catch (e) { console.warn('Theme skybox swap failed:', e.message); }
   }
   apply(localStorage.getItem(KEY) || 'dark');
   btn.addEventListener('click', () => {
@@ -236,116 +219,149 @@ setInterval(tickClocks, 1000);
   });
 })();
 
-// --- App state ------------------------------------------------------------
+// =========================================================================
+// Clocks
+// =========================================================================
+
+function tickClocks() {
+  const now = new Date();
+  const fmtT = tz => now.toLocaleTimeString('en-GB', {
+    hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: tz,
+  });
+  $('utc-time').textContent = fmtT('UTC');
+  $('ist-time').textContent = fmtT('Asia/Kolkata');
+  $('utc-date').textContent = now.toLocaleDateString('en-GB', {
+    year: 'numeric', month: 'short', day: '2-digit', timeZone: 'UTC',
+  }) + ' UTC';
+}
+tickClocks();
+setInterval(tickClocks, 1000);
+
+// =========================================================================
+// Catalogue load
+// =========================================================================
 
 let activeTLEs = [];
 const prcMeta = new Map();
 
-function setStatus(msg, cls = '') {
-  const el = document.getElementById('status');
-  if (!el) return;  // footer line was removed; keep call sites silent
-  el.textContent = msg;
-  el.className = cls;
-}
-
 async function loadAll() {
   setStatus('Fetching TLE catalog…');
   const [tleResult, satcat] = await Promise.all([fetchTLEs(), fetchChinaSatcat()]);
-  const { tles, source } = tleResult;
-
-  activeTLEs = makeSatrecs(tles);
+  activeTLEs = makeSatrecs(tleResult.tles);
 
   prcMeta.clear();
   for (const r of satcat) {
     const id = parseInt(r.NORAD_CAT_ID, 10);
-    if (!Number.isFinite(id)) continue;
-    prcMeta.set(id, {
-      launch: r.LAUNCH_DATE || '—',
-      name: r.OBJECT_NAME,
-      site: r.LAUNCH_SITE || '',
-      opsStatus: r.OPS_STATUS_CODE || '',
-    });
+    if (Number.isFinite(id)) prcMeta.set(id, { launch: r.LAUNCH_DATE || '—' });
   }
 
-  const tag = source === 'celestrak' ? 'live' : source === 'cache' ? 'cached' : 'bundled snapshot';
+  const tag = tleResult.source === 'celestrak' ? 'live'
+            : tleResult.source === 'cache'    ? 'cached'
+            : 'bundled snapshot';
   setStatus(`Loaded ${activeTLEs.length.toLocaleString()} TLEs (${tag}) · ${prcMeta.size.toLocaleString()} CN payloads`);
 
-  // Top-of-HUD tracking total + "as of" date.
-  document.getElementById('tracked-count').textContent = activeTLEs.length.toLocaleString();
+  $('tracked-count').textContent = activeTLEs.length.toLocaleString();
   const asof = new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: '2-digit' });
-  document.getElementById('tracked-asof').textContent = `as of ${asof}`;
+  $('tracked-asof').textContent = `as of ${asof}`;
 }
 
-const esc = s => String(s).replace(/[&<>"']/g, c => ({
-  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-}[c]));
+// =========================================================================
+// Chunked update loop
+// =========================================================================
+//
+// Propagate every active TLE for the current instant, but slice the
+// work across requestAnimationFrame callbacks so no single frame eats
+// the full ~150 ms budget.  This is the single biggest perf win on
+// this page — pre-chunking the page used to stutter visibly on every
+// 10 s tick.
 
-const compass = az => {
-  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-  return dirs[Math.round(((az % 360) / 22.5)) % 16];
-};
+let updateActive = false;
+let updateIdx    = 0;
+let updateNow    = null;
+let updateNonCN  = [];
+let updateCN     = [];
 
-function update() {
-  if (!activeTLEs.length) return;
-  const now = new Date();
+function startUpdate() {
+  if (!activeTLEs.length || updateActive) return;
+  updateActive = true;
+  updateNow    = new Date();
+  updateIdx    = 0;
+  updateNonCN  = [];
+  updateCN     = [];
+  processChunk();
+}
 
-  // Split visible-from-New-Delhi sats into PRC and non-PRC up-front; both
-  // lists feed their own HUD panel and the globe-marker layer pulls from
-  // their union.
-  const visibleNonCN = [];
-  const visibleCN    = [];
-  const markers      = [];
-
-  for (const t of activeTLEs) {
-    const r = propagate(t.rec, now, OBSERVER);
-    if (!r || !Number.isFinite(r.lat) || !Number.isFinite(r.lon)) continue;
-    if (r.el <= 0) continue;  // ignore below-horizon objects
+function processChunk() {
+  const end = Math.min(updateIdx + CHUNK_SIZE, activeTLEs.length);
+  for (; updateIdx < end; updateIdx++) {
+    const t = activeTLEs[updateIdx];
+    const r = propagate(t.rec, updateNow, OBSERVER);
+    if (!r || !Number.isFinite(r.lat) || !Number.isFinite(r.lon) || r.el <= 0) continue;
     const isCn = prcMeta.has(t.noradId);
     const item = {
       name: t.name, az: r.az, el: r.el, range: r.range,
       alt: r.alt, lat: r.lat, lon: r.lon, cn: isCn,
-      // Carry the satrec + NORAD ID through to the globe-marker layer
-      // so onPointClick can propagate one orbital period on demand.
       rec: t.rec, noradId: t.noradId,
     };
     if (isCn) {
-      const meta = prcMeta.get(t.noradId);
       item.purpose = inferPurpose(t.name);
-      item.launch  = meta?.launch || '—';
-      visibleCN.push(item);
+      item.launch  = prcMeta.get(t.noradId)?.launch || '—';
+      updateCN.push(item);
     } else {
-      visibleNonCN.push(item);
+      updateNonCN.push(item);
     }
   }
-
-  // Globe markers — top-N highest elevations from the combined set.
-  const all = visibleNonCN.concat(visibleCN).sort((a, b) => b.el - a.el);
-  for (const s of all.slice(0, MAX_VISIBLE_MARKERS)) {
-    markers.push({
-      lat: s.lat, lon: s.lon, alt: s.alt,
-      name: s.name, cn: s.cn,
-      az: s.az, el: s.el,
-      rec: s.rec, noradId: s.noradId,
-    });
+  if (updateIdx < activeTLEs.length) {
+    requestAnimationFrame(processChunk);
+  } else {
+    finishUpdate();
   }
+}
 
-  document.getElementById('vis-count').textContent = visibleNonCN.length;
-  document.getElementById('cn-count').textContent  = visibleCN.length;
+function finishUpdate() {
+  // Globe markers: top-N by elevation.  One shared sort serves both
+  // the marker selection and the per-list ordering.
+  const all = updateNonCN.concat(updateCN).sort((a, b) => b.el - a.el);
+  globe.objectsData(all.slice(0, MAX_MARKERS));
 
-  visibleNonCN.sort((a, b) => b.el - a.el);
-  document.getElementById('vis-list').innerHTML = visibleNonCN.slice(0, 200).map(s => `
+  $('vis-count').textContent = updateNonCN.length;
+  $('cn-count').textContent  = updateCN.length;
+
+  // Only re-render the HUD lists if their <details> panel is open —
+  // saves the innerHTML build cost when the user has collapsed them.
+  if ($('vis-panel')?.open) {
+    updateNonCN.sort((a, b) => b.el - a.el);
+    $('vis-list').innerHTML = renderHorizonList(updateNonCN, HUD_LIST_MAX);
+  }
+  if ($('cn-panel')?.open) {
+    updateCN.sort((a, b) => b.el - a.el);
+    $('cn-list').innerHTML = renderCNHorizonList(updateCN);
+  }
+  if ($('lookup-panel')?.open) runLookup();
+
+  updateActive = false;
+}
+
+// Shared row template — used by the non-CN horizon panel and the
+// custom-location lookup.
+function renderHorizonList(items, limit) {
+  if (!items.length) return '<div class="hint">No satellites above this horizon right now.</div>';
+  return items.slice(0, limit).map(s => `
     <div class="item">
-      <div class="name">${esc(s.name)}</div>
+      <div class="name">${esc(s.name)}${s.cn ? ' <span class="tag cn">CN</span>' : ''}</div>
       <div class="meta">
         Az <strong>${s.az.toFixed(1)}°</strong> ${compass(s.az)}
         · El <strong>${s.el.toFixed(1)}°</strong>
         · ${s.range.toFixed(0)} km
       </div>
       <div class="meta muted">Alt ${s.alt.toFixed(0)} km · sub-pt ${s.lat.toFixed(2)}°, ${s.lon.toFixed(2)}°</div>
-    </div>`).join('') || '<div class="hint">No non-Chinese satellites above the horizon.</div>';
+    </div>`).join('');
+}
 
-  visibleCN.sort((a, b) => b.el - a.el);
-  document.getElementById('cn-list').innerHTML = visibleCN.map(s => `
+// CN-specific row template — adds purpose to the meta line.
+function renderCNHorizonList(items) {
+  if (!items.length) return '<div class="hint">No Chinese payloads currently above the horizon.</div>';
+  return items.map(s => `
     <div class="item">
       <div class="name">${esc(s.name)} <span class="tag cn">CN</span></div>
       <div class="meta">
@@ -354,26 +370,21 @@ function update() {
         · ${s.range.toFixed(0)} km
       </div>
       <div class="meta muted">${esc(s.purpose)} · Alt ${s.alt.toFixed(0)} km · sub-pt ${s.lat.toFixed(2)}°, ${s.lon.toFixed(2)}°</div>
-    </div>`).join('') || '<div class="hint">No Chinese payloads currently above the horizon.</div>';
-
-  globe.pointsData(markers);
-
-  // Keep the Observer Lookup panel in sync with each tick while it's open.
-  if (document.getElementById('lookup-panel')?.open) runLookup();
+    </div>`).join('');
 }
 
-// --- Observer Lookup ------------------------------------------------------
-// Propagates every satellite for the user-supplied lat/lon and lists those
-// currently above the horizon, sorted by elevation.
+// =========================================================================
+// Custom-location observer lookup
+// =========================================================================
 
 function runLookup() {
   if (!activeTLEs.length) return;
-  const latEl = document.getElementById('lookup-lat');
-  const lonEl = document.getElementById('lookup-lon');
+  const latEl = $('lookup-lat');
+  const lonEl = $('lookup-lon');
   const lat = parseFloat(latEl.value);
   const lon = parseFloat(lonEl.value);
-  const countEl = document.getElementById('lookup-count');
-  const listEl  = document.getElementById('lookup-list');
+  const countEl = $('lookup-count');
+  const listEl  = $('lookup-list');
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
     countEl.textContent = '!';
     listEl.innerHTML = '<div class="hint">Enter latitude in −90…90 and longitude in −180…180.</div>';
@@ -384,36 +395,22 @@ function runLookup() {
   const above = [];
   for (const t of activeTLEs) {
     const r = propagate(t.rec, now, observer);
-    if (!r || !Number.isFinite(r.el)) continue;
-    if (r.el > 0) {
-      above.push({
-        name: t.name, az: r.az, el: r.el, range: r.range, alt: r.alt,
-        cn: prcMeta.has(t.noradId),
-      });
-    }
+    if (!r || !Number.isFinite(r.el) || r.el <= 0) continue;
+    above.push({
+      name: t.name, az: r.az, el: r.el, range: r.range, alt: r.alt,
+      lat: r.lat, lon: r.lon, cn: prcMeta.has(t.noradId),
+    });
   }
   above.sort((a, b) => b.el - a.el);
   countEl.textContent = above.length;
-  listEl.innerHTML = above.slice(0, 200).map(s => `
-    <div class="item">
-      <div class="name">${esc(s.name)}${s.cn ? ' <span class="tag cn">CN</span>' : ''}</div>
-      <div class="meta">
-        Az <strong>${s.az.toFixed(1)}°</strong> ${compass(s.az)}
-        · El <strong>${s.el.toFixed(1)}°</strong>
-        · ${s.range.toFixed(0)} km
-      </div>
-      <div class="meta muted">Alt ${s.alt.toFixed(0)} km</div>
-    </div>`).join('') || '<div class="hint">No satellites above this horizon right now.</div>';
+  listEl.innerHTML = renderHorizonList(above, HUD_LIST_MAX);
 }
 
-// Wire up the lookup form: button, Enter-to-submit, and live re-compute on
-// edit.  The number inputs fire 'input' on each keystroke, which would be
-// chatty on the slower devices, so we debounce.
 (function setupLookup() {
-  const btn = document.getElementById('lookup-btn');
-  const lat = document.getElementById('lookup-lat');
-  const lon = document.getElementById('lookup-lon');
-  const panel = document.getElementById('lookup-panel');
+  const btn = $('lookup-btn');
+  const lat = $('lookup-lat');
+  const lon = $('lookup-lon');
+  const panel = $('lookup-panel');
   if (!btn || !lat || !lon || !panel) return;
   let timer = null;
   const debounced = () => { clearTimeout(timer); timer = setTimeout(runLookup, 250); };
@@ -423,17 +420,19 @@ function runLookup() {
   panel.addEventListener('toggle', () => { if (panel.open) runLookup(); });
 })();
 
-// --- Boot -----------------------------------------------------------------
+// =========================================================================
+// Boot
+// =========================================================================
 
 (async function main() {
-  document.getElementById('vis-count').textContent = '…';
-  document.getElementById('cn-count').textContent  = '…';
+  $('vis-count').textContent = '…';
+  $('cn-count').textContent  = '…';
   try {
     await loadAll();
-    update();
-    setInterval(update, REFRESH_MS);
+    startUpdate();
+    setInterval(startUpdate, REFRESH_MS);
     setInterval(() => {
-      loadAll().then(update).catch(e => {
+      loadAll().then(startUpdate).catch(e => {
         console.warn('TLE refresh failed:', e);
         setStatus(`Refresh failed: ${e.message} · using cached catalog`, 'warn');
       });
@@ -441,7 +440,7 @@ function runLookup() {
   } catch (e) {
     console.error(e);
     setStatus(`Load failed: ${e.message}`, 'err');
-    document.getElementById('vis-count').textContent = '!';
-    document.getElementById('cn-count').textContent  = '!';
+    $('vis-count').textContent = '!';
+    $('cn-count').textContent  = '!';
   }
 })();

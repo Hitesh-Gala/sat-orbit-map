@@ -134,7 +134,13 @@ window.Argos = (function () {
       console.warn(`Live TLE fetch threw: ${e.message}; using bundled snapshot.`);
     }
 
-    const r2 = await fetch(TLE_FALLBACK_URL);
+    // cache:'no-cache' = revalidate with the server (If-Modified-Since
+    // + ETag).  When the bundled file is unchanged the server returns
+    // 304 and the browser serves its own cached body — fast.  When the
+    // 6-hourly refresh-data workflow updates the file, the server
+    // returns 200 with fresh bytes.  Without this, browsers that
+    // cached an old (smaller) snapshot keep serving it indefinitely.
+    const r2 = await fetch(TLE_FALLBACK_URL, { cache: 'no-cache' });
     if (!r2.ok) throw new Error(`Bundled TLE missing (HTTP ${r2.status})`);
     return { tles: parseTLE(await r2.text()), source: 'bundled' };
   }
