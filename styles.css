@@ -931,24 +931,32 @@ body.hud-open  .float-toggle.data-toggle {
   pointer-events: auto;
 }
 
+/* Colours pulled from the Takshashila lighthouse SVG:
+       #5c1237  (deep maroon — primary)
+       #4f112e  (darker maroon — bottom of gradient)
+       #f19914  (warm orange — accent line)
+       #fbc814  (warm yellow — border + title glow)
+       #ffffff  (white — body text)
+   Net effect: the popup reads as a Takshashila-branded panel rather
+   than the previous siren red. */
 .flash-popup {
   position: fixed;
   top: 50%;
   left: 50%;
   z-index: 200;
-  width: min(520px, calc(100vw - 32px));
-  padding: 38px 56px 32px;
+  width: min(540px, calc(100vw - 32px));
+  padding: 56px 56px 32px;     /* extra top room for the logo / × row */
   text-align: center;
   color: #ffffff;
   background:
-    radial-gradient(ellipse at top, rgba(255, 180, 180, 0.18) 0%, transparent 60%),
-    linear-gradient(135deg, #d32f2f 0%, #9a1414 100%);
-  border: 2px solid #ff6b6b;
+    radial-gradient(ellipse at top left, rgba(251, 200, 20, 0.16) 0%, transparent 55%),
+    linear-gradient(135deg, #5c1237 0%, #4f112e 100%);
+  border: 2px solid #fbc814;
   border-radius: 12px;
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.10) inset,
-    0 0 80px rgba(255, 50, 50, 0.55),
-    0 18px 48px rgba(0, 0, 0, 0.65);
+    0 0 0 1px rgba(251, 200, 20, 0.18) inset,
+    0 0 80px rgba(251, 200, 20, 0.32),
+    0 18px 48px rgba(0, 0, 0, 0.7);
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, -50%) scale(0.88);
@@ -964,28 +972,42 @@ body.hud-open  .float-toggle.data-toggle {
   transform: translate(-50%, -50%) scale(0.94);
 }
 
+/* Takshashila logo, anchored top-left — mirrors the × button on the
+   right.  Already designed for dark backgrounds (white text, warm
+   illuminated lighthouse), so no recolouring needed. */
+.flash-logo {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  height: 36px;
+  width: auto;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+}
+
 .flash-close {
   position: absolute;
-  top: 10px;
-  right: 12px;
+  top: 12px;
+  right: 14px;
   width: 34px;
   height: 34px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(251, 200, 20, 0.55);
   border-radius: 50%;
-  color: #ffffff;
+  color: #fbc814;
   font-family: var(--mono);
   font-size: 22px;
   line-height: 1;
   padding: 0;
   cursor: pointer;
-  transition: background .15s, transform .15s;
+  transition: background .15s, transform .15s, border-color .15s;
 }
 .flash-close:hover {
-  background: rgba(255, 255, 255, 0.26);
+  background: rgba(251, 200, 20, 0.22);
+  border-color: #fbc814;
   transform: scale(1.06);
 }
 .flash-close:active { transform: scale(0.96); }
@@ -994,7 +1016,7 @@ body.hud-open  .float-toggle.data-toggle {
   font-size: 44px;
   line-height: 1;
   margin-bottom: 14px;
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.55));
+  filter: drop-shadow(0 0 12px rgba(251, 200, 20, 0.55));
 }
 .flash-title {
   font-family: 'Orbitron', sans-serif;
@@ -1002,7 +1024,10 @@ body.hud-open  .float-toggle.data-toggle {
   font-size: 40px;
   letter-spacing: 0.3em;
   margin: 0 0 10px;
-  text-shadow: 0 0 18px rgba(255, 255, 255, 0.65);
+  color: #ffffff;
+  text-shadow:
+    0 0 18px rgba(251, 200, 20, 0.6),
+    0 0 4px rgba(255, 255, 255, 0.5);
 }
 .flash-subtitle {
   font-family: 'Orbitron', sans-serif;
@@ -1010,17 +1035,20 @@ body.hud-open  .float-toggle.data-toggle {
   font-size: 13px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  opacity: 0.94;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.42);
+  color: #f4ec07;
+  opacity: 0.95;
+  text-shadow: 0 0 10px rgba(251, 200, 20, 0.45);
 }
 
 @media (max-width: 720px) {
   .flash-popup {
-    padding: 28px 32px 24px;
+    padding: 50px 28px 22px;
     width: calc(100vw - 24px);
   }
-  .flash-eye     { font-size: 34px; margin-bottom: 10px; }
-  .flash-title   { font-size: 28px; letter-spacing: 0.22em; }
+  .flash-logo    { height: 28px; top: 10px; left: 12px; }
+  .flash-close   { top: 10px; right: 12px; width: 28px; height: 28px; font-size: 18px; }
+  .flash-eye     { font-size: 32px; margin-bottom: 10px; }
+  .flash-title   { font-size: 26px; letter-spacing: 0.20em; }
   .flash-subtitle{ font-size: 10px; letter-spacing: 0.18em; }
 }
 

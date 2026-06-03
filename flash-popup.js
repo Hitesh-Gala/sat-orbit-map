@@ -22,6 +22,7 @@
     popup.setAttribute('aria-modal', 'true');
     popup.setAttribute('aria-labelledby', 'flash-title');
     popup.innerHTML = `
+      <img class="flash-logo" src="data/takshashila-logo.svg" alt="Takshashila Institution">
       <button type="button" class="flash-close" aria-label="Close announcement">×</button>
       <div class="flash-eye" aria-hidden="true">👁</div>
       <div class="flash-title" id="flash-title">${TITLE}</div>
