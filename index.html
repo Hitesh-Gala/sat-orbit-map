@@ -139,10 +139,16 @@
 
   </aside>
 
+  <!-- three.js MUST load before globe.gl so app.js can construct
+       THREE.Mesh / SphereGeometry / MeshBasicMaterial for the
+       satellite markers (same pattern as game-of-cones.html and
+       viz3d.html).  globe.gl bundles three internally but does NOT
+       expose it on window.THREE, so we load it explicitly. -->
+  <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=4"></script>
-  <script src="app.js?v=21"></script>
+  <script src="app.js?v=22"></script>
   <script src="news-ticker.js?v=12"></script>
   <script src="mobile-menu.js?v=2"></script>
 </body>
