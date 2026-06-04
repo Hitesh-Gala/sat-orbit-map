@@ -116,7 +116,7 @@ window.Argos = (function () {
   }
 
   async function fetchTLEs() {
-    const cached = cacheGet('argos.tle', CACHE_TTL.tle);
+    const cached = cacheGet('argos.tle.v2', CACHE_TTL.tle);
     if (cached) return { tles: cached, source: 'cache' };
 
     try {
@@ -124,7 +124,7 @@ window.Argos = (function () {
       if (r.ok) {
         const parsed = parseTLE(await r.text());
         if (parsed.length > 100) {
-          cacheSet('argos.tle', parsed);
+          cacheSet('argos.tle.v2', parsed);
           return { tles: parsed, source: 'celestrak' };
         }
       } else {
@@ -151,7 +151,7 @@ window.Argos = (function () {
     // 403'd" — caching that for 24 h is exactly how every BeiDou /
     // Yaogan / Fengyun ended up mis-classified as non-Chinese on the
     // main page after a single CelesTrak rate-limit hit.
-    const cached = cacheGet('argos.satcat.prc', CACHE_TTL.satcat);
+    const cached = cacheGet('argos.satcat.prc.v2', CACHE_TTL.satcat);
     if (cached && cached.length) return cached;
 
     // Stage 1: live records.php fan-out by name prefix.
@@ -178,7 +178,7 @@ window.Argos = (function () {
       }
     }
     if (out.length) {
-      cacheSet('argos.satcat.prc', out);
+      cacheSet('argos.satcat.prc.v2', out);
       return out;
     }
 
@@ -215,7 +215,7 @@ window.Argos = (function () {
             });
           }
           if (fallback.length) {
-            cacheSet('argos.satcat.prc', fallback);
+            cacheSet('argos.satcat.prc.v2', fallback);
             return fallback;
           }
         }
