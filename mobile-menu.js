@@ -54,6 +54,7 @@
   const PANEL_SELECTORS = [
     '.left-nav',
     '.viz-shell',
+    '.viz-search',
     '.goc-shell',
     '.hud-tl',
     '.hud-tr',

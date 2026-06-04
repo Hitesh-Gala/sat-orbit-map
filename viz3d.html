@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=4">
   <style>
     /* Page-specific HUD — a left-edge legend / stats card that mirrors
        the visual language of game-of-cones .goc-shell but with a wider
@@ -91,6 +91,59 @@
     }
     .viz-status { font-size: 11px; color: var(--dim); }
     .viz-status strong { color: var(--accent); font-weight: normal; font-variant-numeric: tabular-nums; }
+
+    /* RHS search panel — mirrors .viz-shell on the right edge. */
+    .viz-search {
+      position: fixed;
+      top: 86px;
+      right: 14px;
+      width: 280px;
+      max-width: calc(100vw - 28px);
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .viz-search-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.32);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 7px 9px;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .viz-search-input:focus { border-color: var(--accent); }
+    .viz-search-hits {
+      margin-top: 6px;
+      max-height: 280px;
+      overflow-y: auto;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: rgba(0, 0, 0, 0.32);
+    }
+    .viz-search-hits .item {
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--text);
+      border-bottom: 1px solid rgba(110, 200, 255, 0.07);
+      letter-spacing: 0.03em;
+    }
+    .viz-search-hits .item:last-child { border-bottom: 0; }
+    .viz-search-hits .item:hover {
+      background: rgba(103, 200, 255, 0.14);
+      color: var(--accent);
+    }
+    .viz-search-hits .item.selected {
+      background: rgba(103, 200, 255, 0.22);
+      color: var(--text);
+    }
   </style>
 </head>
 <body class="page-viz3d">
@@ -164,6 +217,18 @@
     </section>
   </aside>
 
+  <!-- RHS search panel — find a sat by name, see the dropdown, pick
+       one to fly the camera in and start the R→G→B blink. -->
+  <aside class="viz-search" aria-label="Search satellites">
+    <section class="panel">
+      <div class="label" style="margin-bottom: 6px">Find Satellite</div>
+      <input type="search" id="viz-search-input" class="viz-search-input"
+             placeholder="Type a name (e.g. ISS, BEIDOU)…" autocomplete="off">
+      <div id="viz-search-hits" class="viz-search-hits" hidden></div>
+      <div id="viz-search-info" class="viz-status" style="margin-top: 6px"></div>
+    </section>
+  </aside>
+
   <!-- Cursor-following tooltip populated by viz3d.js's raycaster.
        Fixed-position + pointer-events:none so it never blocks orbit-drag. -->
   <div id="sat-tip" class="sat-tip-3d" hidden></div>
@@ -172,7 +237,7 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=6"></script>
-  <script src="viz3d.js?v=4"></script>
-  <script src="mobile-menu.js?v=2"></script>
+  <script src="viz3d.js?v=5"></script>
+  <script src="mobile-menu.js?v=3"></script>
 </body>
 </html>

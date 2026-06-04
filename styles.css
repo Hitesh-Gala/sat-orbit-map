@@ -839,6 +839,7 @@ body.hud-open  .float-toggle.data-toggle {
   .mobile-drawer > .hud-tl,
   .mobile-drawer > .goc-shell,
   .mobile-drawer > .viz-shell,
+  .mobile-drawer > .viz-search,
   .mobile-drawer > .right,
   .mobile-drawer > .header-right {
     position: static !important;
