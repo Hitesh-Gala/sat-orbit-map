@@ -146,9 +146,15 @@ window.Argos = (function () {
   }
 
   async function fetchChinaSatcat() {
+    // Only trust the cache when it actually has data.  An empty array
+    // here used to mean "every records.php fetch in the last call
+    // 403'd" — caching that for 24 h is exactly how every BeiDou /
+    // Yaogan / Fengyun ended up mis-classified as non-Chinese on the
+    // main page after a single CelesTrak rate-limit hit.
     const cached = cacheGet('argos.satcat.prc', CACHE_TTL.satcat);
-    if (cached) return cached;
+    if (cached && cached.length) return cached;
 
+    // Stage 1: live records.php fan-out by name prefix.
     const arrays = await pmap(CN_NAME_PREFIXES, 4, async name => {
       try {
         const r = await fetch(`${SATCAT_BASE}?NAME=${encodeURIComponent(name)}&FORMAT=json`);
@@ -171,8 +177,57 @@ window.Argos = (function () {
         out.push(r);
       }
     }
-    cacheSet('argos.satcat.prc', out);
-    return out;
+    if (out.length) {
+      cacheSet('argos.satcat.prc', out);
+      return out;
+    }
+
+    // Stage 2: bundled SATCAT fallback.  data/satcat-active.json
+    // already ships every active payload with its OWNER field for the
+    // SatStats page; we just filter it down to OWNER==='PRC' and map
+    // the compact { n, c, i, o, ls, ld } shape back to the records.php
+    // shape so chinrepo.js + app.js's prcMeta loop don't need to know
+    // which path the data came from.  cache:'no-cache' so the 6-hourly
+    // refresh-data workflow's updates reach the user.
+    console.warn('CelesTrak records.php returned 0 PRC payloads — falling back to bundled SATCAT snapshot.');
+    try {
+      const r2 = await fetch('data/satcat-active.json', { cache: 'no-cache' });
+      if (r2.ok) {
+        const arr = await r2.json();
+        if (Array.isArray(arr)) {
+          const fallback = [];
+          for (const r of arr) {
+            if (r.o !== 'PRC') continue;
+            fallback.push({
+              OBJECT_NAME:  r.n,
+              NORAD_CAT_ID: r.c,
+              OBJECT_ID:    r.i,
+              OWNER:        r.o,
+              LAUNCH_SITE:  r.ls,
+              LAUNCH_DATE:  r.ld,
+              DECAY_DATE:   r.dd || '',
+              PERIOD:       r.p,
+              INCLINATION:  r.inc,
+              APOGEE:       r.a,
+              PERIGEE:      r.pe,
+              OBJECT_TYPE:  'PAY',
+              OPS_STATUS_CODE: '',
+            });
+          }
+          if (fallback.length) {
+            cacheSet('argos.satcat.prc', fallback);
+            return fallback;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn(`Bundled PRC SATCAT fetch threw: ${e.message}`);
+    }
+
+    // Last-ditch: return whatever (possibly stale) cache we have, even
+    // if empty, rather than throwing.  Better an empty CN tab than a
+    // crashed page.
+    return cached || [];
   }
 
   // Propagate one satrec to `now` and compute look-angles from `observer`.
