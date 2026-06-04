@@ -527,6 +527,17 @@ body.light .topbar .sub { color: var(--dim); }
   text-decoration: none;
 }
 .ticker-item a:hover { text-decoration: underline; }
+/* Publication date prefix — dim mono badge, slightly raised cap-height
+   so it reads as metadata rather than part of the headline. */
+.ticker-item .date {
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
 .ticker-item .source {
   color: var(--dim);
   font-size: 9px;

@@ -30,6 +30,19 @@ const CHINA_RE = /\b(china|chinese|long\s*march|cz[- ]?\d|beidou|tianzhou|tiango
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+// Short publication-date label for the ticker.  Drops the year when
+// the item is from this year (the common case for fresh launches),
+// keeps it otherwise so older items stay unambiguous.  Example
+// outputs: "12 Jun", "23 Dec 2025".  Returns "" if the date is
+// missing or unparseable.
+function fmtTickerDate(d) {
+  if (!(d instanceof Date) || isNaN(d.getTime())) return '';
+  const thisYear = new Date().getUTCFullYear();
+  const opts = { day: '2-digit', month: 'short', timeZone: 'UTC' };
+  if (d.getUTCFullYear() !== thisYear) opts.year = 'numeric';
+  return d.toLocaleDateString('en-GB', opts);
+}
+
 async function fetchFeed({ url, source }) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
@@ -92,7 +105,11 @@ function render(items) {
     track.style.animation = 'none';
     return;
   }
-  const html = items.map(it => `<span class="ticker-item"><a href="${esc(it.link)}" target="_blank" rel="noopener noreferrer">${esc(it.title)}</a><span class="source">${esc(it.source)}</span></span>`).join('');
+  const html = items.map(it => {
+    const date = fmtTickerDate(it.pubDate);
+    const datePart = date ? `<span class="date">${esc(date)}</span>` : '';
+    return `<span class="ticker-item">${datePart}<a href="${esc(it.link)}" target="_blank" rel="noopener noreferrer">${esc(it.title)}</a><span class="source">${esc(it.source)}</span></span>`;
+  }).join('');
   // Duplicate so the keyframe loop is seamless.
   track.innerHTML = html + html;
   track.style.animation = '';
