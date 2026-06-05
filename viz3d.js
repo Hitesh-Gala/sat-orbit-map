@@ -208,7 +208,13 @@ function propagateChunk() {
   }
   chunkIdx = end;
   if (chunkIdx < allSats.length) {
-    requestAnimationFrame(propagateChunk);
+    // Visible tab → rAF for frame-paced chunking.  Hidden/minimised
+    // tab → rAF is paused, so fall back to setTimeout(0) so the
+    // pipeline still completes and satState gets fully populated
+    // (otherwise click-to-isolate would find no valid hits next time
+    // the user returns to the tab).
+    if (document.hidden) setTimeout(propagateChunk, 0);
+    else                 requestAnimationFrame(propagateChunk);
     return;
   }
   // Last chunk done — flush GPU buffers and update HUD.
@@ -485,138 +491,8 @@ function onCanvasClick(ev) {
     id = i;
     break;
   }
-  // Any direct interaction with the globe supersedes the search-driven
-  // RGB blink — selecting a different sat by click should restore the
-  // sphere to its orbit-class colour, deselect should drop it entirely.
-  stopBlink();
   if (id !== -1) selectSat(id);
   else           deselectSat();
-}
-
-// ===========================================================================
-// Search panel (RHS) — find a sat by name, fly the camera, RGB-blink it
-// ===========================================================================
-//
-// Search filter is a case-insensitive substring match on allSats[].name,
-// capped at MAX_SEARCH_HITS so a single-letter query doesn't try to
-// render 16 000 <div>s.  Picking a hit (click or Enter) fires
-// selectAndFocus(id), which:
-//   1. selectSat(id) — reuses the existing fade-out / highlight-sphere /
-//      orbital-path pipeline.
-//   2. globe.pointOfView(...) — 1.5 s camera flight to the sat's
-//      sub-point at an altitude scaled to the sat's own altitude so LEO
-//      and GEO both frame nicely.
-//   3. startBlink() — rAF loop that linearly interpolates the highlight
-//      sphere's MeshBasicMaterial colour through R → G → B → R on a
-//      BLINK_PERIOD_MS cycle.  Stops automatically when selectedId
-//      drops to -1 (deselect) or when stopBlink() is called from
-//      onCanvasClick.
-
-const searchInput = $('viz-search-input');
-const searchHits  = $('viz-search-hits');
-const searchInfo  = $('viz-search-info');
-const MAX_SEARCH_HITS  = 30;
-const BLINK_PERIOD_MS  = 900;    // one full R→G→B→R cycle
-const BLINK_COLORS = [
-  new THREE.Color(0xff2233),     // R
-  new THREE.Color(0x22ff44),     // G
-  new THREE.Color(0x3366ff),     // B
-];
-let blinkRaf = null;
-
-function renderSearchHits(query) {
-  const q = query.trim().toLowerCase();
-  if (!q || q.length < 2) {
-    searchHits.hidden = true;
-    searchHits.innerHTML = '';
-    searchInfo.textContent = q ? 'Type at least 2 characters.' : '';
-    return;
-  }
-  const hits = [];
-  for (let i = 0; i < allSats.length; i++) {
-    if (allSats[i].name.toLowerCase().includes(q)) {
-      hits.push({ idx: i, name: allSats[i].name });
-      if (hits.length >= MAX_SEARCH_HITS) break;
-    }
-  }
-  if (!hits.length) {
-    searchHits.hidden = true;
-    searchHits.innerHTML = '';
-    searchInfo.textContent = 'No matches.';
-    return;
-  }
-  searchHits.hidden = false;
-  searchInfo.innerHTML = `<strong>${hits.length}</strong> match${hits.length === 1 ? '' : 'es'}${hits.length >= MAX_SEARCH_HITS ? ' (showing first ' + MAX_SEARCH_HITS + ')' : ''}`;
-  searchHits.innerHTML = hits.map(h =>
-    `<div class="item" data-idx="${h.idx}">${escHtml(h.name)}</div>`
-  ).join('');
-}
-
-function selectAndFocus(id) {
-  if (id < 0 || id >= allSats.length) return;
-  selectSat(id);
-  // Camera flight — frame altitude scales with the sat's own altitude
-  // so LEO (~500 km) gets a tight zoom while GEO (~35 786 km) pulls
-  // back enough to keep both the Earth and the sat in frame.
-  const st = satState[id];
-  if (st) {
-    const altFrac = (st.alt / EARTH_R_KM) * altScale;
-    const camAlt  = Math.max(1.5, altFrac + 1.0);
-    globe.pointOfView({ lat: st.lat, lng: st.lon, altitude: camAlt }, 1500);
-  }
-  startBlink();
-}
-
-function startBlink() {
-  stopBlink();
-  const t0 = performance.now();
-  function step(now) {
-    if (selectedId === -1 || !highlightSphere.visible) {
-      blinkRaf = null;
-      return;
-    }
-    // Phase 0..N at any moment; lerp from BLINK_COLORS[i] → [i+1].
-    const phase = ((now - t0) / BLINK_PERIOD_MS) * BLINK_COLORS.length;
-    const i = Math.floor(phase) % BLINK_COLORS.length;
-    const j = (i + 1) % BLINK_COLORS.length;
-    const f = phase - Math.floor(phase);
-    const c = BLINK_COLORS[i].clone().lerp(BLINK_COLORS[j], f);
-    highlightSphere.material.color.copy(c);
-    blinkRaf = requestAnimationFrame(step);
-  }
-  blinkRaf = requestAnimationFrame(step);
-}
-
-function stopBlink() {
-  if (blinkRaf) cancelAnimationFrame(blinkRaf);
-  blinkRaf = null;
-}
-
-// Wire up the input + dropdown.
-
-if (searchInput) {
-  searchInput.addEventListener('input', e => renderSearchHits(e.target.value));
-  // Enter picks the first match in the dropdown.
-  searchInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const first = searchHits.querySelector('.item[data-idx]');
-      if (first) first.click();
-    } else if (e.key === 'Escape') {
-      searchHits.hidden = true;
-    }
-  });
-}
-if (searchHits) {
-  searchHits.addEventListener('click', e => {
-    const item = e.target.closest('.item[data-idx]');
-    if (!item) return;
-    const id = parseInt(item.dataset.idx, 10);
-    if (!Number.isFinite(id)) return;
-    searchInput.value = allSats[id].name;
-    searchHits.hidden = true;
-    selectAndFocus(id);
-  });
 }
 
 function selectSat(id) {
