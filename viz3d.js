@@ -81,7 +81,12 @@ window.addEventListener('resize', () => {
 // globe.gl's internal scale, so 1 unit ≈ 64 km on Earth — chunky enough
 // to spot, small enough not to clump visually at LEO).
 
-const SAT_GEOM = new THREE.SphereGeometry(1.0, 6, 6);
+// Radius 1.6 (was 1.0) — at default zoom each sphere projects to a
+// 3–4 px target, well inside the cursor's natural hover tolerance.
+// The previous 1-unit spheres mapped to ~1 px on screen and were
+// effectively unhoverable.  8×8 segments keeps them looking round
+// without bloating the per-instance triangle count.
+const SAT_GEOM = new THREE.SphereGeometry(1.6, 8, 8);
 // Plain MeshBasicMaterial — three.js r157 auto-detects instanceColor on
 // the InstancedMesh (setColorAt below allocates it) and routes it
 // through the USE_INSTANCING_COLOR shader define.  No vertexColors flag
@@ -352,11 +357,12 @@ function renderTooltip(id) {
   const periodStr = period
     ? `${period.toFixed(1)} min <span class="muted">(${(period / 60).toFixed(2)} h)</span>`
     : '<span class="muted">unknown</span>';
+  // Three required fields: name, altitude, period.  Orbit-class badge
+  // lives next to the name as a one-glance colour cue (matches the
+  // sphere's own colour) but doesn't take a dedicated line.
   tip.innerHTML = `
-    <b>${escHtml(t.name)}</b>
-    <div><span class="cls" style="${classBadgeStyle(cls)}">${cls}</span></div>
+    <b>${escHtml(t.name)}</b> <span class="cls" style="${classBadgeStyle(cls)}">${cls}</span>
     <div>Altitude <strong>${st.alt.toFixed(0)} km</strong></div>
-    <div>Sub-point <strong>${st.lat.toFixed(2)}°, ${st.lon.toFixed(2)}°</strong></div>
     <div>Period <strong>${periodStr}</strong></div>
   `;
 }
