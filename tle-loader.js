@@ -120,7 +120,15 @@ window.Argos = (function () {
     if (cached) return { tles: cached, source: 'cache' };
 
     try {
-      const r = await fetch(TLE_URL);
+      // 4-second abort guard.  On a fresh machine / new IP CelesTrak
+      // often hangs (rather than fast-403ing) and the whole first
+      // paint used to wait on it.  The bundled snapshot is at most
+      // ~6 h stale (refresh-data workflow), so cutting over fast is
+      // the right trade.
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 4000);
+      const r = await fetch(TLE_URL, { signal: ctrl.signal });
+      clearTimeout(timer);
       if (r.ok) {
         const parsed = parseTLE(await r.text());
         if (parsed.length > 100) {
@@ -154,7 +162,54 @@ window.Argos = (function () {
     const cached = cacheGet('argos.satcat.prc.v2', CACHE_TTL.satcat);
     if (cached && cached.length) return cached;
 
-    // Stage 1: live records.php fan-out by name prefix.
+    // Stage 1: bundled SATCAT snapshot.  data/satcat-active.json ships
+    // every active payload with its OWNER field (refreshed every 6 h by
+    // the refresh-data workflow); filter to OWNER==='PRC' and map the
+    // compact { n, c, i, o, ls, ld } shape back to the records.php
+    // shape so chinrepo.js + app.js's prcMeta loop don't care which
+    // path the data came from.
+    //
+    // This used to be the *fallback* after a ~50-request live fan-out
+    // to records.php — on a fresh machine / new IP that fan-out could
+    // hang for 30–60 s and block the main page's first paint.  One
+    // same-origin fetch of an at-most-6-h-stale file wins that trade
+    // easily; the live fan-out is demoted to last resort below.
+    try {
+      const r2 = await fetch('data/satcat-active.json', { cache: 'no-cache' });
+      if (r2.ok) {
+        const arr = await r2.json();
+        if (Array.isArray(arr)) {
+          const fromBundle = [];
+          for (const r of arr) {
+            if (r.o !== 'PRC') continue;
+            fromBundle.push({
+              OBJECT_NAME:  r.n,
+              NORAD_CAT_ID: r.c,
+              OBJECT_ID:    r.i,
+              OWNER:        r.o,
+              LAUNCH_SITE:  r.ls,
+              LAUNCH_DATE:  r.ld,
+              DECAY_DATE:   r.dd || '',
+              PERIOD:       r.p,
+              INCLINATION:  r.inc,
+              APOGEE:       r.a,
+              PERIGEE:      r.pe,
+              OBJECT_TYPE:  'PAY',
+              OPS_STATUS_CODE: '',
+            });
+          }
+          if (fromBundle.length) {
+            cacheSet('argos.satcat.prc.v2', fromBundle);
+            return fromBundle;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn(`Bundled PRC SATCAT fetch threw: ${e.message}; trying live records.php.`);
+    }
+
+    // Stage 2 (last resort): live records.php fan-out by name prefix.
+    // Only reached when the bundled snapshot is missing or corrupt.
     const arrays = await pmap(CN_NAME_PREFIXES, 4, async name => {
       try {
         const r = await fetch(`${SATCAT_BASE}?NAME=${encodeURIComponent(name)}&FORMAT=json`);
@@ -180,48 +235,6 @@ window.Argos = (function () {
     if (out.length) {
       cacheSet('argos.satcat.prc.v2', out);
       return out;
-    }
-
-    // Stage 2: bundled SATCAT fallback.  data/satcat-active.json
-    // already ships every active payload with its OWNER field for the
-    // SatStats page; we just filter it down to OWNER==='PRC' and map
-    // the compact { n, c, i, o, ls, ld } shape back to the records.php
-    // shape so chinrepo.js + app.js's prcMeta loop don't need to know
-    // which path the data came from.  cache:'no-cache' so the 6-hourly
-    // refresh-data workflow's updates reach the user.
-    console.warn('CelesTrak records.php returned 0 PRC payloads — falling back to bundled SATCAT snapshot.');
-    try {
-      const r2 = await fetch('data/satcat-active.json', { cache: 'no-cache' });
-      if (r2.ok) {
-        const arr = await r2.json();
-        if (Array.isArray(arr)) {
-          const fallback = [];
-          for (const r of arr) {
-            if (r.o !== 'PRC') continue;
-            fallback.push({
-              OBJECT_NAME:  r.n,
-              NORAD_CAT_ID: r.c,
-              OBJECT_ID:    r.i,
-              OWNER:        r.o,
-              LAUNCH_SITE:  r.ls,
-              LAUNCH_DATE:  r.ld,
-              DECAY_DATE:   r.dd || '',
-              PERIOD:       r.p,
-              INCLINATION:  r.inc,
-              APOGEE:       r.a,
-              PERIGEE:      r.pe,
-              OBJECT_TYPE:  'PAY',
-              OPS_STATUS_CODE: '',
-            });
-          }
-          if (fallback.length) {
-            cacheSet('argos.satcat.prc.v2', fallback);
-            return fallback;
-          }
-        }
-      }
-    } catch (e) {
-      console.warn(`Bundled PRC SATCAT fetch threw: ${e.message}`);
     }
 
     // Last-ditch: return whatever (possibly stale) cache we have, even

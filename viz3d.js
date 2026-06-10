@@ -357,12 +357,18 @@ function renderTooltip(id) {
   const periodStr = period
     ? `${period.toFixed(1)} min <span class="muted">(${(period / 60).toFixed(2)} h)</span>`
     : '<span class="muted">unknown</span>';
-  // Three required fields: name, altitude, period.  Orbit-class badge
-  // lives next to the name as a one-glance colour cue (matches the
-  // sphere's own colour) but doesn't take a dedicated line.
+  // Orbital speed from the circular-orbit approximation
+  //   v = 2π(R⊕ + h) / T
+  // Good to ~1 % for the near-circular orbits that dominate the
+  // catalogue; HEO sats get their mean speed, which is still a useful
+  // one-glance number.
+  const speedStr = period
+    ? `${(2 * Math.PI * (EARTH_R_KM + st.alt) / (period * 60)).toFixed(2)} km/s`
+    : '<span class="muted">unknown</span>';
   tip.innerHTML = `
     <b>${escHtml(t.name)}</b> <span class="cls" style="${classBadgeStyle(cls)}">${cls}</span>
     <div>Altitude <strong>${st.alt.toFixed(0)} km</strong></div>
+    <div>Speed <strong>${speedStr}</strong></div>
     <div>Period <strong>${periodStr}</strong></div>
   `;
 }
@@ -484,9 +490,10 @@ function onCanvasClick(ev) {
   let id = -1;
   for (const h of hits) {
     if (h.object === highlightSphere) {
-      // Clicking the highlight sphere itself is a no-op (it's already
-      // the selected sat).
-      if (selectedId !== -1) return;
+      // Clicking the selected sat again → toggle the selection off and
+      // restore the page to normal (full-brightness catalogue, no
+      // orbit ring).
+      if (selectedId !== -1) { deselectSat(); return; }
       continue;
     }
     if (h.instanceId === undefined) continue;

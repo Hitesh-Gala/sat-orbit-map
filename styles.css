@@ -1419,6 +1419,34 @@ body.light .btn-sbo .btn-nav-icon { color: #d35400; text-shadow: none; }
   .top-nazar-btn .ico { font-size: 13px; }
 }
 
+/* Desktop-only: clear the topbar brand text out from under the fixed
+   NAZAR button (~130 px wide at left:14).  Scoped to min-width so the
+   720-px centered-topbar rule keeps winning on mobile, where the
+   button sits below the ☰ MENU toggle instead. */
+@media (min-width: 721px) {
+  body.page-viz3d .topbar,
+  body.page-sbo   .topbar,
+  body.page-goc   .topbar { padding-left: 165px; }
+}
+
+/* --- Observer-city dropdown on the main page HUD.  Matches the
+   lookup-form input chrome so the panel reads as one family. */
+.observer-select {
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 4px 8px;
+  outline: none;
+  cursor: pointer;
+  max-width: 60%;
+}
+.observer-select:hover,
+.observer-select:focus { border-color: var(--accent); }
+.observer-select option { background: var(--bg); color: var(--text); }
+
 /* --- Sats-by-OPs page: offset the globe canvas to the right of the
    .sbo-shell panel so the Earth sits visually centred in the
    *remaining* viewport, not under the panel.  Panel is 320 px wide

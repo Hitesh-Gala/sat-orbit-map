@@ -13,7 +13,7 @@
 // refresh.  The new update loop slices that work across rAF callbacks
 // at 2 000 sats per slice, keeping each frame inside its budget.
 
-const { OBSERVER, EARTH_R_KM, inferPurpose, propagate, makeSatrecs,
+const { EARTH_R_KM, inferPurpose, propagate, makeSatrecs,
         fetchTLEs, fetchChinaSatcat } = window.Argos;
 
 // =========================================================================
@@ -25,6 +25,19 @@ const RELOAD_TLE_MS = 6 * 3600 * 1000;
 const MAX_MARKERS   = 120;          // top-N highest-elevation sats shown
 const CHUNK_SIZE    = 2000;         // sats per propagation slice
 const HUD_LIST_MAX  = 200;          // capped to keep DOM cheap when open
+
+// Selectable observer cities.  The over-horizon panels, the globe
+// markers, and the custom lookup hint all recompute against whichever
+// of these is active in the #observer-city dropdown.
+const CITIES = [
+  { name: 'New Delhi', lat: 28.6139, lon: 77.2090, alt: 0.216 },
+  { name: 'Mumbai',    lat: 19.0760, lon: 72.8777, alt: 0.014 },
+  { name: 'Bangalore', lat: 12.9716, lon: 77.5946, alt: 0.920 },
+  { name: 'Chennai',   lat: 13.0827, lon: 80.2707, alt: 0.006 },
+  { name: 'Srinagar',  lat: 34.0837, lon: 74.7973, alt: 1.585 },
+  { name: 'Guwahati',  lat: 26.1445, lon: 91.7362, alt: 0.055 },
+];
+let observerCity = CITIES[0];
 
 // Selection / ground-track parameters (click a sat to isolate it).
 const TRACK_PAST_MIN     = 30;       // minutes of past trajectory shown
@@ -71,19 +84,22 @@ const globe = Globe()($('globe'))
   .atmosphereColor('#4ea8ff')
   .atmosphereAltitude(0.18)
   .pointOfView({ lat: 22, lng: 80, altitude: 2.4 }, 0)
-  // Satellite markers — small sphere meshes just above the surface.
-  // objectsData is the same layer game-of-cones uses; one Mesh per
-  // marker, capped at MAX_MARKERS = 120.  When a sat is selected the
-  // mesh material is built with transparent:true + opacity:0.25 so
-  // every non-selected sat fades to background.
+  // Satellite markers — small sphere meshes at TRUE altitude (alt is
+  // in km; globe.gl wants a fraction of Earth-radius).  A GEO sat now
+  // floats 5.6 Earth-radii out exactly as it does on the 3-D
+  // Visualiser / Sats-by-OPs pages, so the same sat reads at the same
+  // 3-D position across all three globes.  Marker radius scales up
+  // gently with altitude so a GEO dot 6 R⊕ from the camera doesn't
+  // vanish into a sub-pixel.
   .objectsData([])
   .objectLat(d => d.lat)
   .objectLng(d => d.lon)
-  .objectAltitude(0.01)
+  .objectAltitude(d => d.alt / EARTH_R_KM)
   .objectThreeObject(d => {
     const dim = selectedSat !== null;
+    const radius = 0.6 + Math.min(1.4, d.alt / 30000);
     return new THREE.Mesh(
-      new THREE.SphereGeometry(0.6, 12, 12),
+      new THREE.SphereGeometry(radius, 12, 12),
       new THREE.MeshBasicMaterial({
         color: d.cn ? COLOR_CN : COLOR_NONCN,
         transparent: dim,
@@ -114,7 +130,8 @@ controls.dampingFactor = 0.1;
 controls.rotateSpeed   = 0.5;
 controls.zoomSpeed     = 0.8;
 controls.minDistance   = 110;
-controls.maxDistance   = 800;
+controls.maxDistance   = 2200;   // room to frame the GEO shell now that
+                                 // markers sit at true altitude
 
 window.addEventListener('resize', () => {
   globe.width(window.innerWidth).height(window.innerHeight);
@@ -400,7 +417,7 @@ function processChunk() {
   const end = Math.min(updateIdx + CHUNK_SIZE, activeTLEs.length);
   for (; updateIdx < end; updateIdx++) {
     const t = activeTLEs[updateIdx];
-    const r = propagate(t.rec, updateNow, OBSERVER);
+    const r = propagate(t.rec, updateNow, observerCity);
     if (!r || !Number.isFinite(r.lat) || !Number.isFinite(r.lon) || r.el <= 0) continue;
     const isCn = prcMeta.has(t.noradId);
     const item = {
@@ -533,6 +550,31 @@ function runLookup() {
   lat.addEventListener('input', debounced);
   lon.addEventListener('input', debounced);
   panel.addEventListener('toggle', () => { if (panel.open) runLookup(); });
+})();
+
+// =========================================================================
+// Observer-city selector
+// =========================================================================
+// Dropdown in the HUD that swaps which Indian city the over-horizon
+// panels + globe markers are computed from.  Every ".obs-city-name"
+// span in the HUD hints updates to match, and the camera swings over
+// the new city so the view follows the data.
+
+(function setupObserverCity() {
+  const sel = $('observer-city');
+  if (!sel) return;
+  sel.innerHTML = CITIES.map((c, i) => `<option value="${i}">${esc(c.name)}</option>`).join('');
+  sel.addEventListener('change', () => {
+    observerCity = CITIES[parseInt(sel.value, 10)] || CITIES[0];
+    document.querySelectorAll('.obs-city-name').forEach(el => {
+      el.textContent = observerCity.name;
+    });
+    globe.pointOfView({ lat: observerCity.lat, lng: observerCity.lon, altitude: 2.4 }, 1200);
+    // Recompute the over-horizon sets right away rather than waiting
+    // out the 10-s tick.  If a tick is already mid-flight this is a
+    // no-op and the next scheduled tick picks up the new observer.
+    startUpdate();
+  });
 })();
 
 // =========================================================================
