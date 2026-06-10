@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4">
+  <title>NAZAR · Sats by Operator</title>
+  <link rel="preconnect" href="https://celestrak.org">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=7">
+  <style>
+    /* Page-specific HUD — taller than the viz3d panel because the
+       category list runs to ~30 rows.  Same visual idiom otherwise. */
+    .sbo-shell {
+      position: fixed;
+      top: 86px;
+      left: 14px;
+      width: 320px;
+      max-width: calc(100vw - 28px);
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sbo-controls {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .sbo-controls button {
+      flex: 1;
+      background: rgba(103, 200, 255, 0.10);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 5px 8px;
+      cursor: pointer;
+    }
+    .sbo-controls button:hover {
+      background: rgba(103, 200, 255, 0.22);
+      border-color: var(--accent);
+    }
+    .sbo-tier {
+      margin-top: 10px;
+      padding-bottom: 4px;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 500;
+      font-size: 10px;
+      letter-spacing: 0.20em;
+      color: var(--dim);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--line);
+    }
+    .sbo-tier:first-child { margin-top: 4px; }
+    .sbo-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 2px;
+      cursor: pointer;
+      user-select: none;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      border-bottom: 1px solid rgba(110, 200, 255, 0.05);
+    }
+    .sbo-row:hover { background: rgba(103, 200, 255, 0.05); }
+    .sbo-row input[type="checkbox"] {
+      flex: 0 0 auto;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .sbo-row .swatch {
+      flex: 0 0 auto;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      box-shadow: 0 0 6px currentColor;
+    }
+    .sbo-row .lbl { flex: 1; color: var(--text); }
+    .sbo-row .cnt {
+      flex: 0 0 auto;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      font-size: 11px;
+      min-width: 36px;
+      text-align: right;
+    }
+    .sbo-row.zero .cnt { color: var(--dim); }
+    .sbo-status { font-size: 11px; color: var(--dim); }
+    .sbo-status strong { color: var(--accent); font-weight: normal; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body class="page-sbo">
+  <a class="top-logo" href="https://takshashila.org.in/" target="_blank" rel="noopener noreferrer" title="Takshashila Institution — opens in a new tab">
+    <img src="data/takshashila-logo.svg" alt="Takshashila Institution">
+  </a>
+
+  <div id="globe"></div>
+
+  <nav class="left-nav" aria-label="back">
+    <a class="btn-nav" href="index.html" title="Back to the NAZAR main view">
+      <span class="btn-nav-icon">◯</span>
+      <span class="btn-nav-label">NAZAR</span>
+    </a>
+  </nav>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-short">NAZAR</span>
+      <span class="brand-long"> · Sats by Operator</span>
+    </div>
+    <div class="sub">Live catalogue, colour-coded by operator / constellation / mission family.</div>
+  </header>
+
+  <aside class="sbo-shell" aria-label="Operator filter">
+    <section class="panel">
+      <div class="label" style="margin-bottom: 6px">Filter by category</div>
+      <div class="sbo-controls">
+        <button type="button" id="sbo-all">Show All</button>
+        <button type="button" id="sbo-none">Hide All</button>
+      </div>
+      <!-- Category list, populated at runtime by sats-by-ops.js.  One row
+           per category, grouped under tier headings (GNSS / Constellations
+           / Earth Obs / Communications / Meteorology / ISR / Other). -->
+      <div id="sbo-categories"></div>
+    </section>
+
+    <section class="panel">
+      <div id="sbo-status" class="sbo-status">Booting…</div>
+    </section>
+  </aside>
+
+  <!-- Hover-tooltip element — re-uses the .sat-tip-3d styling that viz3d
+       already ships in styles.css.  Populated by sats-by-ops.js's
+       raycaster. -->
+  <div id="sat-tip" class="sat-tip-3d" hidden></div>
+
+  <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+  <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+  <script src="tle-loader.js?v=6"></script>
+  <script src="sats-by-ops.js?v=1"></script>
+  <script src="mobile-menu.js?v=4"></script>
+</body>
+</html>

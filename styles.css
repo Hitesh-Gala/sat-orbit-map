@@ -1355,6 +1355,14 @@ body.light .btn-viz3d .btn-nav-icon { color: #6a1b9a; text-shadow: none; }
 }
 body.light .btn-about .btn-nav-icon { color: #b87333; text-shadow: none; }
 
+/* --- SATs-by-OPs launcher — warm orange to suggest categorisation /
+   aggregation, distinct from the 3D Visualiser's purple hex. */
+.btn-sbo .btn-nav-icon {
+  color: #ff9966;
+  text-shadow: 0 0 8px rgba(255, 153, 102, 0.55);
+}
+body.light .btn-sbo .btn-nav-icon { color: #d35400; text-shadow: none; }
+
 /* --- NAZAR back-button — primary CTA style used on china-sat-repo
    pages and any other page where the muted .btn-back doesn't read
    clearly enough as "go home".  Cyan-accent background + border so it
