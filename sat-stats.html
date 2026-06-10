@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=7">
+  <link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body class="page-stats">
   <a class="top-logo" href="https://takshashila.org.in/" target="_blank" rel="noopener noreferrer" title="Takshashila Institution — opens in a new tab">
@@ -129,7 +129,16 @@
       </header>
       <div class="tle-modal-toolbar">
         <input type="search" id="tle-modal-filter" placeholder="Filter by name, NORAD, country…" autocomplete="off">
-        <span class="tle-modal-hint">Max 500 rows shown — use the filter to narrow further.</span>
+        <!-- 100 rows per page; arrow buttons step through results
+             without losing the current filter.  The "How to decode a
+             TLE" explainer at the bottom of the modal body persists
+             across every page. -->
+        <span class="tle-modal-pager">
+          <button type="button" id="tle-modal-prev" class="tle-modal-page-btn" aria-label="Previous page">‹</button>
+          Page <strong id="tle-modal-page-current">1</strong> / <strong id="tle-modal-page-total">1</strong>
+          <button type="button" id="tle-modal-next" class="tle-modal-page-btn" aria-label="Next page">›</button>
+        </span>
+        <span class="tle-modal-hint">100 TLEs per page · use the filter to narrow.</span>
       </div>
       <div class="tle-modal-body">
         <table class="tle-table">
@@ -232,7 +241,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=6"></script>
-  <script src="sat-stats.js?v=6"></script>
+  <script src="sat-stats.js?v=7"></script>
   <script src="mobile-menu.js?v=4"></script>
 </body>
 </html>

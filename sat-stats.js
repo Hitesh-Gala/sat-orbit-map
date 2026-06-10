@@ -998,7 +998,7 @@ boot().catch(e => {
 // honours the same cache → live → bundled fallback cascade.
 // =========================================================================
 
-const TLE_MODAL_MAX_ROWS = 500;
+const TLE_MODAL_PAGE_SIZE = 100;
 
 // Parse the TLE line-1 epoch (cols 19–32: 2-digit year + decimal day-of-year)
 // into a JS Date.  Per TLE convention, year < 57 maps to 20xx, else 19xx.
@@ -1026,6 +1026,7 @@ function tleValidityBand(ageDays) {
 
 let tleModalCache = null;   // { tles, source } from the last fetchTLEs() call
 let tleModalSource = '';
+let tleModalPage   = 0;     // current pagination page (zero-indexed)
 
 async function openTleRepo() {
   const modal = $('tle-repo-modal');
@@ -1033,6 +1034,7 @@ async function openTleRepo() {
   modal.setAttribute('aria-hidden', 'false');
   // Force a paint so the .shown transition runs from opacity:0 → 1.
   setTimeout(() => modal.classList.add('shown'), 16);
+  tleModalPage = 0;   // always re-open on page 1
 
   if (!tleModalCache) {
     $('tle-modal-rows').innerHTML =
@@ -1074,10 +1076,8 @@ function renderTleModalRows() {
     'bundled snapshot'.includes(q) ||
     'cached'.includes(q));
 
-  const out = [];
-  let rendered = 0;
-  let matched  = 0;
-
+  // First pass: collect every match.  Cheap — string ops only, no SGP4.
+  const matches = [];
   for (const t of tleModalCache) {
     const dbEntry = db[t.noradId];
     const ownerCode = dbEntry?.owner || '';
@@ -1086,9 +1086,21 @@ function renderTleModalRows() {
       const hay = `${t.name} ${t.noradId} ${ownerCode} ${ownerName}`.toLowerCase();
       if (!hay.includes(q)) continue;
     }
-    matched++;
-    if (rendered >= TLE_MODAL_MAX_ROWS) continue;
+    matches.push({ t, ownerCode, ownerName });
+  }
 
+  // Clamp the page index to the new total — important after the user
+  // filters their way down to fewer matches than the page they were on.
+  const totalPages = Math.max(1, Math.ceil(matches.length / TLE_MODAL_PAGE_SIZE));
+  if (tleModalPage >= totalPages) tleModalPage = totalPages - 1;
+  if (tleModalPage < 0)           tleModalPage = 0;
+  const start = tleModalPage * TLE_MODAL_PAGE_SIZE;
+  const end   = Math.min(start + TLE_MODAL_PAGE_SIZE, matches.length);
+
+  // Second pass: build rows only for the visible page (≤ 100 entries).
+  const out = [];
+  for (let i = start; i < end; i++) {
+    const { t, ownerCode, ownerName } = matches[i];
     const epoch = parseTLEEpoch(t.l1);
     const epochStr = epoch
       ? epoch.toISOString().slice(0, 16).replace('T', ' ')
@@ -1112,14 +1124,19 @@ function renderTleModalRows() {
       <td><span class="tle-validity tle-validity-${band}">${band}</span> <span class="muted mono">${esc(ageLabel)}</span></td>
       <td class="mono">${esc(tleModalSource)}</td>
     </tr>`);
-    rendered++;
   }
 
   tbody.innerHTML = out.join('') ||
     '<tr><td colspan="7" class="hint">No matches — try a different filter.</td></tr>';
-  $('tle-modal-shown').textContent = rendered.toLocaleString();
-  // If the filter clipped past 500, hint at it via the total count.
-  $('tle-modal-total').textContent = matched.toLocaleString();
+
+  // Header stats: visible rows in this page, total matched, page X / Y.
+  $('tle-modal-shown').textContent = (end - start).toLocaleString();
+  $('tle-modal-total').textContent = matches.length.toLocaleString();
+  $('tle-modal-page-current').textContent = (tleModalPage + 1).toLocaleString();
+  $('tle-modal-page-total').textContent   = totalPages.toLocaleString();
+  // Disable arrow buttons at the boundaries so the user can't step past.
+  $('tle-modal-prev').disabled = tleModalPage <= 0;
+  $('tle-modal-next').disabled = tleModalPage >= totalPages - 1;
 }
 
 // Wire up the open/close + filter input + dismissal handlers.  Defer to
@@ -1129,7 +1146,30 @@ function renderTleModalRows() {
   function bind() {
     $('tle-repo-btn')?.addEventListener('click', openTleRepo);
     $('tle-modal-close')?.addEventListener('click', closeTleRepo);
-    $('tle-modal-filter')?.addEventListener('input', renderTleModalRows);
+    // Filter changes always send the user back to page 1 — otherwise
+    // they'd be staring at page 7 of a 2-page filtered result.
+    $('tle-modal-filter')?.addEventListener('input', () => {
+      tleModalPage = 0;
+      renderTleModalRows();
+      // Scroll the table back to the top so the new first match is in view.
+      const body = document.querySelector('.tle-modal-body');
+      if (body) body.scrollTop = 0;
+    });
+    // Pagination arrows.  Clamped inside renderTleModalRows() too as a
+    // belt-and-braces against stale state.
+    $('tle-modal-prev')?.addEventListener('click', () => {
+      if (tleModalPage <= 0) return;
+      tleModalPage--;
+      renderTleModalRows();
+      const body = document.querySelector('.tle-modal-body');
+      if (body) body.scrollTop = 0;
+    });
+    $('tle-modal-next')?.addEventListener('click', () => {
+      tleModalPage++;
+      renderTleModalRows();
+      const body = document.querySelector('.tle-modal-body');
+      if (body) body.scrollTop = 0;
+    });
     // Tap on the modal backdrop (anywhere outside the card) → close.
     $('tle-repo-modal')?.addEventListener('click', e => {
       if (e.target.id === 'tle-repo-modal') closeTleRepo();

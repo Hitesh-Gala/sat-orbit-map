@@ -2276,6 +2276,54 @@ body.page-2d .map-cell .map-sub {
   letter-spacing: 0.04em;
 }
 
+/* Pager pill in the toolbar — prev arrow · "Page X / Y" · next arrow */
+.tle-modal-pager {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background: rgba(2, 6, 13, 0.45);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.tle-modal-pager strong {
+  color: var(--accent);
+  font-weight: normal;
+  font-variant-numeric: tabular-nums;
+}
+.tle-modal-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: rgba(103, 200, 255, 0.10);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  transition: background .12s, border-color .12s, transform .12s;
+}
+.tle-modal-page-btn:hover:not(:disabled) {
+  background: rgba(103, 200, 255, 0.24);
+  border-color: var(--accent);
+  transform: scale(1.06);
+}
+.tle-modal-page-btn:active:not(:disabled) { transform: scale(0.96); }
+.tle-modal-page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .tle-modal-body {
   flex: 1 1 auto;
   overflow: auto;
