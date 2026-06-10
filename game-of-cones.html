@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=9">
+  <link rel="stylesheet" href="styles.css?v=10">
   <style>
     /* Game-of-Cones-only chrome: a single left-edge HUD card with mode
        tabs, sliders, results.  The shared styles already supply the
@@ -103,12 +103,13 @@
 
   <div id="globe"></div>
 
-  <nav class="left-nav" aria-label="back">
-    <a class="btn-nav" href="index.html" title="Back to the NAZAR main view">
-      <span class="btn-nav-icon">◯</span>
-      <span class="btn-nav-label">NAZAR</span>
-    </a>
-  </nav>
+  <!-- Prominent NAZAR back-button anchored top-left.  Replaces the
+       old single-item .left-nav so the link is unmistakable as the
+       navigation home rather than another data-viz launcher. -->
+  <a class="top-nazar-btn" href="index.html" title="Back to the NAZAR main view">
+    <span class="ico">◯</span>
+    <span class="lbl">NAZAR</span>
+  </a>
 
   <header class="topbar">
     <div class="brand">

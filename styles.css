@@ -1363,6 +1363,62 @@ body.light .btn-about .btn-nav-icon { color: #b87333; text-shadow: none; }
 }
 body.light .btn-sbo .btn-nav-icon { color: #d35400; text-shadow: none; }
 
+/* --- "NAZAR" back-to-home button anchored top-left of the dedicated
+   secondary pages (3-D Visualiser, Sats-by-OPs, Game of Cones).
+   Sits in the same visual register as the top-right Takshashila logo
+   so the two pieces of brand chrome bookend the topbar.  On mobile
+   it tucks below the ☰ MENU button (which holds top:8 left:8). */
+.top-nazar-btn {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 60;                /* over .left-nav (10) and .top-logo (50) */
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: rgba(2, 6, 13, 0.85);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-decoration: none;
+  text-shadow: 0 0 10px rgba(103, 200, 255, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  transition: background .15s, transform .15s, border-color .15s;
+}
+.top-nazar-btn:hover {
+  background: rgba(103, 200, 255, 0.22);
+  border-color: var(--accent);
+  transform: scale(1.04);
+  text-decoration: none;
+}
+.top-nazar-btn:active { transform: scale(0.98); }
+.top-nazar-btn .ico {
+  font-size: 16px;
+  line-height: 1;
+  color: var(--green);
+  text-shadow: 0 0 8px rgba(103, 232, 164, 0.55);
+}
+@media (max-width: 720px) {
+  /* Stack neatly below the ☰ MENU drawer-toggle (top:8 left:8, z=100)
+     so the two top-left controls don't overlap. */
+  .top-nazar-btn {
+    top: 52px;
+    left: 8px;
+    padding: 6px 12px;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+  }
+  .top-nazar-btn .ico { font-size: 13px; }
+}
+
 /* --- Sats-by-OPs page: offset the globe canvas to the right of the
    .sbo-shell panel so the Earth sits visually centred in the
    *remaining* viewport, not under the panel.  Panel is 320 px wide
