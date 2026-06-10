@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=8">
+  <link rel="stylesheet" href="styles.css?v=9">
   <style>
     /* Page-specific HUD — taller than the viz3d panel because the
        category list runs to ~30 rows.  Same visual idiom otherwise. */
@@ -94,8 +94,42 @@
       text-align: right;
     }
     .sbo-row.zero .cnt { color: var(--dim); }
+    /* When the user hovers a category row, the row itself gets a tinted
+       background so it's obvious which group is currently blinking on
+       the globe.  JS adds .highlight via mouseenter/mouseleave. */
+    .sbo-row.highlight {
+      background: rgba(103, 200, 255, 0.18);
+      border-bottom-color: var(--accent);
+    }
     .sbo-status { font-size: 11px; color: var(--dim); }
     .sbo-status strong { color: var(--accent); font-weight: normal; font-variant-numeric: tabular-nums; }
+
+    /* Altitude / size sliders — same idiom as the viz3d page. */
+    .sbo-slider {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin: 6px 0 4px;
+      font-size: 11px;
+      color: var(--dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .sbo-slider .slider-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .sbo-slider .slider-value {
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      text-transform: none;
+    }
+    .sbo-slider input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
   </style>
 </head>
 <body class="page-sbo">
@@ -133,6 +167,26 @@
       <div id="sbo-categories"></div>
     </section>
 
+    <!-- View options: altitude exaggeration + sat size, same idiom as
+         the 3-D Visualiser page. -->
+    <section class="panel">
+      <div class="label" style="margin-bottom: 6px">View options</div>
+      <div class="sbo-slider">
+        <div class="slider-row">
+          <span>Altitude scale</span>
+          <span class="slider-value"><span id="sbo-alt-val">1.0</span>×</span>
+        </div>
+        <input type="range" id="sbo-alt" min="0.2" max="3" step="0.1" value="1">
+      </div>
+      <div class="sbo-slider">
+        <div class="slider-row">
+          <span>Sat size</span>
+          <span class="slider-value"><span id="sbo-size-val">1.0</span>×</span>
+        </div>
+        <input type="range" id="sbo-size" min="0.3" max="3" step="0.1" value="1">
+      </div>
+    </section>
+
     <section class="panel">
       <div id="sbo-status" class="sbo-status">Booting…</div>
     </section>
@@ -147,7 +201,7 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=6"></script>
-  <script src="sats-by-ops.js?v=1"></script>
+  <script src="sats-by-ops.js?v=2"></script>
   <script src="mobile-menu.js?v=4"></script>
 </body>
 </html>

@@ -1363,6 +1363,25 @@ body.light .btn-about .btn-nav-icon { color: #b87333; text-shadow: none; }
 }
 body.light .btn-sbo .btn-nav-icon { color: #d35400; text-shadow: none; }
 
+/* --- Sats-by-OPs page: offset the globe canvas to the right of the
+   .sbo-shell panel so the Earth sits visually centred in the
+   *remaining* viewport, not under the panel.  Panel is 320 px wide
+   at left:14, so it ends at x=334 — leave a 14 px gap and start the
+   globe at 348.  On mobile the panel collapses into the drawer and
+   we want full-width again. */
+body.page-sbo #globe {
+  position: fixed;
+  top: 0;
+  left: 348px;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
+}
+@media (max-width: 720px) {
+  body.page-sbo #globe { left: 0; width: 100%; }
+}
+
 /* --- NAZAR back-button — primary CTA style used on china-sat-repo
    pages and any other page where the muted .btn-back doesn't read
    clearly enough as "go home".  Cyan-accent background + border so it

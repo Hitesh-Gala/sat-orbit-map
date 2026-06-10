@@ -126,9 +126,18 @@ const stopAutoRotate = () => { controls.autoRotate = false; };
 document.getElementById('globe').addEventListener('pointerdown', stopAutoRotate, { once: true });
 document.getElementById('globe').addEventListener('wheel',       stopAutoRotate, { once: true });
 
-window.addEventListener('resize', () => {
-  globe.width(window.innerWidth).height(window.innerHeight);
-});
+// Fit the globe to its container (the #globe div is CSS-offset on this
+// page so the Earth sits centred in the viewport region *not* covered
+// by the .sbo-shell panel).  Re-fit on resize.
+function fitGlobeToContainer() {
+  const el = document.getElementById('globe');
+  const rect = el.getBoundingClientRect();
+  if (rect.width > 0 && rect.height > 0) {
+    globe.width(rect.width).height(rect.height);
+  }
+}
+fitGlobeToContainer();
+window.addEventListener('resize', fitGlobeToContainer);
 
 // =========================================================================
 // Instanced mesh (one draw call for ~22 k sphere instances)
@@ -158,6 +167,20 @@ let propagationActive = false;
 const categoryEnabled = CATEGORIES.map(c => !c.defaultOff);
 // Per-category live count, refreshed each propagation tick.
 const categoryCount = CATEGORIES.map(() => 0);
+
+// User-controlled view sliders, both 1.0× by default.  altScale
+// exaggerates the radial spread (useful to pull a dense LEO shell
+// further off the surface); dotScale changes the on-screen size of
+// every sat sphere.
+let altScale = 1.0;
+let dotScale = 1.0;
+
+// Blink-on-hover state.  When the user hovers a category row in the
+// HUD, every sat in that category pulses (scale animation) so they're
+// easy to spot on the globe.  -1 = no highlight.
+let highlightCat = -1;
+let blinkRafId   = null;
+let blinkStart   = 0;
 
 const _pos   = new THREE.Vector3();
 const _quat  = new THREE.Quaternion();
@@ -206,6 +229,92 @@ function buildCategoryPanel() {
     for (let i = 0; i < categoryEnabled.length; i++) categoryEnabled[i] = false;
     rerenderFiltered();
   });
+
+  // Blink-on-hover: enter a row → its sats start pulsing.  Leave →
+  // they go back to steady.  mouseenter / mouseleave don't bubble so
+  // we attach per-row.
+  container.querySelectorAll('.sbo-row').forEach(row => {
+    const idx = parseInt(row.dataset.idx, 10);
+    row.addEventListener('mouseenter', () => setHighlight(idx));
+    row.addEventListener('mouseleave', () => setHighlight(-1));
+  });
+}
+
+// ---- Blink animation -----------------------------------------------------
+
+function setHighlight(catIdx) {
+  if (catIdx === highlightCat) return;
+  const prev = highlightCat;
+  highlightCat = catIdx;
+  // Tint the active row in the panel so the user can see which
+  // category is currently being pulsed on the globe.
+  document.querySelectorAll('.sbo-row.highlight').forEach(r => r.classList.remove('highlight'));
+  if (catIdx !== -1) {
+    const row = document.querySelector(`.sbo-row[data-idx="${catIdx}"]`);
+    if (row) row.classList.add('highlight');
+  }
+  // Stop case: restore the previous category's instances to the
+  // user-set dotScale and cancel the rAF loop.
+  if (catIdx === -1) {
+    if (prev !== -1) applyScaleToCategory(prev, dotScale);
+    blinkRafId = null;
+    return;
+  }
+  // Restore the previous category before starting on the new one so
+  // we don't leave a stale stretched group behind.
+  if (prev !== -1) applyScaleToCategory(prev, dotScale);
+  blinkStart = performance.now();
+  if (!blinkRafId) blinkRafId = requestAnimationFrame(blinkStep);
+}
+
+function blinkStep() {
+  if (highlightCat === -1) {
+    blinkRafId = null;
+    return;
+  }
+  // 1.0 Hz pulse, scale between 0.6× and 1.8× of dotScale — big enough
+  // to spot, small enough that no individual sphere dominates the
+  // view.  |sin(...)| flips the curve so each pulse is symmetrical.
+  const t = (performance.now() - blinkStart) / 1000;
+  const factor = 0.6 + 1.2 * Math.abs(Math.sin(t * Math.PI));
+  applyScaleToCategory(highlightCat, dotScale * factor);
+  blinkRafId = requestAnimationFrame(blinkStep);
+}
+
+// Rewrites only the matrices for instances in `cat`, using each one's
+// last-known sub-point + altitude and the supplied scale.  Cheap even
+// for the largest category (Starlink at ~10 k sats ≈ 5 ms / pass).
+function applyScaleToCategory(cat, scale) {
+  if (cat === -1 || !categoryEnabled[cat]) return;
+  for (let i = 0; i < allSats.length; i++) {
+    if (satCat[i] !== cat) continue;
+    const st = satState[i];
+    if (!st) continue;
+    const altFrac = (st.alt / EARTH_R_KM) * altScale;
+    const p = globe.getCoords(st.lat, st.lon, altFrac);
+    _pos.set(p.x, p.y, p.z);
+    _scale.setScalar(scale);
+    _mat.compose(_pos, _quat, _scale);
+    instMesh.setMatrixAt(i, _mat);
+  }
+  instMesh.instanceMatrix.needsUpdate = true;
+}
+
+// ---- View-option sliders -------------------------------------------------
+
+function bindSliders() {
+  $('sbo-alt').addEventListener('input', e => {
+    altScale = parseFloat(e.target.value) || 1;
+    $('sbo-alt-val').textContent = altScale.toFixed(1);
+    // Altitude affects 3-D position so a slider drag needs a full
+    // matrix refresh (cheap — no SGP4, just getCoords + compose).
+    rerenderFiltered();
+  });
+  $('sbo-size').addEventListener('input', e => {
+    dotScale = parseFloat(e.target.value) || 1;
+    $('sbo-size-val').textContent = dotScale.toFixed(1);
+    rerenderFiltered();
+  });
 }
 
 function updateCategoryCounts() {
@@ -250,10 +359,12 @@ function processChunk() {
       instMesh.setMatrixAt(i, HIDE_MATRIX);
       continue;
     }
-    const altFrac = r.alt / EARTH_R_KM;
+    // altScale exaggerates the radial spread; dotScale changes
+    // sphere size.  Both live-controlled via the View Options sliders.
+    const altFrac = (r.alt / EARTH_R_KM) * altScale;
     const p = globe.getCoords(r.lat, r.lon, altFrac);
     _pos.set(p.x, p.y, p.z);
-    _scale.setScalar(1);
+    _scale.setScalar(dotScale);
     _mat.compose(_pos, _quat, _scale);
     instMesh.setMatrixAt(i, _mat);
     instMesh.setColorAt(i, CAT_COLOR[cat]);
@@ -285,10 +396,10 @@ function rerenderFiltered() {
       instMesh.setMatrixAt(i, HIDE_MATRIX);
       continue;
     }
-    const altFrac = st.alt / EARTH_R_KM;
+    const altFrac = (st.alt / EARTH_R_KM) * altScale;
     const p = globe.getCoords(st.lat, st.lon, altFrac);
     _pos.set(p.x, p.y, p.z);
-    _scale.setScalar(1);
+    _scale.setScalar(dotScale);
     _mat.compose(_pos, _quat, _scale);
     instMesh.setMatrixAt(i, _mat);
     instMesh.setColorAt(i, CAT_COLOR[cat]);
@@ -327,6 +438,7 @@ async function boot() {
     satPeriod[i] = (Number.isFinite(no) && no > 0) ? (2 * Math.PI) / no : null;
   }
   buildCategoryPanel();
+  bindSliders();
 
   const tag = tleResult.source === 'celestrak' ? 'live'
             : tleResult.source === 'cache'    ? 'cached'
