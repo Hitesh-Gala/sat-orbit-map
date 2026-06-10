@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=6">
 </head>
 <body class="page-stats">
   <a class="top-logo" href="https://takshashila.org.in/" target="_blank" rel="noopener noreferrer" title="Takshashila Institution — opens in a new tab">
@@ -135,17 +135,96 @@
         <table class="tle-table">
           <thead>
             <tr>
+              <th class="col-tle">TLE (L1 / L2)</th>
               <th>Satellite</th>
               <th>NORAD</th>
               <th>Country</th>
               <th>Epoch (UTC)</th>
               <th>Validity</th>
               <th>Source</th>
-              <th class="col-tle">TLE (L1 / L2)</th>
             </tr>
           </thead>
           <tbody id="tle-modal-rows"></tbody>
         </table>
+
+        <!-- =====================================================
+             How to decode a TLE — field-by-field cheat sheet that
+             sits below the table inside the same scrollable body.
+             ===================================================== -->
+        <section class="tle-explainer">
+          <h3>How to decode a TLE</h3>
+          <p>
+            A <strong>Two-Line Element set</strong> (TLE) is the standard
+            format NORAD uses to publish satellite orbital data. Every TLE
+            is two fixed-width 69-character lines.  NAZAR feeds each one
+            through the <em>SGP4</em> propagator
+            (<code>satellite.js</code>) in your browser to compute
+            lat / lon / altitude at any chosen moment.
+          </p>
+          <p>
+            Below is a typical TLE for the International Space Station
+            (NORAD 25544) — every field is annotated with its character
+            range, what it represents, and the example value.
+          </p>
+
+          <!-- LINE 1 -->
+          <div class="tle-decoded">
+            <div class="tle-decoded-label">Line 1 — satellite identity + epoch</div>
+            <pre class="tle-decoded-sample">1 25544U 98067A   26155.73640860  .00000690  00000+0  69294-3 0  9998</pre>
+          </div>
+          <table class="tle-fields-table">
+            <thead>
+              <tr><th>Cols</th><th>Field</th><th>Example</th><th>Meaning</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>Line number</td><td><code>1</code></td><td>Always <code>1</code> for line 1.</td></tr>
+              <tr><td>3–7</td><td>Catalog number</td><td><code>25544</code></td><td>NORAD satellite ID. <code>25544</code> = ISS.</td></tr>
+              <tr><td>8</td><td>Classification</td><td><code>U</code></td><td><code>U</code> = unclassified, <code>C</code> = classified, <code>S</code> = secret.</td></tr>
+              <tr><td>10–17</td><td>International designator</td><td><code>98067A</code></td><td>Launch year + sequential number + piece. <code>98067A</code> = 67th launch of 1998, piece A.</td></tr>
+              <tr><td>19–32</td><td>Epoch</td><td><code>26155.73640860</code></td><td>The instant this element set describes. Format: <code>YYDDD.DDDDDDDD</code> (year + day-of-year + fractional day). Decodes to <strong>2026-06-04 17:40 UTC</strong>.</td></tr>
+              <tr><td>34–43</td><td>1st derivative of mean motion</td><td><code>.00000690</code></td><td>How fast the orbit is decaying, in <em>revolutions per day²</em>. Positive = falling.</td></tr>
+              <tr><td>45–52</td><td>2nd derivative of mean motion</td><td><code>00000+0</code></td><td>Acceleration of mean motion. Decimal point implied: <code>00000+0</code> = <code>0.00000 × 10⁰</code>. Rarely non-zero in modern TLEs.</td></tr>
+              <tr><td>54–61</td><td>B* drag term</td><td><code>69294-3</code></td><td>Atmospheric drag coefficient. <code>69294-3</code> means <code>0.69294 × 10⁻³</code>. Used by SGP4 to model atmospheric braking.</td></tr>
+              <tr><td>63</td><td>Ephemeris type</td><td><code>0</code></td><td>Always <code>0</code> in distributed TLEs (placeholder field).</td></tr>
+              <tr><td>65–68</td><td>Element set number</td><td><code>999</code></td><td>Version counter — increments each time NORAD re-issues a TLE for this object.</td></tr>
+              <tr><td>69</td><td>Checksum</td><td><code>8</code></td><td>Mod-10 sum of all numeric digits + minus-signs in the line.</td></tr>
+            </tbody>
+          </table>
+
+          <!-- LINE 2 -->
+          <div class="tle-decoded">
+            <div class="tle-decoded-label">Line 2 — Keplerian orbital elements</div>
+            <pre class="tle-decoded-sample">2 25544  51.6440 248.8311 0007020 113.7892 246.4063 15.49984836446432</pre>
+          </div>
+          <table class="tle-fields-table">
+            <thead>
+              <tr><th>Cols</th><th>Field</th><th>Example</th><th>Meaning</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>Line number</td><td><code>2</code></td><td>Always <code>2</code> for line 2.</td></tr>
+              <tr><td>3–7</td><td>Catalog number</td><td><code>25544</code></td><td>Must match line 1.</td></tr>
+              <tr><td>9–16</td><td>Inclination</td><td><code>51.6440</code></td><td>Angle between the orbital plane and Earth's equator, in degrees. ISS at <code>51.6°</code> is why it overflies most populated latitudes.</td></tr>
+              <tr><td>18–25</td><td>RAAN</td><td><code>248.8311</code></td><td>Right Ascension of Ascending Node — where the orbit crosses the equator northbound, measured from the vernal equinox in degrees.</td></tr>
+              <tr><td>27–33</td><td>Eccentricity</td><td><code>0007020</code></td><td>Leading <code>0.</code> is implied: <code>0007020</code> means <code>0.0007020</code>. Near-zero = near-circular orbit.</td></tr>
+              <tr><td>35–42</td><td>Argument of perigee</td><td><code>113.7892</code></td><td>Angle from the ascending node to the orbit's closest point (perigee), in degrees.</td></tr>
+              <tr><td>44–51</td><td>Mean anomaly</td><td><code>246.4063</code></td><td>Where in its orbit the satellite is <em>at epoch</em>, expressed as the angle (degrees) a circular reference body would have travelled.</td></tr>
+              <tr><td>53–63</td><td>Mean motion</td><td><code>15.49984836</code></td><td>Number of orbits per <em>solar day</em>. ISS at <code>15.5</code> orbits ~93 min each. Convert: period (min) = <code>1440 ÷ mean_motion</code>.</td></tr>
+              <tr><td>64–68</td><td>Revolution number</td><td><code>44643</code></td><td>Orbit count since launch, at the epoch instant.</td></tr>
+              <tr><td>69</td><td>Checksum</td><td><code>2</code></td><td>Mod-10 sum check, same scheme as line 1.</td></tr>
+            </tbody>
+          </table>
+
+          <p class="tle-foot">
+            Together, those six Keplerian elements (inclination, RAAN,
+            eccentricity, argument of perigee, mean anomaly, mean motion)
+            plus the epoch and drag term fully describe the satellite's
+            orbit. SGP4 takes them in, applies analytical perturbation
+            models for Earth oblateness + atmospheric drag, and gives back
+            a sub-point and altitude for any time you ask about — usually
+            accurate to within a few kilometres for the first ~2 weeks
+            after epoch, degrading thereafter.
+          </p>
+        </section>
       </div>
     </div>
   </div>
@@ -153,7 +232,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=6"></script>
-  <script src="sat-stats.js?v=5"></script>
+  <script src="sat-stats.js?v=6"></script>
   <script src="mobile-menu.js?v=4"></script>
 </body>
 </html>

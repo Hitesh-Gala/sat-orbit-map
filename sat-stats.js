@@ -1104,13 +1104,13 @@ function renderTleModalRows() {
       : `<span class="flag-glyph" title="unknown">🌐</span><span class="ctry-name muted">—</span>`;
 
     out.push(`<tr>
+      <td class="tle-cell"><div>${esc(t.l1)}</div><div>${esc(t.l2)}</div></td>
       <td>${esc(t.name)}</td>
       <td class="mono">${t.noradId}</td>
       <td class="col-country">${countryCell}</td>
       <td class="mono">${esc(epochStr)} UTC</td>
       <td><span class="tle-validity tle-validity-${band}">${band}</span> <span class="muted mono">${esc(ageLabel)}</span></td>
       <td class="mono">${esc(tleModalSource)}</td>
-      <td class="tle-cell"><div>${esc(t.l1)}</div><div>${esc(t.l2)}</div></td>
     </tr>`);
     rendered++;
   }

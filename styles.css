@@ -2331,6 +2331,120 @@ body.page-2d .map-cell .map-sub {
 .tle-validity-future  { background: rgba(103, 200, 255, 0.18); color: #67c8ff; }
 .tle-validity-unknown { background: rgba(255, 255, 255, 0.10); color: var(--dim); }
 
+/* --- "How to decode a TLE" explainer below the table -------------- */
+.tle-explainer {
+  margin: 24px 14px 18px;
+  padding: 22px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+.tle-explainer h3 {
+  margin: 0 0 12px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.tle-explainer p { margin: 0 0 14px; }
+.tle-explainer code {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  padding: 1px 5px;
+  background: rgba(2, 6, 13, 0.65);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--accent);
+}
+.tle-explainer em     { color: var(--text); font-style: italic; }
+.tle-explainer strong { color: var(--text); font-weight: 700; }
+
+/* Sample TLE shown above each per-line field table.  Sits on its own
+   highlighted strip so the user can see which characters the table
+   below is talking about. */
+.tle-decoded { margin: 18px 0 10px; }
+.tle-decoded-label {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 6px;
+}
+.tle-decoded-sample {
+  margin: 0;
+  padding: 10px 14px;
+  background: rgba(2, 6, 13, 0.7);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 12.5px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: var(--accent);
+  text-shadow: 0 0 6px rgba(103, 200, 255, 0.35);
+  white-space: pre;
+  overflow-x: auto;
+}
+
+/* Field-by-field breakdown table — narrower than the main TLE table
+   and rendered in the regular palette so it reads as documentation,
+   not a third data view. */
+.tle-fields-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+.tle-fields-table thead th {
+  padding: 6px 10px;
+  background: rgba(2, 6, 13, 0.45);
+  border-bottom: 1px solid var(--line);
+  color: var(--dim);
+  font-weight: normal;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: left;
+}
+.tle-fields-table tbody td {
+  padding: 5px 10px;
+  border-bottom: 1px solid rgba(110, 200, 255, 0.07);
+  vertical-align: top;
+  color: var(--text);
+}
+.tle-fields-table tbody td:first-child {
+  font-family: 'Courier New', monospace;
+  color: var(--accent);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.tle-fields-table tbody td:nth-child(2) {
+  color: var(--text);
+  white-space: nowrap;
+}
+.tle-fields-table tbody td:nth-child(3) {
+  font-family: 'Courier New', monospace;
+  color: #fbc814;
+  white-space: nowrap;
+}
+.tle-fields-table tbody tr:hover td { background: rgba(103, 200, 255, 0.04); }
+
+.tle-foot {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+  color: var(--dim);
+  font-size: 12px;
+}
+
 @media (max-width: 720px) {
   .tle-modal { padding: 8px; }
   .tle-modal-card { height: 100%; }
