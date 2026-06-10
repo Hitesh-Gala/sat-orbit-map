@@ -2149,3 +2149,196 @@ body.page-2d .map-cell .map-sub {
   height: 100%;
 }
 
+/* =======================================================================
+   TLE Repository modal (sat-stats.js, ⌗ TLE Repo button)
+
+   Full-screen overlay with a centred card; scrolls internally so the
+   underlying SatStats page doesn't have to.  Fades in via the .shown
+   class added one tick after the [hidden] attribute is removed.
+   ======================================================================= */
+.tle-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity .22s ease-out;
+}
+.tle-modal[hidden] { display: none; }
+.tle-modal.shown { opacity: 1; }
+
+.tle-modal-card {
+  width: min(1280px, 100%);
+  height: min(880px, 100%);
+  display: flex;
+  flex-direction: column;
+  background: rgba(2, 6, 13, 0.96);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  transform: scale(0.96);
+  transition: transform .22s ease-out;
+}
+.tle-modal.shown .tle-modal-card { transform: scale(1); }
+
+.tle-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.tle-modal-title-block { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.tle-modal-header h2 {
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+.tle-modal-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 0.06em;
+}
+.tle-modal-meta strong {
+  color: var(--accent);
+  font-weight: normal;
+  font-variant-numeric: tabular-nums;
+}
+.tle-modal-close {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background .15s, transform .15s, border-color .15s;
+}
+.tle-modal-close:hover {
+  background: rgba(103, 200, 255, 0.20);
+  border-color: var(--accent);
+  transform: scale(1.06);
+}
+
+.tle-modal-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.18);
+}
+.tle-modal-toolbar input[type="search"] {
+  flex: 1 1 280px;
+  max-width: 360px;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  outline: none;
+}
+.tle-modal-toolbar input[type="search"]:focus { border-color: var(--accent); }
+.tle-modal-hint {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 0.04em;
+}
+
+.tle-modal-body {
+  flex: 1 1 auto;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tle-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--text);
+  background: transparent;
+}
+.tle-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 8px 10px;
+  background: rgba(2, 6, 13, 0.94);
+  border-bottom: 1px solid var(--line);
+  color: var(--dim);
+  font-weight: normal;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: left;
+  white-space: nowrap;
+}
+.tle-table tbody td {
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(110, 200, 255, 0.07);
+  vertical-align: top;
+}
+.tle-table tbody tr:hover td { background: rgba(103, 200, 255, 0.06); }
+.tle-table td.mono { font-variant-numeric: tabular-nums; }
+.tle-table td.col-country { white-space: nowrap; }
+.tle-table .col-tle { min-width: 380px; }
+.tle-table .tle-cell div {
+  font-family: 'Courier New', monospace;
+  font-size: 10.5px;
+  white-space: pre;
+  letter-spacing: 0;
+  color: var(--text);
+  line-height: 1.35;
+}
+.tle-table .tle-cell div + div { color: var(--dim); }
+
+.tle-validity {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.tle-validity-fresh   { background: rgba(35, 206, 95, 0.18);  color: #23ce5f; }
+.tle-validity-stale   { background: rgba(249, 210, 76, 0.18); color: #f9d24c; }
+.tle-validity-expired { background: rgba(255, 107, 107, 0.18); color: #ff6b6b; }
+.tle-validity-future  { background: rgba(103, 200, 255, 0.18); color: #67c8ff; }
+.tle-validity-unknown { background: rgba(255, 255, 255, 0.10); color: var(--dim); }
+
+@media (max-width: 720px) {
+  .tle-modal { padding: 8px; }
+  .tle-modal-card { height: 100%; }
+  .tle-modal-header { padding: 10px 12px; }
+  .tle-modal-header h2 { font-size: 13px; }
+  .tle-modal-toolbar { padding: 10px 12px; flex-wrap: wrap; gap: 8px; }
+  .tle-modal-hint { font-size: 10px; }
+  .tle-table thead th, .tle-table tbody td { padding: 5px 6px; font-size: 10.5px; }
+  .tle-table .tle-cell div { font-size: 9.5px; }
+}
+

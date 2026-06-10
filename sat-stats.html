@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body class="page-stats">
   <a class="top-logo" href="https://takshashila.org.in/" target="_blank" rel="noopener noreferrer" title="Takshashila Institution — opens in a new tab">
@@ -24,6 +24,7 @@
       <div class="brand">NAZAR · SAT-STATS · CUMULATIVE CATALOGUE</div>
       <div class="right">
         <span id="stats-status">Booting…</span>
+        <button type="button" id="tle-repo-btn" class="btn-back" title="Open the raw TLE catalogue used by every page on this site">⌗ TLE Repo</button>
         <a class="btn-back" href="index.html">← NAZAR</a>
       </div>
     </header>
@@ -111,10 +112,48 @@
     </section>
   </div>
 
+  <!-- TLE Repository modal — populated on demand by sat-stats.js when
+       the user clicks the "⌗ TLE Repo" button.  Hidden by default. -->
+  <div id="tle-repo-modal" class="tle-modal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="tle-modal-title">
+    <div class="tle-modal-card">
+      <header class="tle-modal-header">
+        <div class="tle-modal-title-block">
+          <h2 id="tle-modal-title">TLE Repository</h2>
+          <div class="tle-modal-meta">
+            Showing <strong id="tle-modal-shown">…</strong> /
+            <strong id="tle-modal-total">…</strong> · source
+            <strong id="tle-modal-source">…</strong>
+          </div>
+        </div>
+        <button type="button" id="tle-modal-close" class="tle-modal-close" aria-label="Close">×</button>
+      </header>
+      <div class="tle-modal-toolbar">
+        <input type="search" id="tle-modal-filter" placeholder="Filter by name, NORAD, country…" autocomplete="off">
+        <span class="tle-modal-hint">Max 500 rows shown — use the filter to narrow further.</span>
+      </div>
+      <div class="tle-modal-body">
+        <table class="tle-table">
+          <thead>
+            <tr>
+              <th>Satellite</th>
+              <th>NORAD</th>
+              <th>Country</th>
+              <th>Epoch (UTC)</th>
+              <th>Validity</th>
+              <th>Source</th>
+              <th class="col-tle">TLE (L1 / L2)</th>
+            </tr>
+          </thead>
+          <tbody id="tle-modal-rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=6"></script>
-  <script src="sat-stats.js?v=4"></script>
+  <script src="sat-stats.js?v=5"></script>
   <script src="mobile-menu.js?v=4"></script>
 </body>
 </html>

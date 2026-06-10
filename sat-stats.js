@@ -991,3 +991,156 @@ boot().catch(e => {
   console.error(e);
   setStatus('Boot failed: ' + e.message, true);
 });
+
+// =========================================================================
+// TLE Repository modal — popup that exposes every raw TLE the rest of the
+// site is propagating from.  Sourced from window.Argos.fetchTLEs() so it
+// honours the same cache → live → bundled fallback cascade.
+// =========================================================================
+
+const TLE_MODAL_MAX_ROWS = 500;
+
+// Parse the TLE line-1 epoch (cols 19–32: 2-digit year + decimal day-of-year)
+// into a JS Date.  Per TLE convention, year < 57 maps to 20xx, else 19xx.
+function parseTLEEpoch(l1) {
+  if (!l1 || l1.length < 32) return null;
+  const yr2 = parseInt(l1.slice(18, 20), 10);
+  const dayFrac = parseFloat(l1.slice(20, 32));
+  if (!Number.isFinite(yr2) || !Number.isFinite(dayFrac)) return null;
+  const yr = yr2 < 57 ? 2000 + yr2 : 1900 + yr2;
+  const dayInt = Math.floor(dayFrac);
+  const ms = (dayFrac - dayInt) * 86400000;
+  const d = new Date(Date.UTC(yr, 0, dayInt));
+  d.setUTCMilliseconds(d.getUTCMilliseconds() + ms);
+  return d;
+}
+
+// TLEs lose accuracy past ~2 weeks; CelesTrak generally refreshes daily.
+// Bucket each row's age for a one-glance freshness badge.
+function tleValidityBand(ageDays) {
+  if (ageDays < 0)  return 'future';   // clock drift on the client
+  if (ageDays < 3)  return 'fresh';
+  if (ageDays < 14) return 'stale';
+  return 'expired';
+}
+
+let tleModalCache = null;   // { tles, source } from the last fetchTLEs() call
+let tleModalSource = '';
+
+async function openTleRepo() {
+  const modal = $('tle-repo-modal');
+  modal.hidden = false;
+  modal.setAttribute('aria-hidden', 'false');
+  // Force a paint so the .shown transition runs from opacity:0 → 1.
+  setTimeout(() => modal.classList.add('shown'), 16);
+
+  if (!tleModalCache) {
+    $('tle-modal-rows').innerHTML =
+      '<tr><td colspan="7" class="hint">Loading TLE catalogue…</td></tr>';
+    $('tle-modal-shown').textContent = '…';
+    $('tle-modal-total').textContent = '…';
+    $('tle-modal-source').textContent = '…';
+    try {
+      const result = await window.Argos.fetchTLEs();
+      tleModalCache = result.tles;
+      tleModalSource = result.source;
+    } catch (e) {
+      $('tle-modal-rows').innerHTML =
+        `<tr><td colspan="7" class="hint">TLE fetch failed: ${esc(e.message)}</td></tr>`;
+      return;
+    }
+  }
+  $('tle-modal-total').textContent  = tleModalCache.length.toLocaleString();
+  $('tle-modal-source').textContent = tleModalSource;
+  renderTleModalRows();
+}
+
+function closeTleRepo() {
+  const modal = $('tle-repo-modal');
+  modal.classList.remove('shown');
+  modal.setAttribute('aria-hidden', 'true');
+  setTimeout(() => { modal.hidden = true; }, 220);
+}
+
+function renderTleModalRows() {
+  if (!tleModalCache) return;
+  const tbody = $('tle-modal-rows');
+  const q = $('tle-modal-filter').value.trim().toLowerCase();
+  const now = Date.now();
+  // Tag matches whether the user typed celestrak/cached/bundled to filter
+  // by source — uncommon but useful and zero extra cost to support.
+  const sourceMatch = q && (
+    tleModalSource.toLowerCase().includes(q) ||
+    'bundled snapshot'.includes(q) ||
+    'cached'.includes(q));
+
+  const out = [];
+  let rendered = 0;
+  let matched  = 0;
+
+  for (const t of tleModalCache) {
+    const dbEntry = db[t.noradId];
+    const ownerCode = dbEntry?.owner || '';
+    const ownerName = COUNTRY[ownerCode]?.name || ownerCode || '—';
+    if (q && !sourceMatch) {
+      const hay = `${t.name} ${t.noradId} ${ownerCode} ${ownerName}`.toLowerCase();
+      if (!hay.includes(q)) continue;
+    }
+    matched++;
+    if (rendered >= TLE_MODAL_MAX_ROWS) continue;
+
+    const epoch = parseTLEEpoch(t.l1);
+    const epochStr = epoch
+      ? epoch.toISOString().slice(0, 16).replace('T', ' ')
+      : '—';
+    const ageDays = epoch ? (now - epoch.getTime()) / 86400000 : NaN;
+    const band = Number.isFinite(ageDays) ? tleValidityBand(ageDays) : 'unknown';
+    const ageLabel = Number.isFinite(ageDays)
+      ? (ageDays < 1 ? `${(ageDays * 24).toFixed(1)} h` : `${ageDays.toFixed(1)} d`)
+      : '—';
+
+    const countryCell = ownerCode
+      ? `${flagImg(COUNTRY[ownerCode])}<span class="ctry-name">${esc(ownerName)}</span>`
+      : `<span class="flag-glyph" title="unknown">🌐</span><span class="ctry-name muted">—</span>`;
+
+    out.push(`<tr>
+      <td>${esc(t.name)}</td>
+      <td class="mono">${t.noradId}</td>
+      <td class="col-country">${countryCell}</td>
+      <td class="mono">${esc(epochStr)} UTC</td>
+      <td><span class="tle-validity tle-validity-${band}">${band}</span> <span class="muted mono">${esc(ageLabel)}</span></td>
+      <td class="mono">${esc(tleModalSource)}</td>
+      <td class="tle-cell"><div>${esc(t.l1)}</div><div>${esc(t.l2)}</div></td>
+    </tr>`);
+    rendered++;
+  }
+
+  tbody.innerHTML = out.join('') ||
+    '<tr><td colspan="7" class="hint">No matches — try a different filter.</td></tr>';
+  $('tle-modal-shown').textContent = rendered.toLocaleString();
+  // If the filter clipped past 500, hint at it via the total count.
+  $('tle-modal-total').textContent = matched.toLocaleString();
+}
+
+// Wire up the open/close + filter input + dismissal handlers.  Defer to
+// DOMContentLoaded so the modal markup is guaranteed to exist when these
+// listeners attach.
+(function setupTleRepo() {
+  function bind() {
+    $('tle-repo-btn')?.addEventListener('click', openTleRepo);
+    $('tle-modal-close')?.addEventListener('click', closeTleRepo);
+    $('tle-modal-filter')?.addEventListener('input', renderTleModalRows);
+    // Tap on the modal backdrop (anywhere outside the card) → close.
+    $('tle-repo-modal')?.addEventListener('click', e => {
+      if (e.target.id === 'tle-repo-modal') closeTleRepo();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !$('tle-repo-modal').hidden) closeTleRepo();
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bind);
+  } else {
+    bind();
+  }
+})();
