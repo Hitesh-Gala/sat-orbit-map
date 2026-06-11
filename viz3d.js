@@ -184,7 +184,6 @@ function propagateChunk() {
     }
     const cls = orbitClass(r.alt);
     satClass[i] = cls;
-    satState[i] = { lat: r.lat, lon: r.lon, alt: r.alt };
     tally[cls]++;
 
     // Map satellite alt (km) → globe.gl altitude fraction, then to a
@@ -193,6 +192,10 @@ function propagateChunk() {
     // the angular positions.
     const altFrac = (r.alt / EARTH_R_KM) * altScale;
     const p = globe.getCoords(r.lat, r.lon, altFrac);
+    // Scene-space position cached alongside the geodetic state — the
+    // screen-space picker projects these on every mousemove, so they
+    // must stay in lock-step with where the instance was drawn.
+    satState[i] = { lat: r.lat, lon: r.lon, alt: r.alt, x: p.x, y: p.y, z: p.z };
 
     // Selected sat: the highlightSphere stands in at full brightness;
     // hide the instance in the main mesh so it doesn't double up.
@@ -241,19 +244,19 @@ function propagateChunk() {
 
 function rerenderFiltered() {
   // Cheap second pass: hide / show instances based on current filter +
-  // size slider without re-running SGP4.  Works because we still have
-  // each instance's last position in the matrix buffer — we just need
-  // to scale it to 0 or to the requested size.
+  // size slider without re-running SGP4.  Positions come from the
+  // satState cache (not from decomposing the old matrix — a hidden
+  // instance's matrix holds position 0, which used to teleport
+  // re-enabled sats to the globe centre until the next tick).
   const sizeUnit = dotScale;
   for (let i = 0; i < allSats.length; i++) {
     const cls = satClass[i];
-    if (!cls || !filter[cls]) {
+    const st  = satState[i];
+    if (!st || !cls || !filter[cls] || i === selectedId) {
       instMesh.setMatrixAt(i, HIDE_MATRIX);
       continue;
     }
-    // Re-decompose the existing matrix to keep position, swap scale.
-    instMesh.getMatrixAt(i, _mat);
-    _mat.decompose(_pos, _quat, _scale);
+    _pos.set(st.x, st.y, st.z);
     _scale.setScalar(sizeUnit);
     _mat.compose(_pos, _quat, _scale);
     instMesh.setMatrixAt(i, _mat);
@@ -330,11 +333,56 @@ boot();
 // into allSats / satState / satPeriod we need.
 
 const tip = $('sat-tip');
-const raycaster = new THREE.Raycaster();
-const ndc = new THREE.Vector2();
 let hoverId = -1;
 let pendingMouse = null;
 let rafQueued = false;
+
+// --- Screen-space picking -------------------------------------------------
+// Project every visible sat's cached scene position to screen pixels and
+// take the nearest one within PICK_RADIUS_PX of the cursor.  Far more
+// forgiving than raycasting the InstancedMesh (whose spheres project to
+// only a few pixels at default zoom), and immune to bounding-sphere
+// quirks.  ~16 k projections per throttled frame ≈ 1 ms.
+const PICK_RADIUS_PX = 12;
+const _pickV = new THREE.Vector3();
+
+function pickSat(ev) {
+  const cv = document.querySelector('#globe canvas');
+  if (!cv) return -1;
+  const rect = cv.getBoundingClientRect();
+  const mx = ev.clientX - rect.left;
+  const my = ev.clientY - rect.top;
+  const cam = globe.camera();
+  const cx = cam.position.x, cy = cam.position.y, cz = cam.position.z;
+  let best = -1;
+  let bestD2 = PICK_RADIUS_PX * PICK_RADIUS_PX;
+  for (let i = 0; i < allSats.length; i++) {
+    const st = satState[i];
+    if (!st) continue;
+    const cls = satClass[i];
+    if (!cls || !filter[cls]) continue;
+    _pickV.set(st.x, st.y, st.z).project(cam);
+    if (_pickV.z > 1 || _pickV.z < -1) continue;   // behind the camera / clipped
+    const sx = (_pickV.x *  0.5 + 0.5) * rect.width;
+    const sy = (_pickV.y * -0.5 + 0.5) * rect.height;
+    const dx = sx - mx, dy = sy - my;
+    const d2 = dx * dx + dy * dy;
+    if (d2 >= bestD2) continue;
+    // Occlusion: skip sats hidden behind the globe.  Closest approach
+    // of the camera→sat segment to the origin must stay outside the
+    // globe radius (100, with 1 unit of grace for the surface bump).
+    const vx = st.x - cx, vy = st.y - cy, vz = st.z - cz;
+    const L2 = vx * vx + vy * vy + vz * vz;
+    const t = -(cx * vx + cy * vy + cz * vz) / L2;
+    if (t > 0 && t < 1) {
+      const px = cx + vx * t, py = cy + vy * t, pz = cz + vz * t;
+      if (px * px + py * py + pz * pz < 99 * 99) continue;
+    }
+    bestD2 = d2;
+    best = i;
+  }
+  return best;
+}
 
 function escHtml(s) {
   return String(s).replace(/[&<>"']/g, c =>
@@ -377,36 +425,10 @@ function processHover() {
   rafQueued = false;
   const ev = pendingMouse;
   if (!ev) return;
-  const cv = document.querySelector('#globe canvas');
-  if (!cv) return;
-  const rect = cv.getBoundingClientRect();
-  ndc.x = ((ev.clientX - rect.left) / rect.width)  *  2 - 1;
-  ndc.y = ((ev.clientY - rect.top)  / rect.height) * -2 + 1;
-  raycaster.setFromCamera(ndc, globe.camera());
-  // Also raycast against the highlight sphere so hovering over the
-  // selected sat (which is hidden in the InstancedMesh) still tooltips.
-  const targets = highlightSphere.visible
-    ? [instMesh, highlightSphere]
-    : [instMesh];
-  const hits = raycaster.intersectObjects(targets, false);
-  // Skip hits on hidden / invalid / filtered-out instances.  Zero-scaled
-  // instances collapse to the scene origin (Earth's centre) — they're
-  // visually invisible but a ray passing through the centre can still
-  // pick one up, so the explicit filter + satState guards matter.
-  let id = -1;
-  for (const h of hits) {
-    if (h.object === highlightSphere) {
-      if (selectedId !== -1 && satState[selectedId]) { id = selectedId; break; }
-      continue;
-    }
-    if (h.instanceId === undefined) continue;
-    const i = h.instanceId;
-    if (!satState[i]) continue;
-    const cls = satClass[i];
-    if (!cls || !filter[cls]) continue;
-    id = i;
-    break;
-  }
+  // Screen-space pick — also finds the selected sat (its instance is
+  // hidden but its satState position stays live), so hovering over the
+  // highlight sphere still tooltips.
+  const id = pickSat(ev);
   if (id !== -1) {
     if (id !== hoverId) {
       hoverId = id;
@@ -478,34 +500,14 @@ function tween(target, prop, to, dur, onDone) {
 // --- Click selection -----------------------------------------------------
 
 function onCanvasClick(ev) {
-  const cv = ev.currentTarget;
-  const rect = cv.getBoundingClientRect();
-  ndc.x = ((ev.clientX - rect.left) / rect.width)  *  2 - 1;
-  ndc.y = ((ev.clientY - rect.top)  / rect.height) * -2 + 1;
-  raycaster.setFromCamera(ndc, globe.camera());
-  const targets = highlightSphere.visible
-    ? [instMesh, highlightSphere]
-    : [instMesh];
-  const hits = raycaster.intersectObjects(targets, false);
-  let id = -1;
-  for (const h of hits) {
-    if (h.object === highlightSphere) {
-      // Clicking the selected sat again → toggle the selection off and
-      // restore the page to normal (full-brightness catalogue, no
-      // orbit ring).
-      if (selectedId !== -1) { deselectSat(); return; }
-      continue;
-    }
-    if (h.instanceId === undefined) continue;
-    const i = h.instanceId;
-    if (!satState[i]) continue;
-    const cls = satClass[i];
-    if (!cls || !filter[cls]) continue;
-    id = i;
-    break;
-  }
-  if (id !== -1) selectSat(id);
-  else           deselectSat();
+  const id = pickSat(ev);
+  // Clicking the selected sat again → toggle the selection off and
+  // restore the page to normal (full-brightness catalogue, no orbit
+  // ring).  Clicking another sat switches the selection; clicking
+  // empty space clears it.
+  if (id !== -1 && id === selectedId) deselectSat();
+  else if (id !== -1)                 selectSat(id);
+  else                                deselectSat();
 }
 
 function selectSat(id) {

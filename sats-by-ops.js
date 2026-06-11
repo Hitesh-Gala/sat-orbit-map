@@ -470,12 +470,19 @@ function renderTooltip(id) {
   const periodStr = period
     ? `${period.toFixed(1)} min <span class="muted">(${(period / 60).toFixed(2)} h)</span>`
     : '<span class="muted">unknown</span>';
-  // Inline category badge in the cat's own colour — matches the sphere.
+  // Mean orbital speed from the circular-orbit approximation
+  // v = 2π(R⊕ + h) / T — good to ~1 % for near-circular orbits.
+  const speedStr = period
+    ? `${(2 * Math.PI * (EARTH_R_KM + st.alt) / (period * 60)).toFixed(2)} km/s`
+    : '<span class="muted">unknown</span>';
+  // Inline operator badge in the category's own colour — matches the sphere.
   const badge = `<span class="cls" style="background:rgba(255,255,255,0.06);color:${cat.color}">${escHtml(cat.label)}</span>`;
   tip.innerHTML = `
     <b>${escHtml(t.name)}</b> ${badge}
+    <div>Operator <strong>${escHtml(cat.label)}</strong></div>
     <div>Altitude <strong>${st.alt.toFixed(0)} km</strong></div>
     <div>Period <strong>${periodStr}</strong></div>
+    <div>Speed <strong>${speedStr}</strong></div>
   `;
 }
 

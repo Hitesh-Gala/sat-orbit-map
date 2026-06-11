@@ -48,10 +48,13 @@ Each `.html` is paired with a same-name `.js`. All pages share `styles.css` and 
 
 | Page | Script | Globe library | What it does |
 |------|--------|---------------|--------------|
-| `index.html` | `app.js` | globe.gl | Realistic Earth + live sat dots, top-right HUD with clocks + over-horizon counts (split by PRC flag) + custom-lat/lon lookup |
+| `index.html` | `app.js` | globe.gl | Realistic Earth + live sat dots (true altitude or flat via the 2D-3D toggle), HUD with clocks, observer-city dropdown (10 cities / All / mask-CN), over-horizon counts split by PRC flag |
 | `orbits.html` | `orbits.js` | globe.gl | 3-D orbital tracks (one polyline per sat, sampled across one period) + NAZAR soundtrack with beat-driven camera moves + immersive fullscreen |
 | `2d-views.html` | `2d-views.js` | **amCharts 5** maps | Equirectangular projection over NASA Blue Marble raster, polygons aligned pixel-perfect with the basemap |
-| `cone.html` | `cone.js` | globe.gl + **bare three.js r157** | Custom-location centring, 40°-tangent cone overlay (ConeGeometry mesh added directly to `globe.scene()`), optional Google Maps satellite zoom-in via a user-supplied Maps JS API key in localStorage |
+| `viz3d.html` | `viz3d.js` | globe.gl + **bare three.js r157** | Every active sat at true altitude via one `THREE.InstancedMesh`; hover tooltip + click-to-isolate orbit tube |
+| `sats-by-ops.html` | `sats-by-ops.js` | globe.gl + **bare three.js r157** | Same InstancedMesh engine, sats colour-coded by ~37 operator/constellation categories with per-category toggles |
+| `game-of-cones.html` | `game-of-cones.js` | globe.gl + **bare three.js r157** | Land-cone and sat-cone geometry puzzles (ConeGeometry meshes added directly to `globe.scene()`) |
+| `sat-stats.html` | `sat-stats.js` | none | Cumulative satellite DB (localStorage) + Chart.js graphs + TLE Repo modal |
 | `chinrepo.html` | `chinrepo.js` | none | Filterable table of every active PRC payload (joins CelesTrak SATCAT `OWNER=PRC` with active TLEs) |
 | `compendium.html` | (inline) | none | Self-contained PRC-program reference catalogue with embedded styles |
 | `news-ticker.js` | (included on `index.html`) | none | Scrolling ticker that fetches Chinese-launch RSS via `api.rss2json.com`, filtered by a keyword regex, 30-min localStorage cache |
@@ -62,11 +65,10 @@ Each `.html` is paired with a same-name `.js`. All pages share `styles.css` and 
 
 Globe.gl 2.32.0 has known issues with its `htmlElementsData` layer when the chain is configured after the initial `Globe()(...)` call — the per-item callback silently never fires. Workarounds used in this codebase:
 
-- For dot markers, use `pointsData` (a single merged cylinder mesh) — see `app.js`, `orbits.js`.
-- For 3-D meshes with hover tooltips, use `objectsData` with a returned `THREE.Mesh` — see `cone.js`.
-- A single, non-data-driven HTML element (e.g. the pink arrow on cone.html) does work, even with `htmlElementsData([{...}])`.
+- For small marker sets (≤ a few hundred), use `objectsData` with a returned `THREE.Mesh` — see `app.js`, `game-of-cones.js`.
+- For the full ~16 k catalogue, use a single `THREE.InstancedMesh` added straight to `globe.scene()` — see `viz3d.js`, `sats-by-ops.js`.
 
-`cone.js` loads `three@0.157.0` from CDN explicitly so it can construct `ConeGeometry`/`MeshBasicMaterial` directly and `globe.scene().add(mesh)` them — globe.gl bundles its own three internally but does not expose it.
+Pages that construct three.js objects directly (`app.js`, `viz3d.js`, `sats-by-ops.js`, `game-of-cones.js`) load `three@0.157.0` from CDN explicitly **before** globe.gl — globe.gl bundles its own three internally but does not expose `window.THREE`.
 
 ## Git practice that matters here
 

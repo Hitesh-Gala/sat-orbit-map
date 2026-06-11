@@ -37,10 +37,6 @@
       <span class="btn-nav-icon">↻</span>
       <span class="btn-nav-label">Orbit Visualisation</span>
     </a>
-    <a class="btn-nav" href="cone.html" title="Globe with custom-location centring + cone">
-      <span class="btn-nav-icon">△</span>
-      <span class="btn-nav-label">Location Specific</span>
-    </a>
     <a class="btn-nav" href="game-of-cones.html" title="Two satellite-cone puzzles: ground cone and sat-sensor footprint">
       <span class="btn-nav-icon">◭</span>
       <span class="btn-nav-label">Game of Cones</span>
@@ -49,10 +45,6 @@
       <span class="btn-nav-icon">★</span>
       <span class="btn-nav-label">China Sat Repo</span>
     </a>
-    <button type="button" id="theme-toggle" class="btn-nav btn-theme" aria-label="Toggle light / dark mode">
-      <span class="btn-nav-icon">☀</span>
-      <span class="btn-nav-label">Light</span>
-    </button>
     <a class="btn-nav btn-viz3d" href="viz3d.html" title="3-D visualisation with every active satellite at its real altitude">
       <span class="btn-nav-icon">⬢</span>
       <span class="btn-nav-label">3D Visualiser</span>
@@ -146,7 +138,6 @@
         <span class="btn-viewmode-label">Switch 2D-3D</span>
         <span class="btn-viewmode-state" id="viewmode-state">3D</span>
       </button>
-      <div class="hint">Currently in <strong id="viewmode-hint">3-D</strong> mode — markers sit at their real altitude.  Switch to 2-D to pin every marker just above the surface.</div>
     </section>
 
   </aside>
@@ -160,7 +151,7 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=7"></script>
-  <script src="app.js?v=26"></script>
+  <script src="app.js?v=27"></script>
   <script src="news-ticker.js?v=13"></script>
   <script src="mobile-menu.js?v=4"></script>
   <script src="flash-popup.js?v=2"></script>

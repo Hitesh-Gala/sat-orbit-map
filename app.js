@@ -289,68 +289,6 @@ function removeArrow() {
 }
 
 // =========================================================================
-// Theme toggle (light / dark)
-// =========================================================================
-//
-// The WebGL globe doesn't read CSS variables.  We instead swap the
-// background skybox between the night-sky texture and a pixel-inverted
-// "day-sky" version (memoised after first generation).
-
-let invertedSkyDataUrl = null;
-function loadImage(url) {
-  return new Promise((resolve, reject) => {
-    const i = new Image();
-    i.crossOrigin = 'anonymous';
-    i.onload = () => resolve(i);
-    i.onerror = () => reject(new Error('image load failed: ' + url));
-    i.src = url;
-  });
-}
-async function getInvertedSkyUrl() {
-  if (invertedSkyDataUrl) return invertedSkyDataUrl;
-  const img = await loadImage(NIGHT_SKY_URL);
-  const c = document.createElement('canvas');
-  c.width = img.naturalWidth;
-  c.height = img.naturalHeight;
-  const ctx = c.getContext('2d');
-  ctx.drawImage(img, 0, 0);
-  const id = ctx.getImageData(0, 0, c.width, c.height);
-  for (let i = 0; i < id.data.length; i += 4) {
-    id.data[i]     = 255 - id.data[i];
-    id.data[i + 1] = 255 - id.data[i + 1];
-    id.data[i + 2] = 255 - id.data[i + 2];
-  }
-  ctx.putImageData(id, 0, 0);
-  invertedSkyDataUrl = c.toDataURL('image/png');
-  return invertedSkyDataUrl;
-}
-
-(function setupTheme() {
-  const KEY = 'argos.main.theme';
-  const btn = $('theme-toggle');
-  if (!btn) return;
-  async function apply(mode) {
-    document.body.classList.toggle('light', mode === 'light');
-    btn.textContent = mode === 'light' ? '☾ Dark' : '☀ Light';
-    try {
-      if (mode === 'light') {
-        globe.backgroundImageUrl(await getInvertedSkyUrl());
-        globe.atmosphereColor('#7a8aa0');
-      } else {
-        globe.backgroundImageUrl(NIGHT_SKY_URL);
-        globe.atmosphereColor('#4ea8ff');
-      }
-    } catch (e) { console.warn('Theme skybox swap failed:', e.message); }
-  }
-  apply(localStorage.getItem(KEY) || 'dark');
-  btn.addEventListener('click', () => {
-    const next = document.body.classList.contains('light') ? 'dark' : 'light';
-    localStorage.setItem(KEY, next);
-    apply(next);
-  });
-})();
-
-// =========================================================================
 // Clocks
 // =========================================================================
 
@@ -590,13 +528,6 @@ function renderCNHorizonList(items) {
   btn.addEventListener('click', () => {
     flatMode = !flatMode;
     $('viewmode-state').textContent = flatMode ? '2D' : '3D';
-    $('viewmode-hint').textContent  = flatMode ? '2-D' : '3-D';
-    const hint = $('viewmode-hint').parentElement;
-    if (hint) {
-      hint.innerHTML = flatMode
-        ? 'Currently in <strong id="viewmode-hint">2-D</strong> mode — every marker is pinned just above the surface.  Switch to 3-D for real altitudes.'
-        : 'Currently in <strong id="viewmode-hint">3-D</strong> mode — markers sit at their real altitude.  Switch to 2-D to pin every marker just above the surface.';
-    }
     globe.objectAltitude(flatMode ? 0.01 : (d => d.alt / EARTH_R_KM));
     rerenderMarkers();
   });
