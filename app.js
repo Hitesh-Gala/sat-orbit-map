@@ -44,6 +44,7 @@ const CITIES = [
 let observerCity = CITIES[0];
 let observerMode = 'single';   // 'single' = one city · 'all' = union of every city
 let maskNonCN    = false;      // globe markers show only Chinese sats when true
+let flatMode     = false;      // true = 2-D (markers pinned to surface) · false = 3-D (real altitude)
 
 // Selection / ground-track parameters (click a sat to isolate it).
 const TRACK_PAST_MIN     = 30;       // minutes of past trajectory shown
@@ -103,7 +104,9 @@ const globe = Globe()($('globe'))
   .objectAltitude(d => d.alt / EARTH_R_KM)
   .objectThreeObject(d => {
     const dim = selectedSat !== null;
-    const radius = 0.6 + Math.min(1.4, d.alt / 30000);
+    // Flat 2-D mode uses a uniform dot; 3-D scales gently with
+    // altitude so distant GEO markers stay visible.
+    const radius = flatMode ? 0.6 : 0.6 + Math.min(1.4, d.alt / 30000);
     return new THREE.Mesh(
       new THREE.SphereGeometry(radius, 12, 12),
       new THREE.MeshBasicMaterial({
@@ -537,13 +540,11 @@ function finishUpdate() {
     updateCN.sort((a, b) => b.el - a.el);
     $('cn-list').innerHTML = renderCNHorizonList(updateCN);
   }
-  if ($('lookup-panel')?.open) runLookup();
 
   updateActive = false;
 }
 
-// Shared row template — used by the non-CN horizon panel and the
-// custom-location lookup.
+// Row template for the non-CN horizon panel.
 function renderHorizonList(items, limit) {
   if (!items.length) return '<div class="hint">No satellites above this horizon right now.</div>';
   return items.slice(0, limit).map(s => `
@@ -574,50 +575,31 @@ function renderCNHorizonList(items) {
 }
 
 // =========================================================================
-// Custom-location observer lookup
+// 2-D / 3-D view-mode toggle
 // =========================================================================
+// Replaces the old custom-location lookup panel.  2-D pins every
+// marker just above the surface (the classic flat-tracker look);
+// 3-D places markers at their real altitude (default).  The altitude
+// accessor swap repositions existing markers immediately; marker
+// radii (which scale with altitude in 3-D) refresh on the next
+// propagation tick because each tick emits brand-new item objects.
 
-function runLookup() {
-  if (!activeTLEs.length) return;
-  const latEl = $('lookup-lat');
-  const lonEl = $('lookup-lon');
-  const lat = parseFloat(latEl.value);
-  const lon = parseFloat(lonEl.value);
-  const countEl = $('lookup-count');
-  const listEl  = $('lookup-list');
-  if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-    countEl.textContent = '!';
-    listEl.innerHTML = '<div class="hint">Enter latitude in −90…90 and longitude in −180…180.</div>';
-    return;
-  }
-  const observer = { lat, lon, alt: 0 };
-  const now = new Date();
-  const above = [];
-  for (const t of activeTLEs) {
-    const r = propagate(t.rec, now, observer);
-    if (!r || !Number.isFinite(r.el) || r.el <= 0) continue;
-    above.push({
-      name: t.name, az: r.az, el: r.el, range: r.range, alt: r.alt,
-      lat: r.lat, lon: r.lon, cn: prcMeta.has(t.noradId),
-    });
-  }
-  above.sort((a, b) => b.el - a.el);
-  countEl.textContent = above.length;
-  listEl.innerHTML = renderHorizonList(above, HUD_LIST_MAX);
-}
-
-(function setupLookup() {
-  const btn = $('lookup-btn');
-  const lat = $('lookup-lat');
-  const lon = $('lookup-lon');
-  const panel = $('lookup-panel');
-  if (!btn || !lat || !lon || !panel) return;
-  let timer = null;
-  const debounced = () => { clearTimeout(timer); timer = setTimeout(runLookup, 250); };
-  btn.addEventListener('click', runLookup);
-  lat.addEventListener('input', debounced);
-  lon.addEventListener('input', debounced);
-  panel.addEventListener('toggle', () => { if (panel.open) runLookup(); });
+(function setupViewMode() {
+  const btn = $('viewmode-btn');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    flatMode = !flatMode;
+    $('viewmode-state').textContent = flatMode ? '2D' : '3D';
+    $('viewmode-hint').textContent  = flatMode ? '2-D' : '3-D';
+    const hint = $('viewmode-hint').parentElement;
+    if (hint) {
+      hint.innerHTML = flatMode
+        ? 'Currently in <strong id="viewmode-hint">2-D</strong> mode — every marker is pinned just above the surface.  Switch to 3-D for real altitudes.'
+        : 'Currently in <strong id="viewmode-hint">3-D</strong> mode — markers sit at their real altitude.  Switch to 2-D to pin every marker just above the surface.';
+    }
+    globe.objectAltitude(flatMode ? 0.01 : (d => d.alt / EARTH_R_KM));
+    rerenderMarkers();
+  });
 })();
 
 // =========================================================================
