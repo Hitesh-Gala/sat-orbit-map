@@ -30,14 +30,20 @@ const HUD_LIST_MAX  = 200;          // capped to keep DOM cheap when open
 // markers, and the custom lookup hint all recompute against whichever
 // of these is active in the #observer-city dropdown.
 const CITIES = [
-  { name: 'New Delhi', lat: 28.6139, lon: 77.2090, alt: 0.216 },
-  { name: 'Mumbai',    lat: 19.0760, lon: 72.8777, alt: 0.014 },
-  { name: 'Bangalore', lat: 12.9716, lon: 77.5946, alt: 0.920 },
-  { name: 'Chennai',   lat: 13.0827, lon: 80.2707, alt: 0.006 },
-  { name: 'Srinagar',  lat: 34.0837, lon: 74.7973, alt: 1.585 },
-  { name: 'Guwahati',  lat: 26.1445, lon: 91.7362, alt: 0.055 },
+  { name: 'New Delhi',   lat: 28.6139, lon: 77.2090, alt: 0.216 },
+  { name: 'Mumbai',      lat: 19.0760, lon: 72.8777, alt: 0.014 },
+  { name: 'Bangalore',   lat: 12.9716, lon: 77.5946, alt: 0.920 },
+  { name: 'Chennai',     lat: 13.0827, lon: 80.2707, alt: 0.006 },
+  { name: 'Srinagar',    lat: 34.0837, lon: 74.7973, alt: 1.585 },
+  { name: 'Guwahati',    lat: 26.1445, lon: 91.7362, alt: 0.055 },
+  { name: 'Jaisalmer',   lat: 26.9157, lon: 70.9083, alt: 0.225 },
+  { name: 'Bhopal',      lat: 23.2599, lon: 77.4126, alt: 0.527 },
+  { name: 'Kohima',      lat: 25.6751, lon: 94.1086, alt: 1.444 },
+  { name: 'Bhubaneswar', lat: 20.2961, lon: 85.8245, alt: 0.045 },
 ];
 let observerCity = CITIES[0];
+let observerMode = 'single';   // 'single' = one city · 'all' = union of every city
+let maskNonCN    = false;      // globe markers show only Chinese sats when true
 
 // Selection / ground-track parameters (click a sat to isolate it).
 const TRACK_PAST_MIN     = 30;       // minutes of past trajectory shown
@@ -413,16 +419,71 @@ function startUpdate() {
   processChunk();
 }
 
+// Spherical-Earth look angles from a city to a sub-point + altitude.
+// Used only by the "All cities" observer mode, where re-running the
+// full SGP4 + WGS84 pipeline once per city per sat (10 × 16 k) would
+// blow the frame budget.  ENU construction: up = normalised ECEF of
+// the city, east = ẑ × up, north = up × east.  Differences from the
+// geodetic answer are < 0.2° — invisible at HUD precision.
+function lookFromCity(satLat, satLon, satAltKm, city) {
+  const D = Math.PI / 180;
+  const sLat = satLat * D, sLon = satLon * D;
+  const cLat = city.lat * D, cLon = city.lon * D;
+  const rs = EARTH_R_KM + satAltKm;
+  const rc = EARTH_R_KM + (city.alt || 0);
+  const sx = rs * Math.cos(sLat) * Math.cos(sLon);
+  const sy = rs * Math.cos(sLat) * Math.sin(sLon);
+  const sz = rs * Math.sin(sLat);
+  const cx = rc * Math.cos(cLat) * Math.cos(cLon);
+  const cy = rc * Math.cos(cLat) * Math.sin(cLon);
+  const cz = rc * Math.sin(cLat);
+  const vx = sx - cx, vy = sy - cy, vz = sz - cz;
+  const range = Math.hypot(vx, vy, vz);
+  // Up / east / north unit vectors at the city.
+  const um = Math.hypot(cx, cy, cz);
+  const ux = cx / um, uy = cy / um, uz = cz / um;
+  const em = Math.hypot(-uy, ux);              // east = ẑ × up
+  const ex = -uy / em, ey = ux / em;           // ez = 0
+  const nx = uy * 0 - uz * ey;                 // north = up × east
+  const ny = uz * ex - ux * 0;
+  const nz = ux * ey - uy * ex;
+  const dU = vx * ux + vy * uy + vz * uz;
+  const dE = vx * ex + vy * ey;
+  const dN = vx * nx + vy * ny + vz * nz;
+  return {
+    el:    Math.asin(dU / range) / D,
+    az:    ((Math.atan2(dE, dN) / D) + 360) % 360,
+    range,
+  };
+}
+
 function processChunk() {
   const end = Math.min(updateIdx + CHUNK_SIZE, activeTLEs.length);
   for (; updateIdx < end; updateIdx++) {
     const t = activeTLEs[updateIdx];
     const r = propagate(t.rec, updateNow, observerCity);
-    if (!r || !Number.isFinite(r.lat) || !Number.isFinite(r.lon) || r.el <= 0) continue;
+    if (!r || !Number.isFinite(r.lat) || !Number.isFinite(r.lon)) continue;
+
+    let az = r.az, el = r.el, range = r.range, via = null;
+    if (observerMode === 'all') {
+      // Union across every city: keep the sat if it clears the horizon
+      // from ANY of the ten, and report the look angles from whichever
+      // city sees it highest.
+      let best = null;
+      for (const c of CITIES) {
+        const la = lookFromCity(r.lat, r.lon, r.alt, c);
+        if (la.el > 0 && (!best || la.el > best.el)) { best = la; via = c.name; }
+      }
+      if (!best) continue;
+      az = best.az; el = best.el; range = best.range;
+    } else if (r.el <= 0) {
+      continue;
+    }
+
     const isCn = prcMeta.has(t.noradId);
     const item = {
-      name: t.name, az: r.az, el: r.el, range: r.range,
-      alt: r.alt, lat: r.lat, lon: r.lon, cn: isCn,
+      name: t.name, az, el, range,
+      alt: r.alt, lat: r.lat, lon: r.lon, cn: isCn, via,
       rec: t.rec, noradId: t.noradId,
     };
     if (isCn) {
@@ -446,12 +507,19 @@ function processChunk() {
   }
 }
 
-function finishUpdate() {
-  // Globe markers: top-N by elevation.  One shared sort serves both
-  // the marker selection and the per-list ordering.
+// Rebuild the globe-marker set from the last propagation arrays,
+// honouring the mask-non-Chinese toggle.  Called from finishUpdate
+// and directly when the user flips the mask (instant feedback, no
+// SGP4 re-run).
+function rebuildMarkers() {
   const all = updateNonCN.concat(updateCN).sort((a, b) => b.el - a.el);
-  currentMarkers = all.slice(0, MAX_MARKERS);
+  const src = maskNonCN ? all.filter(s => s.cn) : all;
+  currentMarkers = src.slice(0, MAX_MARKERS);
   rerenderMarkers();
+}
+
+function finishUpdate() {
+  rebuildMarkers();
   // Slide the past-30-min window forward + reposition the arrow if a
   // sat is currently selected.  No-op otherwise.
   refreshSelectionVisuals();
@@ -484,7 +552,7 @@ function renderHorizonList(items, limit) {
       <div class="meta">
         Az <strong>${s.az.toFixed(1)}°</strong> ${compass(s.az)}
         · El <strong>${s.el.toFixed(1)}°</strong>
-        · ${s.range.toFixed(0)} km
+        · ${s.range.toFixed(0)} km${s.via ? ` · via ${esc(s.via)}` : ''}
       </div>
       <div class="meta muted">Alt ${s.alt.toFixed(0)} km · sub-pt ${s.lat.toFixed(2)}°, ${s.lon.toFixed(2)}°</div>
     </div>`).join('');
@@ -499,7 +567,7 @@ function renderCNHorizonList(items) {
       <div class="meta">
         Az <strong>${s.az.toFixed(1)}°</strong> ${compass(s.az)}
         · El <strong>${s.el.toFixed(1)}°</strong>
-        · ${s.range.toFixed(0)} km
+        · ${s.range.toFixed(0)} km${s.via ? ` · via ${esc(s.via)}` : ''}
       </div>
       <div class="meta muted">${esc(s.purpose)} · Alt ${s.alt.toFixed(0)} km · sub-pt ${s.lat.toFixed(2)}°, ${s.lon.toFixed(2)}°</div>
     </div>`).join('');
@@ -563,13 +631,47 @@ function runLookup() {
 (function setupObserverCity() {
   const sel = $('observer-city');
   if (!sel) return;
-  sel.innerHTML = CITIES.map((c, i) => `<option value="${i}">${esc(c.name)}</option>`).join('');
+  let lastCityValue = '0';   // where to snap back after a mask toggle
+
+  function rebuildOptions() {
+    const cityOpts = CITIES.map((c, i) => `<option value="${i}">${esc(c.name)}</option>`);
+    cityOpts.push(`<option value="all">All cities</option>`);
+    // The mask entry behaves as a toggle, not a destination — selecting
+    // it flips the flag and the dropdown snaps back to the current
+    // city.  Its label always shows the *current* state.
+    cityOpts.push(`<option value="mask">Mask non-Chinese: ${maskNonCN ? 'ON' : 'OFF'}</option>`);
+    sel.innerHTML = cityOpts.join('');
+  }
+  rebuildOptions();
+
   sel.addEventListener('change', () => {
-    observerCity = CITIES[parseInt(sel.value, 10)] || CITIES[0];
-    document.querySelectorAll('.obs-city-name').forEach(el => {
-      el.textContent = observerCity.name;
-    });
-    globe.pointOfView({ lat: observerCity.lat, lng: observerCity.lon, altitude: 2.4 }, 1200);
+    const v = sel.value;
+
+    if (v === 'mask') {
+      maskNonCN = !maskNonCN;
+      rebuildOptions();
+      sel.value = lastCityValue;   // dropdown keeps showing the observer
+      rebuildMarkers();            // instant — reuses last propagation
+      return;
+    }
+
+    lastCityValue = v;
+    if (v === 'all') {
+      observerMode = 'all';
+      document.querySelectorAll('.obs-city-name').forEach(el => {
+        el.textContent = `all ${CITIES.length} cities`;
+      });
+      // Frame the whole subcontinent — the union footprint spans
+      // Jaisalmer to Kohima.
+      globe.pointOfView({ lat: 23, lng: 82, altitude: 2.6 }, 1200);
+    } else {
+      observerMode = 'single';
+      observerCity = CITIES[parseInt(v, 10)] || CITIES[0];
+      document.querySelectorAll('.obs-city-name').forEach(el => {
+        el.textContent = observerCity.name;
+      });
+      globe.pointOfView({ lat: observerCity.lat, lng: observerCity.lon, altitude: 2.4 }, 1200);
+    }
     // Recompute the over-horizon sets right away rather than waiting
     // out the 10-s tick.  If a tick is already mid-flight this is a
     // no-op and the next scheduled tick picks up the new observer.
