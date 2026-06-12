@@ -105,244 +105,126 @@
       </p>
       <div class="about-cta-row">
         <a class="about-cta primary" href="index.html">▶ Launch the live globe</a>
-        <a class="about-cta secondary" href="#how-to-use">How to use it</a>
+        <a class="about-cta secondary" href="#tour">Take the tour</a>
       </div>
     </header>
 
     <!-- =========================================================
-         1 · Intent
+         What is this?
          ========================================================= -->
     <section class="about-section" id="intent">
-      <h2>1 · Why this exists</h2>
+      <h2>What is this?</h2>
       <p>
-        Orbital reconnaissance shapes modern statecraft, but the data describing it lives
-        mostly in spreadsheets, NORAD JSON dumps, and PDFs that are useless to a casual reader.
-        NAZAR translates that data into globes, maps, and graphs so anyone with a laptop
-        can ask questions like:
-      </p>
-      <ul>
-        <li>Which Chinese satellites are overhead from New Delhi right now?</li>
-        <li>Where will <em>Yaogan-37</em> be in 30 minutes?</li>
-        <li>What does the world's GEO ring look like from above?</li>
-        <li>Which country owns the most active payloads in LEO?</li>
-        <li>Can a sensor on a particular satellite see <em>my exact location</em>?</li>
-      </ul>
-      <p>
-        …without ever leaving the browser. There is <strong>no backend, no account, no
-        telemetry, no API keys</strong> you need to sign up for. Every satellite is propagated
-        locally in your browser using the same NORAD/CelesTrak TLE data the rest of the world uses.
+        NAZAR is a <strong>live satellite tracker</strong>. It follows close to
+        <strong>16,000 satellites</strong> in real time and turns the raw NORAD
+        orbital data into globes, maps and graphs you can actually play with.
+        Everything runs inside your browser — there is no backend, no account,
+        no tracking, and no API key to sign up for.
       </p>
       <p>
-        The acronym hints at the focus — Chinese spacecraft visibility — but the underlying
-        machinery works for every sat in the catalogue.
+        The acronym hints at the original focus — Chinese spacecraft visibility
+        over India — but the machinery works for every satellite in the catalogue.
+        I have kept adding cool stuff to it; the tour below is the quick version.
       </p>
     </section>
 
     <!-- =========================================================
-         2 · Capabilities
+         The tour — adapted from the author's own walkthrough
          ========================================================= -->
-    <section class="about-section" id="capabilities">
-      <h2>2 · What it can do</h2>
-      <div class="cap-grid">
-        <div class="cap-card">
-          <div class="cap-ico">🛰</div>
-          <div class="cap-title">Track ~16,000 active satellites</div>
-          <div class="cap-desc">
-            Every active object in CelesTrak's catalogue, propagated locally
-            in your browser using SGP4 — the same algorithm NORAD uses.
-          </div>
-        </div>
-        <div class="cap-card">
-          <div class="cap-ico">🌍</div>
-          <div class="cap-title">Country attribution</div>
-          <div class="cap-desc">
-            Owner code, launch country, and physical launch site (Baikonur, Cape
-            Canaveral, Kourou…) joined in from CelesTrak's SATCAT.
-          </div>
-        </div>
-        <div class="cap-card">
-          <div class="cap-ico">📚</div>
-          <div class="cap-title">Cumulative database</div>
-          <div class="cap-desc">
-            SatStats remembers every sat you've ever seen, so the table grows over
-            time as new launches enter the catalogue — 19,000+ records and climbing.
-          </div>
-        </div>
-        <div class="cap-card">
-          <div class="cap-ico">📐</div>
-          <div class="cap-title">Geometry puzzles</div>
-          <div class="cap-desc">
-            Build cones from the ground up or from satellites down. Find which
-            sats are visible to a sensor, or which patches of Earth a satellite
-            can image.
-          </div>
-        </div>
-        <div class="cap-card">
-          <div class="cap-ico">🌐</div>
-          <div class="cap-title">Full 3-D visualisation</div>
-          <div class="cap-desc">
-            Every active sat at its real altitude — the LEO swarm, MEO band,
-            and GEO ring as distinct radial layers around Earth.
-          </div>
-        </div>
-        <div class="cap-card">
-          <div class="cap-ico">🔁</div>
-          <div class="cap-title">Auto-refresh data</div>
-          <div class="cap-desc">
-            A scheduled GitHub Actions workflow re-pulls CelesTrak every 6 hours
-            and commits the fresh snapshot to the repo — your offline fallback is
-            never more than a few hours stale.
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- =========================================================
-         3 · Cool features
-         ========================================================= -->
-    <section class="about-section" id="features">
-      <h2>3 · The cool stuff</h2>
+    <section class="about-section" id="tour">
+      <h2>The tour</h2>
       <ul class="feature-list">
-        <li><strong>Click any satellite on the main globe</strong> and the rest of the catalogue fades to background while a tube shows the sat's past 30 minutes of ground track, capped by an arrow pointing where it's heading next.</li>
-        <li><strong>The 3-D Visualiser</strong> drops every active sat at its real altitude. Toggle LEO / MEO / GEO / HEO independently to see the structure of the constellation — the GEO ring is genuinely a <em>ring</em>.</li>
-        <li><strong>Game of Cones</strong> is two interactive geometry puzzles: a ground cone that finds sats inside, and a satellite cone that projects its sensor footprint onto Earth as a polygon.</li>
-        <li><strong>The Orbit Visualisation page</strong> plays the NAZAR soundtrack with beat-driven camera moves — orbital pop-and-lock.</li>
-        <li><strong>SatStats has a country filter</strong>: pick a country from the dropdown above the "Country of Origin" column and the table collapses to just that country's sats. The Launch Country column shows both country and physical site name (e.g. <em>United States / Cape Canaveral</em>).</li>
-        <li><strong>The bundled data falls back gracefully</strong>: when CelesTrak rate-limits your IP (HTTP 403, which happens often), every page silently switches to the auto-refreshed snapshot in <code>data/</code>. You'd never notice.</li>
-        <li><strong>Mobile users get a unified ☰ MENU drop-down</strong> that collapses every panel and link into one drawer, so the globe stays the dominant view.</li>
+        <li><strong>1 · <a href="index.html">The main page</a></strong> does what it says:
+          pick a city in India (or all ten at once) and it shows you satellite
+          visibility <em>from that location, in real time</em>. The right-hand panel
+          splits the count into Chinese and non-Chinese satellites, a toggle can
+          mask everything non-Chinese, and the <code>Switch 2D-3D</code> button flips
+          between flat markers and true orbital altitudes. Click any satellite to see
+          the ground it covered over the past 30 minutes and the direction it is heading.</li>
+
+        <li><strong>2 · <a href="sat-stats.html">SAT-STATS</a></strong> (the ▦ button on the
+          right-hand panel) lists satellites from all over the world, sorted by country
+          of origin — pick India from the dropdown and see exactly how many of our space
+          vehicles are up there right now. Below the table sit graphs that give an
+          instinctive overview of the satellite world: there are <em>individual launch
+          sites</em> in the USA and China that have launched more rockets than the total
+          number of Indian satellites in space.</li>
+
+        <li><strong>3 · The TLE Repository</strong> (the ⌗ button inside SAT-STATS) is the
+          technical corner: the raw Two-Line Elements of every satellite vehicle tracked,
+          with a layman's decoder underneath that explains what each character of a TLE
+          means. It might be fun to try and understand one.</li>
+
+        <li><strong>4 · <a href="2d-views.html">2D-VIEW</a></strong> shows the same
+          real-time positions on a flat 2-D world map — the easiest view to screenshot.</li>
+
+        <li><strong>5 · <a href="chinrepo.html">CHINA-SAT-REPO</a></strong> is my attempt at
+          a sort of Wikipedia page: it untangles the names and nomenclature of Chinese
+          satellites (Yaogan vs Gaofen vs Shiyan…) for a layman, with a deeper
+          <a href="compendium.html">Compendium</a> of every major PRC programme attached.
+          It is meant for exploring.</li>
+
+        <li><strong>6 · <a href="game-of-cones.html">GAME-OF-CONES</a></strong> is built for a
+          custom purpose. In <em>Land Cone</em> you pick a lat/long and define a cone of
+          visibility — the globe shows every satellite inside it, which makes it a handy tool
+          for working out what sits at which angles when you look skyward from a particular
+          location. It also has the inverse: <em>Sat Cone</em> visually displays a chosen
+          satellite's <em>look area</em> on the ground, with the sensor angle fully adjustable.</li>
+
+        <li><strong>7 · <a href="viz3d.html">3D-VISUALISER</a></strong> gives you an instinctive
+          <em>God's-eye view</em> of the entire catalogue — all ~16,000 satellites, at their true
+          altitudes, in real time, all at once. Clicking an individual satellite dims everything
+          else and draws its complete path in space — genuinely the coolest thing to watch here.</li>
+
+        <li><strong>8 · <a href="sats-by-ops.html">SATS-BY-OPS</a></strong> is the same God's-eye
+          view, but the satellites are differentiated by <em>operator</em>: pick a Maxar, a
+          Capella, an ICEYE — or all of Starlink, or the whole BeiDou constellation — and see
+          exactly where their fleets are right now. Hover an operator's name and its satellites
+          pulse on the globe.</li>
+
+        <li><strong>9 · Saved the quirkiest for last 😄 — <a href="orbits.html">PLAY NAZAR</a></strong>.
+          Early attempts at tracing live orbits produced some unforeseen glitches that were,
+          frankly, beautiful to look at. So I added a soundtrack: press the ♪ <em>Play NAZAR</em>
+          button on the Orbit Visualisation page and the screen goes full-bleed while the whole
+          globe gyrates to the same BPM as the track. An entirely not-useful feature — and the
+          most fun one to build.</li>
       </ul>
     </section>
 
     <!-- =========================================================
-         4 · The pages
+         Under the hood
          ========================================================= -->
-    <section class="about-section" id="pages">
-      <h2>4 · What each page does</h2>
-      <div class="page-grid">
-
-        <a class="page-card" href="index.html">
-          <div class="ico">◯</div>
-          <div class="name">NAZAR Globe</div>
-          <div class="desc">
-            The default view. Realistic Earth + every satellite above the New Delhi
-            horizon as a coloured dot — green for non-Chinese, red for PRC payloads.
-            Hover for tooltip. Click to isolate + see the past 30-min ground track.
-          </div>
-        </a>
-
-        <a class="page-card" href="2d-views.html">
-          <div class="ico">⊞</div>
-          <div class="name">2-D Views</div>
-          <div class="desc">
-            Equirectangular world maps with sat positions plotted on a NASA
-            Blue Marble basemap. Cleanest format for screenshots and slide decks.
-          </div>
-        </a>
-
-        <a class="page-card" href="orbits.html">
-          <div class="ico">↻</div>
-          <div class="name">Orbit Visualisation</div>
-          <div class="desc">
-            Full 3-D orbital tracks — one polyline per satellite — plus the NAZAR
-            soundtrack with beat-driven camera moves. Tap ♪ Play NAZAR to start.
-          </div>
-        </a>
-
-        <a class="page-card" href="game-of-cones.html">
-          <div class="ico">◭</div>
-          <div class="name">Game of Cones</div>
-          <div class="desc">
-            Two satellite-geometry puzzles. Land Cone: which sats sit inside
-            an upward cone from your point? Sat Cone: where does a satellite's
-            sensor footprint land on Earth?
-          </div>
-        </a>
-
-        <a class="page-card" href="chinrepo.html">
-          <div class="ico">★</div>
-          <div class="name">China Sat Repo</div>
-          <div class="desc">
-            Every active PRC payload in one filterable table — name, NORAD ID,
-            inferred mission family, altitude, sub-point, launch site.
-          </div>
-        </a>
-
-        <a class="page-card" href="viz3d.html">
-          <div class="ico">⬢</div>
-          <div class="name">3-D Visualiser</div>
-          <div class="desc">
-            Every active satellite placed at its real altitude. Filter by
-            orbit class, exaggerate the altitude scale, click to isolate any
-            sat and see its full orbit ring.
-          </div>
-        </a>
-
-        <a class="page-card" href="sat-stats.html">
-          <div class="ico">▦</div>
-          <div class="name">SatStats</div>
-          <div class="desc">
-            Cumulative satellite database — 19,000+ records with country flags,
-            launch sites, photos, and graphs (orbit class, top owners, launches
-            per year, inclination). Country filter dropdown at the column header.
-          </div>
-        </a>
-
-        <a class="page-card" href="compendium.html">
-          <div class="ico">⚐</div>
-          <div class="name">Compendium</div>
-          <div class="desc">
-            Reference catalogue of every major Chinese space programme —
-            Beidou, Yaogan, Gaofen, Fengyun, Tiangong, and the rest — with
-            descriptions, status, and design context.
-          </div>
-        </a>
-
-      </div>
+    <section class="about-section" id="under-the-hood">
+      <h2>Under the hood</h2>
+      <ul>
+        <li>Orbits come from <strong>NORAD/CelesTrak TLE data</strong> and are computed
+          <em>in your browser</em> with the standard SGP4 propagator — the same maths the
+          space agencies use.</li>
+        <li>A scheduled robot (GitHub Actions) re-downloads the catalogue every
+          <strong>6 hours</strong> and ships it with the site, so everything keeps working
+          even when the live feed rate-limits you.</li>
+        <li>Nothing about <em>you</em> is stored anywhere: the only data kept is satellite
+          data, cached in your own browser for speed.</li>
+        <li>Want the full story? The two documents at the bottom of this page contain the
+          complete annotated source code and a plain-language explainer.</li>
+      </ul>
     </section>
 
     <!-- =========================================================
-         5 · How to use
+         Quick tips
          ========================================================= -->
-    <section class="about-section" id="how-to-use">
-      <h2>5 · How to use the site</h2>
-
-      <h3>Navigating between pages</h3>
+    <section class="about-section" id="tips">
+      <h2>Quick tips</h2>
       <ul>
-        <li>The <strong>left-side nav bar</strong> (<code>⊞ 2D View</code>, <code>↻ Orbit Visualisation</code>, <code>◭ Game of Cones</code>, <code>★ China Sat Repo</code>, <code>⬢ 3D Visualiser</code>, <code>⊕ SATs-by-OPs</code>) is the primary navigation on the main page.</li>
-        <li>The <strong>top-right Takshashila logo</strong> opens <em>takshashila.org.in</em> in a new tab.</li>
-        <li>On <strong>mobile (≤ 720 px)</strong> all that chrome collapses into a single <code>☰ MENU</code> button at the top-left — tap it to see the drawer.</li>
-      </ul>
-
-      <h3>Driving the globe</h3>
-      <ul>
-        <li><strong>Drag</strong> to rotate. <strong>Scroll / pinch</strong> to zoom. <strong>Right-drag</strong> to pan.</li>
-        <li><strong>Hover</strong> any sat dot for an instant tooltip (name, altitude, sub-point, azimuth / elevation).</li>
-        <li><strong>Click</strong> a sat to isolate it — past 30-min ground track + direction arrow appear, the other 119 dots fade out.</li>
-        <li><strong>Click the same sat again, or anywhere on empty globe</strong>, to deselect everything.</li>
-      </ul>
-
-      <h3>The right-side HUD on the main page</h3>
-      <ul>
-        <li>The <code>UTC / IST</code> panel shows live clocks in both time zones.</li>
-        <li><code>Total SVs Tracked</code> is the size of the live catalogue.</li>
-        <li><code>Over Horizon Non-Chinese SVs</code> and <code>Over Horizon Chinese SVs</code> are collapsible — click the summary line to expand the list of every sat currently above the New Delhi horizon, sorted by elevation.</li>
-        <li><code>Custom Location</code> takes any lat/lon and recomputes the over-horizon list from <em>that</em> point. Use it to check what's overhead from anywhere on Earth.</li>
-        <li>The big <code>▦ SAT-STATS</code> button below the clocks jumps to the cumulative database page.</li>
-      </ul>
-
-      <h3>Using SatStats</h3>
-      <ul>
-        <li>The big table lists every satellite the cumulative database has ever seen.</li>
-        <li>Above the <strong>Country of Origin</strong> column there's a dropdown — pick a country to filter the table.</li>
-        <li>The <strong>Launch Country</strong> cells show both country and the physical launch-site name (e.g. <em>United States / Cape Canaveral</em>).</li>
-        <li>The <strong>Photo</strong> column carries a thumbnail linking to an open-source image of the satellite or its series.</li>
-        <li>Switch to the <strong>Graphs</strong> tab for five distribution charts: orbit class, top owners, launches per year, launch sites, inclination histogram.</li>
-      </ul>
-
-      <h3>Playing Game of Cones</h3>
-      <ul>
-        <li><strong>Land Cone mode</strong>: enter your lat/lon, set the half-angle and max height with the sliders. Every sat inside that upward cone appears in the list and on the globe.</li>
-        <li><strong>Sat Cone mode</strong>: search for a satellite, set the sensor half-angle. The cone projects onto Earth's surface as an orange polygon — that's the area the sensor can see.</li>
+        <li><strong>Drag</strong> to rotate any globe, <strong>scroll / pinch</strong> to zoom,
+          <strong>hover</strong> a dot for its details.</li>
+        <li><strong>Click</strong> a satellite to isolate it (main page and 3D-Visualiser);
+          click it again — or empty space — to release.</li>
+        <li>The <strong>Observer City</strong> dropdown on the main page also has
+          <em>All cities</em> (union of all ten horizons) and a
+          <em>Mask non-Chinese</em> toggle.</li>
+        <li>On <strong>mobile</strong>, everything collapses into the ☰ MENU button at the
+          top-left.</li>
       </ul>
     </section>
 
@@ -357,7 +239,7 @@
          A wrong password simply fails GCM authentication.
          ========================================================= -->
     <section class="about-section" id="documents">
-      <h2>6 · Documents</h2>
+      <h2>Documents</h2>
       <p>
         Two companion documents are available for download. They are
         password-protected — the files are stored encrypted, and your
