@@ -8,6 +8,80 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=12">
+  <style>
+    /* Documents section — download rows + password gate.  Page-local
+       styles (same pattern as viz3d / sats-by-ops inline blocks). */
+    .doc-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      background: rgba(2, 6, 13, 0.55);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+    .doc-info { flex: 1; min-width: 0; }
+    .doc-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      color: var(--text);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .doc-desc { font-size: 12.5px; color: var(--dim); line-height: 1.5; }
+    .doc-btn {
+      flex: 0 0 auto;
+      padding: 9px 18px;
+      background: rgba(103, 232, 164, 0.16);
+      border: 1px solid var(--green);
+      border-radius: 4px;
+      color: var(--green);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background .15s, transform .15s;
+    }
+    .doc-btn:hover:not(:disabled) { background: rgba(103, 232, 164, 0.28); transform: translateY(-1px); }
+    .doc-btn:disabled { opacity: 0.5; cursor: wait; }
+    .doc-btn-ghost {
+      background: transparent;
+      border-color: var(--line);
+      color: var(--dim);
+    }
+    .doc-gate {
+      margin-top: 4px;
+      padding: 16px;
+      background: rgba(103, 200, 255, 0.06);
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+    }
+    .doc-gate-title { font-size: 13px; color: var(--text); margin-bottom: 10px; }
+    .doc-gate-title strong { color: var(--accent); font-weight: normal; }
+    .doc-gate-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .doc-gate-row input[type="password"] {
+      flex: 1 1 200px;
+      padding: 8px 10px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      outline: none;
+    }
+    .doc-gate-row input[type="password"]:focus { border-color: var(--accent); }
+    .doc-gate-status { margin-top: 10px; font-size: 12px; color: var(--dim); min-height: 16px; }
+    .doc-gate-status.err { color: var(--accent2); }
+    .doc-gate-status.ok  { color: var(--green); }
+    @media (max-width: 720px) {
+      .doc-row { flex-direction: column; align-items: stretch; }
+    }
+  </style>
 </head>
 <body class="page-about">
 
@@ -273,6 +347,53 @@
     </section>
 
     <!-- =========================================================
+         6 · Documents (password-protected downloads)
+
+         The PDFs are stored AES-256-GCM encrypted (docs/*.pdf.enc);
+         the password never appears anywhere in this repository.  On
+         a correct password the browser derives the key (PBKDF2,
+         200k iterations — must match encrypt-docs.mjs), decrypts in
+         memory via WebCrypto, and triggers a normal file download.
+         A wrong password simply fails GCM authentication.
+         ========================================================= -->
+    <section class="about-section" id="documents">
+      <h2>6 · Documents</h2>
+      <p>
+        Two companion documents are available for download. They are
+        password-protected — the files are stored encrypted, and your
+        browser decrypts them locally after you enter the password
+        (nothing is sent to any server).
+      </p>
+
+      <div class="doc-row">
+        <div class="doc-info">
+          <div class="doc-name">NAZAR — Annotated Code Walkthrough</div>
+          <div class="doc-desc">The complete deployed source code of every page, with explanatory notes on every section. 196 pages, PDF, ≈5.9 MB.</div>
+        </div>
+        <button type="button" class="doc-btn" data-file="docs/NAZAR-Code-Walkthrough.pdf.enc" data-name="NAZAR-Code-Walkthrough.pdf">⤓ Download</button>
+      </div>
+
+      <div class="doc-row">
+        <div class="doc-info">
+          <div class="doc-name">How NAZAR Works — plain-language guide</div>
+          <div class="doc-desc">Where the data comes from, how the globe and satellites are drawn, how each feature works and what is stored where — no programming knowledge required. 11 pages, PDF, ≈0.2 MB.</div>
+        </div>
+        <button type="button" class="doc-btn" data-file="docs/NAZAR-How-It-Works.pdf.enc" data-name="NAZAR-How-It-Works.pdf">⤓ Download</button>
+      </div>
+
+      <!-- Password dialog, shown when a download button is pressed. -->
+      <div class="doc-gate" id="doc-gate" hidden>
+        <div class="doc-gate-title">Enter password to download <strong id="doc-gate-file">…</strong></div>
+        <div class="doc-gate-row">
+          <input type="password" id="doc-gate-pw" placeholder="Password" autocomplete="off">
+          <button type="button" class="doc-btn" id="doc-gate-go">Unlock</button>
+          <button type="button" class="doc-btn doc-btn-ghost" id="doc-gate-cancel">Cancel</button>
+        </div>
+        <div class="doc-gate-status" id="doc-gate-status"></div>
+      </div>
+    </section>
+
+    <!-- =========================================================
          Closing
          ========================================================= -->
     <footer class="about-footer">
@@ -293,5 +414,94 @@
   </main>
 
   <script src="mobile-menu.js?v=4"></script>
+  <script>
+  // Password-gated document downloads.
+  //
+  // The PDFs in docs/ are AES-256-GCM encrypted; the layout of each .enc
+  // file is  'NZDOC1' (6 bytes) | salt (16) | iv (12) | ciphertext+tag.
+  // The key is derived from the password with PBKDF2-SHA256 at 200,000
+  // iterations — these parameters must stay in lock-step with the
+  // encrypt-docs.mjs build script.  Everything happens in the browser:
+  // a wrong password fails GCM authentication and nothing decrypts.
+  (function () {
+    const gate     = document.getElementById('doc-gate');
+    const gateFile = document.getElementById('doc-gate-file');
+    const pwInput  = document.getElementById('doc-gate-pw');
+    const goBtn    = document.getElementById('doc-gate-go');
+    const cancel   = document.getElementById('doc-gate-cancel');
+    const status   = document.getElementById('doc-gate-status');
+    let active = null;   // { file, name } of the requested document
+
+    function setStatus(msg, cls) {
+      status.textContent = msg;
+      status.className = 'doc-gate-status' + (cls ? ' ' + cls : '');
+    }
+
+    document.querySelectorAll('.doc-btn[data-file]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        active = { file: btn.dataset.file, name: btn.dataset.name };
+        gateFile.textContent = active.name;
+        gate.hidden = false;
+        setStatus('', '');
+        pwInput.value = '';
+        pwInput.focus();
+        gate.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    });
+
+    cancel.addEventListener('click', () => { gate.hidden = true; active = null; });
+    pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') goBtn.click(); });
+
+    goBtn.addEventListener('click', async () => {
+      if (!active) return;
+      const pw = pwInput.value;
+      if (!pw) { setStatus('Enter the password.', 'err'); return; }
+      goBtn.disabled = true;
+      try {
+        setStatus('Downloading encrypted file…');
+        const resp = await fetch(active.file, { cache: 'no-cache' });
+        if (!resp.ok) throw new Error('fetch failed (HTTP ' + resp.status + ')');
+        const buf = new Uint8Array(await resp.arrayBuffer());
+
+        // Parse the container.
+        const magic = new TextDecoder().decode(buf.subarray(0, 6));
+        if (magic !== 'NZDOC1') throw new Error('not a NAZAR document container');
+        const salt = buf.subarray(6, 22);
+        const iv   = buf.subarray(22, 34);
+        const body = buf.subarray(34);
+
+        setStatus('Decrypting…');
+        const baseKey = await crypto.subtle.importKey(
+          'raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+        const key = await crypto.subtle.deriveKey(
+          { name: 'PBKDF2', salt, iterations: 200000, hash: 'SHA-256' },
+          baseKey, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+        let plain;
+        try {
+          plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, body);
+        } catch {
+          setStatus('Incorrect password.', 'err');
+          return;
+        }
+
+        // Hand the decrypted bytes to the browser as a normal download.
+        const blob = new Blob([plain], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = active.name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+        setStatus('Unlocked — your download has started.', 'ok');
+      } catch (e) {
+        setStatus('Download failed: ' + e.message, 'err');
+      } finally {
+        goBtn.disabled = false;
+      }
+    });
+  })();
+  </script>
 </body>
 </html>
