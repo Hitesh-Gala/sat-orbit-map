@@ -9,6 +9,33 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=12">
   <style>
+    /* Creator credit — sits directly under the Hinglish tagline in the
+       hero, styled to be the first thing a visitor reads after the
+       brand.  Warm gold so it stands apart from the cyan data chrome. */
+    .about-credit {
+      margin: 0 0 22px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #ffd166;
+      text-shadow: 0 0 10px rgba(255, 209, 102, 0.35);
+    }
+    .about-credit strong {
+      color: #ffe9b0;
+      font-weight: 700;
+    }
+    .about-credit a {
+      color: #ffd166;
+      text-decoration: underline;
+      text-decoration-color: rgba(255, 209, 102, 0.45);
+      text-underline-offset: 3px;
+    }
+    .about-credit a:hover { text-decoration-color: #ffd166; }
+    @media (max-width: 720px) {
+      .about-credit { font-size: 10.5px; letter-spacing: 0.12em; }
+    }
+
     /* Documents section — download rows + password gate.  Page-local
        styles (same pattern as viz3d / sats-by-ops inline blocks). */
     .doc-row {
@@ -98,10 +125,13 @@
       <h1 class="about-brand">NAZAR</h1>
       <p class="about-tagline">Nonchalantly Assembled Zero-Budget Assessment of Chinese Reconnaissance</p>
       <p class="about-caveat">Kyon ki NAZAR lagni chahiye!</p>
+      <p class="about-credit">
+        Created by <strong>HD Gala</strong> · working in the space domain at the
+        <a href="https://takshashila.org.in/" target="_blank" rel="noopener noreferrer">Takshashila Institution</a>
+      </p>
       <p class="about-blurb">
         A free, open, browser-only satellite tracker that turns NORAD orbital data
-        into globes, maps, and click-through stories. Built at the
-        <a href="https://takshashila.org.in/" target="_blank" rel="noopener noreferrer">Takshashila Institution</a>.
+        into globes, maps, and click-through stories.
       </p>
       <div class="about-cta-row">
         <a class="about-cta primary" href="index.html">▶ Launch the live globe</a>
@@ -133,62 +163,87 @@
          ========================================================= -->
     <section class="about-section" id="tour">
       <h2>The tour</h2>
-      <ul class="feature-list">
-        <li><strong>1 · <a href="index.html">The main page</a></strong> does what it says:
-          pick a city in India (or all ten at once) and it shows you satellite
-          visibility <em>from that location, in real time</em>. The right-hand panel
-          splits the count into Chinese and non-Chinese satellites, a toggle can
-          mask everything non-Chinese, and the <code>Switch 2D-3D</code> button flips
-          between flat markers and true orbital altitudes. Click any satellite to see
-          the ground it covered over the past 30 minutes and the direction it is heading.</li>
+      <div class="page-grid">
 
-        <li><strong>2 · <a href="sat-stats.html">SAT-STATS</a></strong> (the ▦ button on the
-          right-hand panel) lists satellites from all over the world, sorted by country
-          of origin — pick India from the dropdown and see exactly how many of our space
-          vehicles are up there right now. Below the table sit graphs that give an
-          instinctive overview of the satellite world: there are <em>individual launch
-          sites</em> in the USA and China that have launched more rockets than the total
-          number of Indian satellites in space.</li>
+        <a class="page-card" href="index.html">
+          <div class="ico">◯</div>
+          <div class="name">1 · The Main Page</div>
+          <div class="desc">Does what it says: pick a city in India — or all ten at
+            once — and see satellite visibility <em>from that location, in real time</em>,
+            split into Chinese and non-Chinese. Click any satellite for the ground it
+            covered over the past 30 minutes and where it is heading.</div>
+        </a>
 
-        <li><strong>3 · The TLE Repository</strong> (the ⌗ button inside SAT-STATS) is the
-          technical corner: the raw Two-Line Elements of every satellite vehicle tracked,
-          with a layman's decoder underneath that explains what each character of a TLE
-          means. It might be fun to try and understand one.</li>
+        <a class="page-card" href="sat-stats.html">
+          <div class="ico">▦</div>
+          <div class="name">2 · SAT-STATS</div>
+          <div class="desc">Satellites from all over the world, sorted by country of
+            origin — pick India and see how many of our space vehicles are up there
+            right now. The graphs below are eye-opening: individual launch sites in the
+            USA and China have launched more rockets than India has satellites in space.</div>
+        </a>
 
-        <li><strong>4 · <a href="2d-views.html">2D-VIEW</a></strong> shows the same
-          real-time positions on a flat 2-D world map — the easiest view to screenshot.</li>
+        <a class="page-card" href="sat-stats.html">
+          <div class="ico">⌗</div>
+          <div class="name">3 · TLE Repository</div>
+          <div class="desc">The technical corner, inside SAT-STATS: the raw Two-Line
+            Elements of every satellite vehicle tracked, plus a layman's decoder that
+            explains what every character of a TLE means. Fun to try and read one.</div>
+        </a>
 
-        <li><strong>5 · <a href="chinrepo.html">CHINA-SAT-REPO</a></strong> is my attempt at
-          a sort of Wikipedia page: it untangles the names and nomenclature of Chinese
-          satellites (Yaogan vs Gaofen vs Shiyan…) for a layman, with a deeper
-          <a href="compendium.html">Compendium</a> of every major PRC programme attached.
-          It is meant for exploring.</li>
+        <a class="page-card" href="2d-views.html">
+          <div class="ico">⊞</div>
+          <div class="name">4 · 2D-View</div>
+          <div class="desc">The same real-time positions on a flat 2-D world map —
+            the easiest view to screenshot.</div>
+        </a>
 
-        <li><strong>6 · <a href="game-of-cones.html">GAME-OF-CONES</a></strong> is built for a
-          custom purpose. In <em>Land Cone</em> you pick a lat/long and define a cone of
-          visibility — the globe shows every satellite inside it, which makes it a handy tool
-          for working out what sits at which angles when you look skyward from a particular
-          location. It also has the inverse: <em>Sat Cone</em> visually displays a chosen
-          satellite's <em>look area</em> on the ground, with the sensor angle fully adjustable.</li>
+        <a class="page-card" href="chinrepo.html">
+          <div class="ico">★</div>
+          <div class="name">5 · China-Sat-Repo</div>
+          <div class="desc">My attempt at a sort of Wikipedia page: it untangles the
+            names and nomenclature of Chinese satellites (Yaogan vs Gaofen vs Shiyan…)
+            for a layman, with a deeper Compendium of every PRC programme attached.
+            Meant for exploring.</div>
+        </a>
 
-        <li><strong>7 · <a href="viz3d.html">3D-VISUALISER</a></strong> gives you an instinctive
-          <em>God's-eye view</em> of the entire catalogue — all ~16,000 satellites, at their true
-          altitudes, in real time, all at once. Clicking an individual satellite dims everything
-          else and draws its complete path in space — genuinely the coolest thing to watch here.</li>
+        <a class="page-card" href="game-of-cones.html">
+          <div class="ico">◭</div>
+          <div class="name">6 · Game-of-Cones</div>
+          <div class="desc">Pick a lat/long, define a cone of visibility, and see every
+            satellite inside it — a handy tool for what sits at which angles when you look
+            skyward. Also has the inverse: <em>Sat Cone</em> displays a satellite's
+            <em>look area</em> on the ground, with the sensor angle fully adjustable.</div>
+        </a>
 
-        <li><strong>8 · <a href="sats-by-ops.html">SATS-BY-OPS</a></strong> is the same God's-eye
-          view, but the satellites are differentiated by <em>operator</em>: pick a Maxar, a
-          Capella, an ICEYE — or all of Starlink, or the whole BeiDou constellation — and see
-          exactly where their fleets are right now. Hover an operator's name and its satellites
-          pulse on the globe.</li>
+        <a class="page-card" href="viz3d.html">
+          <div class="ico">⬢</div>
+          <div class="name">7 · 3D-Visualiser</div>
+          <div class="desc">An instinctive <em>God's-eye view</em> of the entire
+            catalogue — all ~16,000 satellites, at true altitude, in real time, all at
+            once. Click one and it draws its complete path in space — genuinely the
+            coolest thing to watch here.</div>
+        </a>
 
-        <li><strong>9 · Saved the quirkiest for last 😄 — <a href="orbits.html">PLAY NAZAR</a></strong>.
-          Early attempts at tracing live orbits produced some unforeseen glitches that were,
-          frankly, beautiful to look at. So I added a soundtrack: press the ♪ <em>Play NAZAR</em>
-          button on the Orbit Visualisation page and the screen goes full-bleed while the whole
-          globe gyrates to the same BPM as the track. An entirely not-useful feature — and the
-          most fun one to build.</li>
-      </ul>
+        <a class="page-card" href="sats-by-ops.html">
+          <div class="ico">⊕</div>
+          <div class="name">8 · SATs-by-OPs</div>
+          <div class="desc">The God's-eye view, differentiated by <em>operator</em>:
+            pick a Maxar, a Capella, an ICEYE — or all of Starlink, or the whole BeiDou
+            constellation — and watch their fleets live. Hover an operator's name and
+            its satellites pulse on the globe.</div>
+        </a>
+
+        <a class="page-card" href="orbits.html">
+          <div class="ico">♪</div>
+          <div class="name">9 · Play NAZAR</div>
+          <div class="desc">Saved the quirkiest for last 😄 — early orbit-tracing
+            glitches were too beautiful to delete, so they got a soundtrack. Press
+            ♪ <em>Play NAZAR</em> and the screen goes full-bleed while the globe gyrates
+            to the track's BPM. Entirely not-useful — and the most fun to build.</div>
+        </a>
+
+      </div>
     </section>
 
     <!-- =========================================================
@@ -239,7 +294,7 @@
          A wrong password simply fails GCM authentication.
          ========================================================= -->
     <section class="about-section" id="documents">
-      <h2>Documents</h2>
+      <h2>Documentation</h2>
       <p>
         Two companion documents are available for download. They are
         password-protected — the files are stored encrypted, and your
