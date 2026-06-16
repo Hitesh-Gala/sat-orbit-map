@@ -551,7 +551,7 @@ body.light .topbar .sub { color: var(--dim); }
   padding: 0 12px;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
   /* Not enough horizontal space to leave 150 px gutters on each side, so
      the ticker drops above the ChinRepo button and uses the full width. */
   .news-ticker {
@@ -722,7 +722,7 @@ body.hud-open  .float-toggle.data-toggle {
   background: rgba(103, 200, 255, 0.18);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
   /* Topbar squeezed between the MENU button (top-left) and Takshashila
      logo (top-right) — clear the 88 px the button needs on the left
      and ~110 px the logo needs on the right. */
@@ -753,34 +753,37 @@ body.hud-open  .float-toggle.data-toggle {
 .mobile-backdrop,
 .mobile-drawer { display: none; }
 
-@media (max-width: 720px) {
-  /* ☰ MENU button — top-left, primary CTA chrome. */
+/* PHONE breakpoint — kept identical to PHONE_MQ in mobile-menu.js so the
+   injected chrome is always styled.  The second arm catches landscape
+   phones (short height) that exceed 720 px wide. */
+@media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
+  /* ☰ MENU button — top-left, compact pill. */
   .mobile-menu-btn {
     position: fixed;
-    top: 8px;
-    left: 8px;
+    top: 7px;
+    left: 7px;
     z-index: 100;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
+    gap: 5px;
+    padding: 5px 9px;
     background: rgba(2, 6, 13, 0.88);
     border: 1px solid var(--accent);
-    border-radius: 6px;
+    border-radius: 5px;
     color: var(--accent);
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 600;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     text-shadow: 0 0 8px rgba(103, 200, 255, 0.5);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
     cursor: pointer;
     transition: background .15s;
   }
-  .mobile-menu-btn .ico { font-size: 14px; line-height: 1; }
+  .mobile-menu-btn .ico { font-size: 12px; line-height: 1; }
   body.menu-open .mobile-menu-btn { background: rgba(103, 200, 255, 0.28); }
 
   /* Backdrop dims + blurs the globe while the drawer is open. */
@@ -803,10 +806,10 @@ body.hud-open  .float-toggle.data-toggle {
      taller than the viewport. */
   .mobile-drawer {
     position: fixed;
-    top: 52px;
+    top: 44px;
     left: 8px;
     width: calc(100vw - 16px);
-    max-height: calc(100vh - 70px);
+    max-height: calc(100vh - 56px);
     z-index: 96;
     display: flex;
     flex-direction: column;
@@ -867,11 +870,30 @@ body.hud-open  .float-toggle.data-toggle {
   /* Each .panel inside a drawer gets full width and reasonable padding. */
   .mobile-drawer .panel {
     width: 100%;
-    padding: 10px 12px;
+    padding: 9px 11px;
+  }
+  /* Navigation launchers as a tidy 2-column grid instead of seven tall
+     full-width rows — much less "ungainly".  Overrides the column-flex
+     reset above (same specificity, later in source → wins). */
+  .mobile-drawer > .left-nav {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
   }
   .mobile-drawer .btn-nav,
   .mobile-drawer .btn-back,
-  .mobile-drawer .btn-nazar { width: 100%; justify-content: flex-start; }
+  .mobile-drawer .btn-nazar {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 7px 9px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    border-radius: 5px;
+  }
+  .mobile-drawer .btn-nav-icon { font-size: 13px; }
+  /* The theme toggle (if present) spans both columns so it reads as a
+     full-width control, not a stray half-button. */
+  .mobile-drawer > .left-nav .btn-theme { grid-column: 1 / -1; }
 
   /* News ticker covers the bottom strip — keep it visible but slim. */
   .news-ticker { font-size: 10px; }
@@ -914,7 +936,7 @@ body.hud-open  .float-toggle.data-toggle {
   .left-nav   { top:    calc(86px + env(safe-area-inset-top));    left:   max(8px, env(safe-area-inset-left)); }
   .btn-bl     { left:   max(8px,  env(safe-area-inset-left));   bottom: max(8px,  env(safe-area-inset-bottom)); }
   .news-ticker{ bottom: max(14px, env(safe-area-inset-bottom)); }
-  @media (max-width: 720px) {
+  @media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
     .news-ticker { bottom: calc(60px + env(safe-area-inset-bottom)); }
   }
 }
@@ -1052,7 +1074,7 @@ body.hud-open  .float-toggle.data-toggle {
   text-shadow: 0 0 10px rgba(251, 200, 20, 0.45);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
   .flash-popup {
     padding: 50px 28px 22px;
     width: calc(100vw - 24px);
@@ -1324,7 +1346,7 @@ body.page-about #globe { display: none; }
 .about-footer .about-cta-row { margin-top: 24px; }
 
 /* --- Mobile -------------------------------------------------------- */
-@media (max-width: 720px) {
+@media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
   .about-shell  { padding: 70px 14px 50px; }
   .about-brand  { font-size: 38px; letter-spacing: 0.18em; }
   .about-tagline{ font-size: 10px; }
@@ -1406,7 +1428,7 @@ body.light .btn-sbo .btn-nav-icon { color: #d35400; text-shadow: none; }
   color: var(--green);
   text-shadow: 0 0 8px rgba(103, 232, 164, 0.55);
 }
-@media (max-width: 720px) {
+@media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
   /* Stack neatly below the ☰ MENU drawer-toggle (top:8 left:8, z=100)
      so the two top-left controls don't overlap. */
   .top-nazar-btn {
@@ -1504,8 +1526,11 @@ body.page-sbo #globe {
   width: auto;
   height: auto;
 }
-@media (max-width: 720px) {
-  body.page-sbo #globe { left: 0; width: 100%; }
+/* On phones the panel collapses into the drawer, so the globe reclaims
+   the whole viewport and sits centred.  PHONE breakpoint (incl. landscape
+   phones) — must match mobile-menu.js. */
+@media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
+  body.page-sbo #globe { left: 0; right: 0; width: 100%; }
 }
 
 /* --- NAZAR back-button — primary CTA style used on china-sat-repo
@@ -1583,7 +1608,7 @@ body.page-stats .repo-header,
 body.page-2d    .page-2d-header { padding-right: 180px; }
 body.page-compendium .header-inner { padding-right: 180px; }
 
-@media (max-width: 720px) {
+@media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
   /* Smaller, tighter logo panel on phones — drops below the drawer
      so the open menu visually sits in front of it.  The legacy
      MENU/DATA pill conflict no longer applies; mobile-menu.js owns
@@ -1635,33 +1660,118 @@ body.page-compendium .header-inner { padding-right: 180px; }
 .sat-tip-3d strong { color: var(--accent); font-weight: normal; font-variant-numeric: tabular-nums; }
 .sat-tip-3d .muted { color: var(--dim); }
 
-/* --- Game of Cones page ------------------------------------------------- */
-/* The page only has a single nav button (Globe back-link) and no menu-pill
-   toggle, so override the 720-px drawer rule that hides .left-nav by
-   default — otherwise mobile users would be stranded with no way back. */
-@media (max-width: 720px) {
-  body.page-goc .left-nav,
-  body.page-viz3d .left-nav {
-    display: flex;
-    top: 8px;
-    left: 8px;
-    background: transparent;
-    border: 0;
-    padding: 0;
+/* =======================================================================
+   Slider pages — Game of Cones, 3-D Visualiser, SATs-by-OPs.
+
+   These pages have live controls (cones, altitude / size sliders,
+   operator pulses) whose whole point is watching the globe react as you
+   drag.  So when their drawer is open it must NOT cover or dim the
+   globe: the backdrop becomes a no-op, and the drawer shrinks to a
+   side panel (landscape) or a bottom sheet (portrait), leaving the
+   globe visible and live beside it.
+
+   PHONE breakpoint — must match mobile-menu.js.
+   ======================================================================= */
+@media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
+  /* Globe stays full-viewport and centred underneath. */
+  body.page-goc #globe,
+  body.page-viz3d #globe { position: fixed; inset: 0; }
+
+  /* Backdrop must never hide the globe on these pages — keep it fully
+     transparent and click-through so the globe stays draggable while
+     the controls are open.  The ☰ / ✕ button closes the drawer. */
+  body.page-goc   .mobile-backdrop,
+  body.page-viz3d .mobile-backdrop,
+  body.page-sbo   .mobile-backdrop {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    pointer-events: none !important;
   }
-  body.page-goc .goc-shell {
-    top: 56px;
-    left: 8px;
-    width: calc(100vw - 16px);
-    max-height: calc(100vh - 120px);
+
+  /* Drawer as a translucent side panel (landscape) — globe sits to its
+     right and updates live as sliders move. */
+  body.page-goc   .mobile-drawer,
+  body.page-viz3d .mobile-drawer,
+  body.page-sbo   .mobile-drawer {
+    width: min(330px, 46vw);
+    right: auto;
+    background: rgba(2, 6, 13, 0.82);
   }
-  body.page-viz3d .viz-shell {
-    top: 56px;
-    left: 8px;
-    width: calc(100vw - 16px);
-    max-height: calc(100vh - 120px);
+
+  /* Portrait phone — a bottom sheet instead, so the globe owns the top
+     of the screen.  (Most users will be nudged to landscape, but this
+     keeps portrait usable.) */
+  @media (orientation: portrait) {
+    body.page-goc   .mobile-drawer,
+    body.page-viz3d .mobile-drawer,
+    body.page-sbo   .mobile-drawer {
+      top: auto;
+      bottom: 8px;
+      left: 8px;
+      width: calc(100vw - 16px);
+      max-height: 46vh;
+    }
   }
 }
+
+/* =======================================================================
+   Rotate-to-landscape prompt (mobile-menu.js, globe pages, portrait).
+   ======================================================================= */
+.rotate-prompt {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 32px;
+  text-align: center;
+  background: rgba(2, 6, 13, 0.96);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.rotate-prompt .rotate-icon {
+  font-size: 56px;
+  line-height: 1;
+  color: var(--accent);
+  text-shadow: 0 0 18px rgba(103, 200, 255, 0.6);
+  animation: rotate-hint 2.4s ease-in-out infinite;
+}
+@keyframes rotate-hint {
+  0%, 60%   { transform: rotate(0deg); }
+  80%, 100% { transform: rotate(90deg); }
+}
+.rotate-prompt .rotate-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.rotate-prompt .rotate-sub {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--dim);
+  max-width: 280px;
+  line-height: 1.5;
+}
+.rotate-prompt .rotate-dismiss {
+  margin-top: 8px;
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+.rotate-prompt .rotate-dismiss:hover { border-color: var(--accent); color: var(--accent); }
 
 /* --- SAT-STATS launcher on the main-page tracking-summary panel.
    Sits below the count + as-of date, hugs the panel chrome, and styles
@@ -1954,7 +2064,7 @@ body.page-stats .repo-header .brand {
 }
 .chart-card.chart-wide .chart-box { height: 240px; }
 
-@media (max-width: 720px) {
+@media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
   .stats-tabs { padding: 8px 12px 0; }
   .stats-tabs button { padding: 6px 12px; font-size: 10px; }
   .stats-table-wrap { padding: 0 12px 12px; }
@@ -2076,7 +2186,7 @@ table.repo-table {
    without trying to shoehorn 9 wide columns; horizontal scroll inside
    .repo-table-wrap takes over.  Header and toolbar wrap to two/three
    rows so the search field and pills stay full-width and tappable. */
-@media (max-width: 720px) {
+@media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
   .repo-header   { padding: 10px 12px; gap: 8px; }
   .repo-header .brand { font-size: 11px; letter-spacing: 0.14em; }
   .repo-toolbar  { padding: 10px 12px; gap: 10px; }
@@ -2646,7 +2756,7 @@ body.page-2d .map-cell .map-sub {
   font-size: 12px;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
   .tle-modal { padding: 8px; }
   .tle-modal-card { height: 100%; }
   .tle-modal-header { padding: 10px 12px; }

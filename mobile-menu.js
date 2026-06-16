@@ -47,7 +47,15 @@
 // positions and the button + backdrop are absent.
 
 (function () {
-  const MOBILE_MQ = window.matchMedia('(max-width: 720px)');
+  // "Phone" = narrow OR short-and-not-wide.  The second arm catches
+  // landscape phones, whose width (e.g. 844 px on an iPhone) sails past
+  // the old 720-px cut-off and used to drop them into the DESKTOP
+  // layout.  Their height (~390–430 px) is what gives them away.  The
+  // max-width:950 guard keeps landscape tablets (height ≥ 768) on the
+  // desktop layout.  This string must stay identical to the matching
+  // CSS media queries in styles.css.
+  const PHONE_MQ = '(max-width: 720px), (max-height: 500px) and (max-width: 950px)';
+  const MOBILE_MQ = window.matchMedia(PHONE_MQ);
 
   // Order matters: this is the top-to-bottom stacking order inside the
   // drawer.  Navigation first, then page-specific controls, then HUD.
@@ -55,6 +63,7 @@
     '.left-nav',
     '.viz-shell',
     '.goc-shell',
+    '.sbo-shell',
     '.hud-tl',
     '.hud-tr',
     '.repo-header .right',
@@ -170,4 +179,51 @@
   // is needed for Safari < 14.
   if (MOBILE_MQ.addEventListener) MOBILE_MQ.addEventListener('change', apply);
   else                            MOBILE_MQ.addListener(apply);
+
+  // -------------------------------------------------------------------------
+  // Rotate-to-landscape prompt.
+  //
+  // The globe is the star of every visual page, and it has far more room
+  // in landscape.  A web page can't force a device to rotate (no API does
+  // this reliably, and iOS Safari blocks it outright), so instead we show
+  // a gentle full-screen hint while a globe page is held in portrait.  It
+  // auto-vanishes the moment the phone is turned to landscape, and the
+  // user can dismiss it to read in portrait anyway (remembered for the
+  // session).  Only appears on pages that actually have a globe.
+  // -------------------------------------------------------------------------
+  (function rotatePrompt() {
+    if (!document.getElementById('globe')) return;   // text pages read fine upright
+
+    const PORTRAIT_MQ = window.matchMedia(
+      '(orientation: portrait) and (max-width: 720px), ' +
+      '(orientation: portrait) and (max-height: 950px) and (pointer: coarse)');
+    let el = null;
+
+    function dismissed() {
+      try { return sessionStorage.getItem('nazar.rotate.dismissed') === '1'; } catch { return false; }
+    }
+    function build() {
+      if (el) return;
+      el = document.createElement('div');
+      el.className = 'rotate-prompt';
+      el.innerHTML =
+        '<div class="rotate-icon" aria-hidden="true">↻</div>' +
+        '<div class="rotate-title">Rotate your device</div>' +
+        '<div class="rotate-sub">NAZAR’s globe is best viewed in landscape.</div>' +
+        '<button type="button" class="rotate-dismiss">View in portrait anyway</button>';
+      el.querySelector('.rotate-dismiss').addEventListener('click', () => {
+        try { sessionStorage.setItem('nazar.rotate.dismissed', '1'); } catch {}
+        teardown();
+      });
+      document.body.appendChild(el);
+    }
+    function teardown() { if (el) { el.remove(); el = null; } }
+    function sync() {
+      if (PORTRAIT_MQ.matches && !dismissed()) build();
+      else teardown();
+    }
+    sync();
+    if (PORTRAIT_MQ.addEventListener) PORTRAIT_MQ.addEventListener('change', sync);
+    else                              PORTRAIT_MQ.addListener(sync);
+  })();
 })();
