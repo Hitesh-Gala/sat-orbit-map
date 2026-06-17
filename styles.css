@@ -913,6 +913,39 @@ body.hud-open  .float-toggle.data-toggle {
   .top-logo { z-index: 50; }
 }
 
+/* =======================================================================
+   Keep the globe visible behind / beside the open drawer.
+
+   .has-globe is set by mobile-menu.js on any page with a #globe.  The
+   default drawer dims the globe to black; on globe pages we never want
+   that.  The main page (.page-main) gets a top sheet that leaves the
+   lower strip of globe showing (and the globe shows through as you
+   scroll the menu); the other globe pages re-centre the globe into the
+   open area (handled in the slider-pages block further down).
+
+   PHONE breakpoint — must match mobile-menu.js.
+   ======================================================================= */
+@media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
+  /* Globe pages: backdrop never paints a black wall over the globe.  It
+     stays click-to-close (pointer-events auto) on the main page; the
+     slider-pages block flips it to pass-through where live interaction
+     with the globe is wanted. */
+  body.has-globe .mobile-backdrop {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Main page — the menu is long (nav + full HUD), so make it a top
+     sheet capped to 74 % height that scrolls internally.  The bottom
+     quarter of the screen always shows the live globe, and the globe
+     also glows faintly through the translucent sheet. */
+  body.page-main .mobile-drawer {
+    max-height: 74vh;
+    background: rgba(2, 6, 13, 0.92);
+  }
+}
+
 @media (max-width: 600px) {
   /* Inside-drawer tweaks only — geometry (transform / position) is
      handled by the 720-px drawer block above, not duplicated here. */
@@ -1661,56 +1694,62 @@ body.page-compendium .header-inner { padding-right: 180px; }
 .sat-tip-3d .muted { color: var(--dim); }
 
 /* =======================================================================
-   Slider pages — Game of Cones, 3-D Visualiser, SATs-by-OPs.
+   Secondary globe pages — Orbit Visualisation, Game of Cones, 3-D
+   Visualiser, SATs-by-OPs (every globe page except the main one).
 
-   These pages have live controls (cones, altitude / size sliders,
-   operator pulses) whose whole point is watching the globe react as you
-   drag.  So when their drawer is open it must NOT cover or dim the
-   globe: the backdrop becomes a no-op, and the drawer shrinks to a
-   side panel (landscape) or a bottom sheet (portrait), leaving the
-   globe visible and live beside it.
+   These pages have a single centred globe (some with live slider /
+   cone controls whose whole point is watching the globe react as you
+   drag).  When their drawer opens it must NOT cover the globe: the
+   backdrop goes pass-through, the drawer shrinks to a side panel
+   (landscape) or bottom sheet (portrait), AND the globe is shifted so
+   its whole sphere re-centres in the open area beside / above the
+   drawer instead of hiding behind it.  The shift is purely visual — the
+   pages' own pointer maths read getBoundingClientRect, which already
+   accounts for the transform, so clicking / dragging stays accurate.
 
    PHONE breakpoint — must match mobile-menu.js.
    ======================================================================= */
 @media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
-  /* Globe stays full-viewport and centred underneath. */
-  body.page-goc #globe,
-  body.page-viz3d #globe { position: fixed; inset: 0; }
+  /* Globe fills the viewport; the recentre transform animates smoothly. */
+  body.has-globe:not(.page-main) #globe {
+    position: fixed;
+    inset: 0;
+    transition: transform .25s ease;
+  }
 
-  /* Backdrop must never hide the globe on these pages — keep it fully
-     transparent and click-through so the globe stays draggable while
-     the controls are open.  The ☰ / ✕ button closes the drawer. */
-  body.page-goc   .mobile-backdrop,
-  body.page-viz3d .mobile-backdrop,
-  body.page-sbo   .mobile-backdrop {
+  /* Pass-through transparent backdrop → globe stays visible AND
+     draggable while the controls are open.  The ☰ / ✕ button closes. */
+  body.has-globe:not(.page-main) .mobile-backdrop {
     background: transparent !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     pointer-events: none !important;
   }
 
-  /* Drawer as a translucent side panel (landscape) — globe sits to its
-     right and updates live as sliders move. */
-  body.page-goc   .mobile-drawer,
-  body.page-viz3d .mobile-drawer,
-  body.page-sbo   .mobile-drawer {
+  /* Landscape — drawer is a translucent left side panel; the globe
+     slides right by half the panel width so the sphere sits centred in
+     the clear area on the right. */
+  body.has-globe:not(.page-main) .mobile-drawer {
     width: min(330px, 46vw);
     right: auto;
     background: rgba(2, 6, 13, 0.82);
   }
+  body.has-globe:not(.page-main).menu-open #globe {
+    transform: translateX(calc(min(330px, 46vw) / 2));
+  }
 
-  /* Portrait phone — a bottom sheet instead, so the globe owns the top
-     of the screen.  (Most users will be nudged to landscape, but this
-     keeps portrait usable.) */
+  /* Portrait — drawer is a bottom sheet; the globe slides up so the
+     sphere centres in the clear area above it. */
   @media (orientation: portrait) {
-    body.page-goc   .mobile-drawer,
-    body.page-viz3d .mobile-drawer,
-    body.page-sbo   .mobile-drawer {
+    body.has-globe:not(.page-main) .mobile-drawer {
       top: auto;
       bottom: 8px;
       left: 8px;
       width: calc(100vw - 16px);
       max-height: 46vh;
+    }
+    body.has-globe:not(.page-main).menu-open #globe {
+      transform: translateY(-23vh);
     }
   }
 }

@@ -71,6 +71,12 @@
     '.header-inner .header-right',
   ];
 
+  // Tag globe pages so the CSS can keep the globe visible behind / beside
+  // the open drawer (a black void where the globe used to be is jarring).
+  // The mobile-menu.js script tag sits at the end of <body>, so the body
+  // exists by now.
+  if (document.getElementById('globe')) document.body.classList.add('has-globe');
+
   let menuBtn = null;
   let backdrop = null;
   let drawer = null;
@@ -193,6 +199,7 @@
   // -------------------------------------------------------------------------
   (function rotatePrompt() {
     if (!document.getElementById('globe')) return;   // text pages read fine upright
+    if (document.body.classList.contains('page-main')) return;  // main page is built for portrait too
 
     const PORTRAIT_MQ = window.matchMedia(
       '(orientation: portrait) and (max-width: 720px), ' +
@@ -225,5 +232,33 @@
     sync();
     if (PORTRAIT_MQ.addEventListener) PORTRAIT_MQ.addEventListener('change', sync);
     else                              PORTRAIT_MQ.addListener(sync);
+  })();
+
+  // -------------------------------------------------------------------------
+  // Maximise the globe: enter fullscreen on the first touch.
+  //
+  // A page can't go fullscreen on load (browsers require a user gesture),
+  // so we arm a one-shot listener for the first tap on a globe page and
+  // request fullscreen then.  Where supported (Android Chrome etc.) this
+  // hides the browser chrome and hands all that height to the globe.
+  // Skipped on the Orbit Visualisation page, which runs its own immersive
+  // fullscreen via the Play-NAZAR button, and on iOS where the element
+  // Fullscreen API is unavailable (the try/catch makes it a silent no-op).
+  // -------------------------------------------------------------------------
+  (function fullscreenOnFirstTap() {
+    if (!document.getElementById('globe')) return;           // visual pages only
+    if (document.getElementById('nazar-audio')) return;      // orbits owns its own fullscreen
+    if (!window.matchMedia('(pointer: coarse)').matches) return;  // touch devices only
+    const el = document.documentElement;
+    if (!el.requestFullscreen && !el.webkitRequestFullscreen) return;
+
+    function go() {
+      window.removeEventListener('pointerdown', go);
+      try {
+        if (document.fullscreenElement) return;
+        (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+      } catch { /* unsupported / blocked — leave the page as-is */ }
+    }
+    window.addEventListener('pointerdown', go, { once: true, passive: true });
   })();
 })();
