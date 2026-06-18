@@ -6,6 +6,20 @@
 // the backdrop, or the Escape key.
 
 (function () {
+  // Show only on a genuine load / refresh of the main page — never when
+  // the user arrives by clicking through from a sub-page.  An in-site
+  // navigation carries one of our own pages as the referrer; a fresh
+  // load (typed URL, bookmark, external link) has an empty / external
+  // referrer, and a refresh reports navigation type "reload".  If any
+  // of these APIs is unavailable we fall through and show the popup.
+  try {
+    const navEntry = performance.getEntriesByType('navigation')[0];
+    const isReload = navEntry ? navEntry.type === 'reload' : false;
+    const fromSameSite = !!document.referrer &&
+      new URL(document.referrer).host === location.host;
+    if (fromSameSite && !isReload) return;   // came in from a sub-page → no popup
+  } catch { /* fall through and show */ }
+
   const TITLE          = 'NAZAR';
   const SUBTITLE       = 'YOUR EYE ON SATELLITES IN THE SKY';
   const AUTO_CLOSE_MS  = 10_000;
