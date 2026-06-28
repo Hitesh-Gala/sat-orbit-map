@@ -531,18 +531,30 @@ function loadDB() {
     return JSON.parse(raw) || {};
   } catch { return {}; }
 }
+function trySetDB(obj) {
+  try { localStorage.setItem(DB_KEY, JSON.stringify(obj)); return true; }
+  catch { return false; }
+}
 function saveDB(db) {
-  try { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
-  catch (e) {
-    // If we blow past localStorage quota, drop satellites with no
-    // SATCAT enrichment first (they carry the least info) and retry.
-    console.warn('DB write failed (quota?):', e.message);
-    const keys = Object.keys(db);
-    for (let i = 0; i < keys.length && i < 500; i++) {
-      const k = keys[i];
-      if (!db[k].owner) delete db[k];
-    }
-    try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch {}
+  if (trySetDB(db)) return;
+  // Over localStorage quota.  Persist a trimmed COPY so the in-memory `db`
+  // — and therefore the cumulative count shown on the page — stays complete
+  // for this session.  (The old code deleted records from `db` itself,
+  // which silently shrank the cumulative total the user sees.)
+  console.warn('SatStats DB exceeds localStorage quota — persisting a trimmed copy; full catalogue kept in memory for this session.');
+  const trimmed = { ...db };
+  // 1) Drop records with no SATCAT enrichment first (least info), oldest first.
+  const unenriched = Object.keys(trimmed)
+    .filter(k => !trimmed[k].owner)
+    .sort((a, b) => (trimmed[a].lastSeen || 0) - (trimmed[b].lastSeen || 0));
+  for (const k of unenriched) delete trimmed[k];
+  if (trySetDB(trimmed)) return;
+  // 2) Still too big — shed the oldest-seen enriched records in batches.
+  const byAge = Object.keys(trimmed)
+    .sort((a, b) => (trimmed[a].lastSeen || 0) - (trimmed[b].lastSeen || 0));
+  for (let i = 0; i < byAge.length; i += 1000) {
+    for (let j = i; j < i + 1000 && j < byAge.length; j++) delete trimmed[byAge[j]];
+    if (trySetDB(trimmed)) return;
   }
 }
 
@@ -950,6 +962,8 @@ $('tab-graphs').addEventListener('click', () => activateTab('graphs'));
 // =========================================================================
 
 let db = {};
+let lastTLEs = [];      // live/bundled TLE set from the last boot — feeds the PDF
+let lastSourceTag = ''; // human label of where those TLEs came from
 
 async function boot() {
   setStatus('Loading TLE catalogue + SATCAT…');
@@ -972,11 +986,15 @@ async function boot() {
   const tleTag = tleSource === 'celestrak' ? 'live'
               : tleSource === 'cache'    ? 'cached'
               : 'bundled snapshot';
+  lastTLEs = tles;
+  lastSourceTag = tleTag;
   setStatus(`${tles.length.toLocaleString()} TLEs (${tleTag}) · ${satrec.length.toLocaleString()} SATCAT (${scSource}) · cumulative ${Object.keys(db).length.toLocaleString()} sats (+${added} new)`);
 
   populateOwnerDropdown(db);
   renderTable(db);
   renderCharts(db);
+
+  enablePdfButton();   // page is fully loaded — the PDF export can now run
 }
 
 $('filter').addEventListener('input', () => { currentPage = 0; renderTable(db); });
@@ -1176,6 +1194,169 @@ function renderTleModalRows() {
     });
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && !$('tle-repo-modal').hidden) closeTleRepo();
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bind);
+  } else {
+    bind();
+  }
+})();
+
+// =========================================================================
+// PDF export — "download-ready" snapshot of the catalogue + every TLE the
+// page is propagating from, date/time-stamped.  Wired to #pdf-btn, which
+// boot() un-disables once the page has fully loaded.
+//
+// Uses jsPDF + jspdf-autotable (loaded from CDN in sat-stats.html).  The
+// body is built from `filteredRows` — i.e. exactly what the table is
+// showing (honouring any active country/search filter) — joined to the
+// raw TLE lines by NORAD ID.
+// =========================================================================
+
+function enablePdfButton() {
+  const btn = $('pdf-btn');
+  if (!btn) return;
+  btn.disabled = false;
+  btn.textContent = '⬇ PDF';
+  btn.title = 'Download a date-stamped PDF of the whole catalogue, including every TLE';
+}
+
+// Two clock-aligned strings for the cover stamp: UTC and IST (the site's
+// reference zones), plus a compact filename token from local time.
+function pdfStamps() {
+  const now = new Date();
+  const utc = now.toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+  const ist = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'medium',
+  }).format(now) + ' IST';
+  const p = n => String(n).padStart(2, '0');
+  const file = `${now.getFullYear()}${p(now.getMonth() + 1)}${p(now.getDate())}`
+             + `-${p(now.getHours())}${p(now.getMinutes())}`;
+  return { utc, ist, file };
+}
+
+function generateSatStatsPDF() {
+  const JsPDF = window.jspdf && window.jspdf.jsPDF;
+  if (!JsPDF) { alert('PDF library is still loading — please try again in a moment.'); return; }
+  if (!filteredRows.length) { alert('No satellites to export yet — let the page finish loading.'); return; }
+
+  // NORAD → raw TLE lines, from the live/bundled set captured at boot.
+  const tleByNorad = new Map();
+  for (const t of lastTLEs) tleByNorad.set(t.noradId, t);
+
+  const stamp = pdfStamps();
+  const ownerFilter = $('filter-owner')?.value || '';
+  const searchTerm  = $('filter')?.value.trim() || '';
+  const filterNote  = [
+    ownerFilter ? `Country = ${COUNTRY[ownerFilter]?.name || ownerFilter}` : '',
+    searchTerm  ? `Search = "${searchTerm}"` : '',
+  ].filter(Boolean).join('   ·   ') || 'No filter — full cumulative catalogue';
+
+  let withTle = 0;
+  const body = filteredRows.map(r => {
+    const t = tleByNorad.get(r.noradId);
+    let tleCell = '—';
+    if (t && t.l1 && t.l2) {
+      withTle++;
+      const epoch = parseTLEEpoch(t.l1);
+      const epochTag = epoch ? `epoch ${epoch.toISOString().slice(0, 10)}` : '';
+      tleCell = `${t.l1}\n${t.l2}${epochTag ? '\n' + epochTag : ''}`;
+    }
+    return [
+      r.name,
+      String(r.noradId),
+      r.intlId || '—',
+      COUNTRY[r.owner]?.name || r.owner || '—',
+      (typeof LAUNCH_SITE !== 'undefined' && LAUNCH_SITE[r.launchSite]?.name) || r.launchSite || '—',
+      r.decayed ? 'DECAYED' : 'ACTIVE',
+      tleCell,
+    ];
+  });
+
+  const doc = new JsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+
+  // ---- Cover block (drawn on page 1 above the table) -----------------
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.setTextColor(20, 28, 42);
+  doc.text('NAZAR · SatStats Cumulative Catalogue', 12, 16);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(70, 80, 95);
+  doc.text(`Generated  ${stamp.utc}   ·   ${stamp.ist}`, 12, 23);
+  doc.text(
+    `Satellites: ${filteredRows.length.toLocaleString()}   ·   `
+    + `With current TLE: ${withTle.toLocaleString()}   ·   `
+    + `TLE source: ${lastSourceTag || 'snapshot'}`,
+    12, 28.5,
+  );
+  doc.text(filterNote, 12, 34);
+
+  // ---- The table -----------------------------------------------------
+  doc.autoTable({
+    startY: 39,
+    head: [['Name', 'NORAD', "Int'l ID", 'Country', 'Launch Site', 'Status', 'TLE  (line 1 / line 2 / epoch)']],
+    body,
+    theme: 'striped',
+    margin: { left: 8, right: 8 },
+    styles: { fontSize: 6, cellPadding: 1, overflow: 'linebreak', valign: 'top', textColor: [25, 33, 46] },
+    headStyles: { fillColor: [13, 27, 42], textColor: [220, 232, 245], fontSize: 6.5 },
+    alternateRowStyles: { fillColor: [244, 247, 251] },
+    columnStyles: {
+      0: { cellWidth: 48 },
+      1: { cellWidth: 15 },
+      2: { cellWidth: 20 },
+      3: { cellWidth: 34 },
+      4: { cellWidth: 32 },
+      5: { cellWidth: 16 },
+      6: { cellWidth: 'auto', font: 'courier', fontSize: 5, textColor: [40, 60, 90] },
+    },
+    didDrawPage: data => {
+      // Footer: page number + the same generation stamp on every page.
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(120, 130, 145);
+      const page = doc.internal.getNumberOfPages();
+      doc.text(`NAZAR · generated ${stamp.utc}`, 8, pageH - 4);
+      doc.text(`Page ${data.pageNumber} of ${page}`, pageW - 8, pageH - 4, { align: 'right' });
+    },
+  });
+
+  doc.save(`NAZAR-SatStats-${stamp.file}.pdf`);
+}
+
+// Bind the export button.  The heavy autotable build blocks the main
+// thread, so flip the label to "Generating…" and yield one frame before
+// starting so the browser actually paints that state first.
+(function bindPdf() {
+  function bind() {
+    const btn = $('pdf-btn');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      // A full-catalogue export is ~1 page per 10 satellites and can run to
+      // tens of MB / a minute of work — warn before committing to a big one
+      // so it's never a surprise.  A filtered view exports straight away.
+      const n = (typeof filteredRows !== 'undefined') ? filteredRows.length : 0;
+      if (n > 4000 && !confirm(
+            `Export all ${n.toLocaleString()} satellites and their TLEs to one PDF?\n\n`
+          + `That is roughly ${Math.ceil(n * 0.1).toLocaleString()} pages and may take up to a minute `
+          + `to build a large file.\n\n`
+          + `Tip: choose a country or type in the filter box first to export a smaller subset.`)) {
+        return;
+      }
+      const original = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '⏳ Generating…';
+      setTimeout(() => {
+        try { generateSatStatsPDF(); }
+        catch (e) { console.error('PDF export failed:', e); alert('PDF export failed: ' + e.message); }
+        finally { btn.disabled = false; btn.textContent = original; }
+      }, 60);
     });
   }
   if (document.readyState === 'loading') {

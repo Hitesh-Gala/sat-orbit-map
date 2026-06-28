@@ -27,6 +27,7 @@
       <div class="brand">NAZAR · SAT-STATS · CUMULATIVE CATALOGUE</div>
       <div class="right">
         <span id="stats-status">Booting…</span>
+        <button type="button" id="pdf-btn" class="btn-back" disabled title="Loading… the PDF export unlocks once the catalogue has finished loading">⏳ PDF…</button>
         <button type="button" id="tle-repo-btn" class="btn-back" title="Open the raw TLE catalogue used by every page on this site">⌗ TLE Repo</button>
         <a class="btn-back" href="index.html">← NAZAR</a>
       </div>
@@ -243,8 +244,12 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+  <!-- PDF export (sat-stats.js #pdf-btn).  jsPDF first, then the autotable
+       plugin which attaches doc.autoTable to the jsPDF prototype. -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
   <script src="tle-loader.js?v=7"></script>
-  <script src="sat-stats.js?v=7"></script>
+  <script src="sat-stats.js?v=8"></script>
   <script src="mobile-menu.js?v=6"></script>
 </body>
 </html>
