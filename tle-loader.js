@@ -27,6 +27,8 @@ window.Argos = (function () {
     'JILIN', 'KUAIZHOU', 'KZ-', 'LUDI TANCE', 'LT-', 'MOZI', 'QUESS',
     'XUNTIAN', 'CSS', 'DAMPE', 'HXMT', 'CENTISPACE', 'PIESAT',
     'CHANG', 'TIANXING', 'HEAD', 'XINGSHIDAI', 'YINHE',
+    'YUNHAI', 'HONGTU', 'TIANQI', 'GEESAT', 'ZHANGHENG', 'SVOM',
+    'TIANWEN', 'TIANMU', 'HONGHU', 'KUAFU', 'GECAM', 'EINSTEIN',
   ];
 
   // Inferred mission category from Chinese satellite name prefix.
@@ -57,8 +59,23 @@ window.Argos = (function () {
     [/^DAMPE|HXMT|EINSTEIN PROBE|EP[- ]/i, 'Astrophysics / cosmic rays'],
     [/^DFH|^DONGFANGHONG/i,     'Communications (legacy)'],
     [/^LING|^XW[- ]|^TIANXING/i,'Amateur / experimental smallsat'],
-    [/^TJSW|^TJS[- ]/i,         'GEO comms / signals (TJS series)'],
+    [/^TJSW|^TJS[- ]/i,         'GEO early-warning / SIGINT (TJS series)'],
     [/^LUDI TANCE|LT[- ]/i,     'Synthetic-aperture radar (SAR)'],
+    [/^TIANHUI/i,               'Surveying & mapping (geodesy)'],
+    [/^YUNHAI/i,                'Atmospheric / marine environment'],
+    [/^HONGTU|^PIESAT/i,        'Commercial InSAR radar mapping'],
+    [/^TIANQI/i,                'Narrowband IoT data relay'],
+    [/^GEESAT/i,                'IoT for connected vehicles'],
+    [/^HONGHU/i,                'LEO broadband constellation'],
+    [/^TIANWEN/i,               'Planetary / deep-space exploration'],
+    [/^TIANMU/i,                'Commercial meteorology (GNSS-RO)'],
+    [/^ZHANGHENG/i,             'Seismo-electromagnetic research'],
+    [/^SVOM/i,                  'Gamma-ray burst astronomy (China–France)'],
+    [/^KUAFU|^ASO[- ]?S/i,      'Solar observatory'],
+    [/^GECAM/i,                 'Gamma-ray / GW monitor'],
+    [/^EINSTEIN|^TIANGUAN/i,    'Time-domain X-ray astronomy'],
+    [/^TAIJI/i,                 'Gravitational-wave tech demo'],
+    [/^XIHE/i,                  'Solar Hα observatory'],
     [/^MACAU/i,                 'Geomagnetic / scientific'],
     [/^ROCKET|R\/B/i,           'Rocket body (debris)'],
   ];

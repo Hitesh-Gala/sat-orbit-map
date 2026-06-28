@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>NAZAR · Chinese Satellite Series — Field Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --paper:#f4f1ea; --ink:#1c2530; --dim:#5a6675; --line:#d9d2c4;
+      --card:#fffdf8; --accent:#1565c0; --accent2:#b3471f; --chip:#eef2f7;
+      --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+      --disp:'Orbitron',system-ui,sans-serif;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0}
+    body{
+      background:var(--paper); color:var(--ink);
+      font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      -webkit-font-smoothing:antialiased;
+    }
+    .wrap{max-width:1080px; margin:0 auto; padding:0 22px 80px}
+
+    /* ---- sticky header bar ---- */
+    .header{position:sticky; top:0; z-index:50; background:rgba(244,241,234,.92);
+      backdrop-filter:blur(6px); border-bottom:1px solid var(--line); padding:0 22px}
+    .header-inner{display:flex; align-items:center; gap:16px; height:54px; max-width:1080px; margin:0 auto}
+    .top-logo{display:inline-flex; align-items:center; flex:0 0 auto; padding:4px 9px;
+      background:#0a1018; border:1px solid #1d3147; border-radius:6px; text-decoration:none;
+      transition:border-color .15s, transform .15s}
+    .top-logo:hover{border-color:#4ea8ff; transform:scale(1.04)}
+    .top-logo img{height:34px; width:auto; display:block}
+    .header-title{font-family:var(--disp); font-weight:600; letter-spacing:.04em; font-size:14px; color:var(--ink)}
+    .header-right{margin-left:auto; display:flex; gap:10px; align-items:center}
+    .btn{font-family:var(--mono); font-size:12.5px; text-decoration:none; cursor:pointer;
+      padding:7px 13px; border-radius:6px; border:1px solid var(--line); background:var(--card);
+      color:var(--ink); transition:all .15s}
+    .btn:hover{border-color:var(--accent); color:var(--accent)}
+    .btn-primary{background:var(--accent); color:#fff; border-color:var(--accent)}
+    .btn-primary:hover{background:#0d4d96; color:#fff}
+
+    /* ---- cover ---- */
+    .cover{padding:34px 0 18px; border-bottom:2px solid var(--ink); margin-bottom:8px}
+    .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent2)}
+    h1{font-family:var(--disp); font-weight:800; font-size:30px; line-height:1.12; margin:8px 0 6px; letter-spacing:.01em}
+    .lede{color:var(--dim); max-width:74ch; margin:6px 0 0}
+    .meta-line{display:flex; flex-wrap:wrap; gap:8px 10px; margin-top:16px}
+    .stat{font-family:var(--mono); font-size:12px; background:var(--chip); border:1px solid var(--line);
+      border-radius:999px; padding:5px 11px; color:var(--ink)}
+    .stat b{color:var(--accent)}
+
+    /* ---- filter ---- */
+    .toolbar{position:sticky; top:54px; z-index:40; background:var(--paper); padding:14px 0 10px; margin-bottom:6px}
+    #filter{width:100%; font:14px var(--mono); padding:10px 13px; border:1px solid var(--line);
+      border-radius:8px; background:var(--card); color:var(--ink)}
+    #filter:focus{outline:none; border-color:var(--accent)}
+    .count-note{font-family:var(--mono); font-size:12px; color:var(--dim); margin-top:7px}
+
+    /* ---- category sections ---- */
+    .cat{margin-top:30px; scroll-margin-top:120px}
+    .cat-head{display:flex; align-items:baseline; gap:12px; border-bottom:1px solid var(--line); padding-bottom:7px; margin-bottom:14px}
+    .cat-head h2{font-family:var(--disp); font-weight:600; font-size:18px; margin:0; letter-spacing:.03em}
+    .cat-head .cat-sub{font-size:13px; color:var(--dim)}
+
+    .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:14px}
+    .card{background:var(--card); border:1px solid var(--line); border-left:4px solid var(--accent);
+      border-radius:9px; padding:14px 16px; break-inside:avoid}
+    .card.mil{border-left-color:var(--accent2)}
+    .card.sci{border-left-color:#2e8b57}
+    .card-top{display:flex; align-items:baseline; justify-content:space-between; gap:8px}
+    .card h3{margin:0; font-size:16px; font-family:var(--disp); font-weight:600; letter-spacing:.01em}
+    .han{font-family:var(--mono); font-size:12px; color:var(--dim); white-space:nowrap}
+    .role{font-weight:600; font-size:13.5px; margin:3px 0 8px; color:var(--accent)}
+    .card.mil .role{color:var(--accent2)}
+    .card.sci .role{color:#2e8b57}
+    .kv{display:grid; grid-template-columns:auto 1fr; gap:2px 10px; font-size:12.5px; margin-bottom:8px}
+    .kv dt{font-family:var(--mono); color:var(--dim); white-space:nowrap}
+    .kv dd{margin:0}
+    .note{font-size:13px; color:var(--ink); margin:0}
+    .note .fresh{background:#fff3cd; padding:0 3px; border-radius:3px}
+
+    .tag{display:inline-block; font-family:var(--mono); font-size:10.5px; letter-spacing:.04em;
+      padding:2px 7px; border-radius:4px; margin-top:9px; margin-right:5px}
+    .t-active{background:#e3f4e7; color:#1d6f3a}
+    .t-mil{background:#fbe6dd; color:#9b3415}
+    .t-dev{background:#e7eef8; color:#1f5aa8}
+
+    footer{margin-top:40px; padding-top:18px; border-top:1px solid var(--line); font-size:12.5px; color:var(--dim)}
+    footer a{color:var(--accent)}
+    .src-list{columns:2; column-gap:26px; font-family:var(--mono); font-size:11px; line-height:1.7; margin-top:8px}
+    .src-list a{word-break:break-all}
+
+    @media (max-width:560px){
+      .header-title{display:none}
+      h1{font-size:24px}
+      .src-list{columns:1}
+    }
+
+    /* ---- print: clean document ---- */
+    @media print{
+      :root{--paper:#fff; --card:#fff}
+      body{font-size:11px}
+      .header,.toolbar{display:none !important}
+      .wrap{max-width:none; padding:0}
+      .cover{padding-top:0}
+      .grid{grid-template-columns:1fr 1fr; gap:8px}
+      .card{box-shadow:none; padding:9px 11px}
+      .cat{margin-top:16px}
+      a{color:#000; text-decoration:none}
+      .stat{border-color:#999}
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-inner">
+      <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
+        <img src="data/nazar-logo.svg" alt="NAZAR">
+      </a>
+      <div class="header-title">// Chinese Satellite Series — Field Guide</div>
+      <div class="header-right">
+        <button class="btn btn-primary" id="download-btn" title="Save this guide as a PDF">⬇ Download PDF</button>
+        <a class="btn" href="chinrepo.html" title="Live table of active PRC payloads">Live Repo</a>
+        <a class="btn" href="index.html">NAZAR</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <section class="cover">
+      <div class="eyebrow">NAZAR Reference Dossier</div>
+      <h1>Chinese Satellite Series — Field Guide</h1>
+      <p class="lede">A program-by-program survey of the People's Republic of China's on-orbit satellite
+        families — what each series does, who operates it, the orbit it works from, and where it stood
+        as of mid-2026. Compiled from open-source launch trackers, operator releases, and space-press
+        reporting. For live positions of every active PRC payload, see the
+        <a href="chinrepo.html">China Sat Repo</a>.</p>
+      <div class="meta-line">
+        <span class="stat">Compiled <b>June 2026</b></span>
+        <span class="stat"><b>93</b> Chinese orbital launches in 2025 (national record)</span>
+        <span class="stat"><b>300+</b> satellites deployed in 2025</span>
+        <span class="stat">Series catalogued: <b id="series-count">—</b></span>
+      </div>
+    </section>
+
+    <div class="toolbar">
+      <input type="search" id="filter" placeholder="Filter by series, role, operator, orbit…  (e.g. “SAR”, “navigation”, “LEO”)" autocomplete="off">
+      <div class="count-note" id="count-note"></div>
+    </div>
+
+    <div id="catalog"></div>
+
+    <footer>
+      <p><b>How to read this guide.</b> Designations follow the Chinese program name (with pinyin / Hanzi where
+      useful) and the common Western catalogue label. "Status" reflects the most recent publicly reported
+      activity as of mid-2026; <span class="note"><span class="fresh">highlighted</span></span> text marks the
+      freshest 2025–2026 data point. Many higher-numbered Yaogan, Gaofen and TJS craft are dual-use or
+      classified, so role descriptions for those are best open-source assessments, not official statements.</p>
+      <p style="margin-top:14px"><b>Primary sources.</b></p>
+      <div class="src-list">
+        <a href="https://en.wikipedia.org/wiki/BeiDou">en.wikipedia.org/wiki/BeiDou</a>
+        <a href="https://news.satnews.com/2024/12/02/china-set-to-build-next-generation-beidou-system/">satnews.com — next-gen BeiDou</a>
+        <a href="https://en.wikipedia.org/wiki/Yaogan">en.wikipedia.org/wiki/Yaogan</a>
+        <a href="https://spacenews.com/china-adds-to-classified-tjs-yaogan-satellite-series-with-two-launches/">spacenews.com — TJS &amp; Yaogan</a>
+        <a href="https://en.wikipedia.org/wiki/Gaofen">en.wikipedia.org/wiki/Gaofen</a>
+        <a href="https://spacenews.com/china-launches-new-gaofen-14-stereo-mapping-satellite/">spacenews.com — Gaofen-14</a>
+        <a href="https://en.wikipedia.org/wiki/Qianfan">en.wikipedia.org/wiki/Qianfan</a>
+        <a href="https://spacenews.com/china-launches-fourth-batch-of-thousand-sails-megaconstellation-satellites/">spacenews.com — Thousand Sails</a>
+        <a href="https://www.space.com/space-exploration/launches-spacecraft/china-launches-8th-batch-satellites-guowang-satnet-internet-megaconstellation-video">space.com — Guowang</a>
+        <a href="https://en.wikipedia.org/wiki/Chinasat">en.wikipedia.org/wiki/Chinasat</a>
+        <a href="https://en.wikipedia.org/wiki/Fengyun">en.wikipedia.org/wiki/Fengyun</a>
+        <a href="https://www.cma.gov.cn/en/news/NewsEvents/news/202509/t20250927_7361319.html">cma.gov.cn — Fengyun-3H</a>
+        <a href="https://en.wikipedia.org/wiki/Haiyang_(satellite)">en.wikipedia.org/wiki/Haiyang</a>
+        <a href="https://en.wikipedia.org/wiki/Jilin-1">en.wikipedia.org/wiki/Jilin-1</a>
+        <a href="https://spacenews.com/chinese-commercial-remote-sensing-satellite-firm-to-double-size-of-constellation/">spacenews.com — Jilin-1 / CGSTL</a>
+        <a href="https://www.eoportal.org/satellite-missions/piesat">eoportal.org — PIESAT / Hongtu</a>
+        <a href="https://space.skyrocket.de/doc_sdat/ludi-tance-1-01.htm">skyrocket.de — Ludi Tance</a>
+        <a href="https://spacenews.com/china-launches-first-geosynchronous-orbit-radar-satellite/">spacenews.com — GEO SAR (LT-4)</a>
+        <a href="https://en.wikipedia.org/wiki/Tongxin_Jishu_Shiyan">en.wikipedia.org/wiki/Tongxin_Jishu_Shiyan</a>
+        <a href="https://spacenews.com/china-launches-tjs-17-expanding-classified-geostationary-satellite-series/">spacenews.com — TJS-17</a>
+        <a href="https://en.wikipedia.org/wiki/Tianlian">en.wikipedia.org/wiki/Tianlian</a>
+        <a href="https://en.wikipedia.org/wiki/Shijian">en.wikipedia.org/wiki/Shijian</a>
+        <a href="https://jamestown.org/dual-use-shijian-satellite-program-ramps-up-in-2025/">jamestown.org — Shijian 2025</a>
+        <a href="https://en.wikipedia.org/wiki/Tiangong_space_station">en.wikipedia.org/wiki/Tiangong_space_station</a>
+        <a href="https://www.nasaspaceflight.com/2026/05/shenzhou-23-launch/">nasaspaceflight.com — Shenzhou-23</a>
+        <a href="https://www.skylinker.io/p/tianqi-overview-china-largest-leo-nb-iot-constellation-eng">skylinker.io — Tianqi</a>
+        <a href="https://global.geely.com/en/news/2025/geely-launch-11-satellites-4th-orbital-plane">geely.com — Geespace</a>
+        <a href="https://www.bcas.cas.cn/reports/202505/t20250513_1043520.html">bcas.cas.cn — space science series</a>
+        <a href="https://english.news.cn/20251124/0994f1ae61174277bb29aa0038b9a510/c.html">xinhua — science results 2025</a>
+        <a href="https://news.cgtn.com/news/2026-01-03/China-conducts-92-space-launches-in-2025-setting-new-record-1JCXuTZAyQg/p.html">cgtn — 2025 launch record</a>
+        <a href="https://www.nasaspaceflight.com/2025/05/china-roundup-05232025/">nasaspaceflight.com — Tianwen-2</a>
+      </div>
+      <p style="margin-top:16px; font-style:italic">NAZAR is a zero-budget, open-source tracker. This dossier
+      is a study aid, not an intelligence product — verify against the primary sources before citing.</p>
+    </footer>
+  </div>
+
+  <script>
+  // =====================================================================
+  // Series data — one object per program family.  Rendered into cards and
+  // made filterable.  `cat` groups them; `cls` tints the card
+  // (mil = military/dual-use accent, sci = science accent).
+  // =====================================================================
+  const SERIES = [
+    // ---- Navigation ----
+    { cat:'Navigation & Timing', name:'BeiDou', han:'北斗 · BDS', cls:'', role:'Global navigation (PNT)',
+      operator:'CSNO / PLA', orbit:'GEO + IGSO + MEO', tags:['t-active'],
+      note:'China\'s GPS-class GNSS. ~45 operational satellites (15 BDS-2 + 30 BDS-3); BDS-3 global service complete since 2020. <span class="fresh">Next-generation BeiDou design finalised end-2025; three LEO test satellites planned for 2027, full fleet launching 2029 and complete by 2035.</span>' },
+
+    // ---- Human spaceflight & deep space ----
+    { cat:'Human Spaceflight & Deep Space', name:'Tiangong (CSS)', han:'天宫 · Tianhe/Wentian/Mengtian', cls:'', role:'Crewed space station',
+      operator:'CMSA', orbit:'LEO ~390 km', tags:['t-active'],
+      note:'China\'s permanently crewed station — T-shaped: Tianhe core (2021) + Wentian &amp; Mengtian labs (2022). <span class="fresh">Slated to expand from three to six modules (cross configuration); Xuntian co-orbiting space telescope due 2027.</span>' },
+    { cat:'Human Spaceflight & Deep Space', name:'Shenzhou', han:'神舟', cls:'', role:'Crewed ferry spacecraft',
+      operator:'CMSA', orbit:'LEO (docks to CSS)', tags:['t-active'],
+      note:'Carries taikonaut crews to Tiangong. <span class="fresh">Shenzhou-23 launched May 2026; Shenzhou-22 flew uncrewed in Nov 2025 to restore emergency-return capability after debris damaged the docked Shenzhou-20.</span>' },
+    { cat:'Human Spaceflight & Deep Space', name:'Tianzhou', han:'天舟', cls:'', role:'Cargo resupply freighter',
+      operator:'CMSA', orbit:'LEO (docks to CSS)', tags:['t-active'],
+      note:'Automated cargo ships that refuel and resupply Tiangong, then deorbit destructively.' },
+    { cat:'Human Spaceflight & Deep Space', name:'Chang\'e', han:'嫦娥', cls:'sci', role:'Lunar exploration',
+      operator:'CNSA', orbit:'Cislunar / lunar surface', tags:['t-dev'],
+      note:'Robotic Moon program — orbiters, landers, rovers and sample-return (Chang\'e-5/6). Chang\'e-7/8 prepare for the planned crewed landing and an International Lunar Research Station.' },
+    { cat:'Human Spaceflight & Deep Space', name:'Tianwen', han:'天问', cls:'sci', role:'Planetary exploration',
+      operator:'CNSA', orbit:'Interplanetary', tags:['t-dev'],
+      note:'Deep-space series. Tianwen-1 delivered the Zhurong Mars rover (2021). <span class="fresh">Tianwen-2 launched May 2025 on an asteroid sample-return to 469219 Kamoʻoalewa, arrival expected summer 2026.</span>' },
+
+    // ---- Reconnaissance / military EO ----
+    { cat:'Reconnaissance & Military EO', name:'Yaogan', han:'遥感 · "Remote Sensing"', cls:'mil', role:'Military reconnaissance',
+      operator:'PLA', orbit:'LEO (various)', tags:['t-mil'],
+      note:'China\'s primary recon fleet — optical imaging, SAR and ELINT/naval-tracking triplets. <span class="fresh">Yaogan-40 group launches (May &amp; Sep 2025) flew as three-satellite "electromagnetic environment" clusters typical of ocean-surveillance NOSS-style triads.</span>' },
+    { cat:'Reconnaissance & Military EO', name:'Ludi Tance / LuTan', han:'陆地探测 · L-SAR', cls:'mil', role:'L-band SAR / InSAR',
+      operator:'CAST / MNR', orbit:'LEO + GEO', tags:['t-active'],
+      note:'LT-1 is the world\'s first L-band twin-satellite InSAR formation (meter-class, bistatic). <span class="fresh">LT-4 (Ludi Tance-4-01), the world\'s first geosynchronous-orbit SAR satellite, watches ~⅓ of Earth continuously from 36,000 km; its technology was declassified in 2024–25.</span>' },
+
+    // ---- Civil & commercial EO ----
+    { cat:'Civil & Commercial Earth Observation', name:'Gaofen', han:'高分 · CHEOS', cls:'', role:'High-resolution EO',
+      operator:'CNSA / CASC', orbit:'LEO + GEO (GF-4)', tags:['t-active'],
+      note:'The civil High-Resolution Earth Observation System: GF-1/2/6 optical, GF-3 SAR, GF-4 GEO stare, GF-5 hyperspectral, GF-7 stereo-mapping. <span class="fresh">Higher-numbered GF-11 (sub-10 cm class), GF-12 (SAR) and GF-14 stereo craft are dual-use and far less publicised.</span>' },
+    { cat:'Civil & Commercial Earth Observation', name:'Ziyuan', han:'资源 · "Resources"', cls:'', role:'Land-resource & mapping',
+      operator:'CASC / MNR', orbit:'LEO (SSO)', tags:['t-active'],
+      note:'Resource-survey line. ZY-3 is China\'s first civil high-resolution 3-D stereo-mapping satellite; the China–Brazil CBERS/ZY-1 craft share the family heritage.' },
+    { cat:'Civil & Commercial Earth Observation', name:'Tianhui', han:'天绘 · "Sky Drawing"', cls:'mil', role:'Geodetic surveying & mapping',
+      operator:'PLA', orbit:'LEO (SSO)', tags:['t-mil'],
+      note:'Stereo survey-and-mapping satellites producing 3-D terrain models for both civil cartography and military geodesy.' },
+    { cat:'Civil & Commercial Earth Observation', name:'Jilin-1', han:'吉林一号', cls:'', role:'Commercial optical/video EO',
+      operator:'Chang Guang (CGSTL)', orbit:'LEO (SSO)', tags:['t-active'],
+      note:'China\'s largest commercial EO constellation — sub-meter optical, hyperspectral, infrared and full-motion video. <span class="fresh">117+ satellites on orbit by end-2024 (target 300); ~6× global / 24× over-China revisit.</span>' },
+    { cat:'Civil & Commercial Earth Observation', name:'PIESAT / Hongtu', han:'宏图一号', cls:'', role:'Commercial X-band InSAR',
+      operator:'PIESAT Information Tech.', orbit:'LEO (SSO)', tags:['t-active'],
+      note:'Commercial radar constellation flown in "wheel" formations of four for interferometric 3-D mapping. First four (Hongtu-1) launched Mar 2023. <span class="fresh">PIESAT-2 quartet added Nov 2024; 16-satellite target.</span>' },
+
+    // ---- Meteorology & ocean ----
+    { cat:'Meteorology & Ocean', name:'Fengyun', han:'风云 · "Wind &amp; Cloud"', cls:'', role:'Weather observation',
+      operator:'CMA / NSMC', orbit:'GEO (FY-2/4) + SSO (FY-3)', tags:['t-active'],
+      note:'China\'s operational weather fleet, data shared internationally via WMO. <span class="fresh">FY-3H ("afternoon" polar orbiter) launched Sep 2025; FY-4C geostationary imager launched Dec 2025. FY-3G is a dedicated precipitation-measuring radar mission.</span>' },
+    { cat:'Meteorology & Ocean', name:'Haiyang', han:'海洋 · "Ocean"', cls:'', role:'Ocean / marine observation',
+      operator:'NSOAS / MNR', orbit:'LEO (SSO)', tags:['t-active'],
+      note:'Marine remote-sensing line: HY-1 ocean-colour, HY-2 sea-surface dynamics (altimetry/scatterometry), HY-3 high-resolution microwave surveillance. <span class="fresh">Remaining HY-2E/F/G/H altimetry craft rounding out the constellation through 2025.</span>' },
+    { cat:'Meteorology & Ocean', name:'Yunhai', han:'云海', cls:'mil', role:'Atmospheric / environmental sounding',
+      operator:'PLA', orbit:'LEO (SSO)', tags:['t-mil'],
+      note:'Atmospheric, marine and space-environment monitoring with an assessed dual-use military meteorology role.' },
+
+    // ---- Communications (GEO) ----
+    { cat:'Communications', name:'ChinaSat / Zhongxing', han:'中星 · ZX', cls:'', role:'State telecom &amp; broadcast',
+      operator:'China Satcom', orbit:'GEO', tags:['t-active'],
+      note:'The backbone civil GEO fleet (30+ satellites) for TV/radio, broadband and emergency comms in C/Ku/Ka band. <span class="fresh">ChinaSat-10R (Feb 2025) and ChinaSat-9C / ZX-9C (Jun 2025) refreshed broadcast capacity.</span>' },
+    { cat:'Communications', name:'APStar', han:'亚太 · APT', cls:'', role:'Commercial regional comms',
+      operator:'APT Satellite (HK)', orbit:'GEO', tags:['t-active'],
+      note:'Hong Kong-based commercial GEO operator (APStar-6C/6D/9) leasing C/Ku/Ka capacity across Asia-Pacific, Oceania and parts of Europe.' },
+    { cat:'Communications', name:'Tianlian', han:'天链 · CTDRS', cls:'', role:'Data-relay (TDRSS-class)',
+      operator:'PLA / CMSA', orbit:'GEO', tags:['t-active'],
+      note:'China\'s tracking-and-data-relay constellation — ~10 satellites across two generations (TL-1, TL-2) giving near-continuous links to crewed missions, recon sats and rockets.' },
+    { cat:'Communications', name:'Shentong / Fenghuo', han:'神通 / 烽火', cls:'mil', role:'Secure PLA military comms',
+      operator:'PLA', orbit:'GEO', tags:['t-mil'],
+      note:'Primary encrypted military SATCOM — Shentong for secure trunk voice/data, Fenghuo for integrated C4ISR data links (often flown under ChinaSat cover designations).' },
+
+    // ---- Classified GEO ----
+    { cat:'Classified GEO', name:'TJS', han:'通信技术试验 · "Comms-Tech Test"', cls:'mil', role:'Early-warning &amp; SIGINT (assessed)',
+      operator:'PLA / SAST', orbit:'GEO', tags:['t-mil'],
+      note:'Officially "communication technology test" — observers assess at least three classes: missile early-warning (Huoyan-1), SIGINT (Qianshao-3) and inspector/co-orbital craft. <span class="fresh">TJS-14 (Jan 2025) through TJS-17 extended the series, with a cluster of launches across 2024–25.</span>' },
+
+    // ---- LEO megaconstellations ----
+    { cat:'LEO Mega-Constellations', name:'Guowang', han:'国网 · "National Network"', cls:'mil', role:'State LEO broadband',
+      operator:'China SatNet / CAST', orbit:'LEO', tags:['t-dev'],
+      note:'State-backed ~13,000-satellite broadband constellation with assessed PNT, imaging and SIGINT side-functions. <span class="fresh">Passed 100+ satellites by Nov 2025; ~126 launched across 16 launches in 2025.</span>' },
+    { cat:'LEO Mega-Constellations', name:'Qianfan / G60', han:'千帆 · "Thousand Sails"', cls:'', role:'Commercial LEO broadband',
+      operator:'SSST (Spacesail)', orbit:'LEO (polar)', tags:['t-dev'],
+      note:'Shanghai-backed Starlink rival — Phase 1 of 1,296 satellites, 15,000+ planned. <span class="fresh">First launch Aug 2024; ~200 satellites on orbit by 2026 (deployment paced by early-batch issues).</span>' },
+
+    // ---- IoT / narrowband ----
+    { cat:'IoT &amp; Narrowband', name:'Tianqi', han:'天启', cls:'', role:'NB-IoT data relay',
+      operator:'Guodian Gaoke', orbit:'LEO', tags:['t-active'],
+      note:'China\'s largest LEO narrowband-IoT constellation. <span class="fresh">~37 satellites serving smart-city, maritime, emergency and environmental telemetry; expanding toward consumer/auto/wearable links.</span>' },
+    { cat:'IoT &amp; Narrowband', name:'Geespace (GeeSatcom)', han:'吉利未来出行', cls:'', role:'IoT for connected vehicles',
+      operator:'Geespace (Geely)', orbit:'LEO', tags:['t-active'],
+      note:'Automaker Geely\'s "Future Mobility" constellation for vehicle connectivity and PNT augmentation. <span class="fresh">~41 satellites on orbit; Phase-1 target of 72 aimed for end-2025.</span>' },
+    { cat:'IoT &amp; Narrowband', name:'Xingyun', han:'行云', cls:'', role:'Narrowband IoT comms',
+      operator:'CASIC (Xingyun)', orbit:'LEO', tags:['t-dev'],
+      note:'CASIC narrowband-IoT effort under the "Hongyun/Xingyun" space-information umbrella, targeting industrial machine-to-machine links.' },
+
+    // ---- Space science ----
+    { cat:'Space Science', name:'DAMPE (Wukong)', han:'悟空', cls:'sci', role:'Dark-matter / cosmic rays',
+      operator:'CAS', orbit:'LEO (SSO)', tags:['t-active'],
+      note:'Dark Matter Particle Explorer (2015). <span class="fresh">In 2025 delivered the most precise TeV-scale cosmic-ray boron spectrum yet and flagged a new spectral feature.</span>' },
+    { cat:'Space Science', name:'QUESS (Mozi)', han:'墨子', cls:'sci', role:'Quantum-comms experiment',
+      operator:'CAS', orbit:'LEO (SSO)', tags:['t-active'],
+      note:'World\'s first quantum-science satellite (2016) — demonstrated satellite-to-ground quantum key distribution and entanglement distribution over 1,000+ km.' },
+    { cat:'Space Science', name:'Insight-HXMT', han:'慧眼', cls:'sci', role:'Hard X-ray astronomy',
+      operator:'CAS', orbit:'LEO', tags:['t-active'],
+      note:'Hard X-ray Modulation Telescope (2017) surveying black holes, neutron stars and gamma-ray transients.' },
+    { cat:'Space Science', name:'Einstein Probe (Tianguan)', han:'天关', cls:'sci', role:'Time-domain X-ray astronomy',
+      operator:'CAS / ESA / MPE', orbit:'LEO', tags:['t-active'],
+      note:'Wide-field lobster-eye X-ray observatory (Jan 2024) catching transient events — tidal disruptions, supernova shock breakouts, gamma-ray-burst afterglows.' },
+    { cat:'Space Science', name:'ASO-S (Kuafu-1)', han:'夸父一号', cls:'sci', role:'Solar observatory',
+      operator:'CAS', orbit:'LEO (SSO)', tags:['t-active'],
+      note:'Advanced Space-based Solar Observatory (2022) studying the Sun\'s magnetic field, flares and coronal mass ejections.' },
+    { cat:'Space Science', name:'SVOM', han:'天基多波段空间变源监视器', cls:'sci', role:'Gamma-ray-burst hunter',
+      operator:'CAS + CNES (France)', orbit:'LEO', tags:['t-active'],
+      note:'China–France time-domain mission (Jun 2024) detecting and rapidly localising gamma-ray bursts for multi-messenger follow-up.' },
+
+    // ---- Experimental / technology ----
+    { cat:'Experimental & Technology Demo', name:'Shijian', han:'实践 · "Practice"', cls:'mil', role:'Technology demonstration',
+      operator:'CAS / CASC / PLA', orbit:'LEO → GEO', tags:['t-mil'],
+      note:'Catch-all experimental line. <span class="fresh">2025 was a banner year: SJ-25 (Jan) tested on-orbit refueling, SJ-26 (May) optical remote sensing, plus SJ-28 and an SJ-30 trio late in the year — building on SJ-21\'s 2022 debris-towing demo.</span>' },
+    { cat:'Experimental & Technology Demo', name:'Shiyan', han:'试验 · "Experiment"', cls:'mil', role:'Space-environment / tech test',
+      operator:'PLA / CASC', orbit:'LEO (various)', tags:['t-mil'],
+      note:'Technology-verification satellites for new buses, sensors and space-environment survey; missions are typically described only in general terms.' },
+  ];
+
+  const CATEGORY_ORDER = [
+    'Navigation & Timing',
+    'Human Spaceflight & Deep Space',
+    'Reconnaissance & Military EO',
+    'Civil & Commercial Earth Observation',
+    'Meteorology & Ocean',
+    'Communications',
+    'Classified GEO',
+    'LEO Mega-Constellations',
+    'IoT &amp; Narrowband',
+    'Space Science',
+    'Experimental & Technology Demo',
+  ];
+  const CATEGORY_SUB = {
+    'Navigation & Timing':'Positioning, navigation and timing',
+    'Human Spaceflight & Deep Space':'Crewed, cargo, lunar and planetary',
+    'Reconnaissance & Military EO':'Imaging, SAR and electronic intelligence',
+    'Civil & Commercial Earth Observation':'Optical, hyperspectral, radar and mapping',
+    'Meteorology & Ocean':'Weather, climate and marine monitoring',
+    'Communications':'Broadcast, broadband, relay and secure links',
+    'Classified GEO':'Geostationary military / intelligence',
+    'LEO Mega-Constellations':'Thousands-strong broadband fleets',
+    'IoT &amp; Narrowband':'Machine-to-machine and connected devices',
+    'Space Science':'Astrophysics and fundamental physics',
+    'Experimental & Technology Demo':'On-orbit technology verification',
+  };
+
+  function cardHtml(s){
+    const tags = (s.tags||[]).map(t=>{
+      const label = t==='t-active' ? 'OPERATIONAL' : t==='t-mil' ? 'MILITARY / DUAL-USE' : 'DEPLOYING';
+      return `<span class="tag ${t}">${label}</span>`;
+    }).join('');
+    return `<article class="card ${s.cls}" data-blob="${(s.name+' '+s.han+' '+s.role+' '+s.operator+' '+s.orbit+' '+s.cat+' '+s.note).replace(/<[^>]+>/g,'').replace(/"/g,'&quot;').toLowerCase()}">
+      <div class="card-top"><h3>${s.name}</h3><span class="han">${s.han}</span></div>
+      <div class="role">${s.role}</div>
+      <dl class="kv">
+        <dt>Operator</dt><dd>${s.operator}</dd>
+        <dt>Orbit</dt><dd>${s.orbit}</dd>
+      </dl>
+      <p class="note">${s.note}</p>
+      <div>${tags}</div>
+    </article>`;
+  }
+
+  function render(){
+    const root = document.getElementById('catalog');
+    let html = '';
+    for(const cat of CATEGORY_ORDER){
+      const items = SERIES.filter(s=>s.cat===cat);
+      if(!items.length) continue;
+      html += `<section class="cat"><div class="cat-head"><h2>${cat}</h2>`
+            + `<span class="cat-sub">${CATEGORY_SUB[cat]||''}</span></div>`
+            + `<div class="grid">${items.map(cardHtml).join('')}</div></section>`;
+    }
+    root.innerHTML = html;
+    document.getElementById('series-count').textContent = SERIES.length;
+    updateCount();
+  }
+
+  function updateCount(){
+    const total = document.querySelectorAll('.card').length;
+    const shown = document.querySelectorAll('.card:not([hidden])').length;
+    const note = document.getElementById('count-note');
+    note.textContent = shown===total
+      ? `${total} satellite series across ${CATEGORY_ORDER.length} mission categories.`
+      : `Showing ${shown} of ${total} series.`;
+  }
+
+  function applyFilter(q){
+    q = q.trim().toLowerCase();
+    document.querySelectorAll('.card').forEach(c=>{
+      c.hidden = q && !c.dataset.blob.includes(q);
+    });
+    // Hide a category whose cards are all filtered out.
+    document.querySelectorAll('.cat').forEach(sec=>{
+      const any = [...sec.querySelectorAll('.card')].some(c=>!c.hidden);
+      sec.hidden = !any;
+    });
+    updateCount();
+  }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    render();
+    document.getElementById('filter').addEventListener('input', e=>applyFilter(e.target.value));
+    document.getElementById('download-btn').addEventListener('click', ()=>{
+      // Clear any active filter so the printed/saved PDF is the complete guide.
+      const f = document.getElementById('filter'); if(f.value){ f.value=''; applyFilter(''); }
+      window.print();
+    });
+  });
+  </script>
+</body>
+</html>
