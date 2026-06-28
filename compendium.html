@@ -502,16 +502,32 @@
   /* PAGE TABS */
   .page-content { display: none; }
   .page-content.active { display: block; }
+
+  /* NAZAR lighthouse logo — sits inside the header on the left, sized to
+     the 52-px bar.  Small dark panel so the light-on-dark mark reads
+     against this page's pale header. */
+  .top-logo {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    padding: 4px 9px;
+    background: #0a1018;
+    border: 1px solid #1d3147;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: border-color .15s, transform .15s;
+  }
+  .top-logo:hover { border-color: #4ea8ff; transform: scale(1.04); }
+  .top-logo img { height: 34px; width: auto; display: block; }
 </style>
 </head>
 <body class="page-compendium">
 
-<a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
-  <img src="data/nazar-logo.svg" alt="NAZAR">
-</a>
-
 <div class="header">
   <div class="header-inner">
+    <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
+      <img src="data/nazar-logo.svg" alt="NAZAR">
+    </a>
     <div class="header-title">// PRC Orbital Catalog</div>
     <div class="header-sep"></div>
     <div class="header-stats">
