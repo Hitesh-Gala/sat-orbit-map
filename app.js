@@ -349,6 +349,10 @@ let updateIdx    = 0;
 let updateNow    = null;
 let updateNonCN  = [];
 let updateCN     = [];
+// Stable snapshot of the COMPLETE above-horizon set (non-CN + CN), taken
+// at the end of each finished tick.  The "View all" pop-up reads this so
+// it never catches updateNonCN/updateCN mid-rebuild.
+let lastAboveHorizon = [];
 
 function startUpdate() {
   if (!activeTLEs.length || updateActive) return;
@@ -467,6 +471,11 @@ function finishUpdate() {
 
   $('vis-count').textContent = updateNonCN.length;
   $('cn-count').textContent  = updateCN.length;
+
+  // Snapshot the full above-horizon set and refresh the pop-up globe if
+  // it's open (keeps it live on the 10 s tick).
+  lastAboveHorizon = updateNonCN.concat(updateCN);
+  refreshAllsats();
 
   // Only re-render the HUD lists if their <details> panel is open —
   // saves the innerHTML build cost when the user has collapsed them.
@@ -615,4 +624,137 @@ function renderCNHorizonList(items) {
     $('vis-count').textContent = '!';
     $('cn-count').textContent  = '!';
   }
+})();
+
+// =========================================================================
+// "View all satellites" pop-up globe
+// =========================================================================
+//
+// The main globe deliberately plots only the top-MAX_MARKERS sats for
+// clarity, so it never matches the over-horizon counts.  This pop-up is
+// an INDEPENDENT globe.gl instance that plots EVERY satellite above the
+// horizon (the full `lastAboveHorizon` snapshot) as a single
+// THREE.InstancedMesh — thousands of dots for one draw call.  Built
+// lazily on first open, refreshed each tick while open, and the main
+// globe is never touched.
+
+const ALLSATS_MAX = 12000;          // headroom over the above-horizon set
+let allsatsGlobe  = null;           // lazy Globe() instance
+let allsatsInst   = null;           // THREE.InstancedMesh
+let allsatsOpen   = false;
+
+const _asPos      = new THREE.Vector3();
+const _asQuat     = new THREE.Quaternion();
+const _asScale    = new THREE.Vector3();
+const _asMat      = new THREE.Matrix4();
+const _asHide     = new THREE.Matrix4().makeScale(0, 0, 0);
+const _asColorCN  = new THREE.Color(COLOR_CN);
+const _asColorNCN = new THREE.Color(COLOR_NONCN);
+
+function ensureAllsatsGlobe() {
+  if (allsatsGlobe) return;
+  const el = $('allsats-globe');
+  allsatsGlobe = Globe()(el)
+    .globeImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg')
+    .bumpImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-topology.png')
+    .backgroundImageUrl(NIGHT_SKY_URL)
+    .showAtmosphere(true)
+    .atmosphereColor('#4ea8ff')
+    .atmosphereAltitude(0.18)
+    .pointOfView({ lat: observerCity.lat, lng: observerCity.lon, altitude: 2.6 }, 0);
+
+  const c = allsatsGlobe.controls();
+  c.enableDamping = true; c.dampingFactor = 0.1;
+  c.rotateSpeed = 0.5;   c.zoomSpeed = 0.8;
+  c.minDistance = 110;   c.maxDistance = 2200;
+
+  const geom = new THREE.SphereGeometry(1.3, 8, 8);
+  const mat  = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  allsatsInst = new THREE.InstancedMesh(geom, mat, ALLSATS_MAX);
+  allsatsInst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  allsatsInst.frustumCulled = false;
+  allsatsInst.count = 0;
+  allsatsGlobe.scene().add(allsatsInst);
+}
+
+function sizeAllsatsGlobe() {
+  if (!allsatsGlobe) return;
+  const el = $('allsats-globe');
+  const w = el.clientWidth, h = el.clientHeight;
+  if (w > 0 && h > 0) allsatsGlobe.width(w).height(h);
+}
+
+// Repaint the InstancedMesh from the current above-horizon snapshot and
+// update the header meta line.
+function renderAllsatsInstances() {
+  if (!allsatsInst) return;
+  const sats = lastAboveHorizon;
+  const n = Math.min(sats.length, ALLSATS_MAX);
+  for (let i = 0; i < n; i++) {
+    const s = sats[i];
+    const p = allsatsGlobe.getCoords(s.lat, s.lon, s.alt / EARTH_R_KM);
+    _asPos.set(p.x, p.y, p.z);
+    // Gentle altitude-based scale-up so distant GEO dots stay visible.
+    _asScale.setScalar(1 + Math.min(1.4, s.alt / 30000));
+    _asMat.compose(_asPos, _asQuat, _asScale);
+    allsatsInst.setMatrixAt(i, _asMat);
+    allsatsInst.setColorAt(i, s.cn ? _asColorCN : _asColorNCN);
+  }
+  allsatsInst.count = n;
+  allsatsInst.instanceMatrix.needsUpdate = true;
+  if (allsatsInst.instanceColor) allsatsInst.instanceColor.needsUpdate = true;
+
+  const meta = $('allsats-meta');
+  if (meta) {
+    const cn  = sats.reduce((a, s) => a + (s.cn ? 1 : 0), 0);
+    const ncn = sats.length - cn;
+    const where = observerMode === 'all' ? `all ${CITIES.length} cities` : observerCity.name;
+    const t = (updateNow || new Date()).toISOString().slice(11, 19);
+    meta.innerHTML =
+      `<strong>${sats.length.toLocaleString()}</strong> satellites above the horizon from ${esc(where)} · `
+      + `${ncn.toLocaleString()} non-Chinese · ${cn.toLocaleString()} Chinese · updated ${t} UTC`;
+  }
+}
+
+function openAllsats() {
+  const modal = $('allsats-modal');
+  if (!modal) return;
+  modal.hidden = false;
+  modal.setAttribute('aria-hidden', 'false');
+  allsatsOpen = true;
+  ensureAllsatsGlobe();
+  // Reading clientWidth (inside sizeAllsatsGlobe) forces a synchronous
+  // reflow, so the now-visible modal reports a real size immediately —
+  // no dependence on requestAnimationFrame, which is paused when the tab
+  // is hidden.
+  sizeAllsatsGlobe();
+  renderAllsatsInstances();
+}
+
+function closeAllsats() {
+  const modal = $('allsats-modal');
+  if (!modal) return;
+  modal.hidden = true;
+  modal.setAttribute('aria-hidden', 'true');
+  allsatsOpen = false;
+}
+
+// Called from finishUpdate() — keep the pop-up live on each 10 s tick.
+function refreshAllsats() {
+  if (allsatsOpen && allsatsInst) renderAllsatsInstances();
+}
+
+(function setupAllsats() {
+  const btn = $('allsats-btn');
+  if (!btn) return;
+  btn.addEventListener('click', openAllsats);
+  $('allsats-close')?.addEventListener('click', closeAllsats);
+  // Click the dimmed backdrop (anywhere outside the card) → close.
+  $('allsats-modal')?.addEventListener('click', e => {
+    if (e.target.id === 'allsats-modal') closeAllsats();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && allsatsOpen) closeAllsats();
+  });
+  window.addEventListener('resize', () => { if (allsatsOpen) sizeAllsatsGlobe(); });
 })();

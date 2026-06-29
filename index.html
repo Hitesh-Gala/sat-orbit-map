@@ -15,6 +15,60 @@
        for the Hinglish tagline.  JetBrains Mono stays for data/UI. -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=14">
+  <style>
+    /* ===================================================================
+       "View all satellites" pop-up — a self-contained modal globe that
+       plots EVERY above-horizon satellite (the main globe is capped at
+       120 for clarity/performance).  Scoped to the main page only, so it
+       lives here rather than in the shared styles.css.
+       =================================================================== */
+    .allsats-modal{
+      position:fixed; inset:0; z-index:1000; display:flex;
+      align-items:center; justify-content:center; padding:24px;
+      background:rgba(4,8,14,.72); backdrop-filter:blur(4px);
+    }
+    .allsats-modal[hidden]{ display:none; }
+    .allsats-card{
+      position:relative; display:flex; flex-direction:column;
+      width:min(1120px,95vw); height:min(86vh,840px);
+      background:#070d14; border:1px solid #1d3147; border-radius:12px;
+      box-shadow:0 24px 70px rgba(0,0,0,.6); overflow:hidden;
+    }
+    .allsats-header{
+      display:flex; align-items:center; gap:16px; flex:0 0 auto;
+      padding:12px 16px; border-bottom:1px solid #14233a; background:#0a121d;
+    }
+    .allsats-header h2{
+      margin:0; font-family:'Orbitron',sans-serif; font-weight:700;
+      font-size:15px; letter-spacing:.04em; color:#e6f0fb;
+    }
+    .allsats-meta{ font-family:var(--mono,monospace); font-size:12px; color:#8aa0b8; margin-top:3px; }
+    .allsats-meta strong{ color:#4ea8ff; font-weight:600; }
+    .allsats-legend{ margin-left:auto; display:flex; gap:14px; font-family:var(--mono,monospace); font-size:12px; color:#aebfd0; }
+    .allsats-legend i{ display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; vertical-align:middle; box-shadow:0 0 7px currentColor; }
+    .allsats-legend i.ncn{ background:#67e8a4; color:#67e8a4; }
+    .allsats-legend i.cn{ background:#ff6b6b; color:#ff6b6b; }
+    .allsats-close{
+      flex:0 0 auto; width:30px; height:30px; border-radius:7px; cursor:pointer;
+      background:#10203a; color:#cfe0f2; border:1px solid #1d3147; font-size:18px; line-height:1;
+      transition:background .15s,border-color .15s;
+    }
+    .allsats-close:hover{ background:#1b3559; border-color:#4ea8ff; }
+    .allsats-globe{ flex:1 1 auto; position:relative; min-height:0; cursor:grab; }
+    .allsats-globe:active{ cursor:grabbing; }
+    .allsats-hint{
+      position:absolute; left:14px; bottom:12px; z-index:2; pointer-events:none;
+      font-family:var(--mono,monospace); font-size:11px; color:#7e93aa;
+      background:rgba(7,13,20,.6); padding:4px 9px; border-radius:6px;
+    }
+    /* Disclaimer note in the HUD that the globe is capped. */
+    .globe-cap-note .hint{ margin-bottom:8px; }
+    .globe-cap-note .hint strong{ color:#ffd27f; }
+    @media (max-width:560px){
+      .allsats-legend{ display:none; }
+      .allsats-card{ height:90vh; }
+    }
+  </style>
 </head>
 <body class="page-main">
   <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
@@ -143,7 +197,49 @@
       </button>
     </section>
 
+    <!-- Why the globe and the over-horizon counts can differ, plus a way
+         to see the full set without cluttering the main globe. -->
+    <section class="panel globe-cap-note" aria-label="globe display note">
+      <div class="hint">The dots on the globe <strong>won't match the
+        numbers above</strong>, and that's by design. For a clear, fast
+        view the globe plots only the <strong>120 highest-elevation</strong>
+        satellites above the horizon (Chinese and non-Chinese mixed
+        together). <em>Total SVs Tracked</em> is the whole catalogue, and
+        the two <em>Over Horizon</em> counts tally <em>every</em> satellite
+        above it — so both run well past the dots drawn when the sky is
+        busy. Open the pop-up below to see every one.</div>
+      <button type="button" id="allsats-btn" class="btn-viewmode"
+              title="Open a pop-up globe showing every satellite above the horizon — the main globe stays unchanged">
+        <span class="btn-viewmode-icon">🛰</span>
+        <span class="btn-viewmode-label">View all on a pop-up globe</span>
+      </button>
+    </section>
+
   </aside>
+
+  <!-- "View all satellites" pop-up — an independent globe (InstancedMesh,
+       so thousands of dots cost one draw call) that plots every
+       above-horizon satellite.  Opened by #allsats-btn; the main globe is
+       never touched.  Hidden until first opened. -->
+  <div id="allsats-modal" class="allsats-modal" hidden aria-hidden="true"
+       role="dialog" aria-modal="true" aria-labelledby="allsats-title">
+    <div class="allsats-card">
+      <header class="allsats-header">
+        <div>
+          <h2 id="allsats-title">Every satellite above the horizon</h2>
+          <div class="allsats-meta" id="allsats-meta">…</div>
+        </div>
+        <div class="allsats-legend">
+          <span><i class="ncn"></i>Non-Chinese</span>
+          <span><i class="cn"></i>Chinese</span>
+        </div>
+        <button type="button" id="allsats-close" class="allsats-close" aria-label="Close pop-up">×</button>
+      </header>
+      <div id="allsats-globe" class="allsats-globe">
+        <div class="allsats-hint">Drag to rotate · scroll to zoom</div>
+      </div>
+    </div>
+  </div>
 
   <!-- three.js MUST load before globe.gl so app.js can construct
        THREE.Mesh / SphereGeometry / MeshBasicMaterial for the
@@ -154,7 +250,7 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=8"></script>
-  <script src="app.js?v=27"></script>
+  <script src="app.js?v=28"></script>
   <script src="news-ticker.js?v=13"></script>
   <script src="mobile-menu.js?v=6"></script>
   <script src="flash-popup.js?v=4"></script>
