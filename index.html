@@ -61,6 +61,19 @@
       font-family:var(--mono,monospace); font-size:11px; color:#7e93aa;
       background:rgba(7,13,20,.6); padding:4px 9px; border-radius:6px;
     }
+    /* Dot-size + altitude-scale sliders in the pop-up (mirrors the 3-D
+       Visualiser's .viz-controls). */
+    .allsats-controls{
+      display:flex; gap:22px; flex-wrap:wrap; flex:0 0 auto;
+      padding:9px 16px; border-bottom:1px solid #14233a; background:#0a121d;
+    }
+    .allsats-controls .ac-slider{ display:flex; flex-direction:column; gap:3px; flex:1 1 180px; max-width:280px; }
+    .allsats-controls .ac-cap{
+      font-family:var(--mono,monospace); font-size:11px; letter-spacing:.06em;
+      text-transform:uppercase; color:#8aa0b8;
+    }
+    .allsats-controls .ac-cap b{ color:#4ea8ff; font-weight:600; font-variant-numeric:tabular-nums; }
+    .allsats-controls input[type=range]{ width:100%; accent-color:#4ea8ff; cursor:pointer; }
     /* Disclaimer note in the HUD that the globe is capped. */
     .globe-cap-note .hint{ margin-bottom:8px; }
     .globe-cap-note .hint strong{ color:#ffd27f; }
@@ -235,10 +248,25 @@
         </div>
         <button type="button" id="allsats-close" class="allsats-close" aria-label="Close pop-up">×</button>
       </header>
+      <div class="allsats-controls">
+        <label class="ac-slider">
+          <span class="ac-cap">Dot size <b id="allsats-dot-val">1.0</b>×</span>
+          <input type="range" id="allsats-dot-size" min="0.3" max="3" step="0.1" value="1"
+                 aria-label="Satellite dot size">
+        </label>
+        <label class="ac-slider">
+          <span class="ac-cap">Altitude scale <b id="allsats-alt-val">1.0</b>×</span>
+          <input type="range" id="allsats-alt-scale" min="0.2" max="3" step="0.1" value="1"
+                 aria-label="Altitude scale">
+        </label>
+      </div>
       <div id="allsats-globe" class="allsats-globe">
-        <div class="allsats-hint">Drag to rotate · scroll to zoom</div>
+        <div class="allsats-hint">Drag to rotate · scroll to zoom · hover a dot for its name &amp; altitude</div>
       </div>
     </div>
+    <!-- Cursor-following hover tooltip (name + altitude).  Sits OUTSIDE
+         .allsats-card so the card's overflow:hidden can't clip it. -->
+    <div id="allsats-tip" class="sat-tip-3d" hidden></div>
   </div>
 
   <!-- three.js MUST load before globe.gl so app.js can construct
@@ -250,7 +278,7 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=8"></script>
-  <script src="app.js?v=28"></script>
+  <script src="app.js?v=29"></script>
   <script src="news-ticker.js?v=13"></script>
   <script src="mobile-menu.js?v=6"></script>
   <script src="flash-popup.js?v=4"></script>

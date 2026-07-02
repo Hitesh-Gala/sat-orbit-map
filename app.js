@@ -642,12 +642,18 @@ const ALLSATS_MAX = 12000;          // headroom over the above-horizon set
 let allsatsGlobe  = null;           // lazy Globe() instance
 let allsatsInst   = null;           // THREE.InstancedMesh
 let allsatsOpen   = false;
+let allsatsAltScale = 1.0;          // altitude-scale slider (× true altitude)
+let allsatsDotScale = 1.0;          // dot-size slider (× base sphere scale)
+let allsatsRendered = [];           // parallel to active instances: {name, alt, cn, x, y, z}
+let allsatsHoverIdx = -1;
+const ALLSATS_PICK_PX = 12;         // cursor hover tolerance in screen pixels
 
 const _asPos      = new THREE.Vector3();
 const _asQuat     = new THREE.Quaternion();
 const _asScale    = new THREE.Vector3();
 const _asMat      = new THREE.Matrix4();
 const _asHide     = new THREE.Matrix4().makeScale(0, 0, 0);
+const _asPick     = new THREE.Vector3();
 const _asColorCN  = new THREE.Color(COLOR_CN);
 const _asColorNCN = new THREE.Color(COLOR_NONCN);
 
@@ -690,15 +696,21 @@ function renderAllsatsInstances() {
   if (!allsatsInst) return;
   const sats = lastAboveHorizon;
   const n = Math.min(sats.length, ALLSATS_MAX);
+  allsatsRendered.length = 0;
   for (let i = 0; i < n; i++) {
     const s = sats[i];
-    const p = allsatsGlobe.getCoords(s.lat, s.lon, s.alt / EARTH_R_KM);
+    // Altitude-scale slider stretches/compresses the radial spread without
+    // touching the angular sub-point position.
+    const p = allsatsGlobe.getCoords(s.lat, s.lon, (s.alt / EARTH_R_KM) * allsatsAltScale);
     _asPos.set(p.x, p.y, p.z);
-    // Gentle altitude-based scale-up so distant GEO dots stay visible.
-    _asScale.setScalar(1 + Math.min(1.4, s.alt / 30000));
+    // Base scale bumps gently with altitude so distant GEO dots stay
+    // visible; the dot-size slider then scales the whole set.
+    _asScale.setScalar((1 + Math.min(1.4, s.alt / 30000)) * allsatsDotScale);
     _asMat.compose(_asPos, _asQuat, _asScale);
     allsatsInst.setMatrixAt(i, _asMat);
     allsatsInst.setColorAt(i, s.cn ? _asColorCN : _asColorNCN);
+    // Cache scene position for the screen-space hover picker.
+    allsatsRendered.push({ name: s.name, alt: s.alt, cn: s.cn, x: p.x, y: p.y, z: p.z });
   }
   allsatsInst.count = n;
   allsatsInst.instanceMatrix.needsUpdate = true;
@@ -737,11 +749,78 @@ function closeAllsats() {
   modal.hidden = true;
   modal.setAttribute('aria-hidden', 'true');
   allsatsOpen = false;
+  hideAllsatsTip();
 }
 
 // Called from finishUpdate() — keep the pop-up live on each 10 s tick.
 function refreshAllsats() {
   if (allsatsOpen && allsatsInst) renderAllsatsInstances();
+}
+
+// --- Hover tooltip on the pop-up globe -----------------------------------
+// Screen-space pick: project every rendered sat's cached scene position to
+// pixels and take the nearest within ALLSATS_PICK_PX of the cursor, skipping
+// any dot occluded behind the globe.  Mirrors viz3d.js's picker.
+function pickAllsat(ev) {
+  const el = $('allsats-globe');
+  if (!el || !allsatsGlobe || !allsatsRendered.length) return -1;
+  const rect = el.getBoundingClientRect();
+  const mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
+  const cam = allsatsGlobe.camera();
+  // Make sure the camera's world / inverse matrices are current before we
+  // project — don't rely on a render having just run (it's paused when the
+  // tab is hidden, and can lag a hover between frames).
+  cam.updateMatrixWorld();
+  const cx = cam.position.x, cy = cam.position.y, cz = cam.position.z;
+  let best = -1, bestD2 = ALLSATS_PICK_PX * ALLSATS_PICK_PX;
+  for (let i = 0; i < allsatsRendered.length; i++) {
+    const s = allsatsRendered[i];
+    _asPick.set(s.x, s.y, s.z).project(cam);
+    if (_asPick.z > 1 || _asPick.z < -1) continue;   // behind camera / clipped
+    const sx = (_asPick.x *  0.5 + 0.5) * rect.width;
+    const sy = (_asPick.y * -0.5 + 0.5) * rect.height;
+    const dx = sx - mx, dy = sy - my, d2 = dx * dx + dy * dy;
+    if (d2 >= bestD2) continue;
+    // Occlusion: closest approach of the camera→sat segment to the origin
+    // must clear the globe radius (100, with a unit of grace).
+    const vx = s.x - cx, vy = s.y - cy, vz = s.z - cz;
+    const L2 = vx * vx + vy * vy + vz * vz;
+    const t = -(cx * vx + cy * vy + cz * vz) / L2;
+    if (t > 0 && t < 1) {
+      const px = cx + vx * t, py = cy + vy * t, pz = cz + vz * t;
+      if (px * px + py * py + pz * pz < 99 * 99) continue;
+    }
+    bestD2 = d2; best = i;
+  }
+  return best;
+}
+
+function showAllsatsTip(i, ev) {
+  const s = allsatsRendered[i];
+  const tip = $('allsats-tip');
+  if (!s || !tip) return;
+  tip.innerHTML = `<b>${esc(s.name)}</b><div>Altitude <strong>${s.alt.toFixed(0)} km</strong>`
+    + `${s.cn ? ' · <span style="color:#ff6b6b">Chinese payload</span>' : ''}</div>`;
+  tip.hidden = false;
+  const w = tip.offsetWidth || 190, h = tip.offsetHeight || 48;
+  let x = ev.clientX + 16, y = ev.clientY + 16;
+  if (x + w > window.innerWidth)  x = ev.clientX - w - 12;
+  if (y + h > window.innerHeight) y = ev.clientY - h - 12;
+  tip.style.left = x + 'px';
+  tip.style.top  = y + 'px';
+}
+
+function hideAllsatsTip() {
+  allsatsHoverIdx = -1;
+  const tip = $('allsats-tip');
+  if (tip) tip.hidden = true;
+}
+
+function onAllsatsMove(ev) {
+  if (!allsatsOpen) return;
+  const i = pickAllsat(ev);
+  if (i !== -1) { allsatsHoverIdx = i; showAllsatsTip(i, ev); }
+  else if (allsatsHoverIdx !== -1) hideAllsatsTip();
 }
 
 (function setupAllsats() {
@@ -757,4 +836,23 @@ function refreshAllsats() {
     if (e.key === 'Escape' && allsatsOpen) closeAllsats();
   });
   window.addEventListener('resize', () => { if (allsatsOpen) sizeAllsatsGlobe(); });
+
+  // Dot-size + altitude-scale sliders — repaint the instances live.
+  $('allsats-dot-size')?.addEventListener('input', e => {
+    allsatsDotScale = parseFloat(e.target.value) || 1;
+    $('allsats-dot-val').textContent = allsatsDotScale.toFixed(1);
+    if (allsatsOpen) renderAllsatsInstances();
+  });
+  $('allsats-alt-scale')?.addEventListener('input', e => {
+    allsatsAltScale = parseFloat(e.target.value) || 1;
+    $('allsats-alt-val').textContent = allsatsAltScale.toFixed(1);
+    if (allsatsOpen) renderAllsatsInstances();
+  });
+
+  // Hover tooltip (name + altitude).  Listeners on the globe container —
+  // the canvas fills it, so mousemove bubbles up and the container's rect
+  // matches the canvas.
+  const gEl = $('allsats-globe');
+  gEl?.addEventListener('mousemove', onAllsatsMove);
+  gEl?.addEventListener('mouseleave', hideAllsatsTip);
 })();
