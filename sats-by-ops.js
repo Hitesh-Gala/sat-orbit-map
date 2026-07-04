@@ -32,27 +32,27 @@ const CATEGORIES = [
 
   // ----- Mega-constellations / LEO comms ---------------------------------
   { id: 'op-starlink',  tier: 'Constellations', label: 'Starlink (SpaceX)',       color: '#67e8a4', test: n => /^STARLINK/i.test(n) },
-  { id: 'op-oneweb',    tier: 'Constellations', label: 'OneWeb',                  color: '#67c8ff', test: n => /^ONEWEB/i.test(n) },
-  { id: 'op-kuiper',    tier: 'Constellations', label: 'Kuiper (Amazon)',         color: '#f39c12', test: n => /^KUIPER/i.test(n) },
+  { id: 'op-oneweb',    tier: 'Constellations', label: 'Eutelsat OneWeb',         color: '#67c8ff', test: n => /^ONEWEB/i.test(n) },
+  { id: 'op-kuiper',    tier: 'Constellations', label: 'Amazon Leo (ex-Kuiper)',  color: '#f39c12', test: n => /^KUIPER/i.test(n) },
   { id: 'op-iridium',   tier: 'Constellations', label: 'Iridium',                 color: '#bdc3c7', test: n => /^IRIDIUM/i.test(n) },
   { id: 'op-globalstar',tier: 'Constellations', label: 'Globalstar',              color: '#7f8c8d', test: n => /^GLOBALSTAR/i.test(n) },
-  { id: 'op-orbcomm',   tier: 'Constellations', label: 'Orbcomm',                 color: '#aab2bd', test: n => /^ORBCOMM/i.test(n) },
-  { id: 'op-guowang',   tier: 'Constellations', label: 'Guowang (China)',         color: '#ff7f50', test: n => /^GUOWANG/i.test(n) },
+  { id: 'op-orbcomm',   tier: 'Constellations', label: 'ORBCOMM',                 color: '#aab2bd', test: n => /^ORBCOMM/i.test(n) },
+  { id: 'op-guowang',   tier: 'Constellations', label: 'Guowang (China SatNet)',  color: '#ff7f50', test: n => /^GUOWANG/i.test(n) },
   { id: 'op-qianfan',   tier: 'Constellations', label: 'Qianfan / G60 (China)',   color: '#ffa07a', test: n => /^(QIANFAN|G60)/i.test(n) },
 
   // ----- Earth observation companies -------------------------------------
-  { id: 'eo-planet',    tier: 'Earth Obs',      label: 'Planet (Flock / SkySat)', color: '#16a085', test: n => /^(FLOCK|SKYSAT)/i.test(n) },
+  { id: 'eo-planet',    tier: 'Earth Obs',      label: 'Planet (Flock / SkySat)', color: '#16a085', test: n => /^(FLOCK|SKYSAT|PELICAN|TANAGER)/i.test(n) },
   { id: 'eo-spire',     tier: 'Earth Obs',      label: 'Spire (LEMUR)',           color: '#1abc9c', test: n => /^LEMUR/i.test(n) },
-  { id: 'eo-maxar',     tier: 'Earth Obs',      label: 'Maxar (WorldView/GeoEye)',color: '#3498db', test: n => /^(WORLDVIEW|GEOEYE|MAXAR|QUICKBIRD)/i.test(n) },
+  { id: 'eo-maxar',     tier: 'Earth Obs',      label: 'Vantor — ex-Maxar (WorldView)', color: '#3498db', test: n => /^(WORLDVIEW|GEOEYE|MAXAR|QUICKBIRD|LEGION)/i.test(n) },
   { id: 'eo-blacksky',  tier: 'Earth Obs',      label: 'BlackSky',                color: '#5b6dcd', test: n => /^BLACKSKY/i.test(n) },
-  { id: 'eo-capella',   tier: 'Earth Obs',      label: 'Capella (SAR)',           color: '#8e44ad', test: n => /^CAPELLA/i.test(n) },
+  { id: 'eo-capella',   tier: 'Earth Obs',      label: 'Capella Space (SAR)',     color: '#8e44ad', test: n => /^CAPELLA/i.test(n) },
   { id: 'eo-iceye',     tier: 'Earth Obs',      label: 'ICEYE (SAR)',             color: '#2980b9', test: n => /^ICEYE/i.test(n) },
 
   // ----- Communications (mostly GEO) -------------------------------------
-  { id: 'com-inmarsat', tier: 'Communications', label: 'Inmarsat',                color: '#d35400', test: n => /^INMARSAT/i.test(n) },
-  { id: 'com-intelsat', tier: 'Communications', label: 'Intelsat',                color: '#c0392b', test: n => /^INTELSAT/i.test(n) },
+  { id: 'com-inmarsat', tier: 'Communications', label: 'Viasat / Inmarsat',       color: '#d35400', test: n => /^(INMARSAT|VIASAT)/i.test(n) },
+  { id: 'com-intelsat', tier: 'Communications', label: 'Intelsat (SES Group)',    color: '#c0392b', test: n => /^INTELSAT/i.test(n) },
   { id: 'com-eutelsat', tier: 'Communications', label: 'Eutelsat',                color: '#e74c3c', test: n => /^EUTELSAT/i.test(n) },
-  { id: 'com-ses',      tier: 'Communications', label: 'SES / Astra',             color: '#f1c40f', test: n => /^(SES[- ]|ASTRA)/i.test(n) },
+  { id: 'com-ses',      tier: 'Communications', label: 'SES / O3b',               color: '#f1c40f', test: n => /^(SES[- ]|ASTRA|O3B)/i.test(n) },
   { id: 'com-chinasat', tier: 'Communications', label: 'ChinaSat / Zhongxing',    color: '#c39bd3', test: n => /^(CHINASAT|ZHONGXING|ZX[- ])/i.test(n) },
   { id: 'com-apstar',   tier: 'Communications', label: 'APSTAR / AsiaSat',        color: '#d2b4de', test: n => /^(APSTAR|ASIASAT)/i.test(n) },
 
@@ -82,6 +82,231 @@ function categorize(name) {
   }
   return CATEGORIES.length - 1;
 }
+
+// =========================================================================
+// Operator dossiers — shown in the click-through pop-up.  Keyed by the
+// category `id`.  `fleet` = total operated to date, `active` = roughly how
+// many are working now, `retired` = de-orbited / decommissioned / dead.
+// `note` explains why the live-globe dot count can be lower than the real
+// fleet.  Figures compiled from open sources, late 2025 / early 2026.
+// =========================================================================
+
+const COMPANY_INFO = {
+  // ---- GNSS (government systems) ----
+  'gnss-gps': {
+    name: 'GPS / NAVSTAR', operator: 'U.S. Space Force', founded: '1978 (full service 1995)',
+    fleet: '~78 launched across Blocks I–III', active: '31 operational', retired: 'Block I/II/IIA/IIR units decommissioned',
+    desc: 'The United States’ global navigation system — free positioning, navigation and timing worldwide, run by the US Space Force (Space Systems Command).',
+    news: 'GPS III / IIIF modernisation ongoing; newest GPS III space vehicles launched on Falcon 9 / Vulcan.',
+    note: 'GPS deliberately keeps ~31 healthy birds; retired NAVSTARs leave the active catalogue, so the dot count stays near the operational baseline.' },
+  'gnss-glonass': {
+    name: 'GLONASS', operator: 'Roscosmos (Russia)', founded: '1982 (restored 2011)',
+    fleet: '130+ launched since 1982', active: '~24 operational', retired: 'Most first- and second-gen units decayed',
+    desc: 'Russia’s global navigation constellation in three MEO planes. GLONASS-K/K2 satellites are the current modernisation.',
+    news: 'GLONASS-K2 launches continuing to refresh the fleet.' },
+  'gnss-galileo': {
+    name: 'Galileo', operator: 'EUSPA / ESA (European Union)', founded: '2011 (first launch)',
+    fleet: '~30 launched', active: '~24 operational + spares', retired: 'Two early IOV/GIOVE test sats retired',
+    desc: 'The EU’s civil-controlled GNSS — the most accurate open positioning signal available. Second-generation (G2) satellites are in build.',
+    news: 'Galileo Second Generation (G2-G) satellites ordered; constellation being completed to full 24+spares.' },
+  'gnss-beidou': {
+    name: 'BeiDou (BDS)', operator: 'CSNO (China)', founded: '2000 (BDS-3 global 2020)',
+    fleet: '~60 launched across BDS-1/2/3', active: '~45 operational', retired: 'BDS-1 and early BDS-2 units retired',
+    desc: 'China’s GNSS across GEO, IGSO and MEO. BDS-3 completed global service in 2020.',
+    news: 'Next-generation BeiDou design finalised in 2025; test satellites due 2027, full fleet by 2035.' },
+  'gnss-qzss': {
+    name: 'QZSS (Michibiki)', operator: 'QSS / Cabinet Office (Japan)', founded: '2010 (QZS-1)',
+    fleet: '~5 launched', active: '4 operational', retired: 'QZS-1 (original) replaced',
+    desc: 'Japan’s regional GPS-augmentation system in inclined geosynchronous + GEO orbits, optimised for high-elevation coverage over Japan.',
+    news: 'Expanding from 4 to a 7-satellite autonomous constellation by the late 2020s.' },
+  'gnss-navic': {
+    name: 'NavIC / IRNSS', operator: 'ISRO (India)', founded: '2013 (IRNSS-1A)',
+    fleet: '~11 launched', active: '7–8 operational', retired: 'IRNSS-1A (atomic-clock failure) retired',
+    desc: 'India’s regional navigation system over the subcontinent. NVS-series (NVS-01/-02) are the modernised second generation.',
+    news: 'NVS-series replacing first-gen IRNSS birds with L1 civil signals.' },
+
+  // ---- LEO mega-constellations ----
+  'op-starlink': {
+    name: 'Starlink', operator: 'SpaceX (USA)', founded: '2019 (first operational launch)',
+    fleet: '~10,000+ launched', active: '~9,350 operational (Dec 2025)', retired: '~1,000+ de-orbited (routine ~5-yr replacement)',
+    desc: 'By far the largest satellite constellation ever built — SpaceX’s LEO broadband network. ~2,500 satellites launched in 2025 alone across 140+ flights.',
+    news: 'Direct-to-Cell service scaling with carriers; larger V3 satellites planned for Starship.',
+    note: 'The globe shows most of these, but the shared "active" catalogue and this page’s instance cap can trim the very newest batches.' },
+  'op-oneweb': {
+    name: 'Eutelsat OneWeb', operator: 'Eutelsat Group', founded: '2012 (merged with Eutelsat, Sept 2023)',
+    fleet: '~656 Gen-1 launched', active: '~630 operational', retired: 'A handful of early failures',
+    desc: 'A 648-satellite first-generation LEO broadband network, now the LEO layer of Eutelsat’s multi-orbit (GEO+LEO) offering after the 2023 merger.',
+    news: 'Ordered 340 next-gen OneWeb satellites from Airbus (2025–26) toward a ~1,040-sat constellation.' },
+  'op-kuiper': {
+    name: 'Amazon Leo', operator: 'Amazon (USA)', founded: '2019 as Project Kuiper (rebranded Amazon Leo, Nov 2025)',
+    fleet: '~375+ launched', active: 'ramping toward 3,236 licensed', retired: '2 prototypes de-orbited',
+    desc: 'Amazon’s LEO broadband constellation, rebranded from "Project Kuiper" in November 2025. Must place half of its 3,236 licensed satellites in service by July 2026 (FCC).',
+    news: 'Rebrand to Amazon Leo + commercial-service debut and terminal line-up unveiled late 2025.',
+    note: 'Named "KUIPER-…" in the catalogue and still early in deployment, so the count climbs fast between refreshes.' },
+  'op-iridium': {
+    name: 'Iridium', operator: 'Iridium Communications (USA)', founded: '1997 (Iridium NEXT 2017–19)',
+    fleet: '~80 NEXT deployed (of 81 built) + 95 original 1st-gen', active: '66 operational + ~14 on-orbit spares', retired: 'Entire 1st-gen constellation de-orbited by 2019',
+    desc: 'The only truly pole-to-pole, cross-linked LEO voice/data network — L-band phones, IoT and aviation safety services.',
+    news: 'Rocket Lab agreed to acquire Iridium for ~$8B (announced 2026).' },
+  'op-globalstar': {
+    name: 'Globalstar', operator: 'Globalstar, Inc. (USA)', founded: '1991',
+    fleet: '~90+ launched across two generations', active: '~31 L-band', retired: 'Most 1st-gen units retired',
+    desc: 'Mobile-satellite voice + IoT operator. Powers Apple iPhone Emergency SOS / satellite messaging.',
+    news: 'Apple committed ~$1.7B (incl. a 20% stake) to fund a new MDA-built constellation; ~85% of new capacity reserved for Apple.' },
+  'op-orbcomm': {
+    name: 'ORBCOMM', operator: 'ORBCOMM Inc. (USA, private)', founded: '1993',
+    fleet: 'OG2: 62 launched', active: '~61 in orbit', retired: 'OG1 first-gen retired',
+    desc: 'The first LEO network built exclusively for IoT / machine-to-machine — 2.4M+ subscribers in transport, maritime, energy and agriculture.',
+    news: 'Taken private by GI Partners (2021); OGx high-throughput IoT service now live.' },
+  'op-guowang': {
+    name: 'Guowang (国网)', operator: 'China SatNet / CAST', founded: '2021 (first launch Dec 2024)',
+    fleet: '~126 launched in 2025', active: '100+ operational', retired: '—',
+    desc: 'China’s state-backed ~13,000-satellite LEO broadband constellation, with assessed PNT / imaging / SIGINT side-functions.',
+    news: 'Passed 100+ satellites by Nov 2025 across 16 launches.' },
+  'op-qianfan': {
+    name: 'Qianfan / G60 (Thousand Sails)', operator: 'Shanghai Spacecom (SSST)', founded: '2024',
+    fleet: '~200 launched by 2026', active: '~200', retired: '—',
+    desc: 'Shanghai-backed commercial LEO broadband "Starlink rival" — Phase 1 of 1,296 satellites, 15,000+ planned.',
+    news: 'Deployment paced by early-batch issues; still one of China’s two flagship mega-constellations.' },
+
+  // ---- Earth observation ----
+  'eo-planet': {
+    name: 'Planet Labs PBC', operator: 'Planet Labs (San Francisco)', founded: '2010',
+    fleet: '~600+ launched — the largest EO fleet ever flown', active: '~150+ (Dove/SuperDove flock + ~21 SkySat + Pelican + Tanager)', retired: 'Hundreds of early Doves re-entered (~3-yr design life)',
+    desc: 'Images the entire landmass daily with a "line-scanner" flock of ~3 m Doves, plus ~0.5 m SkySats, new high-res Pelican, and hyperspectral Tanager.',
+    news: 'First profitable year; Pelican-2 and Tanager-1 online; large multi-year defence backlog.',
+    note: 'Doves are named "FLOCK 4x-nn" and SkySats "SKYSAT-…". Because Doves retire every ~3 years, the live count is far below the ~600 ever launched.' },
+  'eo-spire': {
+    name: 'Spire Global', operator: 'Spire Global, Inc. (USA)', founded: '2012',
+    fleet: '~199 LEMUR launched', active: '100+ multipurpose', retired: 'Many early LEMURs re-entered',
+    desc: 'Nanosatellite constellation tracking ships (AIS), aircraft (ADS-B) and gathering GPS radio-occultation weather data, sold as data-as-a-service.',
+    news: 'Demonstrated two-way optical inter-satellite links; refocusing on data + space-services.' },
+  'eo-maxar': {
+    name: 'Vantor (formerly Maxar Intelligence)', operator: 'Vantor', founded: 'Maxar 2017; rebranded Vantor, 1 Oct 2025',
+    fleet: 'operates ~10 imaging satellites', active: '4 legacy electro-optical (WorldView/GeoEye) + 6 WorldView Legion', retired: 'QuickBird, WorldView-1 heritage & EarlyBird re-entered',
+    desc: 'High-resolution (~30 cm) optical Earth imagery. Maxar was taken private by Advent (2023) and split on 1 Oct 2025 into Vantor (imagery) and Lanteris Space Systems (satellite manufacturing).',
+    news: 'Rebranded to Vantor and launched the "TensorGlobe" AI spatial-intelligence platform (Oct 2025).',
+    note: 'Vantor is a high-resolution imaging company, NOT a mega-constellation — it flies only ~10 satellites, so expect a handful of dots, not thousands. On the globe they read as WORLDVIEW-…, GEOEYE-1 and WORLDVIEW LEGION-…; the old QuickBird / EarlyBird craft re-entered years ago.' },
+  'eo-blacksky': {
+    name: 'BlackSky', operator: 'BlackSky Technology (USA)', founded: '2014',
+    fleet: '~20+ launched', active: '~14 Gen-2 + 3 Gen-3 (late 2025)', retired: 'Several early Gen-1/2 units retired',
+    desc: 'Rapid-revisit sub-metre optical imaging plus the Spectra AI analytics platform; dawn-to-dusk monitoring for defence and intelligence.',
+    news: 'Gen-3 satellites (~35 cm) brought into service within weeks of launch; strong government contracts.',
+    note: 'A focused ~17-satellite fleet — small by design, so only a cluster of dots appears.' },
+  'eo-capella': {
+    name: 'Capella Space', operator: 'Capella Space (USA)', founded: '2016',
+    fleet: '~20 launched (constellation target 36)', active: '~a dozen operational', retired: 'Early "Whitney" units retired',
+    desc: 'US commercial X-band Synthetic-Aperture Radar — all-weather, day-and-night imaging that sees through cloud and darkness.',
+    news: 'Continuing to replenish/expand with newer Acadia-class SAR satellites.',
+    note: 'A small SAR fleet named "CAPELLA-…"; only the current operational birds appear.' },
+  'eo-iceye': {
+    name: 'ICEYE', operator: 'ICEYE (Finland)', founded: '2014',
+    fleet: '60+ launched since 2018 (world’s largest SAR constellation)', active: '~40 operational', retired: 'Earliest X-band units retired',
+    desc: 'X-band SAR for flood, disaster and defence monitoring — also builds and sells dedicated satellites to sovereign customers.',
+    news: 'Fourth-generation (Gen4) SAR with ~16 cm resolution; 22 satellites launched in 2025.',
+    note: 'Many ICEYE craft are owned by customer/sovereign missions and can be catalogued under other names, so the "ICEYE-…" dots undercount the fleet ICEYE actually built.' },
+
+  // ---- Communications (mostly GEO) ----
+  'com-inmarsat': {
+    name: 'Viasat / Inmarsat', operator: 'Viasat, Inc. (USA)', founded: 'Inmarsat 1979; acquired by Viasat May 2023',
+    fleet: '~20 GEO satellites', active: '~19 (Ka-, L- and S-band)', retired: 'Older Inmarsat-2/3 units retired',
+    desc: 'Global mobile + broadband connectivity for aviation, maritime, government and safety-of-life services. Inmarsat is now Viasat’s L/S-band arm.',
+    news: 'ViaSat-3 F2/F3 high-capacity satellites rolling out to complete global Ka-band coverage.',
+    note: 'A GEO operator — a couple of dozen big satellites parked over the equator, so only a thin arc of dots shows.' },
+  'com-intelsat': {
+    name: 'Intelsat', operator: 'SES Group (Luxembourg)', founded: 'Intelsat 1964; merged into SES, July 2025',
+    fleet: '100+ Intelsat satellites over its history', active: '~50 GEO (now within SES)', retired: 'Dozens of legacy Intelsat birds retired',
+    desc: 'One of the oldest and largest GEO operators. SES completed its ~$3.1B acquisition of Intelsat on 17 July 2025, creating a ~120-satellite multi-orbit operator.',
+    news: 'SES–Intelsat merger closed July 2025; some planned GEO expansion satellites were cancelled.',
+    note: 'GEO fleet — a few dozen satellites on the geostationary belt, so expect a sparse ring rather than a swarm.' },
+  'com-eutelsat': {
+    name: 'Eutelsat', operator: 'Eutelsat Group (France)', founded: '1977',
+    fleet: '~31 GEO satellites', active: '~31 GEO + Eutelsat OneWeb LEO', retired: 'Many first-gen Eutelsat/Hot Bird craft retired',
+    desc: 'European GEO broadcaster (TV/broadband), now a multi-orbit operator via its Eutelsat OneWeb LEO layer.',
+    news: 'Brand unified in 2025; French-state-backed recapitalisation to fund OneWeb Gen-2.',
+    note: 'Its ~31 GEO birds sit on the equatorial belt; the OneWeb LEO sats are counted separately above.' },
+  'com-ses': {
+    name: 'SES / O3b', operator: 'SES S.A. (Luxembourg)', founded: '1985',
+    fleet: '~120 satellites (after the 2025 Intelsat merger)', active: '~90 GEO + ~30 MEO (O3b / O3b mPOWER)', retired: 'Many Astra/legacy GEO units retired',
+    desc: 'GEO broadcast + a unique MEO data layer (O3b / O3b mPOWER). Acquired Intelsat in 2025 to become one of the largest operators outside the LEO mega-constellations.',
+    news: 'Integrating Intelsat; expanding O3b mPOWER MEO capacity.',
+    note: 'Split between the GEO belt and the ~8,000 km MEO O3b ring — two thin bands, not a dense shell.' },
+  'com-chinasat': {
+    name: 'ChinaSat / Zhongxing', operator: 'China Satcom', founded: '1985 (China Satcom)',
+    fleet: '30+ satellites launched', active: '~20+ GEO', retired: 'Older Zhongxing/DFH craft retired',
+    desc: 'China’s state GEO backbone for TV/radio, broadband, emergency and (under cover designations) military communications.',
+    news: 'ChinaSat-10R (Feb 2025) and ChinaSat-9C (Jun 2025) refreshed broadcast capacity.',
+    note: 'GEO operator — a couple dozen satellites on the belt.' },
+  'com-apstar': {
+    name: 'APSTAR / AsiaSat', operator: 'APT Satellite / AsiaSat (Hong Kong)', founded: 'AsiaSat 1988; APT 1992',
+    fleet: '~20 satellites over their history', active: '~10 GEO', retired: 'Early AsiaSat/APStar craft retired',
+    desc: 'Hong Kong-based commercial GEO operators leasing C/Ku/Ka capacity across Asia-Pacific and beyond.',
+    note: 'GEO fleet — only a handful of active satellites on the equatorial belt.' },
+
+  // ---- Meteorology (government agencies) ----
+  'met-noaa': {
+    name: 'NOAA / GOES', operator: 'NOAA NESDIS (USA)', founded: '1975 (first GOES)',
+    fleet: '~40 GOES + POES/JPSS since the 1970s', active: 'GOES-16/18/19 (GEO) + Suomi NPP, NOAA-20/21 (polar)', retired: 'POES fully retired in Aug 2025',
+    desc: 'US civil weather satellites — geostationary GOES for continuous hemispheric imaging plus the polar JPSS series.',
+    news: 'The legacy POES constellation was decommissioned in 2025 (NOAA-15/18/19 shut down); JPSS now carries the polar mission.',
+    note: 'Some "NOAA-xx" dots you might remember are gone — NOAA-15, -18 and -19 were decommissioned in mid-2025.' },
+  'met-meteosat': {
+    name: 'Meteosat / MetOp', operator: 'EUMETSAT (Europe)', founded: '1977 (first Meteosat)',
+    fleet: '~20 Meteosat + MetOp since 1977', active: 'Meteosat-9/10/11 + Meteosat-12 (MTG) + MetOp-B/-C', retired: 'First-generation Meteosats retired',
+    desc: 'Europe’s weather satellites — geostationary Meteosat plus polar-orbiting MetOp, operated by EUMETSAT.',
+    news: 'Meteosat Third Generation ramping up: MTG-I1 (Meteosat-12) operational; MTG-S1 sounder launched July 2025.' },
+  'met-fengyun': {
+    name: 'FengYun', operator: 'China Meteorological Administration', founded: '1988 (FY-1A)',
+    fleet: '~20 launched across FY-1/2/3/4', active: 'FY-3 polar + FY-4 GEO series', retired: 'FY-1 and early FY-2 retired',
+    desc: 'China’s operational weather fleet — polar (FY-3) and geostationary (FY-4) — with data shared internationally via the WMO.',
+    news: 'FY-3H afternoon-orbit satellite launched Sept 2025; FY-4C GEO imager launched Dec 2025.' },
+  'met-himawari': {
+    name: 'Himawari', operator: 'Japan Meteorological Agency', founded: '1977',
+    fleet: '~9 Himawari/GMS since 1977', active: 'Himawari-8 / Himawari-9 (GEO)', retired: 'GMS + Himawari-1..7 retired',
+    desc: 'Japan’s geostationary weather satellites covering the Asia-Pacific and western Pacific.',
+    news: 'Himawari-10 in preparation to succeed the current pair later this decade.' },
+  'met-insat': {
+    name: 'INSAT / Kalpana', operator: 'ISRO / IMD (India)', founded: '1982 (INSAT-1A)',
+    fleet: '~20 INSAT/GSAT with met payloads', active: 'INSAT-3D/3DR/3DS + Kalpana heritage', retired: 'INSAT-1/2 series retired',
+    desc: 'India’s multipurpose GEO satellites carrying weather imagers/sounders alongside communications payloads.',
+    news: 'INSAT-3DS launched 2024 to continue the meteorology mission.' },
+
+  // ---- ISR / classified ----
+  'isr-yaogan': {
+    name: 'Yaogan (遥感)', operator: 'PLA (China)', founded: '2006',
+    fleet: '100+ launched', active: 'Dozens operational', retired: 'Early Yaogan units retired',
+    desc: 'China’s primary military reconnaissance fleet — optical, SAR and electronic-intelligence satellites, often flown in three-satellite ocean-surveillance clusters.',
+    news: 'Yaogan-40 triplet clusters launched through 2025 for "electromagnetic environment" (naval-tracking) missions.' },
+  'isr-gaofen': {
+    name: 'Gaofen (高分)', operator: 'CNSA / CASC (China)', founded: '2013',
+    fleet: '~30+ launched', active: 'GF-1..7 civil + higher-numbered dual-use', retired: 'A few early units retired',
+    desc: 'China’s High-Resolution Earth Observation System (CHEOS) — optical, SAR, hyperspectral and a geostationary starer (GF-4).',
+    news: 'Higher-numbered GF-11/12/14 craft are dual-use and far less publicised.' },
+  'isr-jilin': {
+    name: 'Jilin-1', operator: 'Chang Guang (CGSTL, China)', founded: '2014',
+    fleet: '~140 launched', active: '117+ operational', retired: 'A few early units retired',
+    desc: 'China’s largest commercial EO constellation — sub-metre optical, video, hyperspectral and infrared imaging.',
+    news: 'Targeting 300 satellites; ~6× global / 24× over-China revisit.' },
+  'isr-usa': {
+    name: 'USA-series (classified)', operator: 'U.S. NRO / Space Force', founded: '1984 (USA-1)',
+    fleet: '300+ "USA-nnn" designations to date', active: 'Not disclosed', retired: 'Not disclosed',
+    desc: 'A catch-all designation for classified US payloads — NRO reconnaissance, missile-warning, Space Development Agency and other military satellites.',
+    news: 'NRO proliferated-architecture launches and SDA tranches have added many "USA-nnn" objects recently.',
+    note: 'By design, true capabilities and counts are classified — the catalogue lists these only as "USA-nnn", so the dots reveal orbits, not identities.' },
+  'isr-cosmos': {
+    name: 'Cosmos (Космос)', operator: 'Russian VKS / Roscosmos', founded: '1962 (Cosmos-1)',
+    fleet: '2,500+ "Cosmos" launches since 1962', active: 'Dozens operational', retired: 'The vast majority have re-entered',
+    desc: 'A generic designation used since 1962 for a huge range of Soviet/Russian military and civil satellites — recon, comms, navigation, early-warning and science.',
+    news: 'Recent Cosmos launches include Tundra early-warning and various military payloads.',
+    note: '"Cosmos" is a catch-all label spanning six decades and many mission types, so these dots are not a single program or company.' },
+
+  // ---- Catch-all ----
+  'other': {
+    name: 'Other / uncategorised', operator: 'Many operators', founded: '—',
+    fleet: '~10,000 catalogued objects', active: 'Varies', retired: 'Varies',
+    desc: 'Everything not matched to a named operator above — rideshare cubesats, newer or smaller operators, science and amateur satellites, and objects catalogued only under an individual name or international designator.',
+    note: 'This is why some real operators look "missing": if their satellites are catalogued under individual names the patterns don’t match, they fall in here rather than under their company. Turn this layer on to see them all.' },
+};
 
 // Pre-build THREE.Color objects so we don't re-allocate per instance per tick.
 const CAT_COLOR = CATEGORIES.map(c => new THREE.Color(c.color));
@@ -202,12 +427,13 @@ function buildCategoryPanel() {
       lastTier = c.tier;
     }
     html.push(`
-      <label class="sbo-row" data-idx="${i}">
-        <input type="checkbox" ${categoryEnabled[i] ? 'checked' : ''}>
+      <div class="sbo-row" data-idx="${i}">
+        <input type="checkbox" ${categoryEnabled[i] ? 'checked' : ''} aria-label="Toggle ${escHtml(c.label)} on the globe">
         <span class="swatch" style="background:${c.color};color:${c.color}"></span>
-        <span class="lbl">${escHtml(c.label)}</span>
+        <button type="button" class="lbl" title="About ${escHtml(c.label)}">${escHtml(c.label)}</button>
         <span class="cnt" id="sbo-cnt-${i}">…</span>
-      </label>
+        <button type="button" class="sbo-info" title="About ${escHtml(c.label)}" aria-label="About ${escHtml(c.label)}">ⓘ</button>
+      </div>
     `);
   }
   container.innerHTML = html.join('');
@@ -217,6 +443,15 @@ function buildCategoryPanel() {
       const idx = parseInt(row.dataset.idx, 10);
       categoryEnabled[idx] = cb.checked;
       rerenderFiltered();
+    });
+  });
+  // Clicking the operator name or the ⓘ button opens its dossier pop-up.
+  container.querySelectorAll('.lbl, .sbo-info').forEach(el => {
+    el.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const idx = parseInt(el.closest('.sbo-row').dataset.idx, 10);
+      openCompany(idx);
     });
   });
   $('sbo-all').addEventListener('click', () => {
@@ -325,6 +560,67 @@ function updateCategoryCounts() {
     el.closest('.sbo-row').classList.toggle('zero', categoryCount[i] === 0);
   }
 }
+
+// =========================================================================
+// Operator dossier pop-up
+// =========================================================================
+
+let openCompanyIdx = -1;   // category index whose pop-up is open, or -1
+
+function openCompany(idx) {
+  const c = CATEGORIES[idx];
+  const info = COMPANY_INFO[c.id] || {};
+  const modal = $('sbo-modal');
+  const body  = $('sbo-modal-body');
+  if (!modal || !body) return;
+  openCompanyIdx = idx;
+
+  const stat = (k, v) => v
+    ? `<div class="sbo-stat"><span class="k">${escHtml(k)}</span><span class="v">${escHtml(v)}</span></div>` : '';
+  const live = categoryCount[idx];
+
+  body.innerHTML = `
+    <div class="sbo-modal-head">
+      <span class="sbo-modal-dot" style="background:${c.color};color:${c.color}"></span>
+      <div class="sbo-modal-titles">
+        <h2 id="sbo-modal-title">${escHtml(info.name || c.label)}</h2>
+        <div class="sbo-modal-sub">${escHtml(info.operator || '')}${info.founded ? ' · Founded ' + escHtml(info.founded) : ''}</div>
+      </div>
+    </div>
+    <div class="sbo-stats">
+      <div class="sbo-stat hl"><span class="k">On the globe now</span><span class="v" style="color:${c.color}">${live.toLocaleString()}</span></div>
+      ${stat('Fleet operated to date', info.fleet)}
+      ${stat('Active now', info.active)}
+      ${stat('Retired / de-orbited', info.retired)}
+    </div>
+    ${info.desc ? `<p class="sbo-desc">${escHtml(info.desc)}</p>` : ''}
+    ${info.news ? `<p class="sbo-field"><span class="k">Latest</span> ${escHtml(info.news)}</p>` : ''}
+    ${info.note ? `<div class="sbo-note"><span class="k">Why the globe may show fewer</span> ${escHtml(info.note)}</div>` : ''}
+    <p class="sbo-foot">“On the globe now” is the live count of matching satellites in CelesTrak’s active catalogue.
+      Other figures are compiled from open sources (late 2025 – early 2026) and are approximate.</p>
+  `;
+  modal.hidden = false;
+  modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeCompany() {
+  const modal = $('sbo-modal');
+  if (!modal) return;
+  modal.hidden = true;
+  modal.setAttribute('aria-hidden', 'true');
+  openCompanyIdx = -1;
+}
+
+(function setupCompanyModal() {
+  $('sbo-modal-close')?.addEventListener('click', closeCompany);
+  // Click the dimmed backdrop (outside the card) → close.
+  $('sbo-modal')?.addEventListener('click', e => {
+    if (e.target.id === 'sbo-modal') closeCompany();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && openCompanyIdx !== -1) closeCompany();
+  });
+})();
 
 // =========================================================================
 // Chunked SGP4 propagation (same pattern as viz3d)
