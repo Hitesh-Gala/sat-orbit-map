@@ -826,14 +826,15 @@ function renderTable(db) {
     </tr>`).join('') || '<tr><td colspan="7" class="muted" style="padding:20px;text-align:center">No matching satellites.</td></tr>';
 
   hydrateThumbs(slice);   // async, no need to await
-  renderAbsentSection();
 }
 
 // =========================================================================
-// "Previously tracked" section — objects catalogued on an earlier visit
+// "Previously tracked" pop-up — objects catalogued on an earlier visit
 // whose TLE/SATCAT entry is absent from the current snapshot (decayed,
 // deep-space like Aditya-L1, or dropped from CelesTrak's "active" list).
-// Their last-known data is retained here so nothing silently vanishes.
+// Opened from the #prev-tracked-btn pill; same columns as the main table
+// plus a "Last seen" column.  Honours the page's search / country filter
+// (absentRows is filtered in rebuildFiltered).
 // =========================================================================
 
 const ABSENT_MAX = 1000;   // cap the rendered rows so a huge history can't jam the DOM
@@ -845,39 +846,61 @@ function fmtLastSeen(ms) {
   } catch { return 'earlier'; }
 }
 
-function renderAbsentSection() {
-  const wrap   = $('absent-section');
-  const rowsEl = $('absent-rows');
-  const countEl= $('absent-count');
-  if (!wrap || !rowsEl) return;
-
+function renderPrevTrackedModal() {
+  const rowsEl = $('prev-tracked-rows');
+  if (!rowsEl) return;
   const n = absentRows.length;
+  const countEl = $('prev-tracked-count');
   if (countEl) countEl.textContent = n.toLocaleString();
-
-  // Before the first fetch (or when nothing is absent) hide the whole block.
-  if (bootStamp === null || n === 0) { wrap.hidden = true; return; }
-  wrap.hidden = false;
 
   const slice = absentRows.slice(0, ABSENT_MAX);
   rowsEl.innerHTML = slice.map(r => `
     <tr>
+      <td class="col-photo" data-norad="${r.noradId}">${photoCellHtml(r)}</td>
       <td class="col-name">${esc(r.name)}</td>
       <td class="muted">${r.noradId}</td>
       <td class="muted">${esc(r.intlId) || '—'}</td>
       <td class="col-country">${countryCell(r.owner)}</td>
+      <td class="col-country">${launchCountryCell(r.launchSite)}</td>
       <td class="muted">${fmtLastSeen(r.lastSeen)}</td>
       <td class="col-status">${r.decayed
           ? '<span class="badge badge-decay">DECAYED</span>'
           : '<span class="badge badge-gone">NOT IN LATEST FEED</span>'}</td>
-    </tr>`).join('');
+    </tr>`).join('') || `<tr><td colspan="8" class="muted" style="padding:24px;text-align:center">${
+      bootStamp === null ? 'Loading…' : 'Nothing has dropped out of the feed yet — every catalogued object is in the current snapshot.'
+    }</td></tr>`;
 
-  const noteEl = $('absent-note');
+  const noteEl = $('prev-tracked-note');
   if (noteEl) {
     noteEl.textContent = n > ABSENT_MAX
       ? `Showing the ${ABSENT_MAX.toLocaleString()} most-recently-seen of ${n.toLocaleString()} previously-tracked objects.`
       : '';
   }
+  hydrateThumbs(slice);   // async, no need to await
 }
+
+function openPrevTracked() {
+  renderPrevTrackedModal();
+  const m = $('prev-tracked-modal');
+  if (!m) return;
+  m.hidden = false;
+  m.setAttribute('aria-hidden', 'false');
+}
+function closePrevTracked() {
+  const m = $('prev-tracked-modal');
+  if (!m) return;
+  m.hidden = true;
+  m.setAttribute('aria-hidden', 'true');
+}
+
+$('prev-tracked-btn')?.addEventListener('click', openPrevTracked);
+$('prev-tracked-close')?.addEventListener('click', closePrevTracked);
+$('prev-tracked-modal')?.addEventListener('click', e => {
+  if (e.target.id === 'prev-tracked-modal') closePrevTracked();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('prev-tracked-modal') && !$('prev-tracked-modal').hidden) closePrevTracked();
+});
 
 // =========================================================================
 // Render: graphs (Chart.js)
@@ -1097,22 +1120,6 @@ function renderCharts(db) {
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: commonScaleOptions().plugins.tooltip }, scales: commonScaleOptions('Count').scales },
   });
 }
-
-// =========================================================================
-// Tab switching
-// =========================================================================
-
-function activateTab(which) {
-  const isTable = which === 'table';
-  $('tab-table' ).classList.toggle('active', isTable);
-  $('tab-graphs').classList.toggle('active', !isTable);
-  $('tab-table' ).setAttribute('aria-selected', isTable);
-  $('tab-graphs').setAttribute('aria-selected', !isTable);
-  $('view-table' ).hidden = !isTable;
-  $('view-graphs').hidden = isTable;
-}
-$('tab-table' ).addEventListener('click', () => activateTab('table'));
-$('tab-graphs').addEventListener('click', () => activateTab('graphs'));
 
 // =========================================================================
 // Boot

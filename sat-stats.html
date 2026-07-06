@@ -20,25 +20,20 @@
     /* "Previously tracked" section — the archive of objects no longer in
        the live snapshot.  Page-specific, so scoped here rather than in the
        shared styles.css. */
-    .absent-section { margin-top: 26px; }
-    .absent-head { margin-bottom: 10px; }
-    .absent-head h3 {
-      margin: 0; font-family: 'Orbitron', sans-serif; font-weight: 700;
-      font-size: 15px; letter-spacing: 0.03em; color: var(--text);
-      display: flex; align-items: center; gap: 10px;
+    /* "Previously tracked" pill rendered as a button. */
+    .pill-btn {
+      cursor: pointer; font: inherit; color: var(--text);
+      transition: border-color .15s, background .15s, color .15s;
     }
-    .absent-badge {
-      font-family: var(--mono); font-size: 12px; font-weight: 400;
-      color: #ffd27f; background: rgba(255, 210, 127, 0.12);
-      border: 1px solid rgba(255, 210, 127, 0.35); border-radius: 999px;
-      padding: 2px 10px; font-variant-numeric: tabular-nums;
+    .pill-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(103, 200, 255, 0.10); }
+    .pill-btn strong { color: #ffd27f; }
+    /* Heading above the always-visible graphs section (the Graphs tab is gone). */
+    .stats-graphs-title {
+      margin: 30px 0 14px; padding-top: 18px; border-top: 1px solid var(--line);
+      font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 16px;
+      letter-spacing: 0.03em; color: var(--text);
     }
-    .absent-sub {
-      margin: 8px 0 0; font-size: 13px; line-height: 1.55; color: var(--dim);
-      max-width: 90ch;
-    }
-    .absent-sub strong { color: var(--text); font-weight: 600; }
-    .absent-note { margin-top: 8px; font-size: 12px; }
+    .absent-note { margin-top: 10px; font-size: 12px; }
     /* Status pill for an object that has left the live feed. */
     .badge-gone {
       background: rgba(255, 210, 127, 0.14); color: #ffd27f;
@@ -62,11 +57,6 @@
       </div>
     </header>
 
-    <nav class="stats-tabs" role="tablist">
-      <button id="tab-table"  type="button" role="tab" aria-selected="true"  class="active">Table</button>
-      <button id="tab-graphs" type="button" role="tab" aria-selected="false">Graphs</button>
-    </nav>
-
     <!-- ============================================================
          TABLE VIEW — paginated catalogue with name, NORAD, int'l ID,
          owner-country flag, launch-country flag, and a Wikipedia
@@ -77,7 +67,7 @@
         <input type="search" id="filter" placeholder="Filter by name, NORAD, country…" autocomplete="off">
         <span class="pill" title="Objects in the current CelesTrak snapshot">In latest feed <strong id="stats-filtered">…</strong> <span class="muted">(showing <span id="stats-shown">…</span>)</span></span>
         <span class="pill" title="Every object catalogued across all your visits">Cumulative <strong id="stats-cumulative">…</strong></span>
-        <span class="pill" title="Previously seen, but absent from the current snapshot — listed below the table">Previously tracked <strong id="stats-absent">…</strong></span>
+        <button type="button" id="prev-tracked-btn" class="pill pill-btn" title="Objects catalogued before but absent from the current snapshot — click to view them">Previously tracked <strong id="stats-absent">…</strong> ⌕</button>
         <span class="pill nowrap">Page
           <button class="page-btn" id="prev-page" aria-label="Previous page">‹</button>
           <strong id="page-current">1</strong>/<strong id="page-total">1</strong>
@@ -110,42 +100,14 @@
         </table>
       </div>
 
-      <!-- ============================================================
-           PREVIOUSLY TRACKED — objects that were in the cumulative DB
-           from an earlier visit but are absent from the current
-           snapshot (decayed, deep-space, or dropped from CelesTrak's
-           "active" list).  Hidden until at least one such object exists.
-           Populated by sat-stats.js renderAbsentSection().
-           ============================================================ -->
-      <section id="absent-section" class="absent-section" hidden>
-        <div class="absent-head">
-          <h3>Previously tracked <span class="absent-badge" id="absent-count">0</span></h3>
-          <p class="absent-sub">These objects were catalogued on an earlier visit but are <strong>not in the latest TLE / SATCAT snapshot</strong> — they may have decayed, be deep-space craft that carry no Earth-orbit TLE (e.g. Aditya-L1 at Sun–Earth L1), or have simply dropped out of CelesTrak's rotating “active” list. Their last-known data is kept here so the directory never silently loses an object.</p>
-        </div>
-        <div class="stats-table-wrap">
-          <table class="repo-table stats-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>NORAD</th>
-                <th>Int'l ID</th>
-                <th>Country</th>
-                <th>Last seen</th>
-                <th class="col-status">Status</th>
-              </tr>
-            </thead>
-            <tbody id="absent-rows"></tbody>
-          </table>
-        </div>
-        <div class="absent-note muted" id="absent-note"></div>
-      </section>
     </section>
 
     <!-- ============================================================
          GRAPHS VIEW — Chart.js canvases.  All four charts share the
          same theme palette derived from CSS custom properties.
          ============================================================ -->
-    <section id="view-graphs" class="stats-view" hidden>
+    <section id="view-graphs" class="stats-view">
+      <h2 class="stats-graphs-title">Graphs &amp; statistics</h2>
       <div class="charts-grid">
         <div class="chart-card">
           <h3>Orbit-Class Distribution</h3>
@@ -302,6 +264,45 @@
     </div>
   </div>
 
+  <!-- Previously-tracked modal — opened by #prev-tracked-btn.  Same columns
+       as the main catalogue table, but lists only objects that were in the
+       cumulative DB on an earlier visit and are absent from the current
+       snapshot.  Populated by sat-stats.js renderPrevTrackedModal(). -->
+  <div id="prev-tracked-modal" class="tle-modal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="prev-tracked-title">
+    <div class="tle-modal-card">
+      <header class="tle-modal-header">
+        <div class="tle-modal-title-block">
+          <h2 id="prev-tracked-title">Previously tracked</h2>
+          <div class="tle-modal-meta">
+            <strong id="prev-tracked-count">…</strong> objects catalogued before but <strong>not in the latest feed</strong>
+          </div>
+        </div>
+        <button type="button" id="prev-tracked-close" class="tle-modal-close" aria-label="Close">×</button>
+      </header>
+      <div class="tle-modal-toolbar">
+        <span class="tle-modal-hint">These were catalogued on an earlier visit but are absent from the current TLE / SATCAT snapshot — decayed, deep-space craft that carry no Earth-orbit TLE (e.g. Aditya-L1 at Sun–Earth L1), or dropped from CelesTrak's rotating “active” list. Their last-known data is retained here. The page filter also narrows this list.</span>
+      </div>
+      <div class="tle-modal-body">
+        <table class="repo-table stats-table">
+          <thead>
+            <tr>
+              <th class="col-photo">Photo</th>
+              <th>Name</th>
+              <th>NORAD</th>
+              <th>Int'l ID</th>
+              <th class="col-country">Country</th>
+              <th>Launch Country</th>
+              <th>Last seen</th>
+              <th class="col-status">Status</th>
+            </tr>
+          </thead>
+          <tbody id="prev-tracked-rows"></tbody>
+        </table>
+        <div class="absent-note muted" id="prev-tracked-note"></div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <!-- PDF export (sat-stats.js #pdf-btn).  jsPDF first, then the autotable
@@ -309,7 +310,7 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
   <script src="tle-loader.js?v=8"></script>
-  <script src="sat-stats.js?v=10"></script>
+  <script src="sat-stats.js?v=11"></script>
   <script src="mobile-menu.js?v=6"></script>
 </body>
 </html>
