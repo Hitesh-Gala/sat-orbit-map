@@ -1,23 +1,23 @@
 // NAZAR ambient background music.
 //
-// Plays one looping track site-wide from the moment any page loads, resuming
-// its position across page navigations so it feels continuous, and stops only
-// when "Play NAZAR" is pressed on the Orbit Visualisation page (which calls
-// window.NazarBGM.silence()).
+// Plays one looping track site-wide, resuming its position across page
+// navigations so it feels continuous, and stops only when "Play NAZAR" is
+// pressed on the Orbit Visualisation page (which calls window.NazarBGM.silence()).
 //
-// Notes:
-//   * Browser autoplay policies block audible sound until the user has
-//     interacted with the page, so we attempt to play immediately AND on the
-//     first pointer/key/touch gesture — whichever the browser allows first.
-//   * Resume position + the "silenced" flag live in sessionStorage: continuous
-//     within a browsing session, and a fresh session (new tab / reopen) starts
-//     the music again.  Pressing "Play NAZAR" silences it for the rest of the
-//     session so the two tracks never overlap.
+// Autoplay reality: browsers block AUDIBLE playback until the user has
+// interacted with the page, but they always allow MUTED playback.  So we:
+//   1. Try an audible autoplay immediately.
+//   2. If that's blocked, start playing MUTED (always allowed) so the track is
+//      running from load, then unmute on the very first user interaction —
+//      pointer / mouse / key / touch.  (Once the site has some playback
+//      history the browser tends to allow audible autoplay outright.)
+// Resume position + the "silenced" flag live in sessionStorage: continuous
+// within a browsing session; a fresh session (new tab / reopen) starts again.
 
 (function () {
   const SRC     = 'audio/social-network-theme.mp3';
-  const POS_KEY = 'nazar.bgm.pos';   // sessionStorage: resume position (seconds)
-  const OFF_KEY = 'nazar.bgm.off';   // sessionStorage: silenced ("Play NAZAR" pressed)
+  const POS_KEY = 'nazar.bgm.pos';   // resume position (seconds)
+  const OFF_KEY = 'nazar.bgm.off';   // silenced ("Play NAZAR" pressed)
   const VOLUME  = 0.35;
 
   let silenced = false;
@@ -45,25 +45,44 @@
   window.addEventListener('pagehide', persistPos);
   window.addEventListener('beforeunload', persistPos);
 
-  function tryPlay() {
-    if (silenced) return;
-    const p = audio.play();
-    if (p && p.catch) p.catch(() => { /* autoplay blocked → wait for a gesture */ });
+  // Events that grant "user activation" (enough to start audible audio).
+  const ACT_EVENTS = ['pointerdown', 'mousedown', 'keydown', 'touchend', 'click'];
+  function detach() {
+    ACT_EVENTS.forEach(ev => window.removeEventListener(ev, onGesture, true));
   }
 
-  // Autoplay-unlock: start on the first user interaction if the browser
-  // blocked the immediate attempt.  Remove the listeners once it's playing.
-  function onGesture() { tryPlay(); }
-  const GESTURES = ['pointerdown', 'keydown', 'touchstart', 'click'];
-  GESTURES.forEach(ev => window.addEventListener(ev, onGesture, { passive: true }));
-  audio.addEventListener('playing', () => {
-    GESTURES.forEach(ev => window.removeEventListener(ev, onGesture));
-  }, { once: true });
+  // First real interaction → make the track audible and playing.
+  function onGesture() {
+    if (silenced) { detach(); return; }
+    audio.muted = false;
+    const p = audio.play();
+    if (p && p.then) {
+      p.then(() => { if (!audio.paused && !audio.muted) detach(); }).catch(() => {});
+    } else {
+      detach();
+    }
+  }
 
+  // On load: try audible autoplay; if blocked, fall back to muted playback so
+  // the track is running, and let the first gesture unmute it.
+  function start() {
+    if (silenced) return;
+    audio.muted = false;
+    const p = audio.play();
+    if (p && p.catch) {
+      p.catch(() => {
+        if (silenced) return;
+        audio.muted = true;
+        audio.play().catch(() => { /* even muted blocked — a gesture will start it */ });
+      });
+    }
+  }
+
+  ACT_EVENTS.forEach(ev => window.addEventListener(ev, onGesture, true));
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', tryPlay);
+    document.addEventListener('DOMContentLoaded', start);
   } else {
-    tryPlay();
+    start();
   }
 
   // Public API — Orbit Visualisation's "Play NAZAR" button calls silence().
@@ -71,7 +90,7 @@
     silence() {
       silenced = true;
       try { sessionStorage.setItem(OFF_KEY, '1'); } catch {}
-      GESTURES.forEach(ev => window.removeEventListener(ev, onGesture));
+      detach();
       try { audio.pause(); } catch {}
     },
     isSilenced() { return silenced; },

@@ -885,12 +885,17 @@ function openPrevTracked() {
   if (!m) return;
   m.hidden = false;
   m.setAttribute('aria-hidden', 'false');
+  // .tle-modal is opacity:0 by default; add .shown after a paint so it
+  // fades in.  Without this the modal is invisible but still a full-screen
+  // fixed overlay, which silently blocks clicks on the page beneath it.
+  setTimeout(() => m.classList.add('shown'), 16);
 }
 function closePrevTracked() {
   const m = $('prev-tracked-modal');
   if (!m) return;
-  m.hidden = true;
+  m.classList.remove('shown');
   m.setAttribute('aria-hidden', 'true');
+  setTimeout(() => { m.hidden = true; }, 220);   // hide after the fade-out
 }
 
 $('prev-tracked-btn')?.addEventListener('click', openPrevTracked);
