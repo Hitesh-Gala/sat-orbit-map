@@ -521,47 +521,123 @@ function cacheSatcat(records) {
 }
 
 // =========================================================================
-// Cumulative DB (localStorage)
+// Cumulative DB — persisted in IndexedDB
 // =========================================================================
+//
+// The cumulative catalogue is stored as ONE structured-cloned blob in
+// IndexedDB (key IDB_KEY in store IDB_STORE).  IndexedDB grants hundreds of
+// MB per origin — orders of magnitude more than localStorage's ~5 MB — so
+// the full ~19 k-record history persists intact and the cumulative total no
+// longer erodes under quota pressure.  localStorage stays as (a) a one-time
+// migration source for users who already have a DB there, and (b) a fallback
+// when IndexedDB is unavailable (very old browsers, some private modes).
 
-function loadDB() {
+const IDB_NAME  = 'nazar-satstats';
+const IDB_STORE = 'kv';
+const IDB_KEY   = 'db';            // single-blob key inside the object store
+// DB_KEY (legacy localStorage key) is defined near the top of the file.
+
+let _idbPromise = null;
+function openIDB() {
+  if (_idbPromise) return _idbPromise;
+  _idbPromise = new Promise(resolve => {
+    if (!('indexedDB' in window)) { resolve(null); return; }
+    let req;
+    try { req = indexedDB.open(IDB_NAME, 1); }
+    catch { resolve(null); return; }
+    req.onupgradeneeded = () => {
+      const idb = req.result;
+      if (!idb.objectStoreNames.contains(IDB_STORE)) idb.createObjectStore(IDB_STORE);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror   = () => resolve(null);
+    req.onblocked = () => resolve(null);
+  });
+  return _idbPromise;
+}
+
+function idbGet(idb, key) {
+  return new Promise(resolve => {
+    try {
+      const req = idb.transaction(IDB_STORE, 'readonly').objectStore(IDB_STORE).get(key);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror   = () => resolve(undefined);
+    } catch { resolve(undefined); }
+  });
+}
+function idbPut(idb, key, val) {
+  return new Promise(resolve => {
+    try {
+      const tx = idb.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).put(val, key);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror    = () => resolve(false);
+      tx.onabort    = () => resolve(false);
+    } catch { resolve(false); }
+  });
+}
+
+// Read the legacy localStorage blob (migration source + IndexedDB-less fallback).
+function loadLegacyLS() {
   try {
     const raw = localStorage.getItem(DB_KEY);
     if (!raw) return {};
     return JSON.parse(raw) || {};
   } catch { return {}; }
 }
+
+async function loadDB() {
+  const idb = await openIDB();
+  if (idb) {
+    const val = await idbGet(idb, IDB_KEY);
+    if (val && typeof val === 'object') return val;
+    // IndexedDB empty — migrate any pre-existing localStorage DB into it,
+    // then drop the localStorage copy so it stops competing for the ~5 MB
+    // quota with the TLE / SATCAT caches.
+    const legacy = loadLegacyLS();
+    if (Object.keys(legacy).length) {
+      await idbPut(idb, IDB_KEY, legacy);
+      try { localStorage.removeItem(DB_KEY); } catch {}
+      console.info(`SatStats: migrated ${Object.keys(legacy).length} records from localStorage into IndexedDB.`);
+    }
+    return legacy;
+  }
+  // No IndexedDB at all — run on localStorage.
+  return loadLegacyLS();
+}
+
+async function saveDB(db) {
+  const idb = await openIDB();
+  if (idb) {
+    // One put of the whole catalogue — no ceiling, so no trimming needed.
+    if (await idbPut(idb, IDB_KEY, db)) return;
+    console.warn('SatStats: IndexedDB write failed; falling back to localStorage.');
+  }
+  saveLegacyLS(db);
+}
+
+// ---- localStorage fallback (only used when IndexedDB is unavailable) -------
 function trySetDB(obj) {
   try { localStorage.setItem(DB_KEY, JSON.stringify(obj)); return true; }
   catch { return false; }
 }
-function saveDB(db) {
+function saveLegacyLS(db) {
   if (trySetDB(db)) return;
   // Over localStorage quota.  Persist a trimmed COPY so the in-memory `db`
-  // — and therefore the cumulative count shown on the page — stays complete
-  // for this session.  (The old code deleted records from `db` itself,
-  // which silently shrank the cumulative total the user sees.)
-  //
-  // Trim priority is deliberate: drop records that are IN THE LATEST FEED
-  // first (lastSeen === bootStamp).  Those are re-fetched on every load, so
-  // losing them from storage is harmless — whereas the "previously tracked"
-  // records that have LEFT the feed are irreplaceable, so we keep them to
-  // the last.  This is what stops the cumulative total from sliding down
-  // across sessions.
+  // stays complete for this session.  Drop records that are IN THE LATEST
+  // FEED first (re-fetched every load, so harmless to lose) and keep the
+  // irreplaceable "previously tracked" history to the last.
   console.warn('SatStats DB exceeds localStorage quota — persisting a trimmed copy (re-fetchable records dropped first); full catalogue kept in memory for this session.');
   const trimmed = { ...db };
-  const inLatestFeed = k => bootStamp !== null && trimmed[k].lastSeen === bootStamp;
+  const isRefetchable = k => bootStamp !== null && trimmed[k].lastSeen === bootStamp;
 
-  // 1) Drop re-fetchable (in-latest-feed) records, oldest / unenriched first.
   const refetchable = Object.keys(trimmed)
-    .filter(inLatestFeed)
+    .filter(isRefetchable)
     .sort((a, b) => (Number(!!trimmed[a].owner) - Number(!!trimmed[b].owner)));
   for (let i = 0; i < refetchable.length; i += 1000) {
     for (let j = i; j < i + 1000 && j < refetchable.length; j++) delete trimmed[refetchable[j]];
     if (trySetDB(trimmed)) return;
   }
-  // 2) Only the irreplaceable history remains and it STILL overflows — shed
-  //    the oldest-seen of those as a last resort.
   const byAge = Object.keys(trimmed)
     .sort((a, b) => (trimmed[a].lastSeen || 0) - (trimmed[b].lastSeen || 0));
   for (let i = 0; i < byAge.length; i += 1000) {
@@ -1051,7 +1127,7 @@ let bootStamp = null;   // timestamp of the current fetch; records stamped with
 
 async function boot() {
   setStatus('Loading TLE catalogue + SATCAT…');
-  db = loadDB();
+  db = await loadDB();
   // Render whatever's in the cumulative DB immediately — instant first paint
   // even before the network round-trips complete.
   if (Object.keys(db).length) {
