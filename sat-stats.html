@@ -16,6 +16,35 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=14">
+  <style>
+    /* "Previously tracked" section — the archive of objects no longer in
+       the live snapshot.  Page-specific, so scoped here rather than in the
+       shared styles.css. */
+    .absent-section { margin-top: 26px; }
+    .absent-head { margin-bottom: 10px; }
+    .absent-head h3 {
+      margin: 0; font-family: 'Orbitron', sans-serif; font-weight: 700;
+      font-size: 15px; letter-spacing: 0.03em; color: var(--text);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .absent-badge {
+      font-family: var(--mono); font-size: 12px; font-weight: 400;
+      color: #ffd27f; background: rgba(255, 210, 127, 0.12);
+      border: 1px solid rgba(255, 210, 127, 0.35); border-radius: 999px;
+      padding: 2px 10px; font-variant-numeric: tabular-nums;
+    }
+    .absent-sub {
+      margin: 8px 0 0; font-size: 13px; line-height: 1.55; color: var(--dim);
+      max-width: 90ch;
+    }
+    .absent-sub strong { color: var(--text); font-weight: 600; }
+    .absent-note { margin-top: 8px; font-size: 12px; }
+    /* Status pill for an object that has left the live feed. */
+    .badge-gone {
+      background: rgba(255, 210, 127, 0.14); color: #ffd27f;
+      border: 1px solid rgba(255, 210, 127, 0.4);
+    }
+  </style>
 </head>
 <body class="page-stats">
   <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
@@ -46,8 +75,9 @@
     <section id="view-table" class="stats-view">
       <div class="repo-toolbar">
         <input type="search" id="filter" placeholder="Filter by name, NORAD, country…" autocomplete="off">
-        <span class="pill">Showing <strong id="stats-shown">…</strong> / <strong id="stats-filtered">…</strong></span>
-        <span class="pill">Cumulative <strong id="stats-cumulative">…</strong></span>
+        <span class="pill" title="Objects in the current CelesTrak snapshot">In latest feed <strong id="stats-filtered">…</strong> <span class="muted">(showing <span id="stats-shown">…</span>)</span></span>
+        <span class="pill" title="Every object catalogued across all your visits">Cumulative <strong id="stats-cumulative">…</strong></span>
+        <span class="pill" title="Previously seen, but absent from the current snapshot — listed below the table">Previously tracked <strong id="stats-absent">…</strong></span>
         <span class="pill nowrap">Page
           <button class="page-btn" id="prev-page" aria-label="Previous page">‹</button>
           <strong id="page-current">1</strong>/<strong id="page-total">1</strong>
@@ -79,6 +109,36 @@
           <tbody id="stats-rows"></tbody>
         </table>
       </div>
+
+      <!-- ============================================================
+           PREVIOUSLY TRACKED — objects that were in the cumulative DB
+           from an earlier visit but are absent from the current
+           snapshot (decayed, deep-space, or dropped from CelesTrak's
+           "active" list).  Hidden until at least one such object exists.
+           Populated by sat-stats.js renderAbsentSection().
+           ============================================================ -->
+      <section id="absent-section" class="absent-section" hidden>
+        <div class="absent-head">
+          <h3>Previously tracked <span class="absent-badge" id="absent-count">0</span></h3>
+          <p class="absent-sub">These objects were catalogued on an earlier visit but are <strong>not in the latest TLE / SATCAT snapshot</strong> — they may have decayed, be deep-space craft that carry no Earth-orbit TLE (e.g. Aditya-L1 at Sun–Earth L1), or have simply dropped out of CelesTrak's rotating “active” list. Their last-known data is kept here so the directory never silently loses an object.</p>
+        </div>
+        <div class="stats-table-wrap">
+          <table class="repo-table stats-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>NORAD</th>
+                <th>Int'l ID</th>
+                <th>Country</th>
+                <th>Last seen</th>
+                <th class="col-status">Status</th>
+              </tr>
+            </thead>
+            <tbody id="absent-rows"></tbody>
+          </table>
+        </div>
+        <div class="absent-note muted" id="absent-note"></div>
+      </section>
     </section>
 
     <!-- ============================================================
@@ -249,7 +309,7 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
   <script src="tle-loader.js?v=8"></script>
-  <script src="sat-stats.js?v=8"></script>
+  <script src="sat-stats.js?v=9"></script>
   <script src="mobile-menu.js?v=6"></script>
 </body>
 </html>

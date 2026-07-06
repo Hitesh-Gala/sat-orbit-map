@@ -541,15 +541,27 @@ function saveDB(db) {
   // — and therefore the cumulative count shown on the page — stays complete
   // for this session.  (The old code deleted records from `db` itself,
   // which silently shrank the cumulative total the user sees.)
-  console.warn('SatStats DB exceeds localStorage quota — persisting a trimmed copy; full catalogue kept in memory for this session.');
+  //
+  // Trim priority is deliberate: drop records that are IN THE LATEST FEED
+  // first (lastSeen === bootStamp).  Those are re-fetched on every load, so
+  // losing them from storage is harmless — whereas the "previously tracked"
+  // records that have LEFT the feed are irreplaceable, so we keep them to
+  // the last.  This is what stops the cumulative total from sliding down
+  // across sessions.
+  console.warn('SatStats DB exceeds localStorage quota — persisting a trimmed copy (re-fetchable records dropped first); full catalogue kept in memory for this session.');
   const trimmed = { ...db };
-  // 1) Drop records with no SATCAT enrichment first (least info), oldest first.
-  const unenriched = Object.keys(trimmed)
-    .filter(k => !trimmed[k].owner)
-    .sort((a, b) => (trimmed[a].lastSeen || 0) - (trimmed[b].lastSeen || 0));
-  for (const k of unenriched) delete trimmed[k];
-  if (trySetDB(trimmed)) return;
-  // 2) Still too big — shed the oldest-seen enriched records in batches.
+  const inLatestFeed = k => bootStamp !== null && trimmed[k].lastSeen === bootStamp;
+
+  // 1) Drop re-fetchable (in-latest-feed) records, oldest / unenriched first.
+  const refetchable = Object.keys(trimmed)
+    .filter(inLatestFeed)
+    .sort((a, b) => (Number(!!trimmed[a].owner) - Number(!!trimmed[b].owner)));
+  for (let i = 0; i < refetchable.length; i += 1000) {
+    for (let j = i; j < i + 1000 && j < refetchable.length; j++) delete trimmed[refetchable[j]];
+    if (trySetDB(trimmed)) return;
+  }
+  // 2) Only the irreplaceable history remains and it STILL overflows — shed
+  //    the oldest-seen of those as a last resort.
   const byAge = Object.keys(trimmed)
     .sort((a, b) => (trimmed[a].lastSeen || 0) - (trimmed[b].lastSeen || 0));
   for (let i = 0; i < byAge.length; i += 1000) {
@@ -558,9 +570,12 @@ function saveDB(db) {
   }
 }
 
-// Merge live TLE + SATCAT into the cumulative DB.  Returns the merged DB
-// and the count of NEW NORAD IDs added this session.
-function mergeIntoDB(db, tles, satrec) {
+// Merge live TLE + SATCAT into the cumulative DB.  Every record touched by
+// THIS fetch is stamped `lastSeen = stamp` (one value for the whole fetch),
+// so afterwards a record is "in the latest feed" iff lastSeen === stamp and
+// "previously tracked, now absent" otherwise.  Returns the count of NEW
+// NORAD IDs added this session.
+function mergeIntoDB(db, tles, satrec, stamp) {
   let added = 0;
   // SATCAT records first — gives us metadata for sats whose TLE we may
   // not have parsed (rare but possible).
@@ -579,7 +594,7 @@ function mergeIntoDB(db, tles, satrec) {
       inclination:parseFloat(r.inc)  || db[id].inclination,
       apogee:     parseFloat(r.a)    || db[id].apogee,
       perigee:    parseFloat(r.pe)   || db[id].perigee,
-      lastSeen:   Date.now(),
+      lastSeen:   stamp,
     });
   }
   // TLE records — fills in names + the int'l designator from line 1 cols
@@ -590,7 +605,7 @@ function mergeIntoDB(db, tles, satrec) {
     if (!db[id]) { db[id] = { norad: id }; added++; }
     if (!db[id].name)   db[id].name   = t.name;
     if (!db[id].intlId) db[id].intlId = parseIntlIdFromTLE(t.l1);
-    db[id].lastSeen = Date.now();
+    db[id].lastSeen = stamp;
   }
   return added;
 }
@@ -631,13 +646,22 @@ function orbitClass(record) {
 // Render: table
 // =========================================================================
 
-let filteredRows = [];   // current filtered + sorted view of the DB
+let filteredRows = [];   // "current directory" — records in the latest feed
+let absentRows   = [];   // "previously tracked" — in the DB but not the feed
 let currentPage = 0;
+
+// A record is "in the latest feed" iff it was stamped by this session's
+// fetch.  Before that fetch completes (bootStamp === null) we can't tell, so
+// everything counts as present and the absent section stays empty.
+function inLatestFeed(r) {
+  return bootStamp === null || r.lastSeen === bootStamp;
+}
 
 function rebuildFiltered(db) {
   const q = $('filter').value.trim().toLowerCase();
   const ownerFilter = $('filter-owner').value;
   const out = [];
+  const gone = [];
   for (const id of Object.keys(db)) {
     const r = db[id];
     if (!r.name) continue;
@@ -648,15 +672,20 @@ function rebuildFiltered(db) {
       const hay = `${r.name} ${r.norad} ${r.intlId || ''} ${r.owner || ''} ${COUNTRY[r.owner]?.name || ''}`.toLowerCase();
       if (!hay.includes(q)) continue;
     }
-    out.push({
+    const row = {
       name:       r.name,
       noradId:    r.norad,
       intlId:     r.intlId || '',
       owner:      r.owner || '',
       launchSite: r.launchSite || '',
       decayed:    !!r.decayDate,
-    });
+      lastSeen:   r.lastSeen || 0,
+    };
+    (inLatestFeed(r) ? out : gone).push(row);
   }
+  // Previously-tracked list: most-recently-absent first.
+  gone.sort((a, b) => (b.lastSeen - a.lastSeen) || a.name.localeCompare(b.name));
+  absentRows = gone;
   out.sort((a, b) => a.name.localeCompare(b.name));
   filteredRows = out;
   if (currentPage * PAGE_SIZE >= filteredRows.length) currentPage = 0;
@@ -703,6 +732,7 @@ function renderTable(db) {
   $('stats-shown').textContent      = slice.length;
   $('stats-filtered').textContent   = total;
   $('stats-cumulative').textContent = Object.keys(db).length.toLocaleString();
+  $('stats-absent').textContent     = absentRows.length.toLocaleString();
   $('page-current').textContent     = currentPage + 1;
   $('page-total').textContent       = pages;
 
@@ -720,6 +750,57 @@ function renderTable(db) {
     </tr>`).join('') || '<tr><td colspan="7" class="muted" style="padding:20px;text-align:center">No matching satellites.</td></tr>';
 
   hydrateThumbs(slice);   // async, no need to await
+  renderAbsentSection();
+}
+
+// =========================================================================
+// "Previously tracked" section — objects catalogued on an earlier visit
+// whose TLE/SATCAT entry is absent from the current snapshot (decayed,
+// deep-space like Aditya-L1, or dropped from CelesTrak's "active" list).
+// Their last-known data is retained here so nothing silently vanishes.
+// =========================================================================
+
+const ABSENT_MAX = 1000;   // cap the rendered rows so a huge history can't jam the DOM
+
+function fmtLastSeen(ms) {
+  if (!ms) return 'earlier';
+  try {
+    return new Date(ms).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: '2-digit' });
+  } catch { return 'earlier'; }
+}
+
+function renderAbsentSection() {
+  const wrap   = $('absent-section');
+  const rowsEl = $('absent-rows');
+  const countEl= $('absent-count');
+  if (!wrap || !rowsEl) return;
+
+  const n = absentRows.length;
+  if (countEl) countEl.textContent = n.toLocaleString();
+
+  // Before the first fetch (or when nothing is absent) hide the whole block.
+  if (bootStamp === null || n === 0) { wrap.hidden = true; return; }
+  wrap.hidden = false;
+
+  const slice = absentRows.slice(0, ABSENT_MAX);
+  rowsEl.innerHTML = slice.map(r => `
+    <tr>
+      <td class="col-name">${esc(r.name)}</td>
+      <td class="muted">${r.noradId}</td>
+      <td class="muted">${esc(r.intlId) || '—'}</td>
+      <td class="col-country">${countryCell(r.owner)}</td>
+      <td class="muted">${fmtLastSeen(r.lastSeen)}</td>
+      <td class="col-status">${r.decayed
+          ? '<span class="badge badge-decay">DECAYED</span>'
+          : '<span class="badge badge-gone">NOT IN LATEST FEED</span>'}</td>
+    </tr>`).join('');
+
+  const noteEl = $('absent-note');
+  if (noteEl) {
+    noteEl.textContent = n > ABSENT_MAX
+      ? `Showing the ${ABSENT_MAX.toLocaleString()} most-recently-seen of ${n.toLocaleString()} previously-tracked objects.`
+      : '';
+  }
 }
 
 // =========================================================================
@@ -964,6 +1045,9 @@ $('tab-graphs').addEventListener('click', () => activateTab('graphs'));
 let db = {};
 let lastTLEs = [];      // live/bundled TLE set from the last boot — feeds the PDF
 let lastSourceTag = ''; // human label of where those TLEs came from
+let bootStamp = null;   // timestamp of the current fetch; records stamped with
+                        // it are "in the latest feed", others are "previously
+                        // tracked".  Null until the first fetch completes.
 
 async function boot() {
   setStatus('Loading TLE catalogue + SATCAT…');
@@ -980,7 +1064,8 @@ async function boot() {
     fetchTLEs(),
     fetchActiveSatcat(),
   ]);
-  const added = mergeIntoDB(db, tles, satrec);
+  bootStamp = Date.now();
+  const added = mergeIntoDB(db, tles, satrec, bootStamp);
   saveDB(db);
 
   const tleTag = tleSource === 'celestrak' ? 'live'
