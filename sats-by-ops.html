@@ -217,6 +217,28 @@
     }
     .sbo-note .k { color: #ffd27f; display: block; margin-bottom: 3px; }
     .sbo-foot { margin: 16px 0 0; font-size: 11px; line-height: 1.5; color: var(--dim); font-style: italic; }
+
+    /* Company-history timeline */
+    .sbo-history { margin: 14px 0 0; }
+    .sbo-history > .k {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 8px;
+    }
+    .sbo-timeline { list-style: none; margin: 0; padding: 0 0 0 2px; border-left: 1px solid var(--line); }
+    .sbo-timeline li {
+      position: relative; padding: 0 0 9px 15px;
+      font-size: 12.5px; line-height: 1.45; color: var(--text);
+    }
+    .sbo-timeline li:last-child { padding-bottom: 0; }
+    .sbo-timeline li::before {
+      content: ''; position: absolute; left: -4px; top: 5px;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 6px var(--accent);
+    }
+    .sbo-timeline .yr {
+      font-family: var(--mono); color: var(--accent); font-variant-numeric: tabular-nums;
+      margin-right: 8px; white-space: nowrap;
+    }
   </style>
 </head>
 <body class="page-sbo">
@@ -299,7 +321,7 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=8"></script>
-  <script src="sats-by-ops.js?v=4"></script>
+  <script src="sats-by-ops.js?v=5"></script>
   <script src="mobile-menu.js?v=6"></script>
 </body>
 </html>

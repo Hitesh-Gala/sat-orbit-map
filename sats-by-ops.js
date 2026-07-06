@@ -308,6 +308,53 @@ const COMPANY_INFO = {
     note: 'This is why some real operators look "missing": if their satellites are catalogued under individual names the patterns don’t match, they fall in here rather than under their company. Turn this layer on to see them all.' },
 };
 
+// Concise corporate / programme history — [year, event] pairs, rendered as
+// a timeline in the pop-up so you can see how each operator was founded and
+// renamed / merged / split over the years.  Keyed by category `id`.
+const COMPANY_HISTORY = {
+  'gnss-gps': [['1978','First Block I satellite launched'],['1993','24-satellite constellation complete'],['1995','Full operational capability'],['2018','GPS III modernisation begins']],
+  'gnss-glonass': [['1982','First satellite launched (USSR)'],['1995','Constellation completed'],['1990s','Decays after Soviet collapse'],['2011','Restored to full global service']],
+  'gnss-galileo': [['2005','GIOVE-A test satellite'],['2011','First operational satellites'],['2016','Initial services declared'],['2020s','Second Generation (G2) in build']],
+  'gnss-beidou': [['2000','BDS-1 regional demo (China)'],['2012','BDS-2 covers Asia-Pacific'],['2020','BDS-3 completes global service'],['2025','Next-generation design finalised']],
+  'gnss-qzss': [['2010','QZS-1 “Michibiki” launched (Japan)'],['2018','4-satellite service begins'],['late 2020s','Expanding to 7 satellites']],
+  'gnss-navic': [['2013','IRNSS-1A launched (ISRO, India)'],['2016','Operational; branded NavIC'],['2023','NVS-01 starts 2nd generation']],
+
+  'op-starlink': [['2002','SpaceX founded'],['2015','Starlink announced'],['2019','First operational batch launched'],['2020','Public beta service'],['2024','Direct-to-Cell service begins']],
+  'op-oneweb': [['2012','Founded as WorldVu by Greg Wyler'],['~2014','Renamed OneWeb'],['2020','Chapter 11; rescued by UK govt + Bharti'],['2023','Merged with Eutelsat → Eutelsat OneWeb']],
+  'op-kuiper': [['2019','Announced as “Project Kuiper” (Amazon)'],['2023','First prototype satellites launched'],['2025','Rebranded “Amazon Leo”; service debuts']],
+  'op-iridium': [['1991','Founded (Motorola-backed)'],['1998','First-gen constellation live'],['1999','Bankruptcy'],['2001','Assets bought → Iridium Satellite LLC'],['2017–19','Iridium NEXT deployed'],['2026','Rocket Lab agrees to acquire']],
+  'op-globalstar': [['1991','Founded (Loral–Qualcomm JV)'],['2000','First-gen service begins'],['2002','Bankruptcy, later reorganised'],['2024','Apple invests ~$1.7B, takes 20% stake']],
+  'op-orbcomm': [['1993','Founded (Orbital Sciences unit)'],['2000','Bankruptcy, later reorganised'],['2008','OG1 IoT network operating'],['2021','Taken private by GI Partners']],
+  'op-guowang': [['2021','China SatNet established'],['2024','First Guowang satellites launched'],['2025','Passes 100 satellites in orbit']],
+  'op-qianfan': [['2024','SSST launches first “Thousand Sails” batch'],['2025','~200 satellites in orbit'],['plan','15,000-satellite build-out']],
+
+  'eo-planet': [['2010','Founded as Cosmogia → Planet Labs'],['2017','Buys Terra Bella (SkySat) from Google'],['2021','Public via SPAC → Planet Labs PBC'],['2024–25','Adds Pelican (high-res) + Tanager (hyperspectral)']],
+  'eo-spire': [['2012','Founded as Nanosatisfi'],['2014','Renamed Spire Global; first LEMURs'],['2021','Public via SPAC']],
+  'eo-maxar': [['1992','Founded as WorldView Imaging Corp (US)'],['1995','Renamed EarthWatch Inc.'],['2001','Renamed DigitalGlobe'],['2013','Merges with rival GeoEye (ex-ORBIMAGE, 1992)'],['2017','Acquired by Canada’s MDA → group renamed Maxar'],['2023','Advent International takes Maxar private'],['2025','Split into Vantor (imagery) + Lanteris (manufacturing)']],
+  'eo-blacksky': [['2014','Founded within Spaceflight Industries'],['2018','First BlackSky imaging satellites'],['2021','Public via SPAC → BlackSky Technology'],['2025','Gen-3 (~35 cm) enters service']],
+  'eo-capella': [['2016','Founded (US)'],['2020','First operational SAR satellite'],['2023–','Acadia-class SAR replenishment']],
+  'eo-iceye': [['2014','Founded; spun from Aalto University, Finland'],['2018','Launches world’s first sub-100 kg SAR satellite'],['2025','Gen4 SAR (~16 cm); 60+ launched to date']],
+
+  'com-inmarsat': [['1979','Inmarsat founded (maritime-safety body)'],['1986','Viasat founded (US)'],['1999','Inmarsat privatised'],['2023','Viasat acquires Inmarsat']],
+  'com-intelsat': [['1964','Founded as intergovernmental consortium INTELSAT'],['2001','Privatised'],['2022','Exits Chapter 11'],['2025','Acquired by SES']],
+  'com-eutelsat': [['1977','Founded as European intergovernmental org'],['2001','Privatised (Eutelsat S.A.)'],['2023','Merges with OneWeb → Eutelsat Group']],
+  'com-ses': [['1985','Founded in Luxembourg (Astra satellites)'],['2001','Acquires GE Americom → SES Global'],['2016','Full takeover of O3b (MEO)'],['2025','Acquires Intelsat']],
+  'com-chinasat': [['1984','China’s first comsat (DFH-2)'],['2001','China Satcom formed'],['2009','Absorbs CASC satellite-comms arm'],['2010s–','ChinaSat / Zhongxing GEO fleet grows']],
+  'com-apstar': [['1988','AsiaSat founded (Hong Kong)'],['1992','APT Satellite (APStar) founded'],['1990s–','C/Ku/Ka GEO fleets serve Asia-Pacific']],
+
+  'met-noaa': [['1960','TIROS-1, first weather satellite'],['1975','First GOES geostationary satellite'],['2016','GOES-R / GOES-16 next-gen begins'],['2025','Legacy POES constellation retired']],
+  'met-meteosat': [['1977','Meteosat-1 launched'],['1986','EUMETSAT established'],['2002','Meteosat Second Generation begins'],['2022','Meteosat Third Generation (MTG-I1)']],
+  'met-fengyun': [['1988','FY-1A, first Chinese weather satellite'],['1997','FY-2 geostationary series'],['2016','FY-4 next-gen GEO'],['2025','FY-3H + FY-4C launched']],
+  'met-himawari': [['1977','GMS-1 “Himawari” launched (Japan)'],['2014','Himawari-8 advanced imager'],['late 2020s','Himawari-10 planned']],
+  'met-insat': [['1982','INSAT-1A launched (India)'],['2002','Kalpana-1 dedicated met satellite'],['2013–','INSAT-3D / 3DR / 3DS imagers']],
+
+  'isr-yaogan': [['2006','First Yaogan launched'],['2010s','SAR + optical + ELINT triads expand'],['2025','Yaogan-40 naval-tracking clusters']],
+  'isr-gaofen': [['2013','GF-1 launches the CHEOS programme'],['2015','GF-4 geostationary starer'],['2020s','Higher-numbered dual-use craft added']],
+  'isr-jilin': [['2014','Chang Guang (CGSTL) founded'],['2015','First Jilin-1 satellites'],['2024','117+ in orbit; targeting 300']],
+  'isr-usa': [['1984','First “USA”-designated payload'],['1990s–2010s','NRO recon + military comsats'],['2020s','Proliferated NRO + SDA tranches']],
+  'isr-cosmos': [['1962','Cosmos-1 launched (USSR)'],['1960s–91','Thousands of Soviet Cosmos payloads'],['1992–','Continued by Russia (VKS / Roscosmos)']],
+};
+
 // Pre-build THREE.Color objects so we don't re-allocate per instance per tick.
 const CAT_COLOR = CATEGORIES.map(c => new THREE.Color(c.color));
 
@@ -579,6 +626,13 @@ function openCompany(idx) {
     ? `<div class="sbo-stat"><span class="k">${escHtml(k)}</span><span class="v">${escHtml(v)}</span></div>` : '';
   const live = categoryCount[idx];
 
+  const hist = COMPANY_HISTORY[c.id];
+  const histHtml = (hist && hist.length)
+    ? `<div class="sbo-history"><span class="k">Company history</span><ul class="sbo-timeline">`
+      + hist.map(([yr, ev]) => `<li><span class="yr">${escHtml(yr)}</span><span class="ev">${escHtml(ev)}</span></li>`).join('')
+      + `</ul></div>`
+    : '';
+
   body.innerHTML = `
     <div class="sbo-modal-head">
       <span class="sbo-modal-dot" style="background:${c.color};color:${c.color}"></span>
@@ -594,6 +648,7 @@ function openCompany(idx) {
       ${stat('Retired / de-orbited', info.retired)}
     </div>
     ${info.desc ? `<p class="sbo-desc">${escHtml(info.desc)}</p>` : ''}
+    ${histHtml}
     ${info.news ? `<p class="sbo-field"><span class="k">Latest</span> ${escHtml(info.news)}</p>` : ''}
     ${info.note ? `<div class="sbo-note"><span class="k">Why the globe may show fewer</span> ${escHtml(info.note)}</div>` : ''}
     <p class="sbo-foot">“On the globe now” is the live count of matching satellites in CelesTrak’s active catalogue.
