@@ -520,6 +520,24 @@ function cacheSatcat(records) {
   catch (e) { console.warn('SATCAT cache write failed (over quota?):', e.message); }
 }
 
+// Always load the FULL bundled reference snapshot (~19.4 k active payloads),
+// independent of the live-feed cascade above.  This is the permanent
+// repository we merge as a baseline so no object — e.g. deep-space craft like
+// Aditya-L1 that carry no Earth-orbit TLE — is ever lost from the catalogue.
+async function fetchBundledSatcat() {
+  try {
+    const r = await fetch(SATCAT_BUNDLED_URL, { cache: 'no-cache' });
+    if (r.ok) {
+      const arr = await r.json();
+      if (Array.isArray(arr) && arr.length) return arr;
+    }
+    console.warn(`Bundled SATCAT repository fetch HTTP ${r.status}.`);
+  } catch (e) {
+    console.warn(`Bundled SATCAT repository fetch threw: ${e.message}.`);
+  }
+  return [];
+}
+
 // =========================================================================
 // Cumulative DB — persisted in IndexedDB
 // =========================================================================
@@ -646,35 +664,40 @@ function saveLegacyLS(db) {
   }
 }
 
-// Merge live TLE + SATCAT into the cumulative DB.  Every record touched by
-// THIS fetch is stamped `lastSeen = stamp` (one value for the whole fetch),
-// so afterwards a record is "in the latest feed" iff lastSeen === stamp and
-// "previously tracked, now absent" otherwise.  Returns the count of NEW
-// NORAD IDs added this session.
-function mergeIntoDB(db, tles, satrec, stamp) {
+// Merge TLE + SATCAT into the cumulative DB.  Returns the count of NEW NORAD
+// IDs added.
+//
+// `markLive` distinguishes the two data sources:
+//   • The bundled reference snapshot (data/satcat-active.json, ~19.4 k
+//     objects) is merged with markLive=false — it fills in metadata for the
+//     whole repository so nothing is ever lost, but does NOT mark records as
+//     "in the latest feed".
+//   • The live feed (CelesTrak records.php + the active TLE set, ~16 k) is
+//     merged with markLive=true, stamping each with `lastSeen = stamp`.
+// Afterwards a record is "in the latest feed" iff lastSeen === stamp; every
+// other record (e.g. Aditya-L1, which has no Earth-orbit TLE) is in the
+// repository but "previously tracked".
+function mergeIntoDB(db, tles, satrec, stamp, markLive) {
   let added = 0;
-  // SATCAT records first — gives us metadata for sats whose TLE we may
-  // not have parsed (rare but possible).
   for (const r of satrec) {
     const id = r.c;
     if (!Number.isFinite(id)) continue;
     if (!db[id]) { db[id] = { norad: id }; added++; }
-    Object.assign(db[id], {
-      name:       r.n || db[id].name,
-      intlId:     r.i || db[id].intlId,
-      owner:      r.o || db[id].owner,
-      launchSite: r.ls || db[id].launchSite,
-      launchDate: r.ld || db[id].launchDate,
-      decayDate:  r.dd || db[id].decayDate,
-      period:     parseFloat(r.p)    || db[id].period,
-      inclination:parseFloat(r.inc)  || db[id].inclination,
-      apogee:     parseFloat(r.a)    || db[id].apogee,
-      perigee:    parseFloat(r.pe)   || db[id].perigee,
-      lastSeen:   stamp,
-    });
+    const rec = db[id];
+    rec.name        = r.n  || rec.name;
+    rec.intlId      = r.i  || rec.intlId;
+    rec.owner       = r.o  || rec.owner;
+    rec.launchSite  = r.ls || rec.launchSite;
+    rec.launchDate  = r.ld || rec.launchDate;
+    rec.decayDate   = r.dd || rec.decayDate;
+    rec.period      = parseFloat(r.p)   || rec.period;
+    rec.inclination = parseFloat(r.inc) || rec.inclination;
+    rec.apogee      = parseFloat(r.a)   || rec.apogee;
+    rec.perigee     = parseFloat(r.pe)  || rec.perigee;
+    if (markLive) rec.lastSeen = stamp;
   }
-  // TLE records — fills in names + the int'l designator from line 1 cols
-  // 10–17 for sats SATCAT didn't enrich.
+  // TLE records are always part of the live feed — fill in names + the int'l
+  // designator, and stamp them as present.
   for (const t of tles) {
     const id = t.noradId;
     if (!Number.isFinite(id)) continue;
@@ -840,10 +863,12 @@ function renderTable(db) {
 const ABSENT_MAX = 1000;   // cap the rendered rows so a huge history can't jam the DOM
 
 function fmtLastSeen(ms) {
-  if (!ms) return 'earlier';
+  // No live-feed stamp → the object is in the bundled reference repository
+  // but has never appeared in the live TLE/SATCAT feed (e.g. Aditya-L1).
+  if (!ms) return 'reference catalogue';
   try {
     return new Date(ms).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: '2-digit' });
-  } catch { return 'earlier'; }
+  } catch { return 'reference catalogue'; }
 }
 
 function renderPrevTrackedModal() {
@@ -1148,12 +1173,19 @@ async function boot() {
     renderCharts(db);
   }
 
-  const [{ tles, source: tleSource }, { records: satrec, source: scSource }] = await Promise.all([
+  const [{ tles, source: tleSource }, { records: satrec, source: scSource }, bundled] = await Promise.all([
     fetchTLEs(),
     fetchActiveSatcat(),
+    fetchBundledSatcat(),   // the full ~19.4 k repository — always merged
   ]);
   bootStamp = Date.now();
-  const added = mergeIntoDB(db, tles, satrec, bootStamp);
+  // 1) Baseline: merge the full bundled repository so the catalogue always
+  //    holds ~19.4 k objects and nothing is ever lost (metadata only — these
+  //    are NOT marked "in the latest feed").
+  mergeIntoDB(db, [], bundled, bootStamp, false);
+  // 2) Live feed: TLE + live SATCAT.  These ARE marked present, so the main
+  //    table shows them and the ~3 k difference lands in "Previously tracked".
+  const added = mergeIntoDB(db, tles, satrec, bootStamp, true);
   saveDB(db);
 
   const tleTag = tleSource === 'celestrak' ? 'live'
@@ -1161,7 +1193,7 @@ async function boot() {
               : 'bundled snapshot';
   lastTLEs = tles;
   lastSourceTag = tleTag;
-  setStatus(`${tles.length.toLocaleString()} TLEs (${tleTag}) · ${satrec.length.toLocaleString()} SATCAT (${scSource}) · cumulative ${Object.keys(db).length.toLocaleString()} sats (+${added} new)`);
+  setStatus(`${tles.length.toLocaleString()} TLEs (${tleTag}) · ${satrec.length.toLocaleString()} SATCAT (${scSource}) · repository ${Object.keys(db).length.toLocaleString()} sats (+${added} new)`);
 
   populateOwnerDropdown(db);
   renderTable(db);
