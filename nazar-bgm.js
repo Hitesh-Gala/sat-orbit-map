@@ -57,7 +57,7 @@
 
   const style = document.createElement('style');
   style.textContent =
-    '#nazar-bgm-toggle{position:fixed;right:16px;bottom:16px;z-index:95;width:42px;height:42px;' +
+    '#nazar-bgm-toggle{position:fixed;left:16px;bottom:16px;z-index:95;width:42px;height:42px;' +
     'border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;' +
     'background:rgba(8,16,28,0.80);border:1px solid rgba(110,200,255,0.30);color:#8aa0b8;' +
     'box-shadow:0 4px 16px rgba(0,0,0,0.45);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);' +
@@ -94,6 +94,48 @@
     });
     document.body.appendChild(btn);
     reflect();
+    position();
+    // Re-check after late layout (globe canvas, fonts) and on resize, so the
+    // button dodges whatever panel/menu occupies the corner on this page.
+    setTimeout(position, 700);
+    window.addEventListener('load', position);
+    let rt;
+    window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(position, 200); });
+  }
+
+  // Prefer the bottom-left; fall back to bottom-right only when the bottom-left
+  // corner is covered by another panel / menu on this particular page.
+  function isBackgroundAt(x, y) {
+    const el = document.elementFromPoint(x, y);
+    if (!el) return true;
+    for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
+      if (n === btn) return true;                     // our own button — ignore
+      if (n === document.body) return true;
+      if (n.tagName === 'CANVAS' || n.id === 'globe') return true;  // the globe backdrop
+      const pos = getComputedStyle(n).position;
+      if (pos === 'fixed' || pos === 'absolute' || pos === 'sticky') return false; // a real UI panel
+    }
+    return true;
+  }
+  function cornerClear(side) {
+    const size = 42, m = 16, vw = window.innerWidth, vh = window.innerHeight;
+    const cx = side === 'left' ? m + size / 2 : vw - m - size / 2;
+    const cy = vh - m - size / 2;
+    const pts = [[cx, cy], [cx - 15, cy - 15], [cx + 15, cy - 15], [cx - 15, cy + 15], [cx + 15, cy + 15]];
+    for (const [x, y] of pts) {
+      if (x < 2 || y < 2 || x > vw - 2 || y > vh - 2) continue;
+      if (!isBackgroundAt(x, y)) return false;
+    }
+    return true;
+  }
+  function position() {
+    if (!btn) return;
+    const pe = btn.style.pointerEvents;
+    btn.style.pointerEvents = 'none';               // so we hit-test what's UNDER the button
+    const side = cornerClear('left') ? 'left' : (cornerClear('right') ? 'right' : 'left');
+    btn.style.pointerEvents = pe;
+    if (side === 'left') { btn.style.left = '16px'; btn.style.right = 'auto'; }
+    else                 { btn.style.right = '16px'; btn.style.left = 'auto'; }
   }
 
   // ---- resume playback on load if it was left ON -----------------------
