@@ -444,9 +444,6 @@ function refreshDots() {
     try {
       ensureGraph();
       if (audio.paused) {
-        // Starting NAZAR silences the site-wide background music so the two
-        // tracks never overlap (bgm stays off for the rest of the session).
-        if (window.NazarBGM) window.NazarBGM.silence();
         await audio.play();
         setUiPlaying(true);
         // Start (or re-start) the BPM-locked clock.  Reset gap timers so
