@@ -764,13 +764,6 @@ function rebuildFiltered(db) {
   for (const id of Object.keys(db)) {
     const r = db[id];
     if (!r.name) continue;
-    // Country dropdown: hard-filter by OWNER code if selected.  Empty
-    // value (default option) matches everything.
-    if (ownerFilter && r.owner !== ownerFilter) continue;
-    if (q) {
-      const hay = `${r.name} ${r.norad} ${r.intlId || ''} ${r.owner || ''} ${COUNTRY[r.owner]?.name || ''}`.toLowerCase();
-      if (!hay.includes(q)) continue;
-    }
     const row = {
       name:       r.name,
       noradId:    r.norad,
@@ -779,8 +772,26 @@ function rebuildFiltered(db) {
       launchSite: r.launchSite || '',
       decayed:    !!r.decayDate,
       lastSeen:   r.lastSeen || 0,
+      // Extra fields used to build the "Remarks" column in the pop-up.
+      launchDate: r.launchDate || '',
+      apogee:     r.apogee,
+      perigee:    r.perigee,
+      inclination:r.inclination,
+      period:     r.period,
     };
-    (inLatestFeed(r) ? out : gone).push(row);
+    if (!inLatestFeed(r)) {
+      // "Previously tracked" — collect ALL of them regardless of the main
+      // page filter; the pop-up has its own search + country dropdown.
+      gone.push(row);
+      continue;
+    }
+    // Present rows ("in latest feed") honour the main page search + country.
+    if (ownerFilter && r.owner !== ownerFilter) continue;
+    if (q) {
+      const hay = `${r.name} ${r.norad} ${r.intlId || ''} ${r.owner || ''} ${COUNTRY[r.owner]?.name || ''}`.toLowerCase();
+      if (!hay.includes(q)) continue;
+    }
+    out.push(row);
   }
   // Previously-tracked list: most-recently-absent first.
   gone.sort((a, b) => (b.lastSeen - a.lastSeen) || a.name.localeCompare(b.name));
@@ -855,12 +866,12 @@ function renderTable(db) {
 // "Previously tracked" pop-up — objects catalogued on an earlier visit
 // whose TLE/SATCAT entry is absent from the current snapshot (decayed,
 // deep-space like Aditya-L1, or dropped from CelesTrak's "active" list).
-// Opened from the #prev-tracked-btn pill; same columns as the main table
-// plus a "Last seen" column.  Honours the page's search / country filter
-// (absentRows is filtered in rebuildFiltered).
+// Opened from the #prev-tracked-btn pill.  Has its OWN search box + country
+// dropdown (independent of the main page), and a "Remarks" column with
+// curated / derived context per object.
 // =========================================================================
 
-const ABSENT_MAX = 1000;   // cap the rendered rows so a huge history can't jam the DOM
+const ABSENT_MAX = 1500;   // cap the rendered rows so a huge history can't jam the DOM
 
 function fmtLastSeen(ms) {
   // No live-feed stamp → the object is in the bundled reference repository
@@ -871,14 +882,137 @@ function fmtLastSeen(ms) {
   } catch { return 'reference catalogue'; }
 }
 
-function renderPrevTrackedModal() {
+// -------------------------------------------------------------------------
+// "Remarks" — interesting context per object for the previously-tracked
+// pop-up.  Curated rich notes for notable craft (matched by name), else a
+// note derived from the catalogue fields (purpose · launch date · orbit ·
+// inclination).  All local — no per-object network fetch for ~3 k rows.
+// -------------------------------------------------------------------------
+
+const NOTABLE_REMARKS = [
+  [/ADITYA/i, 'ISRO’s first solar observatory. Launched 2 Sep 2023; parked in a halo orbit around Sun–Earth Lagrange point L1, ~1.5 million km from Earth — so it carries no Earth-orbit TLE. Continuously studies the Sun’s corona, photosphere and solar wind. Design life ≈ 5 years.'],
+  [/JAMES ?WEBB|JWST/i, 'NASA/ESA/CSA flagship infrared observatory, launched 25 Dec 2021. Operates around Sun–Earth L2, ~1.5 million km from Earth. Hubble’s successor; images the first galaxies and exoplanet atmospheres. Propellant-limited life ~20 years.'],
+  [/\bSOHO\b/i, 'ESA/NASA Solar & Heliospheric Observatory, launched 2 Dec 1995. Stationed at Sun–Earth L1 (~1.5M km). The most prolific comet-discoverer in history; still operating decades past its 2-year design life.'],
+  [/DSCOVR/i, 'NOAA deep-space climate + solar-wind sentinel, launched 11 Feb 2015. Sits at Sun–Earth L1 (~1.5M km); gives ~15–60 min warning of geomagnetic storms and full-disc Earth imagery (EPIC camera).'],
+  [/ADVANCED COMPOSITION|\bACE\b/i, 'NASA Advanced Composition Explorer, launched 25 Aug 1997. At Sun–Earth L1 (~1.5M km) sampling the solar wind — a key space-weather early-warning asset.'],
+  [/^WIND\b/i, 'NASA solar-wind & magnetosphere probe, launched 1 Nov 1994; long-lived mission near Sun–Earth L1.'],
+  [/GAIA/i, 'ESA astrometry mission, launched 19 Dec 2013. Operated at Sun–Earth L2 (~1.5M km); mapped ~2 billion stars in 3-D. Science operations concluded early 2025.'],
+  [/SPEKTR-?RG/i, 'Russian–German X-ray observatory (Spektr-RG), launched 13 Jul 2019. Operates at Sun–Earth L2 surveying the hot universe — galaxy clusters and active black holes.'],
+  [/EUCLID/i, 'ESA dark-universe telescope, launched 1 Jul 2023. Operates at Sun–Earth L2, mapping cosmic geometry across billions of galaxies.'],
+  [/QUEQIAO|CHANG.?E/i, 'China lunar-exploration / relay spacecraft operating in cislunar space or an Earth–Moon L2 halo orbit — beyond conventional Earth orbit.'],
+  [/TIANWEN/i, 'China deep-space / interplanetary probe (Mars, asteroid or beyond) — in a Sun-centred orbit, not around Earth.'],
+  [/CHANDRAYAAN/i, 'ISRO lunar mission component operating in or around the Moon — no Earth-orbit elements.'],
+  [/HAYABUSA|OSIRIS|LUCY|PSYCHE|BEPICOLOMBO|JUICE/i, 'Interplanetary / asteroid mission in a heliocentric (Sun-centred) orbit — carries no Earth-orbit TLE.'],
+];
+
+// Broad purpose hints for common global operators/series that inferPurpose()
+// (China-focused) doesn't cover.  First match wins.
+const PURPOSE_HINTS = [
+  [/^STARLINK/i,                      'LEO broadband internet (SpaceX)'],
+  [/^ONEWEB/i,                        'LEO broadband (Eutelsat OneWeb)'],
+  [/^KUIPER/i,                        'LEO broadband (Amazon Leo)'],
+  [/^(NAVSTAR|GPS)/i,                 'GPS navigation (US)'],
+  [/^GLONASS/i,                       'GLONASS navigation (Russia)'],
+  [/^GALILEO/i,                       'Galileo navigation (EU)'],
+  [/^(IRNSS|NVS-)/i,                  'NavIC navigation (India)'],
+  [/^QZS/i,                           'QZSS navigation (Japan)'],
+  [/^IRIDIUM/i,                       'Satellite phone / data (Iridium)'],
+  [/^GLOBALSTAR/i,                    'Mobile satellite comms (Globalstar)'],
+  [/^ORBCOMM/i,                       'IoT / M2M messaging (ORBCOMM)'],
+  [/^(INTELSAT|GALAXY)/i,             'Geostationary comms (Intelsat)'],
+  [/^(SES-|ASTRA|O3B)/i,             'Communications (SES)'],
+  [/^(EUTELSAT|HOTBIRD|HOT BIRD)/i,  'Communications (Eutelsat)'],
+  [/^(INMARSAT|VIASAT)/i,            'Mobile broadband (Viasat / Inmarsat)'],
+  [/^(FLOCK|SKYSAT|PELICAN|TANAGER)/i,'Earth imaging (Planet)'],
+  [/^LEMUR/i,                        'Ship / weather data (Spire)'],
+  [/^(WORLDVIEW|GEOEYE|LEGION)/i,    'High-res Earth imaging (Vantor)'],
+  [/^ICEYE/i,                        'Radar (SAR) Earth imaging (ICEYE)'],
+  [/^CAPELLA/i,                      'Radar (SAR) imaging (Capella)'],
+  [/^BLACKSKY/i,                     'Rapid-revisit imaging (BlackSky)'],
+  [/^(NOAA|GOES|JPSS|SUOMI)/i,       'Weather satellite (NOAA)'],
+  [/^(METEOSAT|METOP|MSG)/i,         'Weather satellite (EUMETSAT)'],
+  [/^HIMAWARI/i,                     'Weather satellite (Japan)'],
+  [/^USA\s*\d/i,                     'Classified US government payload'],
+  [/^COSMOS\s*\d/i,                  'Russian military / government satellite'],
+];
+
+function purposeFor(name) {
+  for (const [re, p] of PURPOSE_HINTS) if (re.test(name)) return p;
+  if (window.Argos && typeof window.Argos.inferPurpose === 'function') {
+    const p = window.Argos.inferPurpose(name);
+    if (p && p !== 'Not publicly stated') return p;
+  }
+  return '';
+}
+
+function fmtLaunchDate(s) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || '');
+  if (!m) return s || '';
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${parseInt(m[3], 10)} ${months[parseInt(m[2], 10) - 1]} ${m[1]}`;
+}
+
+function orbitDescription(r) {
+  const cls = orbitClass(r);   // reads r.apogee / r.perigee
+  if (!cls) return '';
+  const label = cls === 'LEO' ? 'low-Earth orbit'
+              : cls === 'MEO' ? 'medium-Earth orbit'
+              : cls === 'GEO' ? 'geostationary belt'
+              : 'high / elliptical orbit';
+  const a = r.apogee, p = r.perigee;
+  if (Number.isFinite(a) && Number.isFinite(p)) {
+    return `${label} (~${Math.round((a + p) / 2).toLocaleString()} km up)`;
+  }
+  return label;
+}
+
+function remarksFor(r) {
+  for (const [re, txt] of NOTABLE_REMARKS) if (re.test(r.name)) return txt;
+  const bits = [];
+  const purpose = purposeFor(r.name);
+  if (purpose) bits.push(purpose);
+  const ld = fmtLaunchDate(r.launchDate);
+  if (ld) bits.push('launched ' + ld);
+  const orbit = orbitDescription(r);
+  if (orbit) bits.push(orbit);
+  if (Number.isFinite(r.inclination)) bits.push(`${r.inclination.toFixed(1)}° inclination`);
+  return bits.length ? bits.join(' · ') : '—';
+}
+
+// -------------------------------------------------------------------------
+// The pop-up has its OWN search + country dropdown (independent of the main
+// page filter), operating on the full absentRows set.
+// -------------------------------------------------------------------------
+
+function populatePrevTrackedOwner() {
+  const select = $('prev-tracked-owner');
+  if (!select) return;
+  const prev = select.value;
+  const owners = new Set();
+  for (const r of absentRows) if (r.owner) owners.add(r.owner);
+  const sorted = [...owners].sort((a, b) =>
+    (COUNTRY[a]?.name || a).localeCompare(COUNTRY[b]?.name || b));
+  const opts = ['<option value="">Country of Origin · All</option>'];
+  for (const o of sorted) opts.push(`<option value="${esc(o)}">${esc(COUNTRY[o]?.name || o)}</option>`);
+  select.innerHTML = opts.join('');
+  select.value = sorted.includes(prev) ? prev : '';
+}
+
+function currentPrevTrackedRows() {
+  const q = ($('prev-tracked-search')?.value || '').trim().toLowerCase();
+  const owner = $('prev-tracked-owner')?.value || '';
+  let rows = absentRows;
+  if (owner) rows = rows.filter(r => r.owner === owner);
+  if (q) rows = rows.filter(r =>
+    `${r.name} ${r.noradId} ${r.intlId} ${r.owner} ${COUNTRY[r.owner]?.name || ''}`.toLowerCase().includes(q));
+  return rows;
+}
+
+function applyPrevTrackedFilter() {
   const rowsEl = $('prev-tracked-rows');
   if (!rowsEl) return;
-  const n = absentRows.length;
-  const countEl = $('prev-tracked-count');
-  if (countEl) countEl.textContent = n.toLocaleString();
-
-  const slice = absentRows.slice(0, ABSENT_MAX);
+  const rows = currentPrevTrackedRows();
+  const slice = rows.slice(0, ABSENT_MAX);
   rowsEl.innerHTML = slice.map(r => `
     <tr>
       <td class="col-photo" data-norad="${r.noradId}">${photoCellHtml(r)}</td>
@@ -888,20 +1022,26 @@ function renderPrevTrackedModal() {
       <td class="col-country">${countryCell(r.owner)}</td>
       <td class="col-country">${launchCountryCell(r.launchSite)}</td>
       <td class="muted">${fmtLastSeen(r.lastSeen)}</td>
-      <td class="col-status">${r.decayed
-          ? '<span class="badge badge-decay">DECAYED</span>'
-          : '<span class="badge badge-gone">NOT IN LATEST FEED</span>'}</td>
+      <td class="col-remarks">${esc(remarksFor(r))}</td>
     </tr>`).join('') || `<tr><td colspan="8" class="muted" style="padding:24px;text-align:center">${
-      bootStamp === null ? 'Loading…' : 'Nothing has dropped out of the feed yet — every catalogued object is in the current snapshot.'
+      bootStamp === null ? 'Loading…' : 'No matching objects.'
     }</td></tr>`;
 
   const noteEl = $('prev-tracked-note');
   if (noteEl) {
-    noteEl.textContent = n > ABSENT_MAX
-      ? `Showing the ${ABSENT_MAX.toLocaleString()} most-recently-seen of ${n.toLocaleString()} previously-tracked objects.`
-      : '';
+    const parts = [];
+    if (rows.length !== absentRows.length) parts.push(`${rows.length.toLocaleString()} of ${absentRows.length.toLocaleString()} shown`);
+    if (rows.length > ABSENT_MAX) parts.push(`first ${ABSENT_MAX.toLocaleString()} rendered`);
+    noteEl.textContent = parts.join(' · ');
   }
   hydrateThumbs(slice);   // async, no need to await
+}
+
+function renderPrevTrackedModal() {
+  const countEl = $('prev-tracked-count');
+  if (countEl) countEl.textContent = absentRows.length.toLocaleString();
+  populatePrevTrackedOwner();
+  applyPrevTrackedFilter();
 }
 
 function openPrevTracked() {
@@ -925,6 +1065,8 @@ function closePrevTracked() {
 
 $('prev-tracked-btn')?.addEventListener('click', openPrevTracked);
 $('prev-tracked-close')?.addEventListener('click', closePrevTracked);
+$('prev-tracked-search')?.addEventListener('input', applyPrevTrackedFilter);
+$('prev-tracked-owner')?.addEventListener('change', applyPrevTrackedFilter);
 $('prev-tracked-modal')?.addEventListener('click', e => {
   if (e.target.id === 'prev-tracked-modal') closePrevTracked();
 });

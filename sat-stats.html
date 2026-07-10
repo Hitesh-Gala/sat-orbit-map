@@ -50,6 +50,21 @@
       background: rgba(255, 210, 127, 0.14); color: #ffd27f;
       border: 1px solid rgba(255, 210, 127, 0.4);
     }
+    /* Previously-tracked pop-up: own search box + wrapping Remarks column. */
+    #prev-tracked-modal .tle-modal-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+    #prev-tracked-search {
+      flex: 1 1 260px; min-width: 190px;
+      font: 13px var(--mono); padding: 7px 11px;
+      border: 1px solid var(--line); border-radius: 4px;
+      background: rgba(103, 200, 255, 0.05); color: var(--text);
+    }
+    #prev-tracked-search:focus { outline: none; border-color: var(--accent); }
+    #prev-tracked-owner { max-width: 240px; }
+    #prev-tracked-modal .tle-modal-hint { flex: 1 1 100%; }
+    #prev-tracked-modal .col-remarks {
+      white-space: normal; min-width: 230px; max-width: 400px;
+      font-size: 12px; line-height: 1.45; color: var(--text);
+    }
   </style>
 </head>
 <body class="page-stats">
@@ -291,7 +306,8 @@
         <button type="button" id="prev-tracked-close" class="tle-modal-close" aria-label="Close">×</button>
       </header>
       <div class="tle-modal-toolbar">
-        <span class="tle-modal-hint">These were catalogued on an earlier visit but are absent from the current TLE / SATCAT snapshot — decayed, deep-space craft that carry no Earth-orbit TLE (e.g. Aditya-L1 at Sun–Earth L1), or dropped from CelesTrak's rotating “active” list. Their last-known data is retained here. The page filter also narrows this list.</span>
+        <input type="search" id="prev-tracked-search" placeholder="Search these objects by name, NORAD, country…" autocomplete="off">
+        <span class="tle-modal-hint">Catalogued on an earlier visit but absent from the current live feed — decayed, deep-space craft with no Earth-orbit TLE (e.g. Aditya-L1 at Sun–Earth L1), or dropped from CelesTrak's rotating “active” list. Search or pick a country above; the <strong>Remarks</strong> column adds context.</span>
       </div>
       <div class="tle-modal-body">
         <table class="repo-table stats-table">
@@ -301,10 +317,14 @@
               <th>Name</th>
               <th>NORAD</th>
               <th>Int'l ID</th>
-              <th class="col-country">Country</th>
+              <th class="col-country">
+                <select id="prev-tracked-owner" class="col-filter" aria-label="Filter previously-tracked by country of origin">
+                  <option value="">Country of Origin · All</option>
+                </select>
+              </th>
               <th>Launch Country</th>
               <th>Last seen</th>
-              <th class="col-status">Status</th>
+              <th class="col-remarks">Remarks</th>
             </tr>
           </thead>
           <tbody id="prev-tracked-rows"></tbody>
@@ -321,7 +341,7 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
   <script src="tle-loader.js?v=8"></script>
-  <script src="sat-stats.js?v=13"></script>
+  <script src="sat-stats.js?v=14"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=6"></script>
 </body>
