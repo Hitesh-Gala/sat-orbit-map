@@ -29,6 +29,10 @@ body {
      bumps below, most HUD text reads ~30 % larger overall. */
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
+  /* Positioning context for the absolute .top-logo so that, on pages whose
+     body scrolls, the mark scrolls up with the content instead of staying
+     pinned to the viewport. */
+  position: relative;
 }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -1609,49 +1613,40 @@ body.light .btn-nazar:hover { background: rgba(21, 101, 192, 0.18); }
    The logo sits inside a thin dark panel so it reads cleanly whether
    the canvas behind is the bright Blue-Marble atmosphere, the
    night-sky stars, a light-theme table page, or anything else. */
+/* Just the mark, no panel/border — it sits at the top-right and scrolls
+   up with the page (position: absolute, not fixed) so it never obstructs
+   content once you scroll down. */
 .top-logo {
-  position: fixed;
+  position: absolute;
   top: 10px;
   right: 14px;
   z-index: 50;
   display: block;
   text-decoration: none;
-  padding: 6px 10px;
-  background: rgba(2, 6, 13, 0.78);
-  border: 1px solid rgba(110, 200, 255, 0.25);
-  border-radius: 6px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
-  transition: opacity .15s, transform .15s, border-color .15s;
+  padding: 0;
+  transition: opacity .15s, transform .15s;
 }
-.top-logo:hover  { transform: scale(1.04); border-color: var(--accent); }
+.top-logo:hover  { transform: scale(1.04); }
 .top-logo:active { transform: scale(0.98); }
 .top-logo img {
-  height: 56px;
+  height: 52px;
   width: auto;
   display: block;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.55));
 }
-/* Full-width headers (chinrepo, sat-stats, 2d-views, compendium)
-   already pack content right-of-flex.  Reserve ~180 px on the right
-   so the logo panel (≈160 px wide at 56 px image) sits over empty
-   space, not on top of the header buttons. */
+/* Full-width headers (chinrepo, sat-stats, 2d-views) pack content
+   right-of-flex.  Reserve ~110 px on the right so the (now panel-less)
+   logo mark sits over empty space, not on top of the header buttons. */
 body.page-repo  .repo-header,
 body.page-stats .repo-header,
-body.page-2d    .page-2d-header { padding-right: 180px; }
-body.page-compendium .header-inner { padding-right: 180px; }
+body.page-2d    .page-2d-header { padding-right: 110px; }
 
 @media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
-  /* Smaller, tighter logo panel on phones — drops below the drawer
-     so the open menu visually sits in front of it.  The legacy
-     MENU/DATA pill conflict no longer applies; mobile-menu.js owns
-     the menu chrome. */
-  .top-logo { padding: 4px 8px; z-index: 50; }
+  .top-logo { padding: 0; z-index: 50; }
   .top-logo img { height: 34px; }
   body.page-repo  .repo-header,
   body.page-stats .repo-header,
-  body.page-2d    .page-2d-header,
-  body.page-compendium .header-inner { padding-right: 110px; }
+  body.page-2d    .page-2d-header { padding-right: 85px; }
 }
 
 /* --- Cursor-tracking tooltip on the 3-D Visualiser page.
