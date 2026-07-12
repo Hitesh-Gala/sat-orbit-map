@@ -9,7 +9,8 @@
   <title>Argos · 2-D Views</title>
   <link rel="preconnect" href="https://celestrak.org">
   <link rel="preconnect" href="https://cdn.amcharts.com">
-  <link rel="stylesheet" href="styles.css?v=18">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="styles.css?v=19">
 </head>
 <body class="page-2d">
   <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
@@ -25,7 +26,8 @@
       </div>
     </header>
 
-    <main class="maps-grid maps-single">
+    <main class="map-row">
+      <div class="map-area">
       <div class="map-cell" id="map-cell">
         <!-- brightened equirectangular basemap (own layer so its filter
              never touches the SVG track drawn above it) -->
@@ -120,6 +122,12 @@
           </div>
         </div>
       </div>
+      </div>
+
+      <div class="globe-cell">
+        <div id="mini-globe" class="mini-globe"></div>
+        <div class="globe-cap">3-D · centred on satellite</div>
+      </div>
     </main>
   </div>
 
@@ -127,10 +135,15 @@
   <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
   <script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
 
+  <!-- Companion 3-D globe.  three must load before globe.gl (it does not
+       expose window.THREE), and we build the sat marker with window.THREE. -->
+  <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+
   <!-- Satellite math + shared data layer -->
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=8"></script>
-  <script src="2d-views.js?v=4"></script>
+  <script src="2d-views.js?v=5"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=6"></script>
 </body>

@@ -2312,6 +2312,54 @@ body.page-2d .maps-grid {
   justify-items: center;
   background: #02080f;
 }
+
+/* 2-D map + companion 3-D globe, side by side.  The map keeps its 2:1 shape
+   and shrinks to leave room; the globe takes ~1/6 of the width on the right. */
+body.page-2d .map-row {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 0;
+  padding: 10px 14px;
+  background: #02080f;
+}
+body.page-2d .map-area {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+body.page-2d .globe-cell {
+  flex: 0 0 clamp(150px, 16vw, 260px);
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+body.page-2d .mini-globe {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 26px rgba(80, 150, 230, 0.28), inset 0 0 0 1px rgba(120, 170, 220, 0.25);
+}
+body.page-2d .globe-cap {
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7fa8cf;
+}
+/* On narrow screens the side-by-side would crush both; drop the globe and
+   let the map use the full width. */
+@media (max-width: 820px) {
+  body.page-2d .globe-cell { display: none; }
+  body.page-2d .map-row { padding: 6px; }
+}
 /* Equirectangular raster on its own layer, stretched to fill the 2:1 cell so
    the SVG track (which maps lon/lat linearly to the same rectangle) sits on
    the coastlines.  Brightened per request — this layer's filter can't touch

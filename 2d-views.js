@@ -218,7 +218,7 @@ function positionNowLabel(lat, lon) {
   label.style.top  = (vy(lat) / 180 * cell.clientHeight) + 'px';
 }
 
-function setNowMarker(lat, lon) {
+function setNowMarker(lat, lon, alt) {
   const now = $('now');
   now.style.display = '';
   now.setAttribute('transform', `translate(${vx(lon).toFixed(2)},${vy(lat).toFixed(2)})`);
@@ -227,6 +227,67 @@ function setNowMarker(lat, lon) {
   label.hidden = false;
   label.textContent = shortName(selected.name);
   positionNowLabel(lat, lon);
+  updateGlobe(lat, lon, alt);
+}
+
+// ---------------------------------------------------------------------------
+// Companion 3-D globe (globe.gl) — kept centred on the selected satellite: the
+// globe spins in longitude so the sub-point faces the viewer, while the sat
+// marker rides up/down with latitude.  Fed from the same setNowMarker() path,
+// so it stays in lock-step with the 2-D map in both modes and at any speed.
+// ---------------------------------------------------------------------------
+
+const GLOBE_CAM_ALT = 2.2;
+let globe = null, satMesh = null;
+
+function globeSize() {
+  const el = $('mini-globe');
+  const w = el.clientWidth || 200;
+  return { w, h: el.clientHeight || w };
+}
+
+function initGlobe() {
+  if (typeof Globe !== 'function' || !window.THREE) return;
+  const el = $('mini-globe');
+  const { w, h } = globeSize();
+  globe = Globe()(el)
+    .width(w).height(h)
+    .backgroundColor('rgba(0,0,0,0)')
+    .globeImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg')
+    .showAtmosphere(true).atmosphereColor('#68b0ff').atmosphereAltitude(0.2);
+
+  // Display only — it tracks the sat automatically.  Keep controls "enabled"
+  // (globe.gl applies pointOfView through controls.update() each frame) but
+  // switch off every user input so the auto-centring can't be fought.
+  const ctr = globe.controls();
+  ctr.enabled = true;
+  ctr.autoRotate = false;
+  if ('noRotate' in ctr) { ctr.noRotate = ctr.noZoom = ctr.noPan = true; }         // TrackballControls
+  if ('enableRotate' in ctr) { ctr.enableRotate = ctr.enableZoom = ctr.enablePan = false; } // OrbitControls
+
+  const THREE = window.THREE;
+  satMesh = new THREE.Mesh(
+    new THREE.SphereGeometry(3, 20, 20),
+    new THREE.MeshBasicMaterial({ color: 0x8bff9e }));
+  satMesh.add(new THREE.Mesh(
+    new THREE.SphereGeometry(5.5, 20, 20),
+    new THREE.MeshBasicMaterial({ color: 0x8bff9e, transparent: true, opacity: 0.25 })));
+  satMesh.visible = false;
+  globe.scene().add(satMesh);
+
+  globe.pointOfView({ lat: 0, lng: 0, altitude: GLOBE_CAM_ALT }, 0);
+  window.addEventListener('resize', () => { const s = globeSize(); globe.width(s.w).height(s.h); });
+}
+
+function updateGlobe(lat, lon, alt) {
+  if (!globe || !satMesh) return;
+  const altFrac = Math.min(0.6, Math.max(0.03, (alt || 400) / 6371));
+  const c = globe.getCoords(lat, lon, altFrac);
+  satMesh.position.set(c.x, c.y, c.z);
+  satMesh.visible = true;
+  // lng follows the sub-point (globe rotates); lat fixed at 0 so the marker
+  // rides up/down with its own latitude.
+  globe.pointOfView({ lat: 0, lng: lon, altitude: GLOBE_CAM_ALT }, 0);
 }
 
 function renderInfo(r, footer) {
@@ -273,7 +334,7 @@ function refreshCurrent() {
   if (mode !== 'time' || !selected) return;
   const r = propagate(selected.rec, new Date());
   if (!r || !Number.isFinite(r.lat)) return;
-  setNowMarker(r.lat, r.lon);
+  setNowMarker(r.lat, r.lon, r.alt);
   renderInfo(r, `Track: 24 h before/after ${(anchor || new Date()).toISOString().slice(11, 16)} UTC`);
 }
 
@@ -320,7 +381,7 @@ function animRev(ts) {
   const t = new Date(revBase.getTime() + simMin * 60000);
   const r = propagate(selected.rec, t);
   if (r && Number.isFinite(r.lat)) {
-    setNowMarker(r.lat, r.lon);
+    setNowMarker(r.lat, r.lon, r.alt);
 
     // extend the golden trail up to the current sim time
     while (nextGoldMin <= simMin) {
@@ -520,6 +581,7 @@ function wireControls() {
 
     drawGraticule();
     buildCountries();
+    initGlobe();
     wireSearch();
     wireTooltip();
     wireControls();
