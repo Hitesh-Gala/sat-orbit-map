@@ -29,7 +29,7 @@ const MARK_STEP_MIN   = 30;        // interval markers + arrows
 const CURRENT_REFRESH = 5_000;     // live "now" marker cadence (time mode)
 const TRACK_REFRESH   = 5 * 60_000;// recompute the ±24 h window periodically
 
-const SPEEDS   = [1, 2, 5, 10, 20, 50, 100];  // rev-mode relative speeds
+const SPEEDS   = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];  // rev-mode relative speeds
 const MAX_REVS = 3;                            // rev-mode trail cap
 const GOLD_STEP_MIN = 0.5;                     // golden-trail sampling (sim min)
 
@@ -360,13 +360,23 @@ function resetRevAnim() {
   $('rev-line').setAttribute('d', '');
 }
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 function fmtClock(date, offsetMs = 0) {
   return new Date(date.getTime() + offsetMs).toISOString().slice(11, 19);
 }
 
+// Reads UTC parts; pass an already-shifted Date (e.g. +5:30) to get IST wall date.
+function fmtDate(d) {
+  return `${String(d.getUTCDate()).padStart(2, '0')} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}
+
 function updateRevTimes(t) {
+  const ist = new Date(t.getTime() + 5.5 * 3600000);  // IST = UTC + 5:30
   $('rev-utc').textContent = fmtClock(t);
-  $('rev-ist').textContent = fmtClock(t, 5.5 * 3600000);  // IST = UTC + 5:30
+  $('rev-utc-date').textContent = fmtDate(t);
+  $('rev-ist').textContent = fmtClock(t, 5.5 * 3600000);
+  $('rev-ist-date').textContent = fmtDate(ist);
 }
 
 function animRev(ts) {
@@ -417,7 +427,7 @@ function applyMode(m) {
   btn.classList.toggle('on', rev);
   $('mode-state').textContent = rev ? 'Revolution-based' : 'Time-based';
   setTimeVisibility(!rev);
-  $('rev-panel').hidden = !rev;
+  $('rev-section').hidden = !rev;
 
   if (rev) {
     startRev();
@@ -474,6 +484,7 @@ function wireTooltip() {
 function makeDraggable(panel, handle) {
   let ox = 0, oy = 0, dragging = false;
   handle.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('button')) return;   // let header buttons (collapse) click, not drag
     dragging = true;
     panel.classList.add('dragging');
     panel.style.transform = 'none';   // drop any centering transform
@@ -568,6 +579,13 @@ function wireControls() {
     speedIdx = +slider.value;
     $('rev-speed-val').textContent = SPEEDS[speedIdx] + '×';
   });
+  const collapseBtn = $('tp-collapse');
+  collapseBtn.addEventListener('click', () => {
+    const collapsed = $('track-panel').classList.toggle('collapsed');
+    collapseBtn.textContent = collapsed ? '▸' : '▾';
+    collapseBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    collapseBtn.title = collapsed ? 'Expand panel' : 'Collapse panel';
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -586,7 +604,6 @@ function wireControls() {
     wireTooltip();
     wireControls();
     makeDraggable($('track-panel'), $('tp-drag'));
-    makeDraggable($('rev-panel'), $('rp-drag'));
     window.addEventListener('resize', () => { if (nowLatLon) positionNowLabel(nowLatLon[0], nowLatLon[1]); });
 
     setStatus('Loading TLE catalog…');

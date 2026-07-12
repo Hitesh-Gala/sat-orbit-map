@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://celestrak.org">
   <link rel="preconnect" href="https://cdn.amcharts.com">
   <link rel="preconnect" href="https://unpkg.com">
-  <link rel="stylesheet" href="styles.css?v=19">
+  <link rel="stylesheet" href="styles.css?v=20">
 </head>
 <body class="page-2d">
   <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
@@ -65,6 +65,7 @@
           <div class="tp-drag" id="tp-drag" title="Drag to move">
             <span class="tp-grip" aria-hidden="true">⠿⠿</span>
             <span class="tp-title">Ground Track</span>
+            <button class="tp-collapse" id="tp-collapse" type="button" aria-expanded="true" title="Collapse panel">▾</button>
           </div>
           <div class="tp-body">
             <div class="track-search-wrap">
@@ -94,30 +95,25 @@
               <span><i class="lg-line gold"></i>traced path (≤ 3 revolutions)</span>
               <span><i class="lg-now"></i>satellite · flying at slider speed</span>
             </div>
-          </div>
-        </div>
 
-        <!-- Rev-based speed control — floating, draggable, only shown in
-             revolution mode. -->
-        <div class="rev-panel" id="rev-panel" hidden>
-          <div class="rp-drag" id="rp-drag" title="Drag to move">
-            <span class="tp-grip" aria-hidden="true">⠿⠿</span>
-            <span class="tp-title">Rev-Based · Speed</span>
-          </div>
-          <div class="rp-body">
-            <input id="rev-speed" class="rev-speed" type="range" min="0" max="6" step="1"
-                   value="0" aria-label="animation speed">
-            <div class="rev-ticks">
-              <span>1×</span><span>2×</span><span>5×</span><span>10×</span>
-              <span>20×</span><span>50×</span><span>100×</span>
-            </div>
-            <div class="rev-line1">
-              <span>Speed <b id="rev-speed-val">1×</b></span>
-              <span>Rev <b id="rev-count">1</b> / 3</span>
-            </div>
-            <div class="rev-clock">
-              <div><span>UTC</span><b id="rev-utc">--:--:--</b></div>
-              <div><span>IST</span><b id="rev-ist">--:--:--</b></div>
+            <!-- Rev-based speed control — snapped to the bottom of the panel,
+                 same width; only shown in revolution mode. -->
+            <div class="rev-section" id="rev-section" hidden>
+              <div class="rev-sec-title">Rev-Based · Speed</div>
+              <input id="rev-speed" class="rev-speed" type="range" min="0" max="9" step="1"
+                     value="0" aria-label="animation speed">
+              <div class="rev-ticks">
+                <span>1×</span><span>2×</span><span>5×</span><span>10×</span><span>20×</span>
+                <span>50×</span><span>100×</span><span>200×</span><span>500×</span><span>1000×</span>
+              </div>
+              <div class="rev-line1">
+                <span>Speed <b id="rev-speed-val">1×</b></span>
+                <span>Rev <b id="rev-count">1</b> / 3</span>
+              </div>
+              <div class="rev-clock">
+                <div><span>UTC</span><b id="rev-utc">--:--:--</b><em id="rev-utc-date">----</em></div>
+                <div><span>IST</span><b id="rev-ist">--:--:--</b><em id="rev-ist-date">----</em></div>
+              </div>
             </div>
           </div>
         </div>
@@ -143,7 +139,7 @@
   <!-- Satellite math + shared data layer -->
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=8"></script>
-  <script src="2d-views.js?v=5"></script>
+  <script src="2d-views.js?v=6"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=6"></script>
 </body>
