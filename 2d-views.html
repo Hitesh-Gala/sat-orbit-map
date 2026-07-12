@@ -9,7 +9,7 @@
   <title>Argos · 2-D Views</title>
   <link rel="preconnect" href="https://celestrak.org">
   <link rel="preconnect" href="https://cdn.amcharts.com">
-  <link rel="stylesheet" href="styles.css?v=16">
+  <link rel="stylesheet" href="styles.css?v=17">
 </head>
 <body class="page-2d">
   <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
@@ -26,38 +26,70 @@
     </header>
 
     <main class="maps-grid maps-single">
-      <div class="map-cell">
-        <div id="map-equal" class="chart"></div>
+      <div class="map-cell" id="map-cell">
+        <!-- brightened equirectangular basemap (own layer so its filter
+             never touches the SVG track drawn above it) -->
+        <div class="map-basemap" id="map-basemap"></div>
 
-        <div class="track-panel">
-          <div class="tp-title">World · Ground Track</div>
-          <div class="track-search-wrap">
-            <input id="sat-search" type="text" placeholder="Search a satellite…"
-                   autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false">
-            <div id="sat-results" class="sat-results" role="listbox" hidden></div>
+        <!-- self-drawn track overlay.  viewBox is degrees: x = lon+180,
+             y = 90-lat; preserveAspectRatio=none stretches it to the 2:1
+             basemap so plotted points sit exactly on their coastlines. -->
+        <svg class="track-svg" id="track-svg" viewBox="0 0 360 180"
+             preserveAspectRatio="none" aria-hidden="true">
+          <g id="graticule" class="graticule"></g>
+          <path id="past-halo"   class="track-halo"/>
+          <path id="future-halo" class="track-halo"/>
+          <path id="past-line"   class="track-line past"/>
+          <path id="future-line" class="track-line future"/>
+          <g id="marks" class="marks"></g>
+          <g id="now" class="now" style="display:none">
+            <circle class="now-ring" r="1.9" fill="none">
+              <animate attributeName="r" values="1.9;8" dur="1.7s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.95;0" dur="1.7s" repeatCount="indefinite"/>
+            </circle>
+            <circle class="now-glow" r="3.2"/>
+            <circle class="now-dot" r="1.9">
+              <animate attributeName="opacity" values="1;0.2;1" dur="0.95s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+        </svg>
+
+        <div class="now-label" id="now-label" hidden></div>
+        <div class="track-tooltip" id="track-tooltip" hidden></div>
+
+        <!-- floating, draggable control panel -->
+        <div class="track-panel" id="track-panel">
+          <div class="tp-drag" id="tp-drag" title="Drag to move">
+            <span class="tp-grip" aria-hidden="true">⠿⠿</span>
+            <span class="tp-title">Ground Track</span>
           </div>
-          <div id="sat-info" class="sat-info" hidden></div>
-          <div class="track-legend">
-            <span><i class="lg-line past"></i>past 24 h</span>
-            <span><i class="lg-line future"></i>next 24 h</span>
-            <span><i class="lg-mark"></i>30-min mark · hover for place</span>
-            <span><i class="lg-now"></i>current position</span>
+          <div class="tp-body">
+            <div class="track-search-wrap">
+              <input id="sat-search" type="text" placeholder="Search a satellite…"
+                     autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false">
+              <div id="sat-results" class="sat-results" role="listbox" hidden></div>
+            </div>
+            <div id="sat-info" class="sat-info" hidden></div>
+            <div class="track-legend">
+              <span><i class="lg-line past"></i>past 24 h</span>
+              <span><i class="lg-line future"></i>next 24 h</span>
+              <span><i class="lg-mark"></i>30-min mark · hover for place</span>
+              <span><i class="lg-now"></i>current position</span>
+            </div>
           </div>
         </div>
       </div>
     </main>
   </div>
 
-  <!-- amCharts 5 -->
+  <!-- Country outlines (data only) for reverse-geocoding the ground track. -->
   <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
-  <script src="https://cdn.amcharts.com/lib/5/map.js"></script>
   <script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
-  <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
 
   <!-- Satellite math + shared data layer -->
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=8"></script>
-  <script src="2d-views.js?v=2"></script>
+  <script src="2d-views.js?v=3"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=6"></script>
 </body>

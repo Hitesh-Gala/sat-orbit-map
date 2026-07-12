@@ -2312,28 +2312,107 @@ body.page-2d .maps-grid {
   justify-items: center;
   background: #02080f;
 }
-body.page-2d .map-cell .chart {
-  /* Stretch the equirectangular raster to fill the chart area exactly so the
-     ground track (projected by the same geoEquirectangular) lines up with the
-     coastlines.  A cool dark tint is blended over the raster (background layer
-     only, so the SVG track drawn on top stays bright) — it deepens the ocean,
-     mutes the land, and makes the dotted path and arrows read clearly. */
-  background-image:
-    linear-gradient(rgba(4, 14, 28, 0.42), rgba(4, 14, 28, 0.42)),
-    url('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg');
+/* Equirectangular raster on its own layer, stretched to fill the 2:1 cell so
+   the SVG track (which maps lon/lat linearly to the same rectangle) sits on
+   the coastlines.  Brightened per request — this layer's filter can't touch
+   the track, which lives in a sibling SVG above it. */
+body.page-2d .map-basemap {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
+  filter: brightness(1.32) saturate(1.08) contrast(1.02);
 }
-/* Subtle vignette adds depth without obscuring the coasts. */
+/* SVG track overlay — above the basemap, below the chrome. */
+body.page-2d .track-svg {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+/* Very light edge vignette — kept subtle so the map stays bright. */
 body.page-2d .map-cell::after {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.4));
-  z-index: 4;
+  z-index: 2;
+  background: radial-gradient(ellipse at center, transparent 72%, rgba(0, 0, 0, 0.22));
 }
+
+/* ---- SVG track styling (stroke widths are in viewBox units; 1 unit ≈ map
+   width / 360 px, so they scale gently with the map) ---- */
+body.page-2d .graticule path {
+  fill: none;
+  stroke: #ffffff;
+  stroke-opacity: 0.12;
+  stroke-width: 0.12;
+}
+body.page-2d .track-halo {
+  fill: none;
+  stroke: rgba(3, 10, 22, 0.6);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+body.page-2d .track-line {
+  fill: none;
+  stroke-width: 0.95;
+  stroke-linecap: round;
+  stroke-dasharray: 0.1 2.6;
+}
+body.page-2d .track-line.past   { stroke: #27e5ff; }
+body.page-2d .track-line.future { stroke: #ff9a2e; }
+
+body.page-2d .mark-hit { fill: transparent; }
+body.page-2d .mark { cursor: help; }
+body.page-2d .mark-arrow { stroke: rgba(3, 10, 22, 0.85); stroke-width: 0.35; stroke-linejoin: round; }
+body.page-2d .mark.past   .mark-arrow { fill: #27e5ff; }
+body.page-2d .mark.future .mark-arrow { fill: #ff9a2e; }
+
+body.page-2d .now-ring { stroke: #8bff9e; stroke-width: 0.7; }
+body.page-2d .now-glow { fill: #8bff9e; opacity: 0.28; }
+body.page-2d .now-dot  { fill: #ffffff; stroke: #0a2a14; stroke-width: 0.45; }
+
+/* Current-position name tag (HTML, kept crisp + fixed size). */
+body.page-2d .now-label {
+  position: absolute;
+  z-index: 5;
+  transform: translate(-50%, -230%);
+  padding: 2px 7px;
+  background: rgba(9, 20, 33, 0.82);
+  border: 1px solid rgba(139, 255, 158, 0.5);
+  border-radius: 5px;
+  color: #eafff0;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+body.page-2d .now-label[hidden] { display: none; }
+
+/* Hover tooltip for the 30-min marks. */
+body.page-2d .track-tooltip {
+  position: absolute;
+  z-index: 9;
+  max-width: 220px;
+  padding: 7px 10px;
+  background: rgba(6, 15, 26, 0.94);
+  border: 1px solid rgba(120, 170, 220, 0.4);
+  border-radius: 7px;
+  color: #eaf3fb;
+  font-size: 11.5px;
+  line-height: 1.4;
+  white-space: pre-line;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+}
+body.page-2d .track-tooltip[hidden] { display: none; }
 body.page-2d .map-cell .map-title {
   color: #f1f7ff;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
@@ -2349,11 +2428,10 @@ body.page-2d .map-cell .map-sub {
   position: absolute;
   top: 12px;
   left: 12px;
-  z-index: 6;
+  z-index: 8;
   width: 272px;
   max-width: calc(100% - 24px);
-  padding: 12px 13px;
-  background: rgba(8, 17, 28, 0.82);
+  background: rgba(8, 17, 28, 0.86);
   border: 1px solid rgba(120, 170, 220, 0.28);
   border-radius: 10px;
   backdrop-filter: blur(7px);
@@ -2361,14 +2439,33 @@ body.page-2d .map-cell .map-sub {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
   color: #dbe8f5;
   font-size: 12px;
+  overflow: hidden;
 }
+.track-panel.dragging {
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.62);
+  border-color: rgba(120, 170, 220, 0.55);
+}
+/* Drag handle — the whole title bar moves the panel. */
+.track-panel .tp-drag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 11px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  background: rgba(103, 200, 255, 0.09);
+  border-bottom: 1px solid rgba(120, 170, 220, 0.22);
+}
+.track-panel.dragging .tp-drag { cursor: grabbing; }
+.track-panel .tp-grip { color: #5f7d99; letter-spacing: -1px; font-size: 13px; }
 .track-panel .tp-title {
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: #7fd4ff;
-  margin-bottom: 9px;
 }
+.track-panel .tp-body { padding: 12px 13px; }
 .track-search-wrap { position: relative; }
 #sat-search {
   width: 100%;
@@ -2455,7 +2552,8 @@ body.page-2d .map-cell .map-sub {
   box-shadow: 0 0 0 2px rgba(139, 255, 158, 0.3);
 }
 @media (max-width: 560px) {
-  .track-panel { width: 220px; top: 8px; left: 8px; padding: 10px 11px; }
+  .track-panel { width: 216px; top: 8px; left: 8px; }
+  .track-panel .tp-body { padding: 10px 11px; }
   .sat-results { max-height: 200px; }
 }
 
