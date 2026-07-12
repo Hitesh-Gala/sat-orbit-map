@@ -50,7 +50,7 @@ Each `.html` is paired with a same-name `.js`. All pages share `styles.css` and 
 |------|--------|---------------|--------------|
 | `index.html` | `app.js` | globe.gl | Realistic Earth + live sat dots (true altitude or flat via the 2D-3D toggle), HUD with clocks, observer-city dropdown (10 cities / All / mask-CN), over-horizon counts split by PRC flag |
 | `orbits.html` | `orbits.js` | globe.gl | 3-D orbital tracks (one polyline per sat, sampled across one period) + NAZAR soundtrack with beat-driven camera moves + immersive fullscreen |
-| `2d-views.html` | `2d-views.js` | **amCharts 5** maps | Equirectangular projection over NASA Blue Marble raster, polygons aligned pixel-perfect with the basemap |
+| `2d-views.html` | `2d-views.js` | **amCharts 5** maps | Single-satellite ground-track tool: search one sat, draw its ±24 h SGP4 sub-point path as dotted past/future lines over a borderless Blue Marble map, 30-min direction arrows + hover place-names (point-in-polygon reverse-geocode against the worldLow GeoJSON, coarse ocean-basin fallback) |
 | `viz3d.html` | `viz3d.js` | globe.gl + **bare three.js r157** | Every active sat at true altitude via one `THREE.InstancedMesh`; hover tooltip + click-to-isolate orbit tube |
 | `sats-by-ops.html` | `sats-by-ops.js` | globe.gl + **bare three.js r157** | Same InstancedMesh engine, sats colour-coded by ~37 operator/constellation categories with per-category toggles |
 | `game-of-cones.html` | `game-of-cones.js` | globe.gl + **bare three.js r157** | Land-cone and sat-cone geometry puzzles (ConeGeometry meshes added directly to `globe.scene()`) |

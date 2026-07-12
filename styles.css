@@ -2313,9 +2313,14 @@ body.page-2d .maps-grid {
   background: #02080f;
 }
 body.page-2d .map-cell .chart {
-  /* Stretch the equirectangular raster to fill the chart area exactly so
-     the polygon strokes (also stretched by amCharts to fill) line up. */
-  background-image: url('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg');
+  /* Stretch the equirectangular raster to fill the chart area exactly so the
+     ground track (projected by the same geoEquirectangular) lines up with the
+     coastlines.  A cool dark tint is blended over the raster (background layer
+     only, so the SVG track drawn on top stays bright) — it deepens the ocean,
+     mutes the land, and makes the dotted path and arrows read clearly. */
+  background-image:
+    linear-gradient(rgba(4, 14, 28, 0.42), rgba(4, 14, 28, 0.42)),
+    url('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg');
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
@@ -2336,6 +2341,122 @@ body.page-2d .map-cell .map-title {
 body.page-2d .map-cell .map-sub {
   color: #b8cbe2;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+
+/* ---- Ground-track control panel (search + selected-sat readout + legend).
+   Dark glass card floating top-left over the map. ---- */
+.track-panel {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 6;
+  width: 272px;
+  max-width: calc(100% - 24px);
+  padding: 12px 13px;
+  background: rgba(8, 17, 28, 0.82);
+  border: 1px solid rgba(120, 170, 220, 0.28);
+  border-radius: 10px;
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  color: #dbe8f5;
+  font-size: 12px;
+}
+.track-panel .tp-title {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #7fd4ff;
+  margin-bottom: 9px;
+}
+.track-search-wrap { position: relative; }
+#sat-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  background: rgba(3, 10, 18, 0.9);
+  border: 1px solid rgba(120, 170, 220, 0.35);
+  border-radius: 7px;
+  color: #eaf3fb;
+  font-size: 13px;
+  font-family: inherit;
+}
+#sat-search:focus {
+  outline: none;
+  border-color: #63d5ff;
+  box-shadow: 0 0 0 2px rgba(99, 213, 255, 0.18);
+}
+#sat-search::placeholder { color: #6f8399; }
+
+.sat-results {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 8;
+  max-height: 264px;
+  overflow-y: auto;
+  background: #08121e;
+  border: 1px solid rgba(120, 170, 220, 0.3);
+  border-radius: 7px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.6);
+}
+.sat-results[hidden] { display: none; }
+.sat-opt {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #cfe0f0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.sat-opt:last-child { border-bottom: none; }
+.sat-opt:hover,
+.sat-opt.active { background: rgba(99, 213, 255, 0.14); }
+.sat-opt .nid { color: #7f93a6; font-size: 10.5px; flex: 0 0 auto; }
+.sat-none { padding: 9px 10px; color: #7f93a6; font-size: 12px; }
+
+.sat-info { margin-top: 11px; }
+.sat-info[hidden] { display: none; }
+.si-name { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 7px; line-height: 1.25; }
+.si-grid { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; font-size: 11.5px; }
+.si-grid span { color: #8aa0b5; }
+.si-grid b { color: #eaf3fb; font-weight: 600; }
+.si-anchor { margin-top: 8px; font-size: 10px; color: #7f93a6; letter-spacing: 0.02em; }
+
+.track-legend {
+  margin-top: 11px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 10.5px;
+  color: #a9bccf;
+}
+.track-legend span { display: flex; align-items: center; gap: 7px; }
+.track-legend i { flex: 0 0 auto; }
+.track-legend .lg-line { width: 20px; height: 0; border-top: 2px dotted currentColor; }
+.track-legend .lg-line.past { color: #63d5ff; }
+.track-legend .lg-line.future { color: #ffb43d; }
+.track-legend .lg-mark {
+  width: 0; height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 8px solid #63d5ff;
+}
+.track-legend .lg-now {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: #8bff9e;
+  box-shadow: 0 0 0 2px rgba(139, 255, 158, 0.3);
+}
+@media (max-width: 560px) {
+  .track-panel { width: 220px; top: 8px; left: 8px; padding: 10px 11px; }
+  .sat-results { max-height: 200px; }
 }
 
 .page-2d-shell {
