@@ -237,8 +237,18 @@ function setNowMarker(lat, lon, alt) {
 // so it stays in lock-step with the 2-D map in both modes and at any speed.
 // ---------------------------------------------------------------------------
 
-const GLOBE_CAM_ALT = 2.2;
+const GLOBE_CAM_ALT = 2.5;
 let globe = null, satMesh = null;
+
+// Compress real altitude (km) into a tight band just above the small globe.
+// A GEO/HEO sat is tens of thousands of km up — placed to scale it would fly
+// off the little viewport (a 100 000 km sat at high latitude projects past the
+// top edge).  A log curve keeps LEO hugging the surface and every higher class
+// within ~0.28 R, so they all stay visible and centred like the LEO/MEO dots.
+function globeAltFrac(alt) {
+  const km = Number.isFinite(alt) && alt > 0 ? alt : 400;
+  return Math.min(0.28, 0.03 + 0.10 * Math.log10(1 + km / 400));
+}
 
 function globeSize() {
   const el = $('mini-globe');
@@ -281,7 +291,7 @@ function initGlobe() {
 
 function updateGlobe(lat, lon, alt) {
   if (!globe || !satMesh) return;
-  const altFrac = Math.min(0.6, Math.max(0.03, (alt || 400) / 6371));
+  const altFrac = globeAltFrac(alt);
   const c = globe.getCoords(lat, lon, altFrac);
   satMesh.position.set(c.x, c.y, c.z);
   satMesh.visible = true;

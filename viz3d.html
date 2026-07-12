@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20">
+  <link rel="stylesheet" href="styles.css?v=21">
   <style>
     /* Page-specific HUD — a left-edge legend / stats card that mirrors
        the visual language of game-of-cones .goc-shell but with a wider
@@ -35,9 +35,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 4px 0;
+      padding: 5px 0;
       font-family: var(--mono);
-      font-size: 12px;
+      font-size: 13px;
       letter-spacing: 0.06em;
       border-bottom: 1px solid rgba(110, 200, 255, 0.07);
     }
@@ -51,11 +51,11 @@
       box-shadow: 0 0 8px currentColor;
     }
     .viz-legend-row .desc { flex: 1; color: var(--text); }
-    .viz-legend-row .desc small { color: var(--dim); margin-left: 6px; font-size: 11px; }
+    .viz-legend-row .desc small { color: var(--dim); margin-left: 6px; font-size: 12px; }
     .viz-legend-row .count {
       color: var(--accent);
       font-variant-numeric: tabular-nums;
-      font-size: 13px;
+      font-size: 14.5px;
       letter-spacing: 0.04em;
     }
     .viz-controls { display: flex; flex-direction: column; gap: 6px; }
@@ -64,7 +64,7 @@
       align-items: center;
       gap: 8px;
       font-family: var(--mono);
-      font-size: 12px;
+      font-size: 13px;
       color: var(--dim);
       letter-spacing: 0.06em;
       cursor: pointer;
@@ -76,7 +76,7 @@
       justify-content: space-between;
       align-items: baseline;
       font-family: var(--mono);
-      font-size: 11px;
+      font-size: 12px;
       color: var(--dim);
       letter-spacing: 0.1em;
       text-transform: uppercase;
@@ -92,8 +92,69 @@
       width: 100%;
       accent-color: var(--accent);
     }
-    .viz-status { font-size: 11px; color: var(--dim); }
+    .viz-status { font-size: 12px; color: var(--dim); line-height: 1.5; }
     .viz-status strong { color: var(--accent); font-weight: normal; font-variant-numeric: tabular-nums; }
+
+    /* Bottom search box + upward-opening results. */
+    .viz-search-wrap {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 360px;
+      max-width: calc(100vw - 32px);
+      z-index: 20;
+    }
+    #viz-search {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 14px;
+      background: rgba(6, 14, 24, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      outline: none;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    #viz-search:focus {
+      border-color: var(--accent);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), 0 0 0 2px rgba(103, 200, 255, 0.18);
+    }
+    #viz-search::placeholder { color: var(--dim); }
+    .viz-results {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: calc(100% + 6px);
+      max-height: 264px;
+      overflow-y: auto;
+      background: #08121e;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.6);
+    }
+    .viz-results[hidden] { display: none; }
+    .viz-opt {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .viz-opt:last-child { border-bottom: none; }
+    .viz-opt:hover,
+    .viz-opt.active { background: rgba(103, 200, 255, 0.16); }
+    .viz-opt .nid { color: var(--dim); font-size: 11.5px; flex: 0 0 auto; }
+    .viz-none { padding: 9px 12px; color: var(--dim); font-family: var(--mono); font-size: 13px; }
   </style>
 </head>
 <body class="page-viz3d">
@@ -172,11 +233,19 @@
        Fixed-position + pointer-events:none so it never blocks orbit-drag. -->
   <div id="sat-tip" class="sat-tip-3d" hidden></div>
 
+  <!-- Bottom search box: type a satellite name to highlight it on the globe.
+       Results open upward; selecting one reuses the click-to-select path. -->
+  <div class="viz-search-wrap" id="viz-search-wrap">
+    <div id="viz-results" class="viz-results" role="listbox" hidden></div>
+    <input id="viz-search" type="text" placeholder="🔍 Search a satellite to highlight…"
+           autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false">
+  </div>
+
   <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=8"></script>
-  <script src="viz3d.js?v=9"></script>
+  <script src="viz3d.js?v=10"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=6"></script>
 </body>

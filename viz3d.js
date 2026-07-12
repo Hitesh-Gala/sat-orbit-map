@@ -319,6 +319,7 @@ async function boot() {
             : tleResult.source === 'cache'    ? 'cached'
             : 'bundled snapshot';
   setStatus(`Catalogue: ${allSats.length.toLocaleString()} sats (${tag}). Propagating…`);
+  buildVizSearchIndex();
   startPropagationTick();
   setInterval(startPropagationTick, REFRESH_MS);
 }
@@ -665,3 +666,84 @@ function buildOrbitalPath(id) {
   mesh.renderOrder = 2;
   return mesh;
 }
+
+// --- Bottom search box: find a sat, highlight it (reuses selectSat) --------
+//
+// Reuses the same selection machinery as a canvas click: highlight sphere +
+// dimmed catalogue + orbital-path ring.  Also swings the camera round to the
+// sat's sub-point so the highlighted dot is front-and-centre.  Clicking empty
+// space on the globe still reverts everything (onCanvasClick → deselectSat).
+
+let vizSearchIndex = [];
+let vizMatches = [];
+let vizActiveIdx = -1;
+
+function buildVizSearchIndex() {
+  vizSearchIndex = allSats.map((e, i) => ({
+    i, name: e.name, noradId: e.noradId, hay: (e.name + ' ' + e.noradId).toLowerCase(),
+  }));
+}
+
+function hideVizResults() { $('viz-results').hidden = true; vizActiveIdx = -1; }
+
+function renderVizResults(q) {
+  const box = $('viz-results');
+  q = q.trim().toLowerCase();
+  if (!q) { hideVizResults(); return; }
+  vizMatches = [];
+  for (const it of vizSearchIndex) {
+    if (it.hay.includes(q)) { vizMatches.push(it); if (vizMatches.length >= 50) break; }
+  }
+  if (!vizMatches.length) { box.innerHTML = '<div class="viz-none">no match</div>'; box.hidden = false; return; }
+  box.innerHTML = vizMatches.map((m, k) =>
+    `<div class="viz-opt" data-k="${k}">${escHtml(m.name)}<span class="nid">#${m.noradId}</span></div>`
+  ).join('');
+  box.hidden = false;
+  vizActiveIdx = -1;
+}
+
+function vizHighlightActive() {
+  const box = $('viz-results');
+  [...box.querySelectorAll('.viz-opt')].forEach((el, k) => el.classList.toggle('active', k === vizActiveIdx));
+  const act = box.querySelector('.viz-opt.active');
+  if (act) act.scrollIntoView({ block: 'nearest' });
+}
+
+function focusSat(id) {
+  stopAutoRotate();
+  selectSat(id);
+  const st = satState[id];
+  if (st) {
+    const pov = globe.pointOfView();   // keep the current zoom, just swing round
+    globe.pointOfView({ lat: Math.max(-55, Math.min(55, st.lat)), lng: st.lon, altitude: pov.altitude }, 800);
+  }
+}
+
+function chooseVizMatch(k) {
+  const m = vizMatches[k];
+  if (!m) return;
+  $('viz-search').value = m.name;
+  hideVizResults();
+  focusSat(m.i);
+}
+
+(function wireVizSearch() {
+  const input = $('viz-search'), box = $('viz-results');
+  if (!input) return;
+  input.addEventListener('input', () => renderVizResults(input.value));
+  input.addEventListener('focus', () => { if (input.value.trim()) renderVizResults(input.value); });
+  input.addEventListener('keydown', (e) => {
+    if (box.hidden || !vizMatches.length) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); vizActiveIdx = Math.min(vizActiveIdx + 1, vizMatches.length - 1); vizHighlightActive(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); vizActiveIdx = Math.max(vizActiveIdx - 1, 0); vizHighlightActive(); }
+    else if (e.key === 'Enter') { e.preventDefault(); chooseVizMatch(vizActiveIdx >= 0 ? vizActiveIdx : 0); }
+    else if (e.key === 'Escape') { hideVizResults(); }
+  });
+  box.addEventListener('mousedown', (e) => {
+    const opt = e.target.closest('.viz-opt');
+    if (!opt) return;
+    e.preventDefault();
+    chooseVizMatch(+opt.dataset.k);
+  });
+  document.addEventListener('click', (e) => { if (!e.target.closest('.viz-search-wrap')) hideVizResults(); });
+})();
