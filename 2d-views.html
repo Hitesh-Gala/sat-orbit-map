@@ -9,7 +9,7 @@
   <title>Argos · 2-D Views</title>
   <link rel="preconnect" href="https://celestrak.org">
   <link rel="preconnect" href="https://cdn.amcharts.com">
-  <link rel="stylesheet" href="styles.css?v=17">
+  <link rel="stylesheet" href="styles.css?v=18">
 </head>
 <body class="page-2d">
   <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
@@ -41,6 +41,7 @@
           <path id="future-halo" class="track-halo"/>
           <path id="past-line"   class="track-line past"/>
           <path id="future-line" class="track-line future"/>
+          <path id="rev-line"    class="rev-line" style="display:none"/>
           <g id="marks" class="marks"></g>
           <g id="now" class="now" style="display:none">
             <circle class="now-ring" r="1.9" fill="none">
@@ -69,12 +70,52 @@
                      autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false">
               <div id="sat-results" class="sat-results" role="listbox" hidden></div>
             </div>
+
+            <div class="mode-row">
+              <span class="mode-name">Time / Rev based</span>
+              <button id="mode-btn" class="switch" role="switch" aria-checked="false"
+                      title="Switch between time-based dots and revolution-based animation">
+                <span class="switch-thumb"></span>
+              </button>
+            </div>
+            <div class="mode-state" id="mode-state">Time-based</div>
+
             <div id="sat-info" class="sat-info" hidden></div>
-            <div class="track-legend">
+
+            <div class="track-legend" id="legend-time">
               <span><i class="lg-line past"></i>past 24 h</span>
               <span><i class="lg-line future"></i>next 24 h</span>
               <span><i class="lg-mark"></i>30-min mark · hover for place</span>
               <span><i class="lg-now"></i>current position</span>
+            </div>
+            <div class="track-legend" id="legend-rev" style="display:none">
+              <span><i class="lg-line gold"></i>traced path (≤ 3 revolutions)</span>
+              <span><i class="lg-now"></i>satellite · flying at slider speed</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rev-based speed control — floating, draggable, only shown in
+             revolution mode. -->
+        <div class="rev-panel" id="rev-panel" hidden>
+          <div class="rp-drag" id="rp-drag" title="Drag to move">
+            <span class="tp-grip" aria-hidden="true">⠿⠿</span>
+            <span class="tp-title">Rev-Based · Speed</span>
+          </div>
+          <div class="rp-body">
+            <input id="rev-speed" class="rev-speed" type="range" min="0" max="6" step="1"
+                   value="0" aria-label="animation speed">
+            <div class="rev-ticks">
+              <span>1×</span><span>2×</span><span>5×</span><span>10×</span>
+              <span>20×</span><span>50×</span><span>100×</span>
+            </div>
+            <div class="rev-line1">
+              <span>Speed <b id="rev-speed-val">1×</b></span>
+              <span>Rev <b id="rev-count">1</b> / 3</span>
+            </div>
+            <div class="rev-clock">
+              <div><span>UTC</span><b id="rev-utc">--:--:--</b></div>
+              <div><span>IST</span><b id="rev-ist">--:--:--</b></div>
             </div>
           </div>
         </div>
@@ -89,7 +130,7 @@
   <!-- Satellite math + shared data layer -->
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=8"></script>
-  <script src="2d-views.js?v=3"></script>
+  <script src="2d-views.js?v=4"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=6"></script>
 </body>

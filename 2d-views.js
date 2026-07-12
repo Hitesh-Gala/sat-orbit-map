@@ -1,15 +1,22 @@
 // Argos — 2-D ground-track view.
 //
 // A clean, bright equirectangular world map (NASA Blue Marble raster, no
-// political borders).  The user searches for one satellite; we draw its
-// sub-satellite ground track for the 24 h before and after "now" as bold
-// dotted lines, mark every 30 min with a direction arrow, blink the current
-// position, and reverse-geocode each 30-min mark to a place name on hover.
+// political borders).  The user searches for one satellite; then chooses one
+// of two modes with the panel toggle:
 //
-// The track is drawn as a plain SVG overlay.  Because the projection is
-// equirectangular, lon/lat map linearly to the SVG viewBox (x = lon+180,
-// y = 90-lat), so points sit exactly on the raster's coastlines — and we get
-// full, dependable control over how bold and visible everything is.
+//   TIME-BASED  — the sub-satellite ground track for the 24 h before and after
+//                 "now" as bold dotted lines (past = cyan, future = amber) with
+//                 a direction arrow every 30 min and hover place-names.
+//
+//   REV-BASED   — the dotted tracks disappear; instead the satellite dot flies
+//                 forward from its present position at a chosen speed (1×–100×),
+//                 tracing a thin golden trail, capped at 3 revolutions before it
+//                 snaps back to the present.  A slider sets the speed and shows
+//                 the projected UTC / IST time the satellite is over each point.
+//
+// The overlay is a plain SVG.  Because the projection is equirectangular,
+// lon/lat map linearly to the viewBox (x = lon+180, y = 90-lat), so points sit
+// exactly on the raster's coastlines and we control exactly how bold they are.
 //
 // Data layer: shared Argos namespace (tle-loader.js).  Reverse-geocoding uses
 // the amCharts worldLow GeoJSON (loaded as data only).
@@ -19,20 +26,22 @@ const { propagate, makeSatrecs, fetchTLEs } = window.Argos;
 const TRACK_MIN       = 24 * 60;   // minutes of track each side of "now"
 const LINE_STEP_MIN   = 1;         // sampling for the dotted line
 const MARK_STEP_MIN   = 30;        // interval markers + arrows
-const CURRENT_REFRESH = 5_000;     // live "now" marker cadence
+const CURRENT_REFRESH = 5_000;     // live "now" marker cadence (time mode)
 const TRACK_REFRESH   = 5 * 60_000;// recompute the ±24 h window periodically
+
+const SPEEDS   = [1, 2, 5, 10, 20, 50, 100];  // rev-mode relative speeds
+const MAX_REVS = 3;                            // rev-mode trail cap
+const GOLD_STEP_MIN = 0.5;                     // golden-trail sampling (sim min)
 
 const DEG = Math.PI / 180, RAD = 180 / Math.PI;
 const SVGNS = 'http://www.w3.org/2000/svg';
 
-// Degrees → viewBox units.
-const vx = lon => lon + 180;
+const vx = lon => lon + 180;   // degrees → viewBox units
 const vy = lat => 90 - lat;
 
-function setStatus(msg) {
-  const el = document.getElementById('map-status');
-  if (el) el.textContent = msg;
-}
+const $ = id => document.getElementById(id);
+
+function setStatus(msg) { const el = $('map-status'); if (el) el.textContent = msg; }
 
 // ---------------------------------------------------------------------------
 // Reverse geocoding — point-in-polygon against worldLow, ocean-basin fallback.
@@ -95,9 +104,7 @@ function oceanAt(lat, lon) {
   return 'the Pacific Ocean';
 }
 
-function placeName(lat, lon) {
-  return countryAt(lat, lon) || oceanAt(lat, lon);
-}
+function placeName(lat, lon) { return countryAt(lat, lon) || oceanAt(lat, lon); }
 
 // ---------------------------------------------------------------------------
 // Track math
@@ -119,8 +126,7 @@ function sample(rec, anchor, fromMin, toMin) {
   return pts;
 }
 
-// Split at antimeridian wraps so lines don't streak across the map.  Returns an
-// SVG path string with one subpath per continuous segment.
+// Points ({lat,lon}) → SVG path, split at antimeridian wraps.
 function segmentPath(pts) {
   let d = '', prevLon = null, started = false;
   for (const p of pts) {
@@ -139,33 +145,33 @@ function fmtRel(m) {
 }
 
 // ---------------------------------------------------------------------------
-// SVG overlay
+// SVG overlay — static bits
 // ---------------------------------------------------------------------------
 
 const ARROW_D = 'M 0,-1.7 L 1.35,1.25 L 0,0.55 L -1.35,1.25 Z';  // points "north" (−y)
 
 function drawGraticule() {
-  const g = document.getElementById('graticule');
   let d = '';
   for (let lon = -150; lon <= 150; lon += 30) d += `M ${vx(lon)},0 L ${vx(lon)},180 `;
   for (let lat = -60; lat <= 60; lat += 30) d += `M 0,${vy(lat)} L 360,${vy(lat)} `;
   const path = document.createElementNS(SVGNS, 'path');
   path.setAttribute('d', d);
-  g.appendChild(path);
+  $('graticule').appendChild(path);
 }
 
+// ---------------------------------------------------------------------------
+// Time-based track (dotted past/future lines + 30-min arrows)
+// ---------------------------------------------------------------------------
+
 function drawTrackLines(rec, anchor) {
-  const past = sample(rec, anchor, -TRACK_MIN, 0);
-  const future = sample(rec, anchor, 0, TRACK_MIN);
-  const pd = segmentPath(past), fd = segmentPath(future);
-  document.getElementById('past-line').setAttribute('d', pd);
-  document.getElementById('past-halo').setAttribute('d', pd);
-  document.getElementById('future-line').setAttribute('d', fd);
-  document.getElementById('future-halo').setAttribute('d', fd);
+  const pd = segmentPath(sample(rec, anchor, -TRACK_MIN, 0));
+  const fd = segmentPath(sample(rec, anchor, 0, TRACK_MIN));
+  $('past-line').setAttribute('d', pd);   $('past-halo').setAttribute('d', pd);
+  $('future-line').setAttribute('d', fd); $('future-halo').setAttribute('d', fd);
 }
 
 function drawMarks(rec, anchor) {
-  const g = document.getElementById('marks');
+  const g = $('marks');
   g.textContent = '';
   for (let m = -TRACK_MIN; m <= TRACK_MIN; m += MARK_STEP_MIN) {
     if (m === 0) continue;
@@ -181,66 +187,51 @@ function drawMarks(rec, anchor) {
     grp.dataset.tip =
       `${d.toISOString().slice(11, 16)} UTC · ${fmtRel(m)}\nover ${placeName(r.lat, r.lon)}\n${r.lat.toFixed(1)}°, ${r.lon.toFixed(1)}°`;
 
-    const hit = document.createElementNS(SVGNS, 'circle');   // easy hover target
-    hit.setAttribute('r', '2.6');
-    hit.setAttribute('class', 'mark-hit');
+    const hit = document.createElementNS(SVGNS, 'circle');
+    hit.setAttribute('r', '2.6'); hit.setAttribute('class', 'mark-hit');
     const arrow = document.createElementNS(SVGNS, 'path');
-    arrow.setAttribute('d', ARROW_D);
-    arrow.setAttribute('class', 'mark-arrow');
-    grp.appendChild(hit);
-    grp.appendChild(arrow);
+    arrow.setAttribute('d', ARROW_D); arrow.setAttribute('class', 'mark-arrow');
+    grp.appendChild(hit); grp.appendChild(arrow);
     g.appendChild(grp);
   }
 }
 
 // ---------------------------------------------------------------------------
-// Selection + live update
+// Shared marker + info
 // ---------------------------------------------------------------------------
 
 let satrecs = [];
 let selected = null;
 let anchor = null;
+let nowLatLon = null;
 
 function orbitFacts(rec) {
   return { periodMin: rec.no ? (2 * Math.PI) / rec.no : NaN, incDeg: rec.inclo * RAD };
 }
 
-function drawTrack() {
-  if (!selected) return;
-  anchor = new Date();
-  drawTrackLines(selected.rec, anchor);
-  drawMarks(selected.rec, anchor);
-}
-
 function shortName(n) { return n.length > 22 ? n.slice(0, 21) + '…' : n; }
 
 function positionNowLabel(lat, lon) {
-  const cell = document.getElementById('map-cell');
-  const label = document.getElementById('now-label');
+  const cell = $('map-cell'), label = $('now-label');
   if (label.hidden) return;
   label.style.left = (vx(lon) / 360 * cell.clientWidth) + 'px';
   label.style.top  = (vy(lat) / 180 * cell.clientHeight) + 'px';
 }
 
-let nowLatLon = null;
-
-function refreshCurrent() {
-  if (!selected) return;
-  const r = propagate(selected.rec, new Date());
-  if (!r || !Number.isFinite(r.lat)) return;
-  nowLatLon = [r.lat, r.lon];
-
-  const now = document.getElementById('now');
+function setNowMarker(lat, lon) {
+  const now = $('now');
   now.style.display = '';
-  now.setAttribute('transform', `translate(${vx(r.lon).toFixed(2)},${vy(r.lat).toFixed(2)})`);
-
-  const label = document.getElementById('now-label');
+  now.setAttribute('transform', `translate(${vx(lon).toFixed(2)},${vy(lat).toFixed(2)})`);
+  nowLatLon = [lat, lon];
+  const label = $('now-label');
   label.hidden = false;
   label.textContent = shortName(selected.name);
-  positionNowLabel(r.lat, r.lon);
+  positionNowLabel(lat, lon);
+}
 
+function renderInfo(r, footer) {
   const { periodMin, incDeg } = orbitFacts(selected.rec);
-  const info = document.getElementById('sat-info');
+  const info = $('sat-info');
   info.hidden = false;
   info.innerHTML = `
     <div class="si-name">${escapeHtml(selected.name)}</div>
@@ -252,16 +243,142 @@ function refreshCurrent() {
       <span>Period</span><b>${Number.isFinite(periodMin) ? periodMin.toFixed(1) + ' min' : '—'}</b>
       <span>Inclination</span><b>${incDeg.toFixed(1)}°</b>
     </div>
-    <div class="si-anchor">Track: 24 h before/after ${anchor.toISOString().slice(11, 16)} UTC</div>`;
+    <div class="si-anchor">${footer}</div>`;
 }
+
+// ---------------------------------------------------------------------------
+// Mode handling
+// ---------------------------------------------------------------------------
+
+let mode = 'time';   // 'time' | 'rev'
+
+const TIME_EL_IDS = ['past-halo', 'future-halo', 'past-line', 'future-line', 'marks'];
+
+function setTimeVisibility(on) {
+  const disp = on ? '' : 'none';
+  for (const id of TIME_EL_IDS) $(id).style.display = disp;
+  $('rev-line').style.display = on ? 'none' : '';
+  $('legend-time').style.display = on ? '' : 'none';
+  $('legend-rev').style.display = on ? 'none' : '';
+}
+
+function drawTrack() {
+  if (mode !== 'time' || !selected) return;
+  anchor = new Date();
+  drawTrackLines(selected.rec, anchor);
+  drawMarks(selected.rec, anchor);
+}
+
+function refreshCurrent() {
+  if (mode !== 'time' || !selected) return;
+  const r = propagate(selected.rec, new Date());
+  if (!r || !Number.isFinite(r.lat)) return;
+  setNowMarker(r.lat, r.lon);
+  renderInfo(r, `Track: 24 h before/after ${(anchor || new Date()).toISOString().slice(11, 16)} UTC`);
+}
+
+// ---- revolution-based animation --------------------------------------------
+
+let speedIdx = 0;
+let revBase = null;     // Date the animation counts forward from (present)
+let simMin = 0;         // simulated minutes elapsed since revBase
+let periodMin = 92;
+let goldenPts = [];
+let nextGoldMin = 0;
+let rafId = null;
+let lastTs = null;
+let lastInfoTs = 0;
+
+function resetRevAnim() {
+  revBase = new Date();
+  simMin = 0;
+  goldenPts = [];
+  nextGoldMin = GOLD_STEP_MIN;
+  const f = orbitFacts(selected.rec);
+  periodMin = Number.isFinite(f.periodMin) && f.periodMin > 0 ? f.periodMin : 92;
+  $('rev-line').setAttribute('d', '');
+}
+
+function fmtClock(date, offsetMs = 0) {
+  return new Date(date.getTime() + offsetMs).toISOString().slice(11, 19);
+}
+
+function updateRevTimes(t) {
+  $('rev-utc').textContent = fmtClock(t);
+  $('rev-ist').textContent = fmtClock(t, 5.5 * 3600000);  // IST = UTC + 5:30
+}
+
+function animRev(ts) {
+  if (mode !== 'rev' || !selected) { rafId = null; return; }
+  if (lastTs == null) lastTs = ts;
+  const dt = (ts - lastTs) / 1000;   // real seconds
+  lastTs = ts;
+
+  simMin += SPEEDS[speedIdx] * dt / 60;   // speed = sim-seconds per real-second
+  if (simMin >= MAX_REVS * periodMin) resetRevAnim();   // cap at 3 revs → present
+
+  const t = new Date(revBase.getTime() + simMin * 60000);
+  const r = propagate(selected.rec, t);
+  if (r && Number.isFinite(r.lat)) {
+    setNowMarker(r.lat, r.lon);
+
+    // extend the golden trail up to the current sim time
+    while (nextGoldMin <= simMin) {
+      const g = propagate(selected.rec, new Date(revBase.getTime() + nextGoldMin * 60000));
+      if (g && Number.isFinite(g.lat)) goldenPts.push({ lat: g.lat, lon: g.lon });
+      nextGoldMin += GOLD_STEP_MIN;
+    }
+    $('rev-line').setAttribute('d', segmentPath(goldenPts.concat([{ lat: r.lat, lon: r.lon }])));
+
+    updateRevTimes(t);
+    $('rev-count').textContent = Math.min(MAX_REVS, Math.floor(simMin / periodMin) + 1);
+    if (ts - lastInfoTs > 200) {
+      lastInfoTs = ts;
+      renderInfo(r, `Rev-based · projected time shown on the speed panel`);
+    }
+  }
+  rafId = requestAnimationFrame(animRev);
+}
+
+function startRev() {
+  if (!selected) return;
+  resetRevAnim();
+  lastTs = null;
+  lastInfoTs = 0;
+  if (!rafId) rafId = requestAnimationFrame(animRev);
+}
+
+function applyMode(m) {
+  mode = m;
+  const rev = (m === 'rev');
+  const btn = $('mode-btn');
+  btn.setAttribute('aria-checked', rev ? 'true' : 'false');
+  btn.classList.toggle('on', rev);
+  $('mode-state').textContent = rev ? 'Revolution-based' : 'Time-based';
+  setTimeVisibility(!rev);
+  $('rev-panel').hidden = !rev;
+
+  if (rev) {
+    startRev();
+  } else {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    $('rev-line').setAttribute('d', '');
+    drawTrack();
+    refreshCurrent();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Selection
+// ---------------------------------------------------------------------------
 
 function selectSat(entry) {
   selected = entry;
-  document.getElementById('sat-search').value = entry.name;
+  $('sat-search').value = entry.name;
   hideResults();
-  drawTrack();
-  refreshCurrent();
   setStatus(`${entry.name} · #${entry.noradId}`);
+  if (mode === 'rev') startRev();
+  else { drawTrack(); refreshCurrent(); }
 }
 
 // ---------------------------------------------------------------------------
@@ -269,10 +386,7 @@ function selectSat(entry) {
 // ---------------------------------------------------------------------------
 
 function wireTooltip() {
-  const marks = document.getElementById('marks');
-  const tip = document.getElementById('track-tooltip');
-  const cell = document.getElementById('map-cell');
-
+  const marks = $('marks'), tip = $('track-tooltip'), cell = $('map-cell');
   function place(e) {
     const r = cell.getBoundingClientRect();
     let x = e.clientX - r.left + 14, y = e.clientY - r.top + 14;
@@ -289,13 +403,11 @@ function wireTooltip() {
     place(e);
   });
   marks.addEventListener('mousemove', (e) => { if (!tip.hidden) place(e); });
-  marks.addEventListener('mouseout', (e) => {
-    if (e.target.closest('.mark')) tip.hidden = true;
-  });
+  marks.addEventListener('mouseout', (e) => { if (e.target.closest('.mark')) tip.hidden = true; });
 }
 
 // ---------------------------------------------------------------------------
-// Draggable panel
+// Draggable panels
 // ---------------------------------------------------------------------------
 
 function makeDraggable(panel, handle) {
@@ -303,6 +415,7 @@ function makeDraggable(panel, handle) {
   handle.addEventListener('pointerdown', (e) => {
     dragging = true;
     panel.classList.add('dragging');
+    panel.style.transform = 'none';   // drop any centering transform
     const pr = panel.getBoundingClientRect();
     ox = e.clientX - pr.left;
     oy = e.clientY - pr.top;
@@ -320,8 +433,9 @@ function makeDraggable(panel, handle) {
     panel.style.left = left + 'px';
     panel.style.top = top + 'px';
     panel.style.right = 'auto';
+    panel.style.bottom = 'auto';
   });
-  const end = (e) => { dragging = false; panel.classList.remove('dragging'); };
+  const end = () => { dragging = false; panel.classList.remove('dragging'); };
   handle.addEventListener('pointerup', end);
   handle.addEventListener('pointercancel', end);
 }
@@ -341,24 +455,17 @@ function buildIndex() {
   searchIndex = satrecs.map(e => ({ entry: e, hay: (e.name + ' ' + e.noradId).toLowerCase() }));
 }
 
-function hideResults() {
-  document.getElementById('sat-results').hidden = true;
-  activeIdx = -1;
-}
+function hideResults() { $('sat-results').hidden = true; activeIdx = -1; }
 
 function renderResults(q) {
-  const box = document.getElementById('sat-results');
+  const box = $('sat-results');
   q = q.trim().toLowerCase();
   if (!q) { hideResults(); return; }
   matches = [];
   for (const it of searchIndex) {
     if (it.hay.includes(q)) { matches.push(it.entry); if (matches.length >= 60) break; }
   }
-  if (!matches.length) {
-    box.innerHTML = '<div class="sat-none">no match</div>';
-    box.hidden = false;
-    return;
-  }
+  if (!matches.length) { box.innerHTML = '<div class="sat-none">no match</div>'; box.hidden = false; return; }
   box.innerHTML = matches.map((e, i) =>
     `<div class="sat-opt" data-i="${i}" role="option">${escapeHtml(e.name)}<span class="nid">#${e.noradId}</span></div>`
   ).join('');
@@ -367,16 +474,14 @@ function renderResults(q) {
 }
 
 function highlight() {
-  const box = document.getElementById('sat-results');
+  const box = $('sat-results');
   [...box.querySelectorAll('.sat-opt')].forEach((el, i) => el.classList.toggle('active', i === activeIdx));
   const act = box.querySelector('.sat-opt.active');
   if (act) act.scrollIntoView({ block: 'nearest' });
 }
 
 function wireSearch() {
-  const input = document.getElementById('sat-search');
-  const box = document.getElementById('sat-results');
-
+  const input = $('sat-search'), box = $('sat-results');
   input.addEventListener('input', () => renderResults(input.value));
   input.addEventListener('focus', () => { if (input.value.trim()) renderResults(input.value); });
   input.addEventListener('keydown', (e) => {
@@ -395,22 +500,31 @@ function wireSearch() {
   document.addEventListener('click', (e) => { if (!e.target.closest('.track-panel')) hideResults(); });
 }
 
+function wireControls() {
+  $('mode-btn').addEventListener('click', () => applyMode(mode === 'time' ? 'rev' : 'time'));
+  const slider = $('rev-speed');
+  slider.addEventListener('input', () => {
+    speedIdx = +slider.value;
+    $('rev-speed-val').textContent = SPEEDS[speedIdx] + '×';
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Boot
 // ---------------------------------------------------------------------------
 
 (async function main() {
   try {
-    // Paint the basemap here (rather than pure CSS) so this stays the single
-    // source of truth for the equirectangular texture the SVG aligns to.
-    document.getElementById('map-basemap').style.backgroundImage =
+    $('map-basemap').style.backgroundImage =
       "url('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg')";
 
     drawGraticule();
     buildCountries();
     wireSearch();
     wireTooltip();
-    makeDraggable(document.getElementById('track-panel'), document.getElementById('tp-drag'));
+    wireControls();
+    makeDraggable($('track-panel'), $('tp-drag'));
+    makeDraggable($('rev-panel'), $('rp-drag'));
     window.addEventListener('resize', () => { if (nowLatLon) positionNowLabel(nowLatLon[0], nowLatLon[1]); });
 
     setStatus('Loading TLE catalog…');

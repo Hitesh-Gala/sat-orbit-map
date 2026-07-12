@@ -2368,6 +2368,16 @@ body.page-2d .track-line {
 body.page-2d .track-line.past   { stroke: #27e5ff; }
 body.page-2d .track-line.future { stroke: #ff9a2e; }
 
+/* Rev-mode golden trail — thin, semi-transparent, drawn as the sat flies. */
+body.page-2d .rev-line {
+  fill: none;
+  stroke: #ffd23f;
+  stroke-opacity: 0.72;
+  stroke-width: 0.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 body.page-2d .mark-hit { fill: transparent; }
 body.page-2d .mark { cursor: help; }
 body.page-2d .mark-arrow { stroke: rgba(3, 10, 22, 0.85); stroke-width: 0.35; stroke-linejoin: round; }
@@ -2551,10 +2561,121 @@ body.page-2d .map-cell .map-sub {
   background: #8bff9e;
   box-shadow: 0 0 0 2px rgba(139, 255, 158, 0.3);
 }
+.track-legend .lg-line.gold { border-top-style: solid; color: #ffd23f; }
+
+/* ---- mode toggle (TIME / REV based) ---- */
+.mode-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+}
+.mode-name {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9fb6c9;
+}
+.switch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 23px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(120, 170, 220, 0.4);
+  background: rgba(3, 10, 18, 0.9);
+  cursor: pointer;
+  transition: background .16s, border-color .16s;
+}
+.switch .switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #8fb3d4;
+  transition: left .16s, background .16s;
+}
+.switch.on { background: rgba(255, 180, 61, 0.28); border-color: #ffb43d; }
+.switch.on .switch-thumb { left: 25px; background: #ffb43d; }
+.mode-state {
+  margin-top: 6px;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: #7fd4ff;
+}
+
+/* ---- floating, draggable rev-mode speed panel ---- */
+.rev-panel {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  width: 340px;
+  max-width: calc(100% - 24px);
+  background: rgba(8, 17, 28, 0.88);
+  border: 1px solid rgba(120, 170, 220, 0.3);
+  border-radius: 10px;
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.55);
+  color: #dbe8f5;
+  overflow: hidden;
+}
+.rev-panel[hidden] { display: none; }
+.rev-panel.dragging { box-shadow: 0 16px 46px rgba(0, 0, 0, 0.64); border-color: rgba(255, 180, 61, 0.5); }
+.rev-panel .rp-drag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 11px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  background: rgba(255, 180, 61, 0.12);
+  border-bottom: 1px solid rgba(120, 170, 220, 0.22);
+}
+.rev-panel.dragging .rp-drag { cursor: grabbing; }
+.rev-panel .tp-grip { color: #5f7d99; letter-spacing: -1px; font-size: 13px; }
+.rev-panel .tp-title { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #ffcf7a; }
+.rev-panel .rp-body { padding: 12px 14px; }
+.rev-speed { width: 100%; margin: 0; accent-color: #ffb43d; cursor: pointer; }
+.rev-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3px;
+  font-size: 9.5px;
+  color: #7f93a6;
+  font-variant-numeric: tabular-nums;
+}
+.rev-line1 {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 11px;
+  color: #a9bccf;
+}
+.rev-line1 b { color: #ffd27a; font-weight: 700; }
+.rev-clock {
+  display: flex;
+  gap: 22px;
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.rev-clock div { display: flex; flex-direction: column; gap: 2px; }
+.rev-clock span { font-size: 9.5px; letter-spacing: 0.14em; color: #7f93a6; }
+.rev-clock b { font-size: 16px; font-variant-numeric: tabular-nums; color: #eafff0; letter-spacing: 0.02em; }
+
 @media (max-width: 560px) {
   .track-panel { width: 216px; top: 8px; left: 8px; }
   .track-panel .tp-body { padding: 10px 11px; }
   .sat-results { max-height: 200px; }
+  .rev-panel { width: 290px; bottom: 10px; }
 }
 
 .page-2d-shell {
