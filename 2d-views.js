@@ -227,7 +227,7 @@ function setNowMarker(lat, lon, alt, t) {
   label.hidden = false;
   label.textContent = shortName(selected.name);
   positionNowLabel(lat, lon);
-  updateGlobe(lat, lon, alt);
+  updateGlobe(lat, lon, alt, t);
   updateGlobe2(lat, lon, alt, t);
 }
 
@@ -247,6 +247,11 @@ let globe = null, satMesh = null;
 const GLOBE2_TILT = 22;        // camera latitude — a gentle 3/4 view
 const GLOBE2_CAM_ALT = 2.6;
 let globe2 = null, satMesh2 = null, satHalo2 = null;
+
+// Golden orbit-path rings (one per globe).  Same gold as the 2-D map's trail.
+const RING_GOLD = 0xffd23f;
+let ring1 = null, ring2 = null, ring2Group = null, lastRing1Build = 0;
+const gmstOf = (t) => (window.satellite && satellite.gstime) ? satellite.gstime(t || new Date()) : 0;
 
 // Compress real altitude (km) into a tight band just above the small globe.
 // A GEO/HEO sat is tens of thousands of km up — placed to scale it would fly
@@ -296,15 +301,18 @@ function initGlobe() {
   globe.pointOfView({ lat: 0, lng: 0, altitude: GLOBE_CAM_ALT }, 0);
 }
 
-function updateGlobe(lat, lon, alt) {
+function updateGlobe(lat, lon, alt, t) {
   if (!globe || !satMesh) return;
-  const altFrac = globeAltFrac(alt);
-  const c = globe.getCoords(lat, lon, altFrac);
+  const c = globe.getCoords(lat, lon, globeAltFrac(alt));
   satMesh.position.set(c.x, c.y, c.z);
   satMesh.visible = true;
   // lng follows the sub-point (globe rotates); lat fixed at 0 so the marker
   // rides up/down with its own latitude.
   globe.pointOfView({ lat: 0, lng: lon, altitude: GLOBE_CAM_ALT }, 0);
+  // Keep the ground-track ring roughly centred on the current position
+  // (throttled by wall time — a full rebuild each frame would be wasteful).
+  const nowMs = performance.now();
+  if (selected && nowMs - lastRing1Build > 900) { lastRing1Build = nowMs; buildRing1(selected.rec, t || new Date()); }
 }
 
 // --- Second globe: Earth-rotation / orbital-path view ----------------------
@@ -330,6 +338,10 @@ function initGlobe2() {
   ctr.autoRotate = false;
   if ('noRotate' in ctr) { ctr.noRotate = ctr.noZoom = ctr.noPan = true; }
   if ('enableRotate' in ctr) { ctr.enableRotate = ctr.enableZoom = ctr.enablePan = false; }
+
+  // Slightly translucent Earth so the satellite + the far side of its orbit
+  // ring stay readable when they pass behind the globe.
+  try { const gm = globe2.globeMaterial(); gm.transparent = true; gm.opacity = 0.72; } catch { /* older globe.gl */ }
 
   const THREE = window.THREE;
   // depthTest:false so the marker still shows (dimmed) when it is behind the
@@ -369,14 +381,69 @@ function updateGlobe2(lat, lon, alt, t) {
   satMesh2.visible = true;
 
   // Orbit the camera at -GMST so the Earth spins at its real rate and the
-  // satellite's path stays fixed in inertial space.
-  const gmst = (window.satellite && satellite.gstime) ? satellite.gstime(t || new Date()) : 0;
+  // satellite's path stays fixed in inertial space.  The ring is built in the
+  // inertial frame, so rotate its group by the same -GMST to keep it in view.
+  const gmst = gmstOf(t);
   globe2.pointOfView({ lat: GLOBE2_TILT, lng: -(gmst * RAD), altitude: GLOBE2_CAM_ALT }, 0);
+  if (ring2Group) ring2Group.rotation.y = -gmst;
 
+  // Solid bright green in front; a brighter, still-translucent green behind so
+  // it reads clearly through the translucent Earth.
   const behind = occludedByGlobe(globe2.camera().position, satMesh2.position);
-  satMesh2.material.color.set(behind ? 0xbfeccb : 0x8bff9e);
-  satMesh2.material.opacity = behind ? 0.3 : 1.0;
-  satHalo2.material.opacity = behind ? 0.08 : 0.25;
+  satMesh2.material.color.set(behind ? 0xccffda : 0x8bff9e);
+  satMesh2.material.opacity = behind ? 0.62 : 1.0;
+  satHalo2.material.opacity = behind ? 0.18 : 0.25;
+}
+
+// --- Orbit-path rings ------------------------------------------------------
+
+function disposeRing(m) { if (m) { m.geometry.dispose(); m.material.dispose(); } }
+
+// Globe 1: golden ground-track arc (Earth-fixed), one period centred on t.
+function buildRing1(rec, t0) {
+  if (!globe || !window.THREE) return;
+  const THREE = window.THREE;
+  if (ring1) { globe.scene().remove(ring1); disposeRing(ring1); ring1 = null; }
+  const f = orbitFacts(rec);
+  const period = Number.isFinite(f.periodMin) && f.periodMin > 0 ? f.periodMin : 92;
+  const N = 120, pts = [];
+  for (let i = 0; i <= N; i++) {
+    const r = propagate(rec, new Date(t0.getTime() + period * 60000 * (i / N - 0.5)));
+    if (!r || !Number.isFinite(r.lat)) continue;
+    const p = globe.getCoords(r.lat, r.lon, globeAltFrac(r.alt));
+    pts.push(new THREE.Vector3(p.x, p.y, p.z));
+  }
+  if (pts.length < 4) return;
+  const tube = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false), 180, 0.7, 8, false);
+  ring1 = new THREE.Mesh(tube, new THREE.MeshBasicMaterial({ color: RING_GOLD, transparent: true, opacity: 0.6, depthWrite: false }));
+  ring1.renderOrder = 1;   // depthTest on: the Earth hides the far side, like a real ground track
+  globe.scene().add(ring1);
+}
+
+// Globe 2: golden orbital ellipse in the inertial frame (fixed loop); the
+// group is spun by -GMST each frame so it stays put in the camera view.
+function buildRing2(rec, t0) {
+  if (!globe2 || !window.THREE) return;
+  const THREE = window.THREE;
+  if (ring2Group) { globe2.scene().remove(ring2Group); disposeRing(ring2); ring2 = ring2Group = null; }
+  const f = orbitFacts(rec);
+  const period = Number.isFinite(f.periodMin) && f.periodMin > 0 ? f.periodMin : 92;
+  const N = 128, pts = [], Y = new THREE.Vector3(0, 1, 0);
+  for (let i = 0; i <= N; i++) {
+    const t = new Date(t0.getTime() + period * 60000 * i / N);
+    const r = propagate(rec, t);
+    if (!r || !Number.isFinite(r.lat)) continue;
+    const p = globe2.getCoords(r.lat, r.lon, globeAltFrac(r.alt));
+    pts.push(new THREE.Vector3(p.x, p.y, p.z).applyAxisAngle(Y, gmstOf(t)));   // ECEF → ECI
+  }
+  if (pts.length < 4) return;
+  const tube = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 220, 0.7, 8, true);
+  // depthTest off so the whole ellipse (incl. the part behind the Earth) shows.
+  ring2 = new THREE.Mesh(tube, new THREE.MeshBasicMaterial({ color: RING_GOLD, transparent: true, opacity: 0.5, depthTest: false, depthWrite: false }));
+  ring2.renderOrder = 2;
+  ring2Group = new THREE.Group();
+  ring2Group.add(ring2);
+  globe2.scene().add(ring2Group);
 }
 
 // --- Sizing: fit both globes as squares stacked in the globe column --------
@@ -562,6 +629,8 @@ function selectSat(entry) {
   $('sat-search').value = entry.name;
   hideResults();
   setStatus(`${entry.name} · #${entry.noradId}`);
+  lastRing1Build = 0;                    // force the globe-1 ground-track rebuild
+  buildRing2(entry.rec, new Date());     // globe-2 inertial ellipse (fixed loop)
   if (mode === 'rev') startRev();
   else { drawTrack(); refreshCurrent(); }
 }
