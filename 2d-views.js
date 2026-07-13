@@ -269,6 +269,17 @@ function globeSize() {
   return { w, h: el.clientHeight || w };
 }
 
+// Add a strong ambient light so the whole globe reads bright and evenly lit,
+// closer to the flat 2-D Blue-Marble map (rather than a dim, half-shadowed
+// sphere).  Added on top of globe.gl's own lights so it can only brighten.
+function brightenGlobe(g) {
+  if (!g || !window.THREE) return;
+  try {
+    const cur = g.lights() || [];
+    g.lights([...cur, new window.THREE.AmbientLight(0xffffff, 2.0)]);
+  } catch { /* older globe.gl without .lights() */ }
+}
+
 function initGlobe() {
   if (typeof Globe !== 'function' || !window.THREE) return;
   const el = $('mini-globe');
@@ -278,6 +289,7 @@ function initGlobe() {
     .backgroundColor('rgba(0,0,0,0)')
     .globeImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg')
     .showAtmosphere(true).atmosphereColor('#68b0ff').atmosphereAltitude(0.2);
+  brightenGlobe(globe);
 
   // Display only — it tracks the sat automatically.  Keep controls "enabled"
   // (globe.gl applies pointOfView through controls.update() each frame) but
@@ -332,6 +344,7 @@ function initGlobe2() {
     .backgroundColor('rgba(0,0,0,0)')
     .globeImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg')
     .showAtmosphere(true).atmosphereColor('#68b0ff').atmosphereAltitude(0.2);
+  brightenGlobe(globe2);
 
   const ctr = globe2.controls();
   ctr.enabled = true;
