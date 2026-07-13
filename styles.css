@@ -2334,14 +2334,23 @@ body.page-2d .map-area {
   overflow: hidden;
 }
 body.page-2d .globe-cell {
-  flex: 0 0 clamp(150px, 16vw, 260px);
+  flex: 0 0 clamp(150px, 16vw, 240px);
   align-self: center;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
-  gap: 6px;
+  gap: 14px;
+}
+body.page-2d .globe-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
 }
 body.page-2d .mini-globe {
+  /* JS sizes both to a square that fits the column; this is the first-paint
+     fallback before that runs. */
   width: 100%;
   aspect-ratio: 1 / 1;
   border-radius: 50%;
@@ -2349,10 +2358,11 @@ body.page-2d .mini-globe {
   box-shadow: 0 0 26px rgba(80, 150, 230, 0.28), inset 0 0 0 1px rgba(120, 170, 220, 0.25);
 }
 body.page-2d .globe-cap {
-  font-size: 9px;
-  letter-spacing: 0.16em;
+  font-size: 10px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #7fa8cf;
+  text-align: center;
 }
 /* On narrow screens the side-by-side would crush both; drop the globe and
    let the map use the full width. */

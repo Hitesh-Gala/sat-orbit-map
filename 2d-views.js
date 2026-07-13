@@ -218,7 +218,7 @@ function positionNowLabel(lat, lon) {
   label.style.top  = (vy(lat) / 180 * cell.clientHeight) + 'px';
 }
 
-function setNowMarker(lat, lon, alt) {
+function setNowMarker(lat, lon, alt, t) {
   const now = $('now');
   now.style.display = '';
   now.setAttribute('transform', `translate(${vx(lon).toFixed(2)},${vy(lat).toFixed(2)})`);
@@ -228,6 +228,7 @@ function setNowMarker(lat, lon, alt) {
   label.textContent = shortName(selected.name);
   positionNowLabel(lat, lon);
   updateGlobe(lat, lon, alt);
+  updateGlobe2(lat, lon, alt, t);
 }
 
 // ---------------------------------------------------------------------------
@@ -239,6 +240,13 @@ function setNowMarker(lat, lon, alt) {
 
 const GLOBE_CAM_ALT = 2.5;
 let globe = null, satMesh = null;
+
+// Second globe: fixed camera that orbits at Earth's rotation rate, so the
+// Earth appears to spin while the satellite traces a fixed inertial ellipse
+// (front of / behind the globe).  Not centred on the satellite.
+const GLOBE2_TILT = 22;        // camera latitude — a gentle 3/4 view
+const GLOBE2_CAM_ALT = 2.6;
+let globe2 = null, satMesh2 = null, satHalo2 = null;
 
 // Compress real altitude (km) into a tight band just above the small globe.
 // A GEO/HEO sat is tens of thousands of km up — placed to scale it would fly
@@ -286,7 +294,6 @@ function initGlobe() {
   globe.scene().add(satMesh);
 
   globe.pointOfView({ lat: 0, lng: 0, altitude: GLOBE_CAM_ALT }, 0);
-  window.addEventListener('resize', () => { const s = globeSize(); globe.width(s.w).height(s.h); });
 }
 
 function updateGlobe(lat, lon, alt) {
@@ -298,6 +305,102 @@ function updateGlobe(lat, lon, alt) {
   // lng follows the sub-point (globe rotates); lat fixed at 0 so the marker
   // rides up/down with its own latitude.
   globe.pointOfView({ lat: 0, lng: lon, altitude: GLOBE_CAM_ALT }, 0);
+}
+
+// --- Second globe: Earth-rotation / orbital-path view ----------------------
+//
+// The camera is inertially fixed but orbits the Earth-fixed globe at the GMST
+// rate, so the globe appears to spin at Earth's true rotation rate while the
+// satellite (placed at its sub-point, exactly like the 2-D map) traces a
+// fixed ellipse.  The marker fades + lightens when it passes behind the globe
+// so the front/back of the orbit read at a glance.
+
+function initGlobe2() {
+  if (typeof Globe !== 'function' || !window.THREE) return;
+  const el = $('mini-globe2');
+  const s = elSize('mini-globe2');
+  globe2 = Globe()(el)
+    .width(s.w).height(s.h)
+    .backgroundColor('rgba(0,0,0,0)')
+    .globeImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg')
+    .showAtmosphere(true).atmosphereColor('#68b0ff').atmosphereAltitude(0.2);
+
+  const ctr = globe2.controls();
+  ctr.enabled = true;
+  ctr.autoRotate = false;
+  if ('noRotate' in ctr) { ctr.noRotate = ctr.noZoom = ctr.noPan = true; }
+  if ('enableRotate' in ctr) { ctr.enableRotate = ctr.enableZoom = ctr.enablePan = false; }
+
+  const THREE = window.THREE;
+  // depthTest:false so the marker still shows (dimmed) when it is behind the
+  // globe — that faint pass is exactly how we reveal the far side of the orbit.
+  satMesh2 = new THREE.Mesh(
+    new THREE.SphereGeometry(3, 20, 20),
+    new THREE.MeshBasicMaterial({ color: 0x8bff9e, transparent: true, opacity: 1, depthTest: false, depthWrite: false }));
+  satHalo2 = new THREE.Mesh(
+    new THREE.SphereGeometry(5.5, 20, 20),
+    new THREE.MeshBasicMaterial({ color: 0x8bff9e, transparent: true, opacity: 0.25, depthTest: false, depthWrite: false }));
+  satMesh2.add(satHalo2);
+  satMesh2.renderOrder = 3;
+  satHalo2.renderOrder = 3;
+  satMesh2.visible = false;
+  globe2.scene().add(satMesh2);
+
+  globe2.pointOfView({ lat: GLOBE2_TILT, lng: 0, altitude: GLOBE2_CAM_ALT }, 0);
+}
+
+// True when the globe (radius 100) occludes point p from the camera.
+function occludedByGlobe(cam, p) {
+  const cx = cam.x, cy = cam.y, cz = cam.z;
+  const vx = p.x - cx, vy = p.y - cy, vz = p.z - cz;
+  const L2 = vx * vx + vy * vy + vz * vz;
+  const t = -(cx * vx + cy * vy + cz * vz) / L2;
+  if (t > 0 && t < 1) {
+    const px = cx + vx * t, py = cy + vy * t, pz = cz + vz * t;
+    if (px * px + py * py + pz * pz < 99 * 99) return true;
+  }
+  return false;
+}
+
+function updateGlobe2(lat, lon, alt, t) {
+  if (!globe2 || !satMesh2) return;
+  const c = globe2.getCoords(lat, lon, globeAltFrac(alt));
+  satMesh2.position.set(c.x, c.y, c.z);
+  satMesh2.visible = true;
+
+  // Orbit the camera at -GMST so the Earth spins at its real rate and the
+  // satellite's path stays fixed in inertial space.
+  const gmst = (window.satellite && satellite.gstime) ? satellite.gstime(t || new Date()) : 0;
+  globe2.pointOfView({ lat: GLOBE2_TILT, lng: -(gmst * RAD), altitude: GLOBE2_CAM_ALT }, 0);
+
+  const behind = occludedByGlobe(globe2.camera().position, satMesh2.position);
+  satMesh2.material.color.set(behind ? 0xbfeccb : 0x8bff9e);
+  satMesh2.material.opacity = behind ? 0.3 : 1.0;
+  satHalo2.material.opacity = behind ? 0.08 : 0.25;
+}
+
+// --- Sizing: fit both globes as squares stacked in the globe column --------
+
+function elSize(id) {
+  const el = $(id);
+  const w = el.clientWidth || 190;
+  return { w, h: el.clientHeight || w };
+}
+
+function sizeMiniGlobes() {
+  const map = $('map-cell');
+  if (!map) return;
+  // Compute the column width from the viewport (mirrors the CSS clamp) and the
+  // available height from the MAP (stable — driven by its 2:1 width).  Reading
+  // the globe column's own width/height feeds back and runs away.
+  const colW = Math.min(240, Math.max(150, window.innerWidth * 0.16));
+  const availH = map.clientHeight || (window.innerWidth * 0.16);
+  const sq = Math.max(120, Math.floor(Math.min(colW, availH / 2 - 22)));
+  for (const [id, g] of [['mini-globe', globe], ['mini-globe2', globe2]]) {
+    const el = $(id);
+    if (el) { el.style.width = sq + 'px'; el.style.height = sq + 'px'; }
+    if (g) g.width(sq).height(sq);
+  }
 }
 
 function renderInfo(r, footer) {
@@ -342,9 +445,10 @@ function drawTrack() {
 
 function refreshCurrent() {
   if (mode !== 'time' || !selected) return;
-  const r = propagate(selected.rec, new Date());
+  const now = new Date();
+  const r = propagate(selected.rec, now);
   if (!r || !Number.isFinite(r.lat)) return;
-  setNowMarker(r.lat, r.lon, r.alt);
+  setNowMarker(r.lat, r.lon, r.alt, now);
   renderInfo(r, `Track: 24 h before/after ${(anchor || new Date()).toISOString().slice(11, 16)} UTC`);
 }
 
@@ -401,7 +505,7 @@ function animRev(ts) {
   const t = new Date(revBase.getTime() + simMin * 60000);
   const r = propagate(selected.rec, t);
   if (r && Number.isFinite(r.lat)) {
-    setNowMarker(r.lat, r.lon, r.alt);
+    setNowMarker(r.lat, r.lon, r.alt, t);
 
     // extend the golden trail up to the current sim time
     while (nextGoldMin <= simMin) {
@@ -610,11 +714,19 @@ function wireControls() {
     drawGraticule();
     buildCountries();
     initGlobe();
+    initGlobe2();
     wireSearch();
     wireTooltip();
     wireControls();
     makeDraggable($('track-panel'), $('tp-drag'));
-    window.addEventListener('resize', () => { if (nowLatLon) positionNowLabel(nowLatLon[0], nowLatLon[1]); });
+    // Size the globes off the settled map layout (fires on first layout + any
+    // resize) — reading it synchronously in main() catches it pre-layout.
+    if (window.ResizeObserver) new ResizeObserver(() => sizeMiniGlobes()).observe($('map-cell'));
+    else sizeMiniGlobes();
+    window.addEventListener('resize', () => {
+      sizeMiniGlobes();
+      if (nowLatLon) positionNowLabel(nowLatLon[0], nowLatLon[1]);
+    });
 
     setStatus('Loading TLE catalog…');
     const tleResult = await fetchTLEs();
@@ -629,6 +741,7 @@ function wireControls() {
               || satrecs.find(s => /ZARYA|ISS/i.test(s.name));
     if (seed) selectSat(seed);
 
+    sizeMiniGlobes();   // layout is fully settled after the async TLE load
     setInterval(refreshCurrent, CURRENT_REFRESH);
     setInterval(drawTrack, TRACK_REFRESH);
   } catch (e) {
