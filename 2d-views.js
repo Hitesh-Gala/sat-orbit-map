@@ -251,7 +251,7 @@ let behind2 = false;           // is the sat currently behind the globe-2 Earth?
 
 // Golden orbit-path rings (one per globe).  Same gold as the 2-D map's trail.
 const RING_GOLD = 0xffd23f;
-let ring1 = null, ring2 = null, ring2Group = null, lastRing1Build = 0;
+let ring1 = null, ring2Group = null, lastRing1Build = 0;
 const gmstOf = (t) => (window.satellite && satellite.gstime) ? satellite.gstime(t || new Date()) : 0;
 
 // Compress real altitude (km) into a tight band just above the small globe.
@@ -452,29 +452,71 @@ function buildRing1(rec, t0) {
   globe.scene().add(ring1);
 }
 
-// Globe 2: golden orbital ellipse in the inertial frame (fixed loop); the
-// group is spun by -GMST each frame so it stays put in the camera view.
+// Globe 2: golden orbital ellipse in the inertial frame (fixed loop), spun by
+// -GMST each frame so it stays put in the camera view.  Because the ring is
+// fixed in that view and the occluding Earth sphere is rotation-invariant, the
+// arcs that fall behind the globe never change — so we split the loop once and
+// draw the front arcs as a solid tube, the behind arcs as a dashed tube.
 function buildRing2(rec, t0) {
   if (!globe2 || !window.THREE) return;
   const THREE = window.THREE;
-  if (ring2Group) { globe2.scene().remove(ring2Group); disposeRing(ring2); ring2 = ring2Group = null; }
+  if (ring2Group) {
+    globe2.scene().remove(ring2Group);
+    ring2Group.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+    ring2Group = null;
+  }
   const f = orbitFacts(rec);
   const period = Number.isFinite(f.periodMin) && f.periodMin > 0 ? f.periodMin : 92;
-  const N = 128, pts = [], Y = new THREE.Vector3(0, 1, 0);
-  for (let i = 0; i <= N; i++) {
+  const N = 160, pts = [], Y = new THREE.Vector3(0, 1, 0);
+  for (let i = 0; i < N; i++) {
     const t = new Date(t0.getTime() + period * 60000 * i / N);
     const r = propagate(rec, t);
     if (!r || !Number.isFinite(r.lat)) continue;
     const p = globe2.getCoords(r.lat, r.lon, globeAltFrac(r.alt));
     pts.push(new THREE.Vector3(p.x, p.y, p.z).applyAxisAngle(Y, gmstOf(t)));   // ECEF → ECI
   }
-  if (pts.length < 4) return;
-  const tube = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 220, 0.7, 8, true);
-  // depthTest off so the whole ellipse (incl. the part behind the Earth) shows.
-  ring2 = new THREE.Mesh(tube, new THREE.MeshBasicMaterial({ color: RING_GOLD, transparent: true, opacity: 0.5, depthTest: false, depthWrite: false }));
-  ring2.renderOrder = 2;
+  if (pts.length < 8) return;
+
   ring2Group = new THREE.Group();
-  ring2Group.add(ring2);
+
+  // Static front/behind split against a reference camera at lng 0 (the camera's
+  // position in the ring group's own co-rotating frame).
+  const camRef = globe2.getCoords(GLOBE2_TILT, 0, GLOBE2_CAM_ALT);
+  const behindArr = pts.map(p => occludedByGlobe(camRef, p));
+
+  // Cut the closed loop into contiguous same-state runs (merge the wrap seam).
+  const runs = [];
+  let cur = { behind: behindArr[0], pts: [pts[0]] };
+  for (let i = 1; i < pts.length; i++) {
+    if (behindArr[i] === cur.behind) cur.pts.push(pts[i]);
+    else { runs.push(cur); cur = { behind: behindArr[i], pts: [pts[i]] }; }
+  }
+  runs.push(cur);
+  if (runs.length > 1 && runs[0].behind === runs[runs.length - 1].behind) {
+    const last = runs.pop();
+    runs[0].pts = last.pts.concat(runs[0].pts);
+  }
+  // Let each run reach the neighbour's first point so arcs meet at the seams.
+  for (let i = 0; i < runs.length; i++) {
+    const next = runs[(i + 1) % runs.length];
+    if (next && next.pts.length) runs[i].pts.push(next.pts[0]);
+  }
+
+  function tube(segPts, opacity) {
+    if (segPts.length < 2) return;
+    const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(segPts, false), Math.max(segPts.length * 2, 8), 0.7, 6, false);
+    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: RING_GOLD, transparent: true, opacity, depthTest: false, depthWrite: false }));
+    m.renderOrder = 2;
+    ring2Group.add(m);
+  }
+  for (const run of runs) {
+    if (!run.behind) {
+      tube(run.pts, 0.55);                         // front: solid tube
+    } else {
+      const ON = 5, GAP = 3;                        // behind: dashed tube (5 on, 3 off)
+      for (let i = 0; i < run.pts.length; i += ON + GAP) tube(run.pts.slice(i, i + ON + 1), 0.72);
+    }
+  }
   globe2.scene().add(ring2Group);
 }
 
