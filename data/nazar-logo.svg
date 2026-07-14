@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 84" fill="none" role="img" aria-label="NAZAR">
   <defs>
-    <linearGradient id="nz-beam" x1="34" y1="48" x2="120" y2="14" gradientUnits="userSpaceOnUse">
-      <stop offset="0%"   stop-color="#ffd86b" stop-opacity="0.55"/>
-      <stop offset="100%" stop-color="#ffd86b" stop-opacity="0.03"/>
+    <linearGradient id="nz-beam" x1="30" y1="43" x2="112" y2="12" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#ffd86b" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#ffd86b" stop-opacity="0.07"/>
     </linearGradient>
   </defs>
 
@@ -16,8 +16,9 @@
     <circle cx="72" cy="44" r="1"/>
   </g>
 
-  <!-- light beam: lighthouse -> satellite -->
-  <path d="M40 46 L118 8 L123 26 L44 60 Z" fill="url(#nz-beam)"/>
+  <!-- single light beam: emanates from the lighthouse lantern (~28,42) and
+       runs straight up-right to illuminate the satellite -->
+  <path d="M28 40 L115 7 L120 24 L31 46 Z" fill="url(#nz-beam)"/>
 
   <!-- Takshashila lighthouse emblem (colour mark, wordmark cropped out).
        Mirrored horizontally (scale -1 about the viewBox centre x=98.8) so the
@@ -95,8 +96,8 @@
     </g>
   </svg>
 
-  <!-- satellite -->
-  <g>
+  <!-- satellite (nudged down so it sits centred in the beam's line) -->
+  <g transform="translate(0,4)">
     <circle cx="92" cy="19" r="14" fill="#ffe08a" opacity="0.10"/>
     <g fill="#2f6fc0" stroke="#67c8ff" stroke-width="0.8">
       <rect x="68" y="14.5" width="16" height="9" rx="0.8"/>
