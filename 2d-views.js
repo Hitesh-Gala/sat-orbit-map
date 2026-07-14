@@ -247,6 +247,7 @@ let globe = null, satMesh = null;
 const GLOBE2_TILT = 22;        // camera latitude — a gentle 3/4 view
 const GLOBE2_CAM_ALT = 2.6;
 let globe2 = null, satMesh2 = null, satHalo2 = null;
+let behind2 = false;           // is the sat currently behind the globe-2 Earth?
 
 // Golden orbit-path rings (one per globe).  Same gold as the 2-D map's trail.
 const RING_GOLD = 0xffd23f;
@@ -372,6 +373,7 @@ function initGlobe2() {
   globe2.scene().add(satMesh2);
 
   globe2.pointOfView({ lat: GLOBE2_TILT, lng: 0, altitude: GLOBE2_CAM_ALT }, 0);
+  requestAnimationFrame(globe2BlinkTick);
 }
 
 // True when the globe (radius 100) occludes point p from the camera.
@@ -400,12 +402,29 @@ function updateGlobe2(lat, lon, alt, t) {
   globe2.pointOfView({ lat: GLOBE2_TILT, lng: -(gmst * RAD), altitude: GLOBE2_CAM_ALT }, 0);
   if (ring2Group) ring2Group.rotation.y = -gmst;
 
-  // Solid bright green in front; a brighter, still-translucent green behind so
-  // it reads clearly through the translucent Earth.
-  const behind = occludedByGlobe(globe2.camera().position, satMesh2.position);
-  satMesh2.material.color.set(behind ? 0xccffda : 0x8bff9e);
-  satMesh2.material.opacity = behind ? 0.62 : 1.0;
-  satHalo2.material.opacity = behind ? 0.18 : 0.25;
+  // Decide front vs behind here; globe2BlinkTick() animates the appearance so
+  // the blink runs smoothly every frame even in time mode (updated only ~5 s).
+  behind2 = occludedByGlobe(globe2.camera().position, satMesh2.position);
+}
+
+// Steady bright-green dot in front of the Earth; when it slips behind, blink it
+// and swell it so the viewer clearly sees the satellite is on the far side.
+function globe2BlinkTick(ts) {
+  if (satMesh2 && satMesh2.visible) {
+    if (behind2) {
+      const b = (Math.sin(ts / 1000 * Math.PI * 3) + 1) / 2;   // ~1.5 Hz pulse, 0..1
+      satMesh2.scale.setScalar(1.4 + 0.25 * b);                // clearly larger, pulsing
+      satMesh2.material.color.set(0xccffda);
+      satMesh2.material.opacity = 0.3 + 0.7 * b;               // blink
+      satHalo2.material.opacity = 0.12 + 0.22 * b;
+    } else {
+      satMesh2.scale.setScalar(1);
+      satMesh2.material.color.set(0x8bff9e);
+      satMesh2.material.opacity = 1;
+      satHalo2.material.opacity = 0.25;
+    }
+  }
+  requestAnimationFrame(globe2BlinkTick);
 }
 
 // --- Orbit-path rings ------------------------------------------------------
