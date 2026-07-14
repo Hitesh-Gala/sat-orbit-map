@@ -2288,7 +2288,18 @@ body.page-2d {
   overflow: auto;
 }
 body.page-2d #globe { display: none; }
-body.page-2d .page-2d-header .brand { text-shadow: none; }
+
+/* Top bar reads black, in tune with the dark map below it (rather than the
+   light page palette). */
+body.page-2d .page-2d-shell { background: #02080f; }
+body.page-2d .page-2d-header {
+  background: #02080f;
+  border-bottom: 1px solid #16324a;
+}
+body.page-2d .page-2d-header .brand { color: #6fb8ff; text-shadow: 0 0 12px rgba(103, 200, 255, 0.35); }
+body.page-2d .page-2d-header .right { color: #8aa0b5; }
+body.page-2d .page-2d-header .btn-back { color: #7fc0ff; border-color: #1d3a52; }
+body.page-2d .page-2d-header .btn-back:hover { border-color: #6fb8ff; }
 
 /* Realistic-Earth map cell: deep ocean letterbox + NASA Blue Marble +
    bathymetry raster as the chart basemap (Plate-Carrée projection, so it
@@ -2713,8 +2724,8 @@ body.page-2d .map-cell .map-sub {
   display: flex;
   justify-content: space-between;
   margin-top: 3px;
-  font-size: 8px;
-  letter-spacing: -0.02em;
+  font-size: 7px;
+  letter-spacing: -0.03em;
   color: #7f93a6;
   font-variant-numeric: tabular-nums;
 }

@@ -29,7 +29,7 @@ const MARK_STEP_MIN   = 30;        // interval markers + arrows
 const CURRENT_REFRESH = 5_000;     // live "now" marker cadence (time mode)
 const TRACK_REFRESH   = 5 * 60_000;// recompute the ±24 h window periodically
 
-const SPEEDS   = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];  // rev-mode relative speeds
+const SPEEDS   = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000];  // rev-mode relative speeds
 const MAX_REVS = 3;                            // rev-mode trail cap
 const GOLD_STEP_MIN = 0.5;                     // golden-trail sampling (sim min)
 
