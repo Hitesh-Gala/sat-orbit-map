@@ -245,7 +245,7 @@ let globe = null, satMesh = null;
 // Earth appears to spin while the satellite traces a fixed inertial ellipse
 // (front of / behind the globe).  Not centred on the satellite.
 const GLOBE2_TILT = 22;        // camera latitude — a gentle 3/4 view
-const GLOBE2_CAM_ALT = 2.6;
+const GLOBE2_CAM_ALT = 3.8;    // pulled back so the larger elliptical rings fit
 let globe2 = null, satMesh2 = null, satHalo2 = null;
 let behind2 = false;           // is the sat currently behind the globe-2 Earth?
 
@@ -262,6 +262,16 @@ const gmstOf = (t) => (window.satellite && satellite.gstime) ? satellite.gstime(
 function globeAltFrac(alt) {
   const km = Number.isFinite(alt) && alt > 0 ? alt : 400;
   return Math.min(0.28, 0.03 + 0.10 * Math.log10(1 + km / 400));
+}
+
+// Globe 2 uses a near-LINEAR altitude instead, so an eccentric orbit keeps its
+// real elongated shape — perigee hugging the surface, apogee flung far out —
+// rather than collapsing to a ring.  It reaches ~1 R at GEO and is capped so
+// even a 100 000 km HEO apogee still fits the pulled-back view (which uses the
+// empty space around the small Earth for the larger ellipses).
+function globe2AltFrac(alt) {
+  const km = Number.isFinite(alt) && alt > 0 ? alt : 400;
+  return Math.min(1.0, 0.03 + km / 45000);
 }
 
 function globeSize() {
@@ -361,10 +371,10 @@ function initGlobe2() {
   // depthTest:false so the marker still shows (dimmed) when it is behind the
   // globe — that faint pass is exactly how we reveal the far side of the orbit.
   satMesh2 = new THREE.Mesh(
-    new THREE.SphereGeometry(3, 20, 20),
+    new THREE.SphereGeometry(4, 20, 20),
     new THREE.MeshBasicMaterial({ color: 0x8bff9e, transparent: true, opacity: 1, depthTest: false, depthWrite: false }));
   satHalo2 = new THREE.Mesh(
-    new THREE.SphereGeometry(5.5, 20, 20),
+    new THREE.SphereGeometry(7.3, 20, 20),
     new THREE.MeshBasicMaterial({ color: 0x8bff9e, transparent: true, opacity: 0.25, depthTest: false, depthWrite: false }));
   satMesh2.add(satHalo2);
   satMesh2.renderOrder = 3;
@@ -391,7 +401,7 @@ function occludedByGlobe(cam, p) {
 
 function updateGlobe2(lat, lon, alt, t) {
   if (!globe2 || !satMesh2) return;
-  const c = globe2.getCoords(lat, lon, globeAltFrac(alt));
+  const c = globe2.getCoords(lat, lon, globe2AltFrac(alt));
   satMesh2.position.set(c.x, c.y, c.z);
   satMesh2.visible = true;
 
@@ -472,7 +482,7 @@ function buildRing2(rec, t0) {
     const t = new Date(t0.getTime() + period * 60000 * i / N);
     const r = propagate(rec, t);
     if (!r || !Number.isFinite(r.lat)) continue;
-    const p = globe2.getCoords(r.lat, r.lon, globeAltFrac(r.alt));
+    const p = globe2.getCoords(r.lat, r.lon, globe2AltFrac(r.alt));
     pts.push(new THREE.Vector3(p.x, p.y, p.z).applyAxisAngle(Y, gmstOf(t)));   // ECEF → ECI
   }
   if (pts.length < 8) return;
@@ -504,7 +514,7 @@ function buildRing2(rec, t0) {
 
   function tube(segPts, opacity) {
     if (segPts.length < 2) return;
-    const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(segPts, false), Math.max(segPts.length * 2, 8), 0.7, 6, false);
+    const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(segPts, false), Math.max(segPts.length * 2, 8), 0.95, 6, false);
     const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: RING_GOLD, transparent: true, opacity, depthTest: false, depthWrite: false }));
     m.renderOrder = 2;
     ring2Group.add(m);
