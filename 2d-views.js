@@ -21,7 +21,7 @@
 // Data layer: shared Argos namespace (tle-loader.js).  Reverse-geocoding uses
 // the amCharts worldLow GeoJSON (loaded as data only).
 
-const { propagate, makeSatrecs, fetchTLEs } = window.Argos;
+const { propagate, makeSatrecs, fetchTLEs, EARTH_R_KM } = window.Argos;
 
 const TRACK_MIN       = 24 * 60;   // minutes of track each side of "now"
 const LINE_STEP_MIN   = 1;         // sampling for the dotted line
@@ -245,7 +245,12 @@ let globe = null, satMesh = null;
 // Earth appears to spin while the satellite traces a fixed inertial ellipse
 // (front of / behind the globe).  Not centred on the satellite.
 const GLOBE2_TILT = 22;        // camera latitude — a gentle 3/4 view
-const GLOBE2_CAM_ALT = 3.8;    // pulled back so the larger elliptical rings fit
+const GLOBE2_TARGET_R = 2.0;   // scaled orbits reach ~2 Earth radii (apogee) in view
+// Per-orbit uniform scale + camera distance, recomputed on each selection so the
+// orbit keeps its TRUE elliptical shape (uniform scaling is the only transform
+// that preserves an ellipse), while the Earth only shrinks for genuinely huge
+// orbits and small orbits get a close, big Earth.
+let orbit2Scale = 1, globe2CamAlt = 3.6;
 let globe2 = null, satMesh2 = null, satHalo2 = null;
 let behind2 = false;           // is the sat currently behind the globe-2 Earth?
 
@@ -264,14 +269,42 @@ function globeAltFrac(alt) {
   return Math.min(0.28, 0.03 + 0.10 * Math.log10(1 + km / 400));
 }
 
-// Globe 2 uses a near-LINEAR altitude instead, so an eccentric orbit keeps its
-// real elongated shape — perigee hugging the surface, apogee flung far out —
-// rather than collapsing to a ring.  It reaches ~1 R at GEO and is capped so
-// even a 100 000 km HEO apogee still fits the pulled-back view (which uses the
-// empty space around the small Earth for the larger ellipses).
+// Globe 2 places each point at its TRUE distance from Earth's centre
+// (r = R_earth + alt), then applies one UNIFORM scale for the whole orbit —
+// the only transform that keeps an ellipse an ellipse (any per-point squashing
+// bends it into a "weird shape").  getCoords(lat,lon,af) sits at radius
+// 100*(1+af); to land at scale*trueRadius we solve af = scale*(1+alt/R) - 1.
+// (af can go negative → the perigee of an extreme HEO tucks inside the globe,
+// which reads fine: the big apogee loop is the visible, clearly-elliptical part.)
 function globe2AltFrac(alt) {
   const km = Number.isFinite(alt) && alt > 0 ? alt : 400;
-  return Math.min(1.0, 0.03 + km / 45000);
+  return orbit2Scale * (1 + km / EARTH_R_KM) - 1;
+}
+
+// On each selection, find the orbit's apogee, pick a uniform scale that pulls
+// that apogee out to GLOBE2_TARGET_R (into the spare space) but never magnifies
+// a small orbit past true scale, then pull the camera back exactly far enough
+// that the whole orbit fits — close (big Earth) for LEO, further only for HEO.
+function computeOrbit2Scale(rec) {
+  const f = orbitFacts(rec);
+  const period = Number.isFinite(f.periodMin) && f.periodMin > 0 ? f.periodMin : 92;
+  const t0 = Date.now();
+  let apoR = 1.05;                                   // apogee, in Earth radii
+  for (let i = 0; i < 64; i++) {
+    const r = propagate(rec, new Date(t0 + period * 60000 * i / 64));
+    if (r && Number.isFinite(r.alt)) apoR = Math.max(apoR, 1 + r.alt / EARTH_R_KM);
+  }
+  orbit2Scale = Math.min(1, GLOBE2_TARGET_R / apoR);
+  const Rmax = orbit2Scale * apoR;                   // scaled apogee radius, in Earth radii
+  // Frame it by the orbit's bounding SPHERE (radius Rmax, centred on Earth): a
+  // sphere fits inside the frustum when its distance D ≥ R / sin(halfFOV), and
+  // being orientation-free this can't clip as the apogee sweeps around.  globe.gl
+  // puts the camera at D = 100·(1+camAlt), so camAlt = R/(m·sin(halfFOV)) − 1.
+  const cam = globe2 && globe2.camera ? globe2.camera() : null;
+  const fov = (cam && cam.fov ? cam.fov : 50) * Math.PI / 180;
+  const half = Math.min(fov / 2, Math.atan(Math.tan(fov / 2) * (cam && cam.aspect ? cam.aspect : 1)));
+  const MARGIN = 0.82;                               // leave breathing room inside the edge
+  globe2CamAlt = Math.max(1.6, Math.min(9, Rmax / (MARGIN * Math.sin(half)) - 1));
 }
 
 function globeSize() {
@@ -382,7 +415,7 @@ function initGlobe2() {
   satMesh2.visible = false;
   globe2.scene().add(satMesh2);
 
-  globe2.pointOfView({ lat: GLOBE2_TILT, lng: 0, altitude: GLOBE2_CAM_ALT }, 0);
+  globe2.pointOfView({ lat: GLOBE2_TILT, lng: 0, altitude: globe2CamAlt }, 0);
   requestAnimationFrame(globe2BlinkTick);
 }
 
@@ -409,7 +442,7 @@ function updateGlobe2(lat, lon, alt, t) {
   // satellite's path stays fixed in inertial space.  The ring is built in the
   // inertial frame, so rotate its group by the same -GMST to keep it in view.
   const gmst = gmstOf(t);
-  globe2.pointOfView({ lat: GLOBE2_TILT, lng: -(gmst * RAD), altitude: GLOBE2_CAM_ALT }, 0);
+  globe2.pointOfView({ lat: GLOBE2_TILT, lng: -(gmst * RAD), altitude: globe2CamAlt }, 0);
   if (ring2Group) ring2Group.rotation.y = -gmst;
 
   // Decide front vs behind here; globe2BlinkTick() animates the appearance so
@@ -491,7 +524,7 @@ function buildRing2(rec, t0) {
 
   // Static front/behind split against a reference camera at lng 0 (the camera's
   // position in the ring group's own co-rotating frame).
-  const camRef = globe2.getCoords(GLOBE2_TILT, 0, GLOBE2_CAM_ALT);
+  const camRef = globe2.getCoords(GLOBE2_TILT, 0, globe2CamAlt);
   const behindArr = pts.map(p => occludedByGlobe(camRef, p));
 
   // Cut the closed loop into contiguous same-state runs (merge the wrap seam).
@@ -714,6 +747,7 @@ function selectSat(entry) {
   hideResults();
   setStatus(`${entry.name} · #${entry.noradId}`);
   lastRing1Build = 0;                    // force the globe-1 ground-track rebuild
+  computeOrbit2Scale(entry.rec);         // per-orbit uniform scale + camera (globe 2)
   buildRing2(entry.rec, new Date());     // globe-2 inertial ellipse (fixed loop)
   if (mode === 'rev') startRev();
   else { drawTrack(); refreshCurrent(); }
