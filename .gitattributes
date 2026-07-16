@@ -1,0 +1,13 @@
+# Treat binary assets as binary so autocrlf / line-ending conversion never
+# touches (and corrupts) them.
+*.pdf   binary
+*.enc   binary
+*.jpg   binary
+*.jpeg  binary
+*.png   binary
+*.gif   binary
+*.ico   binary
+*.webp  binary
+*.mp3   binary
+*.woff  binary
+*.woff2 binary
