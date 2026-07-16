@@ -74,6 +74,8 @@
       font-weight: 600;
       letter-spacing: 0.14em;
       text-transform: uppercase;
+      text-decoration: none;
+      white-space: nowrap;
       cursor: pointer;
       transition: background .15s, transform .15s;
     }
@@ -316,37 +318,28 @@
     <section class="about-section" id="documents">
       <h2>Documentation</h2>
       <p>
-        Two companion documents are available for download. They are
-        password-protected — the files are stored encrypted, and your
-        browser decrypts them locally after you enter the password
-        (nothing is sent to any server).
+        Two companion documents explain NAZAR in depth. They are refreshed to
+        match the current site and free to download — no password required.
       </p>
 
       <div class="doc-row">
         <div class="doc-info">
-          <div class="doc-name">NAZAR — Annotated Code Walkthrough</div>
-          <div class="doc-desc">The complete deployed source code of every page, with explanatory notes on every section. 196 pages, PDF, ≈5.9 MB.</div>
+          <div class="doc-name">NAZAR — How It Works</div>
+          <div class="doc-desc">A plain-language guide to every page: what each part
+            does, the logic behind it, where the data comes from, and which bits are
+            hard and which are easy. No programming knowledge required. PDF.</div>
         </div>
-        <button type="button" class="doc-btn" data-file="docs/NAZAR-Code-Walkthrough.pdf.enc" data-name="NAZAR-Code-Walkthrough.pdf">⤓ Download</button>
+        <a class="doc-btn" href="docs/NAZAR-How-It-Works.pdf" download="NAZAR-How-It-Works.pdf">⤓ Download</a>
       </div>
 
       <div class="doc-row">
         <div class="doc-info">
-          <div class="doc-name">How NAZAR Works — plain-language guide</div>
-          <div class="doc-desc">Where the data comes from, how the globe and satellites are drawn, how each feature works and what is stored where — no programming knowledge required. 11 pages, PDF, ≈0.2 MB.</div>
+          <div class="doc-name">NAZAR — Code Walkthrough</div>
+          <div class="doc-desc">A guided, sequential tour of the code: a real slice of
+            each part, then an explanation of what it does and how — with a jargon
+            glossary so it reads even if you are new to coding. PDF.</div>
         </div>
-        <button type="button" class="doc-btn" data-file="docs/NAZAR-How-It-Works.pdf.enc" data-name="NAZAR-How-It-Works.pdf">⤓ Download</button>
-      </div>
-
-      <!-- Password dialog, shown when a download button is pressed. -->
-      <div class="doc-gate" id="doc-gate" hidden>
-        <div class="doc-gate-title">Enter password to download <strong id="doc-gate-file">…</strong></div>
-        <div class="doc-gate-row">
-          <input type="password" id="doc-gate-pw" placeholder="Password" autocomplete="off">
-          <button type="button" class="doc-btn" id="doc-gate-go">Unlock</button>
-          <button type="button" class="doc-btn doc-btn-ghost" id="doc-gate-cancel">Cancel</button>
-        </div>
-        <div class="doc-gate-status" id="doc-gate-status"></div>
+        <a class="doc-btn" href="docs/NAZAR-Code-Walkthrough.pdf" download="NAZAR-Code-Walkthrough.pdf">⤓ Download</a>
       </div>
     </section>
 
@@ -372,94 +365,5 @@
 
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=6"></script>
-  <script>
-  // Password-gated document downloads.
-  //
-  // The PDFs in docs/ are AES-256-GCM encrypted; the layout of each .enc
-  // file is  'NZDOC1' (6 bytes) | salt (16) | iv (12) | ciphertext+tag.
-  // The key is derived from the password with PBKDF2-SHA256 at 200,000
-  // iterations — these parameters must stay in lock-step with the
-  // encrypt-docs.mjs build script.  Everything happens in the browser:
-  // a wrong password fails GCM authentication and nothing decrypts.
-  (function () {
-    const gate     = document.getElementById('doc-gate');
-    const gateFile = document.getElementById('doc-gate-file');
-    const pwInput  = document.getElementById('doc-gate-pw');
-    const goBtn    = document.getElementById('doc-gate-go');
-    const cancel   = document.getElementById('doc-gate-cancel');
-    const status   = document.getElementById('doc-gate-status');
-    let active = null;   // { file, name } of the requested document
-
-    function setStatus(msg, cls) {
-      status.textContent = msg;
-      status.className = 'doc-gate-status' + (cls ? ' ' + cls : '');
-    }
-
-    document.querySelectorAll('.doc-btn[data-file]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        active = { file: btn.dataset.file, name: btn.dataset.name };
-        gateFile.textContent = active.name;
-        gate.hidden = false;
-        setStatus('', '');
-        pwInput.value = '';
-        pwInput.focus();
-        gate.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-    });
-
-    cancel.addEventListener('click', () => { gate.hidden = true; active = null; });
-    pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') goBtn.click(); });
-
-    goBtn.addEventListener('click', async () => {
-      if (!active) return;
-      const pw = pwInput.value;
-      if (!pw) { setStatus('Enter the password.', 'err'); return; }
-      goBtn.disabled = true;
-      try {
-        setStatus('Downloading encrypted file…');
-        const resp = await fetch(active.file, { cache: 'no-cache' });
-        if (!resp.ok) throw new Error('fetch failed (HTTP ' + resp.status + ')');
-        const buf = new Uint8Array(await resp.arrayBuffer());
-
-        // Parse the container.
-        const magic = new TextDecoder().decode(buf.subarray(0, 6));
-        if (magic !== 'NZDOC1') throw new Error('not a NAZAR document container');
-        const salt = buf.subarray(6, 22);
-        const iv   = buf.subarray(22, 34);
-        const body = buf.subarray(34);
-
-        setStatus('Decrypting…');
-        const baseKey = await crypto.subtle.importKey(
-          'raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
-        const key = await crypto.subtle.deriveKey(
-          { name: 'PBKDF2', salt, iterations: 200000, hash: 'SHA-256' },
-          baseKey, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
-        let plain;
-        try {
-          plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, body);
-        } catch {
-          setStatus('Incorrect password.', 'err');
-          return;
-        }
-
-        // Hand the decrypted bytes to the browser as a normal download.
-        const blob = new Blob([plain], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = active.name;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 30000);
-        setStatus('Unlocked — your download has started.', 'ok');
-      } catch (e) {
-        setStatus('Download failed: ' + e.message, 'err');
-      } finally {
-        goBtn.disabled = false;
-      }
-    });
-  })();
-  </script>
 </body>
 </html>
