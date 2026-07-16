@@ -2382,6 +2382,19 @@ body.page-2d .globe-cap {
   color: #7fa8cf;
   text-align: center;
 }
+/* "Not to scale" note under globe 2 — only shown for the HEO exception, where
+   the apogee is stretched for clarity rather than drawn proportionally. */
+body.page-2d .globe-disclaimer {
+  max-width: 190px;
+  margin-top: 4px;
+  font-size: 9px;
+  line-height: 1.35;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: #d7a24a;
+  text-align: center;
+}
+body.page-2d .globe-disclaimer[hidden] { display: none; }
 /* On narrow screens the side-by-side would crush both; drop the globe and
    let the map use the full width. */
 @media (max-width: 820px) {

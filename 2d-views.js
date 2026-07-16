@@ -245,13 +245,21 @@ let globe = null, satMesh = null;
 // Earth appears to spin while the satellite traces a fixed inertial ellipse
 // (front of / behind the globe).  Not centred on the satellite.
 const GLOBE2_TILT = 22;        // camera latitude — a gentle 3/4 view
-const GLOBE2_TARGET_R = 2.0;   // scaled orbits reach ~2 Earth radii (apogee) in view
-// Per-orbit uniform scale + camera distance, recomputed on each selection so the
-// orbit keeps its TRUE elliptical shape (uniform scaling is the only transform
-// that preserves an ellipse), while the Earth only shrinks for genuinely huge
-// orbits and small orbits get a close, big Earth.
-let orbit2Scale = 1, globe2CamAlt = 3.6;
-let globe2 = null, satMesh2 = null, satHalo2 = null;
+// Globe 2 draws the orbit in two regimes, chosen per satellite by eccentricity:
+//   • NORMAL (near-circular: LEO…GEO, incl. inclined-geo like QZS) — the Earth
+//     stays BIG (same size as globe 1) and the orbit is compressed to hug just
+//     above it, so a large arc of the ring passes clearly behind the planet.
+//   • HEO   (very elliptical: Molniya/Tundra/GTO/CXO) — the honest true-scale
+//     orbit is enormous, so we make an exception: shrink the Earth a little and
+//     stretch the apogee out into the corner to show the elongated shape, with
+//     an on-screen "not to scale" disclaimer.
+const GLOBE2_ECC_HEO       = 0.20;  // eccentricity above which the HEO exception kicks in
+const GLOBE2_TARGET_NORMAL = 1.4;   // near-circular apogee sits ~1.4 R above a big Earth
+const GLOBE2_TARGET_HEO    = 1.8;   // HEO apogee stretched to ~1.8 R into the spare corner
+const GLOBE2_CAM_NORMAL    = 2.6;   // ≈ globe 1's camera — Earth the same big size
+const GLOBE2_CAM_HEO       = 3.7;   // pulled back only "a little" for the HEO exception
+let orbit2Scale = 1, globe2CamAlt = GLOBE2_CAM_NORMAL, globe2Exaggerated = false;
+let globe2 = null, satMesh2 = null, satHalo2 = null, satRing2 = null;
 let behind2 = false;           // is the sat currently behind the globe-2 Earth?
 
 // Golden orbit-path rings (one per globe).  Same gold as the 2-D map's trail.
@@ -281,30 +289,30 @@ function globe2AltFrac(alt) {
   return orbit2Scale * (1 + km / EARTH_R_KM) - 1;
 }
 
-// On each selection, find the orbit's apogee, pick a uniform scale that pulls
-// that apogee out to GLOBE2_TARGET_R (into the spare space) but never magnifies
-// a small orbit past true scale, then pull the camera back exactly far enough
-// that the whole orbit fits — close (big Earth) for LEO, further only for HEO.
+// On each selection: sample the orbit for its apogee, perigee and eccentricity,
+// pick the NORMAL vs HEO regime from the eccentricity, then set the uniform
+// scale (so the apogee lands on that regime's target radius, never magnifying a
+// small orbit past true scale) and the fixed camera distance for that regime.
+// The two targets are pre-tuned to sit safely inside globe 2's frustum, so the
+// ring never clips — no per-frame framing needed.
 function computeOrbit2Scale(rec) {
   const f = orbitFacts(rec);
   const period = Number.isFinite(f.periodMin) && f.periodMin > 0 ? f.periodMin : 92;
   const t0 = Date.now();
-  let apoR = 1.05;                                   // apogee, in Earth radii
+  let apoR = 1.02, periR = Infinity;                 // apogee / perigee, in Earth radii
   for (let i = 0; i < 64; i++) {
     const r = propagate(rec, new Date(t0 + period * 60000 * i / 64));
-    if (r && Number.isFinite(r.alt)) apoR = Math.max(apoR, 1 + r.alt / EARTH_R_KM);
+    if (r && Number.isFinite(r.alt)) {
+      const rr = 1 + r.alt / EARTH_R_KM;
+      apoR = Math.max(apoR, rr); periR = Math.min(periR, rr);
+    }
   }
-  orbit2Scale = Math.min(1, GLOBE2_TARGET_R / apoR);
-  const Rmax = orbit2Scale * apoR;                   // scaled apogee radius, in Earth radii
-  // Frame it by the orbit's bounding SPHERE (radius Rmax, centred on Earth): a
-  // sphere fits inside the frustum when its distance D ≥ R / sin(halfFOV), and
-  // being orientation-free this can't clip as the apogee sweeps around.  globe.gl
-  // puts the camera at D = 100·(1+camAlt), so camAlt = R/(m·sin(halfFOV)) − 1.
-  const cam = globe2 && globe2.camera ? globe2.camera() : null;
-  const fov = (cam && cam.fov ? cam.fov : 50) * Math.PI / 180;
-  const half = Math.min(fov / 2, Math.atan(Math.tan(fov / 2) * (cam && cam.aspect ? cam.aspect : 1)));
-  const MARGIN = 0.82;                               // leave breathing room inside the edge
-  globe2CamAlt = Math.max(1.6, Math.min(9, Rmax / (MARGIN * Math.sin(half)) - 1));
+  if (!Number.isFinite(periR)) periR = apoR;
+  const ecc = (apoR - periR) / (apoR + periR);       // orbit eccentricity from the radii
+  globe2Exaggerated = ecc > GLOBE2_ECC_HEO;
+  const target = globe2Exaggerated ? GLOBE2_TARGET_HEO : GLOBE2_TARGET_NORMAL;
+  globe2CamAlt = globe2Exaggerated ? GLOBE2_CAM_HEO : GLOBE2_CAM_NORMAL;
+  orbit2Scale = Math.min(1, target / apoR);
 }
 
 function globeSize() {
@@ -415,6 +423,18 @@ function initGlobe2() {
   satMesh2.visible = false;
   globe2.scene().add(satMesh2);
 
+  // A flat outline ring, billboarded to face the camera, that replaces the solid
+  // dot while the satellite is behind the Earth — so the far pass reads as a
+  // blinking HOLLOW marker rather than a filled one.  Kept as a scene sibling
+  // (not a child of satMesh2) so satMesh2's blink-scale never distorts it.
+  satRing2 = new THREE.Mesh(
+    new THREE.RingGeometry(4.4, 6.6, 28),
+    new THREE.MeshBasicMaterial({ color: 0x8bff9e, transparent: true, opacity: 0.9,
+                                  side: THREE.DoubleSide, depthTest: false, depthWrite: false }));
+  satRing2.renderOrder = 3;
+  satRing2.visible = false;
+  globe2.scene().add(satRing2);
+
   globe2.pointOfView({ lat: GLOBE2_TILT, lng: 0, altitude: globe2CamAlt }, 0);
   requestAnimationFrame(globe2BlinkTick);
 }
@@ -450,21 +470,25 @@ function updateGlobe2(lat, lon, alt, t) {
   behind2 = occludedByGlobe(globe2.camera().position, satMesh2.position);
 }
 
-// Steady bright-green dot in front of the Earth; when it slips behind, blink it
-// and swell it so the viewer clearly sees the satellite is on the far side.
+// Steady solid bright-green dot in front of the Earth; when it slips behind, the
+// solid fill gives way to a blinking HOLLOW outline ring, so the viewer clearly
+// sees the satellite is on the far side.
 function globe2BlinkTick(ts) {
   if (satMesh2 && satMesh2.visible) {
     if (behind2) {
       const b = (Math.sin(ts / 1000 * Math.PI * 3) + 1) / 2;   // ~1.5 Hz pulse, 0..1
-      satMesh2.scale.setScalar(1.4 + 0.25 * b);                // clearly larger, pulsing
-      satMesh2.material.color.set(0xccffda);
-      satMesh2.material.opacity = 0.3 + 0.7 * b;               // blink
-      satHalo2.material.opacity = 0.12 + 0.22 * b;
+      satMesh2.material.opacity = 0;                           // hide the fill → hollow
+      satHalo2.material.opacity = 0;
+      satRing2.visible = true;
+      satRing2.position.copy(satMesh2.position);
+      satRing2.quaternion.copy(globe2.camera().quaternion);    // billboard: face the camera
+      satRing2.scale.setScalar(1.25 + 0.35 * b);               // swell as it pulses
+      satRing2.material.opacity = 0.25 + 0.7 * b;              // blink
     } else {
       satMesh2.scale.setScalar(1);
-      satMesh2.material.color.set(0x8bff9e);
-      satMesh2.material.opacity = 1;
+      satMesh2.material.opacity = 1;                           // solid fill in front
       satHalo2.material.opacity = 0.25;
+      satRing2.visible = false;
     }
   }
   requestAnimationFrame(globe2BlinkTick);
@@ -747,7 +771,9 @@ function selectSat(entry) {
   hideResults();
   setStatus(`${entry.name} · #${entry.noradId}`);
   lastRing1Build = 0;                    // force the globe-1 ground-track rebuild
-  computeOrbit2Scale(entry.rec);         // per-orbit uniform scale + camera (globe 2)
+  computeOrbit2Scale(entry.rec);         // pick regime + scale/camera for globe 2
+  const disc = $('globe2-disclaimer');   // "not to scale" note — only for the HEO exception
+  if (disc) disc.hidden = !globe2Exaggerated;
   buildRing2(entry.rec, new Date());     // globe-2 inertial ellipse (fixed loop)
   if (mode === 'rev') startRev();
   else { drawTrack(); refreshCurrent(); }
