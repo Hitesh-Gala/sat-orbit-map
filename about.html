@@ -39,50 +39,6 @@
     @media (max-width: 720px) {
       .about-credit { font-size: 10.5px; letter-spacing: 0.12em; }
     }
-
-    /* Documents section — download rows.  Page-local styles (same
-       pattern as viz3d / sats-by-ops inline blocks). */
-    .doc-row {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 14px 16px;
-      margin-bottom: 12px;
-      background: rgba(2, 6, 13, 0.55);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-    }
-    .doc-info { flex: 1; min-width: 0; }
-    .doc-name {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 13px;
-      letter-spacing: 0.12em;
-      color: var(--text);
-      text-transform: uppercase;
-      margin-bottom: 6px;
-    }
-    .doc-desc { font-size: 12.5px; color: var(--dim); line-height: 1.5; }
-    .doc-btn {
-      flex: 0 0 auto;
-      padding: 9px 18px;
-      background: rgba(103, 232, 164, 0.16);
-      border: 1px solid var(--green);
-      border-radius: 4px;
-      color: var(--green);
-      font-family: var(--mono);
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      text-decoration: none;
-      white-space: nowrap;
-      cursor: pointer;
-      transition: background .15s, transform .15s;
-    }
-    .doc-btn:hover { background: rgba(103, 232, 164, 0.28); transform: translateY(-1px); }
-    @media (max-width: 720px) {
-      .doc-row { flex-direction: column; align-items: stretch; }
-    }
   </style>
 </head>
 <body class="page-about">
@@ -272,40 +228,6 @@
         <li>On <strong>mobile</strong>, everything collapses into the ☰ MENU button at the
           top-left.</li>
       </ul>
-    </section>
-
-    <!-- =========================================================
-         6 · Documents
-
-         Two companion PDFs (How It Works, Code Walkthrough), served
-         as plain files from docs/ and regenerated to track the site.
-         ========================================================= -->
-    <section class="about-section" id="documents">
-      <h2>Documentation</h2>
-      <p>
-        Two companion documents explain NAZAR in depth. They are refreshed to
-        match the current site and free to download — no password required.
-      </p>
-
-      <div class="doc-row">
-        <div class="doc-info">
-          <div class="doc-name">NAZAR — How It Works</div>
-          <div class="doc-desc">A plain-language guide to every page: what each part
-            does, the logic behind it, where the data comes from, and which bits are
-            hard and which are easy. No programming knowledge required. PDF.</div>
-        </div>
-        <a class="doc-btn" href="docs/NAZAR-How-It-Works.pdf" download="NAZAR-How-It-Works.pdf">⤓ Download</a>
-      </div>
-
-      <div class="doc-row">
-        <div class="doc-info">
-          <div class="doc-name">NAZAR — Code Walkthrough</div>
-          <div class="doc-desc">A guided, sequential tour of the code: a real slice of
-            each part, then an explanation of what it does and how — with a jargon
-            glossary so it reads even if you are new to coding. PDF.</div>
-        </div>
-        <a class="doc-btn" href="docs/NAZAR-Code-Walkthrough.pdf" download="NAZAR-Code-Walkthrough.pdf">⤓ Download</a>
-      </div>
     </section>
 
     <!-- =========================================================
