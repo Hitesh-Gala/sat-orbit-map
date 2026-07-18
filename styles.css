@@ -2383,39 +2383,22 @@ body.page-2d .globe-cap {
   color: #7fa8cf;
   text-align: center;
 }
-/* Globe 2 floats onto a big transparent canvas over the map for a very
-   elliptical orbit, so the whole true-scale ellipse fits.  Transparent so the
-   map shows through; pointer-events off so the map/panel stay usable; below the
-   track panel (z 8) so that stays on top. */
-body.page-2d .mini-globe.g2-float {
+/* Globe 2 keeps its Earth in the little column slot; for a very elliptical
+   orbit only the RING is drawn in this full-page SVG overlay, so it can reach
+   out over the 2-D map.  Transparent + pointer-events off so the map/panel stay
+   usable; below the track panel (z 8) so that stays on top. */
+.globe2-orbit-svg {
   position: fixed;
+  left: 0; top: 0;
+  width: 100vw; height: 100vh;
   z-index: 5;
   pointer-events: none;
-  background: transparent;
-  box-shadow: none;
-  border-radius: 0;
+  overflow: visible;
 }
-/* Caption + "true scale, zoomed out" note anchored under the floated globe. */
-.globe2-float-note {
-  position: fixed;
-  z-index: 6;
-  pointer-events: none;
-  text-align: center;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #7fa8cf;
-}
-.globe2-float-note span {
-  display: block;
-  margin-top: 3px;
-  font-size: 9px;
-  font-style: italic;
-  text-transform: none;
-  letter-spacing: 0.02em;
-  color: #d7a24a;
-}
+.globe2-orbit-svg .g2o-front  { fill: none; stroke: #ffd23f; stroke-width: 2;   opacity: 0.9; stroke-linecap: round; }
+.globe2-orbit-svg .g2o-behind { fill: none; stroke: #ffd23f; stroke-width: 1.6; opacity: 0.5; stroke-dasharray: 4 5; stroke-linecap: round; }
+.globe2-orbit-svg .g2o-mk      { fill: #8bff9e; }
+.globe2-orbit-svg .g2o-mk-ring { fill: none; stroke: #8bff9e; stroke-width: 2.4; }
 /* On narrow screens the side-by-side would crush both; drop the globe and
    let the map use the full width. */
 @media (max-width: 820px) {
