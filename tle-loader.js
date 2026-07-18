@@ -288,6 +288,17 @@ window.Argos = (function () {
   // snapshot occasionally carry the same satellite twice (e.g., when a
   // catalog crossover or stale fragment lingers), which used to surface
   // as repeated rows in ChinRepo and double dots on the globe.
+  // International designator (COSPAR ID) from TLE line 1, cols 10-17 — e.g. the
+  // raw "98067A" becomes "1998-067A" (2-digit year: 57-99 → 19xx, 00-56 → 20xx).
+  function intlDesignator(l1) {
+    const raw = (l1 || '').slice(9, 17).trim();
+    const m = raw.match(/^(\d{2})(\d{3})([A-Z]{1,3})$/);
+    if (!m) return raw;
+    const yy = parseInt(m[1], 10);
+    const year = yy < 57 ? 2000 + yy : 1900 + yy;
+    return `${year}-${m[2]}${m[3]}`;
+  }
+
   function makeSatrecs(tles) {
     const out = [];
     const seen = new Set();
@@ -295,7 +306,7 @@ window.Argos = (function () {
       if (seen.has(t.noradId)) continue;
       seen.add(t.noradId);
       try {
-        out.push({ name: t.name, noradId: t.noradId, rec: satellite.twoline2satrec(t.l1, t.l2) });
+        out.push({ name: t.name, noradId: t.noradId, intlId: intlDesignator(t.l1), rec: satellite.twoline2satrec(t.l1, t.l2) });
       } catch { /* skip malformed */ }
     }
     return out;

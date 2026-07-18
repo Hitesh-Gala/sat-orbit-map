@@ -137,7 +137,7 @@ const PATH_SAMPLES     = 128;
 
 // --- App state ------------------------------------------------------------
 
-let allSats   = [];        // [{ name, noradId, rec }]
+let allSats   = [];        // [{ name, noradId, intlId, rec }]
 let satClass  = [];        // parallel array of orbit-class strings (LEO/MEO/GEO/HEO/null)
 let satState  = [];        // parallel array of latest { lat, lon, alt } (null if invalid)
 let satPeriod = [];        // parallel array of orbital period in minutes (null if unknown)
@@ -416,6 +416,8 @@ function renderTooltip(id) {
     : '<span class="muted">unknown</span>';
   tip.innerHTML = `
     <b>${escHtml(t.name)}</b> <span class="cls" style="${classBadgeStyle(cls)}">${cls}</span>
+    <div>NORAD ID <strong>${t.noradId}</strong></div>
+    <div>Int'l ID <strong>${t.intlId ? escHtml(t.intlId) : '—'}</strong></div>
     <div>Altitude <strong>${st.alt.toFixed(0)} km</strong></div>
     <div>Speed <strong>${speedStr}</strong></div>
     <div>Period <strong>${periodStr}</strong></div>
