@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://celestrak.org">
   <link rel="preconnect" href="https://cdn.amcharts.com">
   <link rel="preconnect" href="https://unpkg.com">
-  <link rel="stylesheet" href="styles.css?v=26">
+  <link rel="stylesheet" href="styles.css?v=27">
 </head>
 <body class="page-2d">
   <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
@@ -125,12 +125,9 @@
           <div id="mini-globe" class="mini-globe"></div>
           <div class="globe-cap">3D. Satellite-Centered</div>
         </div>
-        <div class="globe-unit">
+        <div class="globe-unit" id="globe2-unit">
           <div id="mini-globe2" class="mini-globe"></div>
           <div class="globe-cap">3D. True Earth Rotation</div>
-          <div class="globe-disclaimer" id="globe2-disclaimer" hidden>
-            Orbit size is not proportional — exaggerated for clarity of visual depiction only.
-          </div>
         </div>
       </div>
     </main>
@@ -148,7 +145,7 @@
   <!-- Satellite math + shared data layer -->
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=8"></script>
-  <script src="2d-views.js?v=25"></script>
+  <script src="2d-views.js?v=30"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=6"></script>
 </body>

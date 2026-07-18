@@ -248,17 +248,17 @@ const GLOBE2_TILT = 22;        // camera latitude — a gentle 3/4 view
 // Globe 2 draws the orbit in two regimes, chosen per satellite by eccentricity:
 //   • NORMAL (near-circular: LEO…GEO, incl. inclined-geo like QZS) — the Earth
 //     stays BIG (same size as globe 1) and the orbit is compressed to hug just
-//     above it, so a large arc of the ring passes clearly behind the planet.
-//   • HEO   (very elliptical: Molniya/Tundra/GTO/CXO) — the honest true-scale
-//     orbit is enormous, so we make an exception: shrink the Earth a little and
-//     stretch the apogee out into the corner to show the elongated shape, with
-//     an on-screen "not to scale" disclaimer.
-const GLOBE2_ECC_HEO       = 0.20;  // eccentricity above which the HEO exception kicks in
+//     above it, so a large arc of the ring clearly passes behind the planet.
+//   • HEO   (very elliptical: Molniya/GTO/CXO/Cluster) — the orbit is drawn at
+//     its TRUE scale, so the perigee stays OUTSIDE the Earth (it never intersects
+//     the planet) and the Earth sits exactly at the ellipse's focus.  A true-scale
+//     HEO orbit dwarfs the Earth, so globe 2 floats out onto a big transparent
+//     canvas over the map, where the whole ellipse fits (see layoutGlobe2()).
+const GLOBE2_ECC_HEO       = 0.20;  // eccentricity above which the orbit floats at true scale
 const GLOBE2_TARGET_NORMAL = 1.4;   // near-circular apogee sits ~1.4 R above a big Earth
-const GLOBE2_TARGET_HEO    = 1.8;   // HEO apogee stretched to ~1.8 R into the spare corner
 const GLOBE2_CAM_NORMAL    = 2.6;   // ≈ globe 1's camera — Earth the same big size
-const GLOBE2_CAM_HEO       = 3.7;   // pulled back only "a little" for the HEO exception
-let orbit2Scale = 1, globe2CamAlt = GLOBE2_CAM_NORMAL, globe2Exaggerated = false;
+const GLOBE2_FIT_MARGIN    = 0.9;   // fraction of the frustum the fitted orbit fills
+let orbit2Scale = 1, globe2CamAlt = GLOBE2_CAM_NORMAL, globe2Float = false, globe2MarkerScale = 1;
 let globe2 = null, satMesh2 = null, satHalo2 = null, satRing2 = null;
 let behind2 = false;           // is the sat currently behind the globe-2 Earth?
 
@@ -309,10 +309,29 @@ function computeOrbit2Scale(rec) {
   }
   if (!Number.isFinite(periR)) periR = apoR;
   const ecc = (apoR - periR) / (apoR + periR);       // orbit eccentricity from the radii
-  globe2Exaggerated = ecc > GLOBE2_ECC_HEO;
-  const target = globe2Exaggerated ? GLOBE2_TARGET_HEO : GLOBE2_TARGET_NORMAL;
-  globe2CamAlt = globe2Exaggerated ? GLOBE2_CAM_HEO : GLOBE2_CAM_NORMAL;
-  orbit2Scale = Math.min(1, target / apoR);
+  globe2Float = ecc > GLOBE2_ECC_HEO;
+  if (globe2Float) {
+    // TRUE scale: the scaled apogee radius (in Earth radii) is apoR itself, so
+    // the perigee lands at its real height OUTSIDE the Earth and the ellipse is
+    // centred on the planet's focus.  Pull the camera back so the whole orbit's
+    // bounding sphere fits the square frustum — orientation-free, so nothing
+    // clips as the orbit spins.  layoutGlobe2() floats the canvas big enough
+    // that the (now small) Earth and the full ellipse are both clearly visible.
+    orbit2Scale = 1;
+    const cam = globe2 && globe2.camera ? globe2.camera() : null;
+    const fov = (cam && cam.fov ? cam.fov : 50) * Math.PI / 180;
+    const half = Math.min(fov / 2, Math.atan(Math.tan(fov / 2) * (cam && cam.aspect ? cam.aspect : 1)));
+    globe2CamAlt = apoR / (GLOBE2_FIT_MARGIN * Math.sin(half)) - 1;
+  } else {
+    // Near-circular: keep the big Earth and compress the ring to hug just above
+    // it, so a large arc is clearly occluded as the satellite goes behind.
+    orbit2Scale = Math.min(1, GLOBE2_TARGET_NORMAL / apoR);
+    globe2CamAlt = GLOBE2_CAM_NORMAL;
+  }
+  // The dot and orbit line are drawn in scene units, so when the camera pulls far
+  // back for a big HEO orbit they must grow to stay visible — scale them with the
+  // camera distance (1× at the normal close view).
+  globe2MarkerScale = Math.min(20, Math.max(1, (1 + globe2CamAlt) / (1 + GLOBE2_CAM_NORMAL)));
 }
 
 function globeSize() {
@@ -482,10 +501,10 @@ function globe2BlinkTick(ts) {
       satRing2.visible = true;
       satRing2.position.copy(satMesh2.position);
       satRing2.quaternion.copy(globe2.camera().quaternion);    // billboard: face the camera
-      satRing2.scale.setScalar(1.25 + 0.35 * b);               // swell as it pulses
+      satRing2.scale.setScalar(globe2MarkerScale * (1.25 + 0.35 * b));   // swell as it pulses
       satRing2.material.opacity = 0.25 + 0.7 * b;              // blink
     } else {
-      satMesh2.scale.setScalar(1);
+      satMesh2.scale.setScalar(globe2MarkerScale);            // grow with the camera pull-back
       satMesh2.material.opacity = 1;                           // solid fill in front
       satHalo2.material.opacity = 0.25;
       satRing2.visible = false;
@@ -534,7 +553,7 @@ function buildRing2(rec, t0) {
   }
   const f = orbitFacts(rec);
   const period = Number.isFinite(f.periodMin) && f.periodMin > 0 ? f.periodMin : 92;
-  const N = 160, pts = [], Y = new THREE.Vector3(0, 1, 0);
+  const N = globe2Float ? 400 : 160, pts = [], Y = new THREE.Vector3(0, 1, 0);   // dense for the fast, sharp HEO perigee
   for (let i = 0; i < N; i++) {
     const t = new Date(t0.getTime() + period * 60000 * i / N);
     const r = propagate(rec, t);
@@ -569,9 +588,19 @@ function buildRing2(rec, t0) {
     if (next && next.pts.length) runs[i].pts.push(next.pts[0]);
   }
 
+  const tubeR = 0.95 * globe2MarkerScale;               // thicken with the pull-back so it stays visible
+  const surfaceFloor = 100 + tubeR + 3;                // keep the whole tube just outside the Earth sphere
   function tube(segPts, opacity) {
     if (segPts.length < 2) return;
-    const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(segPts, false), Math.max(segPts.length * 2, 8), 0.95, 6, false);
+    let curvePts = segPts;
+    if (globe2Float) {
+      // Densely resample the smoothed centre-line and lift any point that would
+      // sit inside the Earth up to the surface, so the sharp perigee turn of a
+      // very eccentric (or decayed) orbit can't dip through the globe.
+      curvePts = new THREE.CatmullRomCurve3(segPts, false, 'centripetal').getPoints(Math.max(segPts.length * 6, 24));
+      for (const p of curvePts) { const L = p.length(); if (L > 0 && L < surfaceFloor) p.multiplyScalar(surfaceFloor / L); }
+    }
+    const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(curvePts, false, 'centripetal'), Math.max(curvePts.length * 2, 8), tubeR, 6, false);
     const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: RING_GOLD, transparent: true, opacity, depthTest: false, depthWrite: false }));
     m.renderOrder = 2;
     ring2Group.add(m);
@@ -605,9 +634,56 @@ function sizeMiniGlobes() {
   const availH = map.clientHeight || (window.innerWidth * 0.16);
   const sq = Math.max(120, Math.floor(Math.min(colW, availH / 2 - 22)));
   for (const [id, g] of [['mini-globe', globe], ['mini-globe2', globe2]]) {
+    if (id === 'mini-globe2' && globe2Float) continue;   // floated: laid out separately
     const el = $(id);
     if (el) { el.style.width = sq + 'px'; el.style.height = sq + 'px'; }
     if (g) g.width(sq).height(sq);
+  }
+  if (globe2Float) layoutGlobe2();                       // re-place the float on resize
+}
+
+// For a very elliptical orbit the true-scale ellipse is far bigger than the
+// Earth, so globe 2 leaves its little column slot and floats onto a big
+// transparent canvas centred over the map — using that spare screenspace to
+// show the whole orbit at true scale (perigee outside the Earth, Earth at the
+// focus).  Near-circular orbits keep globe 2 in its column with a big Earth.
+let g2FloatNote = null;
+function layoutGlobe2() {
+  const el = $('mini-globe2');
+  if (!el || !globe2) return;
+  const unit = $('globe2-unit');
+  const cap = unit ? unit.querySelector('.globe-cap') : null;
+  if (globe2Float) {
+    const row = document.querySelector('.map-row');
+    const area = document.querySelector('.map-area');
+    if (!row || !area) return;
+    const rb = row.getBoundingClientRect(), ab = area.getBoundingClientRect();
+    const size = Math.max(300, Math.floor(Math.min(rb.height - 12, ab.width * 0.8)));
+    const left = Math.round(ab.left + ab.width / 2 - size / 2);
+    const top  = Math.round(rb.top + rb.height / 2 - size / 2);
+    el.classList.add('g2-float');
+    el.style.left = left + 'px'; el.style.top = top + 'px';
+    el.style.width = size + 'px'; el.style.height = size + 'px';
+    globe2.width(size).height(size);
+    if (cap) cap.style.visibility = 'hidden';
+    const note = g2FloatNote || (g2FloatNote = (function () {
+      const d = document.createElement('div'); d.className = 'globe2-float-note';
+      document.body.appendChild(d); return d;
+    })());
+    note.innerHTML = '3D · TRUE EARTH ROTATION<span>Orbit shown at true scale, zoomed out to fit — the Earth is small at this range.</span>';
+    note.style.left = left + 'px'; note.style.top = (top + size - 2) + 'px'; note.style.width = size + 'px';
+    note.style.display = 'block';
+  } else {
+    el.classList.remove('g2-float');
+    el.style.left = ''; el.style.top = '';
+    if (cap) cap.style.visibility = '';
+    if (g2FloatNote) g2FloatNote.style.display = 'none';
+    // Match globe 1's (stable) size rather than re-reading the map height here —
+    // during the un-float reflow that read can momentarily collapse to the floor.
+    const g1 = $('mini-globe');
+    const s = g1 && g1.clientWidth > 40 ? g1.clientWidth : 200;
+    el.style.width = s + 'px'; el.style.height = s + 'px';
+    globe2.width(s).height(s);
   }
 }
 
@@ -772,8 +848,7 @@ function selectSat(entry) {
   setStatus(`${entry.name} · #${entry.noradId}`);
   lastRing1Build = 0;                    // force the globe-1 ground-track rebuild
   computeOrbit2Scale(entry.rec);         // pick regime + scale/camera for globe 2
-  const disc = $('globe2-disclaimer');   // "not to scale" note — only for the HEO exception
-  if (disc) disc.hidden = !globe2Exaggerated;
+  layoutGlobe2();                        // float over the map (HEO) or sit in the column
   buildRing2(entry.rec, new Date());     // globe-2 inertial ellipse (fixed loop)
   if (mode === 'rev') startRev();
   else { drawTrack(); refreshCurrent(); }
