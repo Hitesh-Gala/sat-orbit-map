@@ -468,10 +468,11 @@ body.light .topbar .sub { color: var(--dim); }
   position: fixed;
   bottom: 14px;
   left: 50%;
-  /* Width is bounded so the ticker leaves clear space on both sides:
-     ~150 px on the left for the ChinRepo button, ~150 px symmetric on
-     the right.  translateX(-50%) keeps it centred on the viewport. */
-  width: min(820px, calc(100vw - 300px));
+  /* Centred on the viewport (translateX -50%).  The 240 px side panels
+     (.left-nav, .hud-tr) can run all the way to the bottom, so the ticker
+     is bounded to reserve ~290 px each side and clear them completely —
+     it shortens rather than slide under a panel. */
+  width: min(720px, calc(100vw - 580px));
   transform: translateX(-50%);
   height: 38px;
   z-index: 10;

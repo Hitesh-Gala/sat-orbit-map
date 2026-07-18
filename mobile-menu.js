@@ -261,4 +261,130 @@
     }
     window.addEventListener('pointerdown', go, { once: true, passive: true });
   })();
+
+  // -------------------------------------------------------------------------
+  // NAZAR-button drop-down (desktop).
+  //
+  // The top-left logo and the various "NAZAR" / back buttons used to jump
+  // straight to the main page.  Now they open a drop-down listing every
+  // page (the same set as the main page's left-hand nav), and choosing one
+  // opens that page maximised.  On phones the ☰ MENU drawer already owns
+  // navigation, so there the buttons keep their plain "go home" behaviour.
+  // -------------------------------------------------------------------------
+  (function nazarDropdown() {
+    const PAGES = [
+      { href: 'index.html',         icon: '◯', label: 'Live Globe (Home)' },
+      { href: 'about.html',         icon: 'ℹ', label: 'About / Help' },
+      { href: '2d-views.html',      icon: '⊞', label: '2D View' },
+      { href: 'orbits.html',        icon: '↻', label: 'Orbit Visualisation' },
+      { href: 'game-of-cones.html', icon: '◭', label: 'Game of Cones' },
+      { href: 'chinrepo.html',      icon: '★', label: 'China Sat Repo' },
+      { href: 'viz3d.html',         icon: '⬢', label: '3D Visualiser' },
+      { href: 'sats-by-ops.html',   icon: '⊕', label: 'SATs-by-OPs' },
+    ];
+
+    // Collect the "go to NAZAR home" controls: the logo + the labelled
+    // NAZAR/back buttons.  Skip content links (about-page cards / CTAs).
+    const triggers = new Set();
+    document.querySelectorAll('.top-logo, .top-nazar-btn, .btn-nazar').forEach((el) => triggers.add(el));
+    document.querySelectorAll('a[href="index.html"]').forEach((a) => {
+      if (a.matches('.page-card, .about-cta')) return;
+      if (/nazar/i.test((a.textContent || '').trim())) triggers.add(a);
+    });
+    if (!triggers.size) return;
+
+    // Inject the drop-down's styles here so it also works on the two pages
+    // (compendium, china-sat-series) that ship their own inline CSS instead
+    // of the shared styles.css.  Vars fall back to a dark floating panel.
+    const style = document.createElement('style');
+    style.textContent =
+      ".nazar-dropdown{position:fixed;z-index:200;min-width:214px;max-width:calc(100vw - 16px);" +
+      "padding:6px;display:flex;flex-direction:column;gap:3px;background:var(--panel,rgba(8,16,28,0.97));" +
+      "border:1px solid var(--line,rgba(120,170,220,0.28));border-radius:8px;box-shadow:0 14px 40px rgba(0,0,0,0.55);" +
+      "backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:nazar-dd-in .12s ease-out;" +
+      "font-family:var(--mono,'JetBrains Mono',ui-monospace,monospace)}" +
+      ".nazar-dropdown[hidden]{display:none}" +
+      "@keyframes nazar-dd-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}" +
+      ".nazar-dd-item{display:flex;align-items:center;gap:9px;padding:7px 11px;border:1px solid transparent;" +
+      "border-radius:5px;color:var(--accent,#67c8ff);font-size:13px;letter-spacing:.04em;text-decoration:none;" +
+      "white-space:nowrap;transition:background .12s,border-color .12s}" +
+      ".nazar-dd-item:hover{background:rgba(103,200,255,.14);border-color:var(--line,rgba(120,170,220,.28))}" +
+      ".nazar-dd-ico{flex:0 0 auto;width:16px;text-align:center;opacity:.9}";
+    document.head.appendChild(style);
+
+    const menu = document.createElement('div');
+    menu.className = 'nazar-dropdown';
+    menu.setAttribute('role', 'menu');
+    menu.hidden = true;
+    menu.innerHTML = PAGES.map((p) =>
+      `<a class="nazar-dd-item" role="menuitem" href="${p.href}">` +
+      `<span class="nazar-dd-ico" aria-hidden="true">${p.icon}</span><span>${p.label}</span></a>`
+    ).join('');
+    document.body.appendChild(menu);
+
+    let openTrigger = null;
+    function openAt(trigger) {
+      openTrigger = trigger;
+      menu.hidden = false;
+      const r = trigger.getBoundingClientRect();
+      const mw = menu.offsetWidth, mh = menu.offsetHeight;
+      let left = Math.min(r.left, window.innerWidth - 8 - mw);
+      left = Math.max(8, left);
+      let top = r.bottom + 6;
+      if (top + mh > window.innerHeight - 8) top = Math.max(8, r.top - 6 - mh);  // flip up if no room below
+      menu.style.left = left + 'px';
+      menu.style.top = top + 'px';
+    }
+    function closeMenu() { menu.hidden = true; openTrigger = null; }
+
+    triggers.forEach((t) => {
+      t.addEventListener('click', (e) => {
+        if (MOBILE_MQ.matches) return;             // phones: keep plain go-home
+        e.preventDefault();
+        e.stopPropagation();
+        if (!menu.hidden && openTrigger === t) { closeMenu(); return; }
+        openAt(t);
+      });
+    });
+
+    // Choosing a page: flag it to open maximised, then let the link navigate.
+    menu.addEventListener('click', (e) => {
+      if (!e.target.closest('a.nazar-dd-item')) return;
+      try { sessionStorage.setItem('nazar.enterFS', '1'); } catch { /* private mode */ }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (menu.hidden) return;
+      if (menu.contains(e.target)) return;
+      for (const t of triggers) if (t.contains(e.target)) return;
+      closeMenu();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+    window.addEventListener('resize', closeMenu);
+    window.addEventListener('scroll', closeMenu, true);
+  })();
+
+  // -------------------------------------------------------------------------
+  // Open maximised after a drop-down navigation.
+  //
+  // A page can't enter fullscreen on load (a user gesture is required and
+  // it does not survive navigation), so when the previous page flagged the
+  // jump we request fullscreen on the visitor's first interaction here.
+  // -------------------------------------------------------------------------
+  (function enterFullscreenAfterNav() {
+    let want = false;
+    try { want = sessionStorage.getItem('nazar.enterFS') === '1'; } catch { /* private mode */ }
+    if (!want) return;
+    try { sessionStorage.removeItem('nazar.enterFS'); } catch {}
+    const el = document.documentElement;
+    if (!el.requestFullscreen && !el.webkitRequestFullscreen) return;
+    const evs = ['pointerdown', 'keydown', 'click', 'touchstart'];
+    function go() {
+      evs.forEach((ev) => window.removeEventListener(ev, go, true));
+      try {
+        if (!document.fullscreenElement) (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+      } catch { /* blocked — leave the page as-is */ }
+    }
+    evs.forEach((ev) => window.addEventListener(ev, go, true));
+  })();
 })();
