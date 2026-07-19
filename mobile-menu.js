@@ -281,6 +281,7 @@
       { href: 'chinrepo.html',      icon: '★', label: 'China Sat Repo' },
       { href: 'viz3d.html',         icon: '⬢', label: '3D Visualiser' },
       { href: 'sats-by-ops.html',   icon: '⊕', label: 'SATs-by-OPs' },
+      { href: 'overpass.html',      icon: '⌖', label: 'Overpass' },
     ];
 
     // Collect the "go to NAZAR home" controls: the logo + the labelled
