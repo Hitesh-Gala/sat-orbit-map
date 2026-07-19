@@ -714,6 +714,9 @@ function processChunk() {
     // sphere size.  Both live-controlled via the View Options sliders.
     const altFrac = (r.alt / EARTH_R_KM) * altScale;
     const p = globe.getCoords(r.lat, r.lon, altFrac);
+    // Cache the scene-space position so the hover pick can project it to
+    // screen pixels without re-running getCoords per mousemove.
+    satState[i].x = p.x; satState[i].y = p.y; satState[i].z = p.z;
     _pos.set(p.x, p.y, p.z);
     _scale.setScalar(dotScale);
     _mat.compose(_pos, _quat, _scale);
@@ -749,6 +752,7 @@ function rerenderFiltered() {
     }
     const altFrac = (st.alt / EARTH_R_KM) * altScale;
     const p = globe.getCoords(st.lat, st.lon, altFrac);
+    st.x = p.x; st.y = p.y; st.z = p.z;
     _pos.set(p.x, p.y, p.z);
     _scale.setScalar(dotScale);
     _mat.compose(_pos, _quat, _scale);
@@ -806,11 +810,55 @@ boot();
 // =========================================================================
 
 const tip = $('sat-tip');
-const raycaster = new THREE.Raycaster();
-const ndc = new THREE.Vector2();
 let hoverId = -1;
 let pendingMouse = null;
 let rafQueued = false;
+
+// --- Screen-space picking -------------------------------------------------
+// Project every visible sat's cached scene position to screen pixels and
+// take the nearest one within PICK_RADIUS_PX of the cursor.  Far more
+// forgiving than raycasting the InstancedMesh, whose 1.6-unit spheres
+// project to only a few pixels at default zoom — the old ray-cast pick
+// almost never registered a hit, which is why hover details never showed.
+const PICK_RADIUS_PX = 12;
+const _pickV = new THREE.Vector3();
+
+function pickSat(ev) {
+  const cv = document.querySelector('#globe canvas');
+  if (!cv) return -1;
+  const rect = cv.getBoundingClientRect();
+  const mx = ev.clientX - rect.left;
+  const my = ev.clientY - rect.top;
+  const cam = globe.camera();
+  const cx = cam.position.x, cy = cam.position.y, cz = cam.position.z;
+  let best = -1;
+  let bestD2 = PICK_RADIUS_PX * PICK_RADIUS_PX;
+  for (let i = 0; i < allSats.length; i++) {
+    const st = satState[i];
+    if (!st || st.x === undefined) continue;
+    if (!categoryEnabled[satCat[i]]) continue;
+    _pickV.set(st.x, st.y, st.z).project(cam);
+    if (_pickV.z > 1 || _pickV.z < -1) continue;   // behind the camera / clipped
+    const sx = (_pickV.x *  0.5 + 0.5) * rect.width;
+    const sy = (_pickV.y * -0.5 + 0.5) * rect.height;
+    const dx = sx - mx, dy = sy - my;
+    const d2 = dx * dx + dy * dy;
+    if (d2 >= bestD2) continue;
+    // Occlusion: skip sats hidden behind the globe.  Closest approach of
+    // the camera→sat segment to the origin must stay outside the globe
+    // radius (100, with a unit of grace for the surface bump).
+    const vx = st.x - cx, vy = st.y - cy, vz = st.z - cz;
+    const L2 = vx * vx + vy * vy + vz * vz;
+    const tt = -(cx * vx + cy * vy + cz * vz) / L2;
+    if (tt > 0 && tt < 1) {
+      const px = cx + vx * tt, py = cy + vy * tt, pz = cz + vz * tt;
+      if (px * px + py * py + pz * pz < 99 * 99) continue;
+    }
+    bestD2 = d2;
+    best = i;
+  }
+  return best;
+}
 
 function renderTooltip(id) {
   const t  = allSats[id];
@@ -831,9 +879,11 @@ function renderTooltip(id) {
   tip.innerHTML = `
     <b>${escHtml(t.name)}</b> ${badge}
     <div>Operator <strong>${escHtml(cat.label)}</strong></div>
+    <div>NORAD ID <strong>${t.noradId}</strong></div>
+    <div>Int'l ID <strong>${t.intlId ? escHtml(t.intlId) : '—'}</strong></div>
     <div>Altitude <strong>${st.alt.toFixed(0)} km</strong></div>
-    <div>Period <strong>${periodStr}</strong></div>
     <div>Speed <strong>${speedStr}</strong></div>
+    <div>Period <strong>${periodStr}</strong></div>
   `;
 }
 
@@ -841,22 +891,7 @@ function processHover() {
   rafQueued = false;
   const ev = pendingMouse;
   if (!ev) return;
-  const cv = document.querySelector('#globe canvas');
-  if (!cv) return;
-  const rect = cv.getBoundingClientRect();
-  ndc.x = ((ev.clientX - rect.left) / rect.width)  *  2 - 1;
-  ndc.y = ((ev.clientY - rect.top)  / rect.height) * -2 + 1;
-  raycaster.setFromCamera(ndc, globe.camera());
-  const hits = raycaster.intersectObject(instMesh, false);
-  let id = -1;
-  for (const h of hits) {
-    if (h.instanceId === undefined) continue;
-    const i = h.instanceId;
-    if (!satState[i]) continue;
-    if (!categoryEnabled[satCat[i]]) continue;
-    id = i;
-    break;
-  }
+  const id = pickSat(ev);
   if (id !== -1) {
     if (id !== hoverId) {
       hoverId = id;
