@@ -17,14 +17,18 @@
     /* Overpass-only chrome: a left controls card + a right results card,
        both floating over the full-screen globe.  Reuses the shared .panel /
        .lookup-form / .goc-slider styles; this block is the page-specific bits. */
-    body.page-overpass .top-nazar-btn { left: auto; right: 14px; }   /* NAZAR button top-right */
+    /* Deconflicted top corners: logo top-left, NAZAR button top-right, the two
+       control cards tucked below them.  The brand + tagline live inside the left
+       card (not a floating topbar) so nothing can cover them. */
+    body.page-overpass .top-nazar-btn { left: auto; right: 14px; top: 14px; }
+    body.page-overpass .top-logo { left: 14px; right: auto; }
 
     .op-shell, .op-results {
       position: fixed;
-      top: 60px;
+      top: 72px;
       width: 316px;
       max-width: calc(100vw - 28px);
-      max-height: calc(100vh - 74px);
+      max-height: calc(100vh - 86px);
       overflow-y: auto;
       z-index: 12;
       display: flex;
@@ -34,6 +38,16 @@
     .op-shell   { left: 14px; }
     .op-results { right: 14px; }
 
+    .op-brand {
+      font-family: 'Orbitron', var(--display, sans-serif);
+      font-weight: 700; font-size: 17px; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--accent); text-shadow: 0 0 10px rgba(103, 200, 255, 0.5);
+    }
+    .op-tagline {
+      font-family: var(--script, 'Caveat', cursive); font-size: 18px;
+      color: var(--accent2, #ff6b6b); letter-spacing: 0.02em; margin: 1px 0 6px;
+      text-shadow: 0 0 8px rgba(255, 107, 107, 0.3);
+    }
     .op-title {
       font-family: var(--mono);
       font-size: 13px;
@@ -145,18 +159,11 @@
     <span class="lbl">NAZAR</span>
   </a>
 
-  <header class="topbar">
-    <div class="brand">
-      <span class="brand-short">NAZAR</span>
-      <span class="brand-long"> · Overpass</span>
-    </div>
-    <div class="sub">Who flies over you, and when.</div>
-  </header>
-
   <!-- LEFT: observer + cone + duration controls -->
   <aside class="op-shell" aria-label="Overpass controls">
     <section class="panel">
-      <div class="op-title">Overpass Finder</div>
+      <div class="op-brand">Overpass</div>
+      <div class="op-tagline">Who flies over you, and when.</div>
       <div class="hint">Set a ground point and an upward cone, pick a time window, and list every satellite that flies through it — then animate them.</div>
       <div id="op-status" class="goc-status">Booting…</div>
     </section>
