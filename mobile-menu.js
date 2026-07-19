@@ -285,10 +285,13 @@
 
     // Collect the "go to NAZAR home" controls: the logo + the labelled
     // NAZAR/back buttons.  Skip content links (about-page cards / CTAs).
+    // The lighthouse + satellite logo (.top-logo) is deliberately NOT a trigger:
+    // it stays a plain link straight to the home page (no drop-down, no
+    // fullscreen).  Only the labelled "NAZAR" / back buttons open the menu.
     const triggers = new Set();
-    document.querySelectorAll('.top-logo, .top-nazar-btn, .btn-nazar').forEach((el) => triggers.add(el));
+    document.querySelectorAll('.top-nazar-btn, .btn-nazar').forEach((el) => triggers.add(el));
     document.querySelectorAll('a[href="index.html"]').forEach((a) => {
-      if (a.matches('.page-card, .about-cta')) return;
+      if (a.matches('.top-logo, .page-card, .about-cta')) return;
       if (/nazar/i.test((a.textContent || '').trim())) triggers.add(a);
     });
     if (!triggers.size) return;

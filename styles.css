@@ -2459,12 +2459,13 @@ body.page-2d .track-line {
   stroke-linecap: round;
   stroke-dasharray: 0.1 2.6;
 }
-/* Silver ground track — past dimmer (steel), future brighter, so direction
-   still reads without relying on colour. */
-body.page-2d .track-line.past   { stroke: #9aa7b3; }
-body.page-2d .track-line.future { stroke: #dfe7ee; }
+/* Time-based ground track — past green, next 24 h red. */
+body.page-2d .track-line.past   { stroke: #3ddc84; }
+body.page-2d .track-line.future { stroke: #ff5b5b; }
 
-/* Rev-mode trail — thin, semi-transparent silver, drawn as the sat flies. */
+/* Rev-mode trail — thin, semi-transparent silver, drawn as the sat flies.
+   (Only the rev-based orbit line is silver; the time-based track keeps its
+   green / red colours.) */
 body.page-2d .rev-line {
   fill: none;
   stroke: #cdd6de;
@@ -2477,8 +2478,8 @@ body.page-2d .rev-line {
 body.page-2d .mark-hit { fill: transparent; }
 body.page-2d .mark { cursor: help; }
 body.page-2d .mark-arrow { stroke: rgba(3, 10, 22, 0.85); stroke-width: 0.35; stroke-linejoin: round; }
-body.page-2d .mark.past   .mark-arrow { fill: #9aa7b3; }
-body.page-2d .mark.future .mark-arrow { fill: #dfe7ee; }
+body.page-2d .mark.past   .mark-arrow { fill: #3ddc84; }
+body.page-2d .mark.future .mark-arrow { fill: #ff5b5b; }
 
 body.page-2d .now-ring { stroke: #8bff9e; stroke-width: 0.7; }
 body.page-2d .now-glow { fill: #8bff9e; opacity: 0.28; }
@@ -2667,13 +2668,13 @@ body.page-2d .map-cell .map-sub {
 .track-legend span { display: flex; align-items: center; gap: 7px; }
 .track-legend i { flex: 0 0 auto; }
 .track-legend .lg-line { width: 20px; height: 0; border-top: 2px dotted currentColor; }
-.track-legend .lg-line.past { color: #9aa7b3; }
-.track-legend .lg-line.future { color: #dfe7ee; }
+.track-legend .lg-line.past { color: #3ddc84; }
+.track-legend .lg-line.future { color: #ff5b5b; }
 .track-legend .lg-mark {
   width: 0; height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-bottom: 8px solid #c3ccd4;
+  border-bottom: 8px solid #3ddc84;
 }
 .track-legend .lg-now {
   width: 9px; height: 9px;
