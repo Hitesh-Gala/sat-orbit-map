@@ -261,12 +261,14 @@ const GLOBE2_TARGET_NORMAL = 1.4;   // near-circular apogee sits ~1.4 R above th
 const GLOBE2_CAM_NORMAL    = 2.6;   // ≈ globe 1's camera — Earth kept the same big size
 const GLOBE2_PERIGEE_GAP   = 1.3;   // overlay perigee sits ~1.3× the Earth's on-screen radius out
 let orbit2Scale = 1, globe2CamAlt = GLOBE2_CAM_NORMAL, globe2Overlay = false, overlayPeriR = 1;
-let globe2 = null, satMesh2 = null, satHalo2 = null, satRing2 = null;
-let overlayPts = null, overlayGmst = 0;   // HEO ring points (ECI) + current sidereal angle
+let globe2 = null, satMesh2 = null, satHalo2 = null, satRing2 = null, nadirLine2 = null;
+let overlayPts = null, overlayGmst = 0, overlaySubPoint = null;   // HEO ring points (ECI), GMST, sub-point
 let behind2 = false;           // is the sat currently behind the globe-2 Earth?
 
-// Golden orbit-path rings (one per globe).  Same gold as the 2-D map's trail.
-const RING_GOLD = 0xffd23f;
+// Orbit-ring colours: globe 1 (satellite-centred) draws a copper-red ground
+// track; globe 2 (true-earth) keeps the gold inertial ellipse.
+const RING_COPPER = 0xc85a3c;
+const RING_GOLD   = 0xffd23f;
 let ring1 = null, ring2Group = null, lastRing1Build = 0;
 const gmstOf = (t) => (window.satellite && satellite.gstime) ? satellite.gstime(t || new Date()) : 0;
 
@@ -441,6 +443,17 @@ function initGlobe2() {
   satRing2.visible = false;
   globe2.scene().add(satRing2);
 
+  // Faint "nadir" line joining the satellite to its sub-point on the surface,
+  // so you can read which point of the globe it is currently over.  depthTest
+  // on (default) so the Earth hides it when the sub-point is on the far side.
+  const nadirGeo = new THREE.BufferGeometry();
+  nadirGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+  nadirLine2 = new THREE.Line(nadirGeo, new THREE.LineBasicMaterial({ color: 0xbfe0ff, transparent: true, opacity: 0.4, depthWrite: false }));
+  nadirLine2.renderOrder = 1;
+  nadirLine2.visible = false;
+  globe2.scene().add(nadirLine2);
+  overlaySubPoint = new THREE.Vector3();
+
   globe2.pointOfView({ lat: GLOBE2_TILT, lng: 0, altitude: globe2CamAlt }, 0);
   requestAnimationFrame(globe2BlinkTick);
 }
@@ -462,6 +475,8 @@ function updateGlobe2(lat, lon, alt, t) {
   if (!globe2 || !satMesh2) return;
   const c = globe2.getCoords(lat, lon, globe2AltFrac(alt));
   satMesh2.position.set(c.x, c.y, c.z);   // true-scale (HEO) or hug (normal) ECEF position
+  const sub = globe2.getCoords(lat, lon, 0);   // sub-point on the surface (radius 100)
+  if (overlaySubPoint) overlaySubPoint.set(sub.x, sub.y, sub.z);
 
   // Orbit the camera at -GMST so the Earth spins at its real rate and the
   // satellite's path stays fixed in inertial space.  The ring is built in the
@@ -473,8 +488,15 @@ function updateGlobe2(lat, lon, alt, t) {
 
   if (globe2Overlay) {
     satMesh2.visible = false;              // ring + marker are drawn in the SVG overlay
+    if (nadirLine2) nadirLine2.visible = false;   // nadir line drawn in the overlay too
   } else {
     satMesh2.visible = true;
+    // Nadir line: satellite → its sub-point on the surface.
+    if (nadirLine2) {
+      const p = nadirLine2.geometry.attributes.position;
+      p.setXYZ(0, c.x, c.y, c.z); p.setXYZ(1, sub.x, sub.y, sub.z); p.needsUpdate = true;
+      nadirLine2.visible = true;
+    }
     // Decide front vs behind here; globe2BlinkTick() animates the appearance so
     // the blink runs smoothly every frame even in time mode (updated only ~5 s).
     behind2 = occludedByGlobe(globe2.camera().position, satMesh2.position);
@@ -519,18 +541,19 @@ function globe2BlinkTick(ts) {
 // camera) onto globe 2's current camera basis, scaled so the perigee clears the
 // Earth, and positioned at the Earth's on-screen centre.  Arcs that fall behind
 // the planet are dashed and the marker goes hollow — the same cues as globe.gl.
-let orbitSvg = null, oFront = null, oBehind = null, oMarker = null, oMarkerRing = null;
+let orbitSvg = null, oFront = null, oBehind = null, oMarker = null, oMarkerRing = null, oNadir = null;
 function ensureOrbitSvg() {
   if (orbitSvg) { orbitSvg.style.display = 'block'; return; }
   const NS = 'http://www.w3.org/2000/svg';
   orbitSvg = document.createElementNS(NS, 'svg');
   orbitSvg.setAttribute('class', 'globe2-orbit-svg');
   orbitSvg.setAttribute('aria-hidden', 'true');
+  oNadir  = document.createElementNS(NS, 'line'); oNadir.setAttribute('class', 'g2o-nadir');
   oBehind = document.createElementNS(NS, 'path'); oBehind.setAttribute('class', 'g2o-behind');
   oFront  = document.createElementNS(NS, 'path'); oFront.setAttribute('class', 'g2o-front');
   oMarkerRing = document.createElementNS(NS, 'circle'); oMarkerRing.setAttribute('class', 'g2o-mk-ring');
   oMarker = document.createElementNS(NS, 'circle'); oMarker.setAttribute('class', 'g2o-mk');
-  orbitSvg.append(oBehind, oFront, oMarkerRing, oMarker);
+  orbitSvg.append(oNadir, oBehind, oFront, oMarkerRing, oMarker);
   document.body.appendChild(orbitSvg);
 }
 function hideOrbitSvg() { if (orbitSvg) orbitSvg.style.display = 'none'; }
@@ -595,6 +618,18 @@ function updateOverlayRing(ts) {
     oMarker.setAttribute('cx', mk.sx.toFixed(1)); oMarker.setAttribute('cy', mk.sy.toFixed(1));
     oMarker.setAttribute('r', mr.toFixed(1)); oMarker.setAttribute('opacity', '1');
   }
+
+  // Nadir line: satellite marker → its sub-point, projected onto the drawn
+  // Earth (perspective).  Hidden when the sub-point is round the far side.
+  if (overlaySubPoint) {
+    const s = overlaySubPoint.clone().project(cam);
+    const subX = rect.left + (s.x * 0.5 + 0.5) * rect.width;
+    const subY = rect.top  + (-s.y * 0.5 + 0.5) * rect.height;
+    const occ = occludedByGlobe(cam.position, overlaySubPoint);
+    oNadir.setAttribute('x1', mk.sx.toFixed(1)); oNadir.setAttribute('y1', mk.sy.toFixed(1));
+    oNadir.setAttribute('x2', subX.toFixed(1));  oNadir.setAttribute('y2', subY.toFixed(1));
+    oNadir.setAttribute('opacity', occ ? '0' : '0.45');
+  }
 }
 
 // --- Orbit-path rings ------------------------------------------------------
@@ -617,7 +652,7 @@ function buildRing1(rec, t0) {
   }
   if (pts.length < 4) return;
   const tube = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false), 180, 0.7, 8, false);
-  ring1 = new THREE.Mesh(tube, new THREE.MeshBasicMaterial({ color: RING_GOLD, transparent: true, opacity: 0.6, depthWrite: false }));
+  ring1 = new THREE.Mesh(tube, new THREE.MeshBasicMaterial({ color: RING_COPPER, transparent: true, opacity: 0.7, depthWrite: false }));
   ring1.renderOrder = 1;   // depthTest on: the Earth hides the far side, like a real ground track
   globe.scene().add(ring1);
 }

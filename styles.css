@@ -2397,6 +2397,7 @@ body.page-2d .globe-cap {
 }
 .globe2-orbit-svg .g2o-front  { fill: none; stroke: #ffd23f; stroke-width: 2;   opacity: 0.9; stroke-linecap: round; }
 .globe2-orbit-svg .g2o-behind { fill: none; stroke: #ffd23f; stroke-width: 1.6; opacity: 0.5; stroke-dasharray: 4 5; stroke-linecap: round; }
+.globe2-orbit-svg .g2o-nadir   { stroke: #bfe0ff; stroke-width: 1; stroke-dasharray: 2 3; }
 .globe2-orbit-svg .g2o-mk      { fill: #8bff9e; }
 .globe2-orbit-svg .g2o-mk-ring { fill: none; stroke: #8bff9e; stroke-width: 2.4; }
 /* On narrow screens the side-by-side would crush both; drop the globe and
@@ -2458,13 +2459,15 @@ body.page-2d .track-line {
   stroke-linecap: round;
   stroke-dasharray: 0.1 2.6;
 }
-body.page-2d .track-line.past   { stroke: #27e5ff; }
-body.page-2d .track-line.future { stroke: #ff9a2e; }
+/* Silver ground track — past dimmer (steel), future brighter, so direction
+   still reads without relying on colour. */
+body.page-2d .track-line.past   { stroke: #9aa7b3; }
+body.page-2d .track-line.future { stroke: #dfe7ee; }
 
-/* Rev-mode golden trail — thin, semi-transparent, drawn as the sat flies. */
+/* Rev-mode trail — thin, semi-transparent silver, drawn as the sat flies. */
 body.page-2d .rev-line {
   fill: none;
-  stroke: #ffd23f;
+  stroke: #cdd6de;
   stroke-opacity: 0.72;
   stroke-width: 0.6;
   stroke-linecap: round;
@@ -2474,8 +2477,8 @@ body.page-2d .rev-line {
 body.page-2d .mark-hit { fill: transparent; }
 body.page-2d .mark { cursor: help; }
 body.page-2d .mark-arrow { stroke: rgba(3, 10, 22, 0.85); stroke-width: 0.35; stroke-linejoin: round; }
-body.page-2d .mark.past   .mark-arrow { fill: #27e5ff; }
-body.page-2d .mark.future .mark-arrow { fill: #ff9a2e; }
+body.page-2d .mark.past   .mark-arrow { fill: #9aa7b3; }
+body.page-2d .mark.future .mark-arrow { fill: #dfe7ee; }
 
 body.page-2d .now-ring { stroke: #8bff9e; stroke-width: 0.7; }
 body.page-2d .now-glow { fill: #8bff9e; opacity: 0.28; }
@@ -2664,13 +2667,13 @@ body.page-2d .map-cell .map-sub {
 .track-legend span { display: flex; align-items: center; gap: 7px; }
 .track-legend i { flex: 0 0 auto; }
 .track-legend .lg-line { width: 20px; height: 0; border-top: 2px dotted currentColor; }
-.track-legend .lg-line.past { color: #63d5ff; }
-.track-legend .lg-line.future { color: #ffb43d; }
+.track-legend .lg-line.past { color: #9aa7b3; }
+.track-legend .lg-line.future { color: #dfe7ee; }
 .track-legend .lg-mark {
   width: 0; height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-bottom: 8px solid #63d5ff;
+  border-bottom: 8px solid #c3ccd4;
 }
 .track-legend .lg-now {
   width: 9px; height: 9px;
@@ -2678,7 +2681,7 @@ body.page-2d .map-cell .map-sub {
   background: #8bff9e;
   box-shadow: 0 0 0 2px rgba(139, 255, 158, 0.3);
 }
-.track-legend .lg-line.gold { border-top-style: solid; color: #ffd23f; }
+.track-legend .lg-line.gold { border-top-style: solid; color: #cdd6de; }
 
 /* ---- mode toggle (TIME / REV based) ---- */
 .mode-row {
