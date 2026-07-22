@@ -176,8 +176,16 @@ window.Argos = (function () {
     // 403'd" — caching that for 24 h is exactly how every BeiDou /
     // Yaogan / Fengyun ended up mis-classified as non-Chinese on the
     // main page after a single CelesTrak rate-limit hit.
+    // A healthy PRC payload list is ~1,500 entries.  Anything far below that
+    // is the residue of a rate-limited / partial fetch (or a cache written by
+    // an older build) — trusting it for 24 h is exactly what mis-flags most
+    // Chinese satellites as non-Chinese and collapses the main page's "over
+    // India" count from ~150 to a handful.  Require a sane floor before we
+    // trust the cache, so a stale tiny list can never shadow the bundled
+    // snapshot; the next load simply rebuilds from data/satcat-active.json.
+    const MIN_PRC = 300;
     const cached = cacheGet('argos.satcat.prc.v2', CACHE_TTL.satcat);
-    if (cached && cached.length) return cached;
+    if (cached && cached.length >= MIN_PRC) return cached;
 
     // Stage 1: bundled SATCAT snapshot.  data/satcat-active.json ships
     // every active payload with its OWNER field (refreshed every 6 h by
@@ -215,10 +223,14 @@ window.Argos = (function () {
               OPS_STATUS_CODE: '',
             });
           }
-          if (fromBundle.length) {
+          // Only cache a plausibly-complete list.  A short bundle (shouldn't
+          // happen — the refresh workflow has its own floor) is returned
+          // uncached so the next load retries rather than sticking for 24 h.
+          if (fromBundle.length >= MIN_PRC) {
             cacheSet('argos.satcat.prc.v2', fromBundle);
             return fromBundle;
           }
+          if (fromBundle.length) return fromBundle;
         }
       }
     } catch (e) {
@@ -249,10 +261,14 @@ window.Argos = (function () {
         out.push(r);
       }
     }
-    if (out.length) {
+    // Same floor for the live fan-out: a rate-limited partial haul must not
+    // be cached (it would shadow the good bundle for 24 h), though we still
+    // return it in-memory as better-than-nothing for this one load.
+    if (out.length >= MIN_PRC) {
       cacheSet('argos.satcat.prc.v2', out);
       return out;
     }
+    if (out.length) return out;
 
     // Last-ditch: return whatever (possibly stale) cache we have, even
     // if empty, rather than throwing.  Better an empty CN tab than a
