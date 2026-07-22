@@ -18,7 +18,7 @@
 
   <!-- single light beam: emanates from the lighthouse lantern (~28,42) and
        runs straight up-right to illuminate the satellite -->
-  <path d="M28 40 L115 7 L120 24 L31 46 Z" fill="url(#nz-beam)"/>
+  <path d="M28 40 L115 7 L119 26 L33 56 Z" fill="url(#nz-beam)"/>
 
   <!-- Takshashila lighthouse emblem (colour mark, wordmark cropped out).
        Mirrored horizontally (scale -1 about the viewBox centre x=98.8) so the

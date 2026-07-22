@@ -36,7 +36,7 @@
     popup.setAttribute('aria-modal', 'true');
     popup.setAttribute('aria-labelledby', 'flash-title');
     popup.innerHTML = `
-      <img class="flash-logo" src="data/nazar-logo.svg?v=4" alt="NAZAR">
+      <img class="flash-logo" src="data/nazar-logo.svg?v=5" alt="NAZAR">
       <button type="button" class="flash-close" aria-label="Close announcement">×</button>
       <div class="flash-eye" aria-hidden="true">👁</div>
       <div class="flash-title" id="flash-title">${TITLE}</div>
