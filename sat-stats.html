@@ -88,6 +88,20 @@
       background: rgba(103, 200, 255, 0.05); color: var(--text);
     }
     .a5-map span b { color: #ffd27f; }
+    /* Section headings separating the two Alpha-5 tables. */
+    .a5-section-title {
+      margin: 18px 0 10px; font-family: 'Orbitron', sans-serif; font-weight: 700;
+      font-size: 13px; letter-spacing: 0.06em; color: var(--accent);
+    }
+    .a5-section-title:first-child { margin-top: 4px; }
+    /* Facts table: wrapping Remarks column + top-aligned cells (mirrors the
+       Previously-Tracked pop-up). */
+    #alpha5-modal .a5-facts-table th,
+    #alpha5-modal .a5-facts-table td { vertical-align: top; }
+    #alpha5-modal .col-remarks {
+      white-space: normal; min-width: 230px; max-width: 420px;
+      font-size: 12px; line-height: 1.45; color: var(--text);
+    }
   </style>
 </head>
 <body class="page-stats">
@@ -342,6 +356,21 @@
         <span class="tle-modal-hint">100 per page · the objects the classic 5-digit catalog number can no longer hold.</span>
       </div>
       <div class="tle-modal-body">
+        <h3 class="a5-section-title">Catalogue &amp; notable facts</h3>
+        <table class="repo-table stats-table a5-facts-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>NORAD / Int'l ID</th>
+              <th>Launch Country</th>
+              <th>Last seen</th>
+              <th class="col-remarks">Remarks</th>
+            </tr>
+          </thead>
+          <tbody id="alpha5-facts-rows"></tbody>
+        </table>
+
+        <h3 class="a5-section-title">Raw two-line elements</h3>
         <table class="tle-table">
           <thead>
             <tr>
@@ -458,7 +487,7 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
   <script src="tle-loader.js?v=10"></script>
-  <script src="sat-stats.js?v=15"></script>
+  <script src="sat-stats.js?v=16"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=9"></script>
 </body>

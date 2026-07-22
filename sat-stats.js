@@ -1637,9 +1637,47 @@ function closeAlpha5() {
   setTimeout(() => { modal.hidden = true; }, 220);
 }
 
+// Curated "interesting facts" for the object families that dominate the
+// post-99,999 catalogue — the mega-constellations whose launch volume is
+// exactly why Alpha-5 numbering became necessary.  Matched by TLE name;
+// anything unmatched falls back to remarksFor() (purpose · launch · orbit).
+const A5_NOTABLE = [
+  [/^STARLINK/i,                          'SpaceX’s Starlink — the largest satellite constellation ever flown (well over 6,000 active). Its relentless launch cadence is the single biggest reason the catalogue blew past the 5-digit ceiling and needed Alpha-5.'],
+  [/^(GUOWANG|GW[- ]|SATNET)/i,           'Part of China’s state-backed “Guowang” (国网) LEO mega-constellation — licensed for roughly 13,000 satellites; a flagship driver of the recent surge in newly-catalogued objects.'],
+  [/^(QIANFAN|G60|THOUSAND ?SAILS|SPACESAIL)/i, 'Part of China’s commercial “Qianfan / Thousand Sails” (G60) broadband mega-constellation — thousands planned, contributing heavily to Alpha-5-era catalogue growth.'],
+  [/^ONEWEB/i,                            'Eutelsat OneWeb LEO broadband constellation (~630 satellites) — one of the mega-constellations that helped exhaust the classic 5-digit catalogue.'],
+  [/^KUIPER/i,                            'Amazon “Leo” (formerly Project Kuiper) LEO broadband constellation, deploying toward ~3,200 satellites — another contributor to the post-100,000 numbering.'],
+];
+
+// Interesting fact for one Alpha-5 object: a curated constellation note if the
+// name matches, else the same purpose/launch/orbit note the Previously-Tracked
+// pop-up derives, computed from whatever SATCAT metadata is joined on the
+// decoded id.
+function alpha5RemarksFor(m, rec) {
+  for (const [re, txt] of A5_NOTABLE) if (re.test(m.t.name)) return txt;
+  return remarksFor({
+    name:        m.t.name,
+    launchDate:  rec.launchDate,
+    apogee:      rec.apogee,
+    perigee:     rec.perigee,
+    inclination: rec.inclination,
+  });
+}
+
+// "Last seen": the live-feed stamp if the object is in the cumulative DB, else
+// the element-set epoch (these objects are by definition in the current feed —
+// that is how they reached this list).
+function alpha5LastSeen(m, rec) {
+  if (rec && rec.lastSeen) return fmtLastSeen(rec.lastSeen);
+  const ep = parseTLEEpoch(m.t.l1);
+  return ep ? ep.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: '2-digit' }) : 'live feed';
+}
+
+// Renders both Alpha-5 tables from one shared, filtered, paginated slice:
+//   #alpha5-facts-rows — Previously-Tracked-style catalogue + facts view
+//   #alpha5-rows       — raw two-line elements
 function renderAlpha5Rows() {
   if (!alpha5Matches) return;
-  const tbody = $('alpha5-rows');
   const q = $('alpha5-filter').value.trim().toLowerCase();
   const now = Date.now();
 
@@ -1651,11 +1689,15 @@ function renderAlpha5Rows() {
         `${m.t.name} ${m.field} ${m.norad} ${m.intlId}`.toLowerCase().includes(q))
     : alpha5Matches;
 
+  const factsBody = $('alpha5-facts-rows');
+  const tleBody   = $('alpha5-rows');
+
   if (!matches.length) {
     const msg = alpha5Matches.length === 0
-      ? `No Alpha-5 objects in the current <strong>${esc(tleModalSource)}</strong> feed yet — the highest catalog number is <strong>${alpha5MaxNumeric.toLocaleString()}</strong>, still inside the classic 5-digit range. This list fills in automatically once objects numbered <strong>100,000+</strong> reach the active catalogue. The format reference below explains what to expect.`
+      ? `No Alpha-5 objects in the current <strong>${esc(tleModalSource)}</strong> feed yet — the highest catalog number is <strong>${alpha5MaxNumeric.toLocaleString()}</strong>, still inside the classic 5-digit range. Both tables fill in automatically once objects numbered <strong>100,000+</strong> reach the active catalogue. The format reference below explains what to expect.`
       : 'No matches — try a different filter.';
-    tbody.innerHTML = `<tr><td colspan="7" class="hint">${msg}</td></tr>`;
+    factsBody.innerHTML = `<tr><td colspan="5" class="hint">${msg}</td></tr>`;
+    tleBody.innerHTML   = `<tr><td colspan="7" class="hint">${msg}</td></tr>`;
     $('alpha5-page-current').textContent = '1';
     $('alpha5-page-total').textContent   = '1';
     $('alpha5-prev').disabled = true;
@@ -1669,9 +1711,23 @@ function renderAlpha5Rows() {
   const start = alpha5Page * ALPHA5_PAGE_SIZE;
   const end   = Math.min(start + ALPHA5_PAGE_SIZE, matches.length);
 
-  const out = [];
+  const facts = [];
+  const tles  = [];
   for (let i = start; i < end; i++) {
-    const { t, field, norad, intlId } = matches[i];
+    const m = matches[i];
+    const { t, field, norad, intlId } = m;
+    const rec = db[norad] || {};
+
+    // Catalogue & facts row (Previously-Tracked style).
+    facts.push(`<tr>
+      <td class="col-name">${esc(t.name)}</td>
+      <td class="muted"><span class="mono">${Number.isFinite(norad) ? norad.toLocaleString() : '—'}</span> <span class="a5-desig">${esc(field)}</span><div class="mono" style="margin-top:3px">${esc(intlId || '—')}</div></td>
+      <td class="col-country">${launchCountryCell(rec.launchSite)}</td>
+      <td class="muted">${esc(alpha5LastSeen(m, rec))}</td>
+      <td class="col-remarks">${esc(alpha5RemarksFor(m, rec))}</td>
+    </tr>`);
+
+    // Raw two-line-element row.
     const epoch = parseTLEEpoch(t.l1);
     const epochStr = epoch ? epoch.toISOString().slice(0, 16).replace('T', ' ') : '—';
     const ageDays = epoch ? (now - epoch.getTime()) / 86400000 : NaN;
@@ -1679,7 +1735,7 @@ function renderAlpha5Rows() {
     const ageLabel = Number.isFinite(ageDays)
       ? (ageDays < 1 ? `${(ageDays * 24).toFixed(1)} h` : `${ageDays.toFixed(1)} d`)
       : '—';
-    out.push(`<tr>
+    tles.push(`<tr>
       <td class="tle-cell"><div>${esc(t.l1)}</div><div>${esc(t.l2)}</div></td>
       <td>${esc(t.name)}</td>
       <td class="mono"><span class="a5-desig">${esc(field)}</span></td>
@@ -1689,7 +1745,8 @@ function renderAlpha5Rows() {
       <td><span class="tle-validity tle-validity-${band}">${band}</span> <span class="muted mono">${esc(ageLabel)}</span></td>
     </tr>`);
   }
-  tbody.innerHTML = out.join('');
+  factsBody.innerHTML = facts.join('');
+  tleBody.innerHTML   = tles.join('');
   $('alpha5-page-current').textContent = (alpha5Page + 1).toLocaleString();
   $('alpha5-page-total').textContent   = totalPages.toLocaleString();
   $('alpha5-prev').disabled = alpha5Page <= 0;
