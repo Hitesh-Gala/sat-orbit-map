@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>NAZAR · News Archive</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=32">
+  <style>
+    /* News-archive chrome: a centred reading column over the dark theme.
+       Logo top-left, NAZAR nav button top-right (both via the shared classes,
+       just repositioned for this scrolling page). */
+    body.page-news { overflow-y: auto; min-height: 100vh; }
+    body.page-news .top-nazar-btn { left: auto; right: 14px; top: 14px; }
+    body.page-news .top-logo { left: 14px; right: auto; top: 12px; }
+    /* On phones the ☰ hamburger owns the top-left corner, so drop the logo
+       there to avoid stacking — the page's own brand heading identifies it. */
+    @media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
+      body.page-news .top-logo { display: none; }
+    }
+    /* Below ~1000px the centred column reaches the fixed NAZAR button, so stop
+       pinning the toolbar (sticky would slide it under the button on scroll). */
+    @media (max-width: 1000px) {
+      body.page-news .news-toolbar { position: static; }
+    }
+
+    .news-shell {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 66px 20px 80px;
+    }
+
+    .news-head { margin-bottom: 18px; }
+    .news-brand {
+      font-family: 'Orbitron', var(--display, sans-serif);
+      font-weight: 900; font-size: clamp(22px, 4vw, 34px);
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--accent); text-shadow: 0 0 14px rgba(103, 200, 255, 0.5);
+      margin: 0;
+    }
+    .news-tagline {
+      font-family: var(--script, 'Caveat', cursive); font-size: 22px;
+      color: var(--accent2, #ff6b6b); letter-spacing: 0.02em; margin: 2px 0 8px;
+      text-shadow: 0 0 8px rgba(255, 107, 107, 0.3);
+    }
+    .news-sub {
+      font-family: var(--mono); font-size: 12px; color: var(--dim);
+      letter-spacing: 0.04em; line-height: 1.7;
+    }
+    .news-sub strong { color: var(--text); font-weight: normal; font-variant-numeric: tabular-nums; }
+
+    .news-toolbar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+      margin: 16px 0 6px; padding: 10px 12px;
+      background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      position: sticky; top: 10px; z-index: 5;
+    }
+    .news-toolbar input[type="search"] {
+      flex: 1 1 200px; min-width: 140px;
+      background: rgba(0,0,0,0.32); border: 1px solid var(--line); border-radius: 5px;
+      color: var(--text); font-family: var(--mono); font-size: 13px; padding: 7px 10px; outline: none;
+    }
+    .news-toolbar input[type="search"]:focus { border-color: var(--accent); }
+    .news-cn-toggle {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--dim); cursor: pointer; white-space: nowrap;
+    }
+    .news-cn-toggle input { accent-color: var(--accent2); }
+    .news-btn {
+      background: rgba(103, 200, 255, 0.1); border: 1px solid var(--line); border-radius: 5px;
+      color: var(--accent); font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+      text-transform: uppercase; padding: 7px 12px; cursor: pointer; white-space: nowrap;
+      transition: background .15s, border-color .15s, transform .15s;
+    }
+    .news-btn:hover:not(:disabled) { background: rgba(103, 200, 255, 0.2); border-color: var(--accent); transform: translateY(-1px); }
+    .news-btn:disabled { opacity: 0.5; cursor: wait; }
+    .news-btn.primary { background: rgba(103, 232, 164, 0.16); border-color: var(--green, #67e8a4); color: var(--green, #67e8a4); font-weight: 700; }
+    .news-btn.primary:hover:not(:disabled) { background: rgba(103, 232, 164, 0.3); }
+
+    .news-status { font-family: var(--mono); font-size: 12px; color: var(--dim); min-height: 18px; margin: 8px 2px 2px; }
+    .news-status.err { color: var(--accent2); }
+
+    .news-day {
+      font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--dim); margin: 22px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line);
+    }
+    .news-day:first-of-type { margin-top: 12px; }
+
+    .news-card {
+      border: 1px solid var(--line); border-left: 3px solid var(--accent);
+      border-radius: 7px; background: rgba(255,255,255,0.02);
+      padding: 12px 14px; margin-bottom: 10px;
+    }
+    .news-card.cn { border-left-color: var(--accent2, #ff6b6b); }
+    .news-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 5px; }
+    .news-num {
+      font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--accent);
+      background: rgba(103, 200, 255, 0.14); border-radius: 3px; padding: 1px 6px; font-variant-numeric: tabular-nums;
+    }
+    .news-card.cn .news-num { color: var(--accent2); background: rgba(255, 107, 107, 0.16); }
+    .news-date { font-family: var(--mono); font-size: 11px; color: var(--dim); letter-spacing: 0.06em; font-variant-numeric: tabular-nums; }
+    .news-src {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--dim); border: 1px solid var(--line); border-radius: 3px; padding: 1px 6px;
+    }
+    .news-src.cat-China   { color: #ff9c9c; border-color: rgba(255,107,107,0.5); }
+    .news-src.cat-Agency  { color: #67e8a4; border-color: rgba(103,232,164,0.4); }
+    .news-src.cat-Press   { color: #67c8ff; border-color: rgba(103,200,255,0.4); }
+    .news-cn-tag {
+      font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.16em;
+      color: #fff; background: var(--accent2, #ff6b6b); border-radius: 3px; padding: 1px 6px;
+    }
+    .news-title {
+      display: inline-block; font-size: 15.5px; line-height: 1.35; font-weight: 600;
+      color: var(--text); text-decoration: none; margin: 2px 0 4px;
+    }
+    .news-title:hover { color: var(--accent); text-decoration: underline; }
+    .news-desc { font-size: 13px; line-height: 1.55; color: var(--dim); margin: 4px 0 8px; }
+    .news-card-actions { display: flex; gap: 8px; align-items: center; }
+    .news-open { font-family: var(--mono); font-size: 11px; color: var(--accent); text-decoration: none; letter-spacing: 0.04em; }
+    .news-open:hover { text-decoration: underline; }
+    .news-pdf-one {
+      background: transparent; border: 1px solid var(--line); border-radius: 4px;
+      color: var(--dim); font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 3px 8px; cursor: pointer;
+    }
+    .news-pdf-one:hover { color: var(--accent); border-color: var(--accent); }
+
+    .news-empty { color: var(--dim); font-size: 14px; padding: 40px 10px; text-align: center; }
+
+    @media (max-width: 560px) {
+      .news-shell { padding: 60px 12px 70px; }
+    }
+  </style>
+</head>
+<body class="page-news">
+  <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
+    <img src="data/nazar-logo.svg?v=4" alt="NAZAR">
+  </a>
+
+  <!-- Standard NAZAR button (top-right) — opens the nav drop-down. -->
+  <a class="top-nazar-btn" href="index.html" title="NAZAR navigation menu">
+    <span class="ico">◯</span>
+    <span class="lbl">NAZAR</span>
+  </a>
+
+  <main class="news-shell">
+    <header class="news-head">
+      <h1 class="news-brand">Ticker Tape Archive</h1>
+      <div class="news-tagline">Everything that scrolled by — kept for the record.</div>
+      <div class="news-sub" id="news-meta">Loading the repository…</div>
+    </header>
+
+    <div class="news-toolbar">
+      <input type="search" id="news-filter" placeholder="Filter headlines…" autocomplete="off" aria-label="Filter headlines">
+      <label class="news-cn-toggle"><input type="checkbox" id="news-cn-only"> China only</label>
+      <button type="button" class="news-btn" id="news-sort" title="Toggle sort order">↓ Newest first</button>
+      <button type="button" class="news-btn" id="news-refresh" title="Pull the feeds again now">⟳ Refresh</button>
+      <button type="button" class="news-btn primary" id="news-pdf-all" title="Download every archived headline as one chronological PDF">⬇ Download all (PDF)</button>
+    </div>
+    <div class="news-status" id="news-status"></div>
+
+    <div class="news-list" id="news-list">
+      <div class="news-empty">Loading…</div>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="news-core.js?v=2"></script>
+  <script src="news-archive.js?v=1"></script>
+  <script src="nazar-bgm.js?v=4"></script>
+  <script src="mobile-menu.js?v=9"></script>
+</body>
+</html>

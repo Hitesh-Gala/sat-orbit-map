@@ -14,7 +14,7 @@
   <!-- Orbitron: display caps for the brand.  Caveat: handwritten script
        for the Hinglish tagline.  JetBrains Mono stays for data/UI. -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=31">
+  <link rel="stylesheet" href="styles.css?v=32">
   <style>
     /* ===================================================================
        "View all satellites" pop-up — a self-contained modal globe that
@@ -130,7 +130,7 @@
   </nav>
 
   <div class="news-ticker" id="news-ticker" aria-label="Chinese-launch news ticker">
-    <div class="ticker-label">TICKER TAPE</div>
+    <a class="ticker-label" href="news-archive.html" title="Open the news archive — full repository of headlines since 01 Jul 2026, with chronological PDF export">TICKER TAPE <span class="ticker-label-go">↗</span></a>
     <div class="ticker-viewport">
       <div class="ticker-track" id="ticker-track">
         <span class="ticker-status">Fetching latest items…</span>
@@ -283,7 +283,8 @@
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=9"></script>
   <script src="app.js?v=29"></script>
-  <script src="news-ticker.js?v=13"></script>
+  <script src="news-core.js?v=2"></script>
+  <script src="news-ticker.js?v=14"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=9"></script>
   <script src="flash-popup.js?v=5"></script>

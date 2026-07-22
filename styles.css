@@ -489,6 +489,9 @@ body.light .topbar .sub { color: var(--dim); }
 }
 .ticker-label {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   color: var(--accent2);
   font-size: 10px;
   letter-spacing: 0.18em;
@@ -496,7 +499,16 @@ body.light .topbar .sub { color: var(--dim); }
   text-shadow: 0 0 8px rgba(255, 107, 107, 0.45);
   border-right: 1px solid var(--line);
   padding-right: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color .15s, text-shadow .15s;
 }
+a.ticker-label:hover {
+  text-decoration: none;
+  color: #ff9c9c;
+  text-shadow: 0 0 12px rgba(255, 107, 107, 0.8);
+}
+.ticker-label-go { font-size: 11px; opacity: 0.8; }
 .ticker-viewport {
   flex: 1;
   overflow: hidden;
@@ -521,11 +533,24 @@ body.light .topbar .sub { color: var(--dim); }
   font-size: 11px;
   color: var(--text);
 }
-.ticker-item::before {
-  content: '●';
+/* Sequence number badge — replaces the old bullet.  Blue for world items,
+   red for China-relevant ones so the China focus reads at a glance. */
+.ticker-item .num {
+  flex: 0 0 auto;
+  min-width: 15px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--accent);
+  background: rgba(103, 200, 255, 0.14);
+  font-variant-numeric: tabular-nums;
+}
+.ticker-item.cn .num {
   color: var(--accent2);
-  font-size: 8px;
-  margin-right: 2px;
+  background: rgba(255, 107, 107, 0.16);
 }
 .ticker-item a {
   color: var(--accent);

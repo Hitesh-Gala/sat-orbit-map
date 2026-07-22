@@ -57,9 +57,19 @@ Each `.html` is paired with a same-name `.js`. All pages share `styles.css` and 
 | `sat-stats.html` | `sat-stats.js` | none | Cumulative satellite DB (localStorage) + Chart.js graphs + TLE Repo modal |
 | `chinrepo.html` | `chinrepo.js` | none | Filterable table of every active PRC payload (joins CelesTrak SATCAT `OWNER=PRC` with active TLEs) |
 | `compendium.html` | (inline) | none | Self-contained PRC-program reference catalogue with embedded styles |
-| `news-ticker.js` | (included on `index.html`) | none | Scrolling ticker that fetches Chinese-launch RSS via `api.rss2json.com`, filtered by a keyword regex, 30-min localStorage cache |
+| `news-archive.html` | `news-archive.js` | none | The "TICKER TAPE" click-through — a chronological, day-grouped repository of every headline the ticker has caught (since 01 Jul 2026), with filter / China-only / sort controls and plain-text PDF export (jsPDF: one combined chronological doc, or one per article) |
+| `news-ticker.js` | (included on `index.html`) | none | Scrolling ticker on `index.html`, numbered and China-first, ≤20 items from the last ~month. Pure UI — all data comes from `news-core.js` |
+| `news-core.js` | (shared by ticker + archive) | none | Feed layer + persistent localStorage archive. See "News feeds" below |
 
-`styles.css` is shared. Page-specific rules are scoped by `body.page-2d`, `body.page-repo`, `body.page-orbit`, etc. CSS custom properties (`:root`) drive the dark theme; light-mode is implemented by re-defining the same properties under `body.light`.
+`styles.css` is shared. Page-specific rules are scoped by `body.page-2d`, `body.page-repo`, `body.page-orbit`, `body.page-news`, etc. CSS custom properties (`:root`) drive the dark theme; light-mode is implemented by re-defining the same properties under `body.light`.
+
+## News feeds (`news-core.js`)
+
+`window.NazarNews` is the shared feed layer behind both the ticker and the archive page. It pulls ~10 RSS feeds (space press, NASA/ESA, plus dedicated China tag feeds), merges them into a **persistent, deduped localStorage archive** (`nazar.news.archive.v2`, keyed off normalised article URL, kept from 01 Jul 2026, capped 500), and never lets a partial pull wipe prior headlines. `getTickerItems()` returns China-first-then-world, ≤20, last ~31 days; the archive page shows everything.
+
+- **CORS:** feeds are fetched through a proxy chain — `corsproxy.io` (raw XML → DOMParser, primary, returns full feeds) → `api.rss2json.com` (clean JSON, ~10 items) → `api.allorigins.win` (raw XML). First one yielding items wins. Every item must carry a real `http(s)` link or it's dropped (this is what fixed the old "link won't open" problem).
+- **Dead/blocked feeds found the hard way (don't re-add):** Xinhua `english.news.cn/rss.xml` = 404; `nasaspaceflight.com/tag/<x>/feed/` = 403 (WordPress tag feeds blocked); CGTN/Global Times section feeds = 404 or carry no space news. Ars Technica space feed lives at `arstechnica.com/space/feed/` (the feedburner `/arstechnica/space` path returns nothing).
+- Refresh is throttled to 30 min (`nazar.news.meta.v2` holds `last`); pass `refresh(true)` to force.
 
 ## Globe.gl quirks to remember
 
