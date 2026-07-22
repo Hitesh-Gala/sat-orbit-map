@@ -1551,6 +1551,195 @@ function renderTleModalRows() {
 })();
 
 // =========================================================================
+// Alpha-5 catalogue modal — the objects whose catalog number has outgrown
+// the classic 5-digit TLE field.
+//
+// The classic TLE stores the NORAD catalog number in five columns → a hard
+// ceiling of 99 999.  The real catalogue passed that, so the "Alpha-5"
+// scheme turns the FIRST of those five columns into a letter: A–Z, skipping
+// I and O (to avoid 1/0 confusion), where A=10 … Z=33.  The field therefore
+// now spans 100000 ("A0000") through 339999 ("Z9999").  satellite.js decodes
+// these natively, so NAZAR already propagates them; this view isolates,
+// decodes and explains them.
+// =========================================================================
+
+// Letters used, in value order.  Index 0 (⇒ "A") represents the 100000-block.
+const A5_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';   // deliberately no I, no O
+
+// Five-char line-1 catalog field (cols 3–7) → integer NORAD id, or NaN.
+function alpha5ToNorad(field) {
+  const s = String(field || '').trim();
+  if (/^\d{1,5}$/.test(s)) return parseInt(s, 10);          // classic numeric
+  const idx = A5_LETTERS.indexOf(s[0]);
+  if (idx === -1) return NaN;                               // leading I/O or junk
+  if (!/^\d{4}$/.test(s.slice(1))) return NaN;
+  return (idx + 10) * 10000 + parseInt(s.slice(1), 10);
+}
+
+// True when a catalog field uses the Alpha-5 extension (a leading letter).
+function isAlpha5Field(field) {
+  return /^[A-HJ-NP-Z]/.test(String(field || '').trim());
+}
+function catalogField(l1) { return l1 ? l1.slice(2, 7) : ''; }
+
+const ALPHA5_PAGE_SIZE = 100;
+let alpha5Matches   = null;   // [{ t, field, norad, intlId }]
+let alpha5MaxNumeric = 0;     // highest classic (numeric) catalog seen, for the empty state
+let alpha5Page      = 0;
+
+async function openAlpha5() {
+  const modal = $('alpha5-modal');
+  modal.hidden = false;
+  modal.setAttribute('aria-hidden', 'false');
+  setTimeout(() => modal.classList.add('shown'), 16);
+  alpha5Page = 0;
+
+  // Share the TLE-repo fetch cache; load it here if Alpha-5 is opened first.
+  if (!tleModalCache) {
+    $('alpha5-rows').innerHTML = '<tr><td colspan="7" class="hint">Loading TLE catalogue…</td></tr>';
+    $('alpha5-count').textContent = '…';
+    $('alpha5-scanned').textContent = '…';
+    $('alpha5-source').textContent = '…';
+    try {
+      const result = await window.Argos.fetchTLEs();
+      tleModalCache = result.tles;
+      tleModalSource = result.source;
+    } catch (e) {
+      $('alpha5-rows').innerHTML = `<tr><td colspan="7" class="hint">TLE fetch failed: ${esc(e.message)}</td></tr>`;
+      return;
+    }
+  }
+  buildAlpha5Matches();
+  $('alpha5-source').textContent = tleModalSource;
+  renderAlpha5Rows();
+}
+
+function buildAlpha5Matches() {
+  alpha5Matches = [];
+  alpha5MaxNumeric = 0;
+  for (const t of tleModalCache) {
+    const field = catalogField(t.l1);
+    if (isAlpha5Field(field)) {
+      alpha5Matches.push({ t, field, norad: alpha5ToNorad(field), intlId: parseIntlIdFromTLE(t.l1) });
+    } else {
+      const n = parseInt(field, 10);
+      if (Number.isFinite(n)) alpha5MaxNumeric = Math.max(alpha5MaxNumeric, n);
+    }
+  }
+  // Show the newest (highest catalog number) first.
+  alpha5Matches.sort((a, b) => b.norad - a.norad);
+}
+
+function closeAlpha5() {
+  const modal = $('alpha5-modal');
+  modal.classList.remove('shown');
+  modal.setAttribute('aria-hidden', 'true');
+  setTimeout(() => { modal.hidden = true; }, 220);
+}
+
+function renderAlpha5Rows() {
+  if (!alpha5Matches) return;
+  const tbody = $('alpha5-rows');
+  const q = $('alpha5-filter').value.trim().toLowerCase();
+  const now = Date.now();
+
+  $('alpha5-count').textContent   = alpha5Matches.length.toLocaleString();
+  $('alpha5-scanned').textContent = tleModalCache.length.toLocaleString();
+
+  const matches = q
+    ? alpha5Matches.filter(m =>
+        `${m.t.name} ${m.field} ${m.norad} ${m.intlId}`.toLowerCase().includes(q))
+    : alpha5Matches;
+
+  if (!matches.length) {
+    const msg = alpha5Matches.length === 0
+      ? `No Alpha-5 objects in the current <strong>${esc(tleModalSource)}</strong> feed yet — the highest catalog number is <strong>${alpha5MaxNumeric.toLocaleString()}</strong>, still inside the classic 5-digit range. This list fills in automatically once objects numbered <strong>100,000+</strong> reach the active catalogue. The format reference below explains what to expect.`
+      : 'No matches — try a different filter.';
+    tbody.innerHTML = `<tr><td colspan="7" class="hint">${msg}</td></tr>`;
+    $('alpha5-page-current').textContent = '1';
+    $('alpha5-page-total').textContent   = '1';
+    $('alpha5-prev').disabled = true;
+    $('alpha5-next').disabled = true;
+    return;
+  }
+
+  const totalPages = Math.max(1, Math.ceil(matches.length / ALPHA5_PAGE_SIZE));
+  if (alpha5Page >= totalPages) alpha5Page = totalPages - 1;
+  if (alpha5Page < 0)           alpha5Page = 0;
+  const start = alpha5Page * ALPHA5_PAGE_SIZE;
+  const end   = Math.min(start + ALPHA5_PAGE_SIZE, matches.length);
+
+  const out = [];
+  for (let i = start; i < end; i++) {
+    const { t, field, norad, intlId } = matches[i];
+    const epoch = parseTLEEpoch(t.l1);
+    const epochStr = epoch ? epoch.toISOString().slice(0, 16).replace('T', ' ') : '—';
+    const ageDays = epoch ? (now - epoch.getTime()) / 86400000 : NaN;
+    const band = Number.isFinite(ageDays) ? tleValidityBand(ageDays) : 'unknown';
+    const ageLabel = Number.isFinite(ageDays)
+      ? (ageDays < 1 ? `${(ageDays * 24).toFixed(1)} h` : `${ageDays.toFixed(1)} d`)
+      : '—';
+    out.push(`<tr>
+      <td class="tle-cell"><div>${esc(t.l1)}</div><div>${esc(t.l2)}</div></td>
+      <td>${esc(t.name)}</td>
+      <td class="mono"><span class="a5-desig">${esc(field)}</span></td>
+      <td class="mono">${Number.isFinite(norad) ? norad.toLocaleString() : '—'}</td>
+      <td class="mono">${esc(intlId || '—')}</td>
+      <td class="mono">${esc(epochStr)} UTC</td>
+      <td><span class="tle-validity tle-validity-${band}">${band}</span> <span class="muted mono">${esc(ageLabel)}</span></td>
+    </tr>`);
+  }
+  tbody.innerHTML = out.join('');
+  $('alpha5-page-current').textContent = (alpha5Page + 1).toLocaleString();
+  $('alpha5-page-total').textContent   = totalPages.toLocaleString();
+  $('alpha5-prev').disabled = alpha5Page <= 0;
+  $('alpha5-next').disabled = alpha5Page >= totalPages - 1;
+}
+
+(function setupAlpha5() {
+  function bind() {
+    // Populate the decoder cheat-sheet grid (A=10 … Z=33) once.
+    const map = $('alpha5-map');
+    if (map && !map.childElementCount) {
+      map.innerHTML = A5_LETTERS.split('')
+        .map((c, i) => `<span><b>${c}</b>=${i + 10}</span>`).join('');
+    }
+    $('alpha5-btn')?.addEventListener('click', openAlpha5);
+    $('alpha5-close')?.addEventListener('click', closeAlpha5);
+    $('alpha5-filter')?.addEventListener('input', () => {
+      alpha5Page = 0;
+      renderAlpha5Rows();
+      const body = $('alpha5-modal')?.querySelector('.tle-modal-body');
+      if (body) body.scrollTop = 0;
+    });
+    $('alpha5-prev')?.addEventListener('click', () => {
+      if (alpha5Page <= 0) return;
+      alpha5Page--;
+      renderAlpha5Rows();
+      const body = $('alpha5-modal')?.querySelector('.tle-modal-body');
+      if (body) body.scrollTop = 0;
+    });
+    $('alpha5-next')?.addEventListener('click', () => {
+      alpha5Page++;
+      renderAlpha5Rows();
+      const body = $('alpha5-modal')?.querySelector('.tle-modal-body');
+      if (body) body.scrollTop = 0;
+    });
+    $('alpha5-modal')?.addEventListener('click', e => {
+      if (e.target.id === 'alpha5-modal') closeAlpha5();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !$('alpha5-modal').hidden) closeAlpha5();
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bind);
+  } else {
+    bind();
+  }
+})();
+
+// =========================================================================
 // PDF export — "download-ready" snapshot of the catalogue + every TLE the
 // page is propagating from, date/time-stamped.  Wired to #pdf-btn, which
 // boot() un-disables once the page has fully loaded.

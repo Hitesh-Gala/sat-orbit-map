@@ -65,6 +65,29 @@
       white-space: normal; min-width: 230px; max-width: 400px;
       font-size: 12px; line-height: 1.45; color: var(--text);
     }
+
+    /* --- Alpha-5 modal extras --- */
+    .a5-badge {
+      display: inline-block; margin-left: 8px; vertical-align: middle;
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.14em; color: #0a0e14; background: #ffd27f;
+      padding: 2px 7px; border-radius: 4px;
+    }
+    .a5-desig {
+      color: #ffd27f; font-weight: 700; letter-spacing: 0.05em;
+      background: rgba(255, 210, 127, 0.12); padding: 1px 6px; border-radius: 3px;
+    }
+    .a5-decoder { margin: 14px 0 4px; }
+    .a5-decoder-label { font-size: 12px; color: var(--dim); margin-bottom: 8px; }
+    .a5-map {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 6px;
+    }
+    .a5-map span {
+      font-family: var(--mono); font-size: 12px; text-align: center;
+      padding: 5px 4px; border: 1px solid var(--line); border-radius: 4px;
+      background: rgba(103, 200, 255, 0.05); color: var(--text);
+    }
+    .a5-map span b { color: #ffd27f; }
   </style>
 </head>
 <body class="page-stats">
@@ -79,6 +102,7 @@
         <span id="stats-status">Booting…</span>
         <button type="button" id="pdf-btn" class="btn-back" disabled title="Loading… the PDF export unlocks once the catalogue has finished loading">⏳ PDF…</button>
         <button type="button" id="tle-repo-btn" class="btn-back" title="Open the raw TLE catalogue used by every page on this site">⌗ TLE Repo</button>
+        <button type="button" id="alpha5-btn" class="btn-back" title="Objects whose catalog number has outgrown the classic 5-digit TLE — the new Alpha-5 format (catalog ≥ 100,000)">⌗ Alpha-5 TLEs</button>
         <a class="btn-back" href="index.html">← NAZAR</a>
       </div>
     </header>
@@ -290,6 +314,99 @@
     </div>
   </div>
 
+  <!-- Alpha-5 catalogue modal — opened by #alpha5-btn.  Lists the objects
+       whose catalog number has outgrown the classic 5-digit TLE field and are
+       now written in the Alpha-5 format (leading letter, catalog ≥ 100,000),
+       with the raw designator decoded back to a plain number.  Populated by
+       sat-stats.js openAlpha5(). -->
+  <div id="alpha5-modal" class="tle-modal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="alpha5-title">
+    <div class="tle-modal-card">
+      <header class="tle-modal-header">
+        <div class="tle-modal-title-block">
+          <h2 id="alpha5-title">Alpha-5 Catalogue <span class="a5-badge">NEW TLE FORMAT</span></h2>
+          <div class="tle-modal-meta">
+            <strong id="alpha5-count">…</strong> objects with catalog ≥ 100,000 ·
+            scanned <strong id="alpha5-scanned">…</strong> TLEs · source
+            <strong id="alpha5-source">…</strong>
+          </div>
+        </div>
+        <button type="button" id="alpha5-close" class="tle-modal-close" aria-label="Close">×</button>
+      </header>
+      <div class="tle-modal-toolbar">
+        <input type="search" id="alpha5-filter" placeholder="Filter by name, Alpha-5 designator, NORAD…" autocomplete="off">
+        <span class="tle-modal-pager">
+          <button type="button" id="alpha5-prev" class="tle-modal-page-btn" aria-label="Previous page">‹</button>
+          Page <strong id="alpha5-page-current">1</strong> / <strong id="alpha5-page-total">1</strong>
+          <button type="button" id="alpha5-next" class="tle-modal-page-btn" aria-label="Next page">›</button>
+        </span>
+        <span class="tle-modal-hint">100 per page · the objects the classic 5-digit catalog number can no longer hold.</span>
+      </div>
+      <div class="tle-modal-body">
+        <table class="tle-table">
+          <thead>
+            <tr>
+              <th class="col-tle">TLE (L1 / L2)</th>
+              <th>Satellite</th>
+              <th>Alpha-5</th>
+              <th>Decoded NORAD</th>
+              <th>Int'l ID</th>
+              <th>Epoch (UTC)</th>
+              <th>Validity</th>
+            </tr>
+          </thead>
+          <tbody id="alpha5-rows"></tbody>
+        </table>
+
+        <!-- =====================================================
+             What is an Alpha-5 TLE — format explainer + decoder.
+             ===================================================== -->
+        <section class="tle-explainer">
+          <h3>What is an Alpha-5 TLE?</h3>
+          <p>
+            A classic <strong>Two-Line Element set</strong> stores the NORAD
+            catalog number in just <strong>five columns</strong> (line 1,
+            characters 3–7), so it can only count up to <code>99999</code>.
+            The real catalogue blew past that ceiling as tracked objects
+            multiplied — mega-constellations, rideshare cubesats and debris —
+            so a stop-gap extension called <strong>Alpha-5</strong> was
+            adopted to keep the fixed-width, two-line layout every existing
+            tool already understands.
+          </p>
+          <p>
+            The trick: turn the <strong>first</strong> of those five columns
+            into a <em>letter</em>. Letters run <code>A</code>–<code>Z</code>
+            but <strong>skip I and O</strong> (too easily confused with 1 and
+            0), giving <code>A</code>=10, <code>B</code>=11, … <code>Z</code>=33.
+            The remaining four columns stay numeric. So the field now spans
+            <code>A0000</code> = <strong>100000</strong> through
+            <code>Z9999</code> = <strong>339999</strong> — roughly tripling
+            capacity without changing the line length at all.
+          </p>
+
+          <div class="tle-decoded">
+            <div class="tle-decoded-label">Worked example — decode <code>E8493</code></div>
+            <pre class="tle-decoded-sample">E8493  →  E = 14  →  14 × 10000 + 8493  =  148493</pre>
+          </div>
+
+          <div class="a5-decoder">
+            <div class="a5-decoder-label">Leading-letter values (I and O are never used):</div>
+            <div class="a5-map" id="alpha5-map"></div>
+          </div>
+
+          <p class="tle-foot">
+            Everything else in the two lines is unchanged, and
+            <code>satellite.js</code> decodes Alpha-5 designators natively —
+            NAZAR propagates these objects with SGP4 exactly like any other.
+            Alpha-5 is itself a bridge: the long-term successor is the
+            9-digit catalog number carried by the newer
+            <strong>OMM</strong> (Orbit Mean-Elements Message, distributed as
+            XML / JSON / KVN) rather than the fixed 69-character TLE.
+          </p>
+        </section>
+      </div>
+    </div>
+  </div>
+
   <!-- Previously-tracked modal — opened by #prev-tracked-btn.  Same columns
        as the main catalogue table, but lists only objects that were in the
        cumulative DB on an earlier visit and are absent from the current
@@ -341,7 +458,7 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
   <script src="tle-loader.js?v=10"></script>
-  <script src="sat-stats.js?v=14"></script>
+  <script src="sat-stats.js?v=15"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=9"></script>
 </body>
