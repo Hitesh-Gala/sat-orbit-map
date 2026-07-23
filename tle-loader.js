@@ -13,6 +13,7 @@ window.Argos = (function () {
   // the live feed returns 403 or is unreachable.
   const TLE_URL          = 'https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle';
   const TLE_FALLBACK_URL = 'data/active.tle';
+  const EXTRA_TLE_URL    = 'data/extra.tle';   // hand-added objects missing from the feed
   const SATCAT_BASE      = 'https://celestrak.org/satcat/records.php';
 
   // SATCAT records.php requires a NAME prefix per request. We fan-out across
@@ -102,6 +103,23 @@ window.Argos = (function () {
     try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), v })); } catch {}
   }
 
+  // The classic TLE catalog field is 5 columns, so it tops out at 99999.  Past
+  // that, Space-Track/CelesTrak switched to "Alpha-5": the first column becomes
+  // a letter (A–Z, skipping I and O), A=10 … Z=33, covering 100000–339999.
+  //
+  // A plain parseInt() returns NaN for those, and a NaN id is actively harmful:
+  // makeSatrecs dedupes through a Set, and Set treats NaN as equal to NaN, so
+  // the first Alpha-5 object claims the slot and EVERY other Alpha-5 object is
+  // silently dropped from every globe.  Decode them to real numbers instead.
+  const A5_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';   // deliberately no I, no O
+  function catalogNumber(field) {
+    const s = String(field || '').trim();
+    if (/^\d+$/.test(s)) return parseInt(s, 10);
+    const idx = A5_LETTERS.indexOf(s[0]);
+    if (idx === -1 || !/^\d{4}$/.test(s.slice(1))) return NaN;
+    return (idx + 10) * 10000 + parseInt(s.slice(1), 10);
+  }
+
   function parseTLE(text) {
     const lines = text.replace(/\r/g, '').split('\n');
     const out = [];
@@ -110,7 +128,7 @@ window.Argos = (function () {
         const name = lines[i].trim();
         const l1 = lines[i + 1];
         const l2 = lines[i + 2];
-        const noradId = parseInt(l1.slice(2, 7), 10);
+        const noradId = catalogNumber(l1.slice(2, 7));
         out.push({ name, l1, l2, noradId });
         i += 2;
       }
@@ -132,7 +150,37 @@ window.Argos = (function () {
     return out;
   }
 
+  // Supplemental TLEs — data/extra.tle.  CelesTrak's GROUP=active list lags
+  // (or omits) freshly-launched objects, so a satellite can exist and be
+  // trackable while simply not being in the feed yet; nothing downstream can
+  // draw what it never received.  Anything in this hand-maintained file is
+  // merged on top of the live/bundled catalogue on every load (never cached,
+  // so editing the file takes effect immediately).  Missing file = no-op.
+  let extraTLEs = null;
+  async function fetchExtraTLEs() {
+    if (extraTLEs) return extraTLEs;
+    try {
+      const r = await fetch(EXTRA_TLE_URL, { cache: 'no-cache' });
+      if (!r.ok) return (extraTLEs = []);
+      extraTLEs = parseTLE(await r.text());
+    } catch { extraTLEs = []; }
+    return extraTLEs;
+  }
+
   async function fetchTLEs() {
+    const base = await fetchBaseTLEs();
+    const extra = await fetchExtraTLEs();
+    if (!extra.length) return base;
+    // Only add objects the catalogue doesn't already carry, so once CelesTrak
+    // starts publishing one it wins and we don't double-plot it.
+    const seen = new Set(base.tles.map(t => t.noradId));
+    const add = extra.filter(t => !seen.has(t.noradId));
+    if (!add.length) return base;
+    // Keep `source` untouched — callers map it to the live/cached/bundled tag.
+    return { tles: base.tles.concat(add), source: base.source };
+  }
+
+  async function fetchBaseTLEs() {
     const cached = cacheGet('argos.tle.v2', CACHE_TTL.tle);
     if (cached) return { tles: cached, source: 'cache' };
 
@@ -319,8 +367,13 @@ window.Argos = (function () {
     const out = [];
     const seen = new Set();
     for (const t of tles) {
-      if (seen.has(t.noradId)) continue;
-      seen.add(t.noradId);
+      // Only dedupe on a real id.  Set uses SameValueZero, where NaN equals
+      // NaN — so deduping on an unparseable catalog field would collapse every
+      // such object into a single entry (the bug that hid Alpha-5 satellites).
+      if (Number.isFinite(t.noradId)) {
+        if (seen.has(t.noradId)) continue;
+        seen.add(t.noradId);
+      }
       try {
         out.push({ name: t.name, noradId: t.noradId, intlId: intlDesignator(t.l1), rec: satellite.twoline2satrec(t.l1, t.l2) });
       } catch { /* skip malformed */ }
@@ -330,7 +383,7 @@ window.Argos = (function () {
 
   return {
     OBSERVER, EARTH_R_KM,
-    inferPurpose, parseTLE, propagate, makeSatrecs,
+    inferPurpose, parseTLE, propagate, makeSatrecs, catalogNumber,
     fetchTLEs, fetchChinaSatcat,
   };
 })();

@@ -1567,14 +1567,9 @@ function renderTleModalRows() {
 const A5_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';   // deliberately no I, no O
 
 // Five-char line-1 catalog field (cols 3–7) → integer NORAD id, or NaN.
-function alpha5ToNorad(field) {
-  const s = String(field || '').trim();
-  if (/^\d{1,5}$/.test(s)) return parseInt(s, 10);          // classic numeric
-  const idx = A5_LETTERS.indexOf(s[0]);
-  if (idx === -1) return NaN;                               // leading I/O or junk
-  if (!/^\d{4}$/.test(s.slice(1))) return NaN;
-  return (idx + 10) * 10000 + parseInt(s.slice(1), 10);
-}
+// The decoding itself lives in tle-loader.js (parseTLE needs it to give every
+// Alpha-5 object a unique id), so delegate rather than keep a second copy.
+const alpha5ToNorad = field => window.Argos.catalogNumber(field);
 
 // True when a catalog field uses the Alpha-5 extension (a leading letter).
 function isAlpha5Field(field) {
