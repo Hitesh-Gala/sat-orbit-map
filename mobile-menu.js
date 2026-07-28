@@ -282,6 +282,7 @@
       { href: 'viz3d.html',         icon: '⬢', label: '3D Visualiser' },
       { href: 'sats-by-ops.html',   icon: '⊕', label: 'SATs-by-OPs' },
       { href: 'overpass.html',      icon: '⌖', label: 'Overpass' },
+      { href: 'debris.html',        icon: '✷', label: 'Debris Tracker' },
     ];
 
     // Collect the "go to NAZAR home" controls: the logo + the labelled
