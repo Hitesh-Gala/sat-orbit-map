@@ -53,14 +53,28 @@
     .deb-stats-btn:hover { background: rgba(103, 200, 255, 0.26); transform: translateY(-1px); }
     .deb-hint { font-size: 11.5px; color: var(--dim); line-height: 1.5; }
 
-    /* Statistics pop-up */
+    /* ⓘ info button on each filter row + the "gaps" button */
+    .deb-info {
+      flex: 0 0 auto; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+      background: none; border: 0; padding: 0; margin-left: 2px; cursor: pointer;
+      color: var(--dim); font-size: 14px; border-radius: 50%;
+    }
+    .deb-info:hover { color: var(--accent); background: rgba(103, 200, 255, 0.14); }
+    .deb-gaps-btn {
+      width: 100%; margin-top: 8px; padding: 7px 9px; border-radius: 5px;
+      background: rgba(255, 210, 127, 0.08); border: 1px solid rgba(255, 210, 127, 0.4);
+      color: #ffd27f; font-family: var(--mono); font-size: 11px; cursor: pointer; text-align: left; line-height: 1.4;
+    }
+    .deb-gaps-btn:hover { background: rgba(255, 210, 127, 0.16); }
+
+    /* Info pop-up (story / facts / trivia) */
     .deb-modal {
       position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center;
       padding: 22px; background: rgba(4, 8, 14, 0.74); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
     }
     .deb-modal[hidden] { display: none; }
     .deb-modal-card {
-      position: relative; width: min(1000px, 96vw); max-height: min(90vh, 820px); overflow-y: auto;
+      position: relative; width: min(620px, 96vw); max-height: min(90vh, 780px); overflow-y: auto;
       background: #070d14; border: 1px solid #1d3147; border-radius: 12px;
       box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6); padding: 20px 22px 22px;
     }
@@ -69,35 +83,20 @@
       background: #10203a; color: #cfe0f2; border: 1px solid #1d3147; font-size: 18px; line-height: 1;
     }
     .deb-modal-close:hover { background: #1b3559; border-color: #4ea8ff; }
-    .deb-modal h2 {
-      margin: 0 0 2px; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 18px;
-      letter-spacing: 0.03em; color: #e6f0fb;
-    }
-    .deb-modal .sub { font-family: var(--mono); font-size: 12px; color: #8aa0b8; margin-bottom: 14px; }
-    .deb-headline { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
-    .deb-stat {
-      flex: 1 1 150px; background: rgba(103, 200, 255, 0.06); border: 1px solid var(--line);
-      border-radius: 8px; padding: 10px 12px;
-    }
-    .deb-stat .k { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
-    .deb-stat .v { display: block; margin-top: 4px; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 22px; color: var(--accent); font-variant-numeric: tabular-nums; }
-    .deb-charts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-    .deb-chart-card { background: rgba(255,255,255,0.02); border: 1px solid var(--line); border-radius: 8px; padding: 12px 12px 8px; }
-    .deb-chart-card h3 { margin: 0 0 2px; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 13px; color: var(--text); }
-    .deb-chart-card .csub { font-size: 11px; color: var(--dim); margin-bottom: 8px; }
-    .deb-chart-box { position: relative; height: 200px; }
-    .deb-events { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
-    .deb-event { border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 7px; padding: 10px 12px; background: rgba(255,255,255,0.02); }
-    .deb-event-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 4px; }
-    .deb-event-head .swatch { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
-    .deb-event-head strong { color: var(--text); font-size: 13.5px; }
-    .deb-event-when { font-family: var(--mono); font-size: 11px; color: var(--dim); }
-    .deb-event-n { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--accent); }
-    .deb-event p { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--dim); }
-    .deb-stats-note { font-size: 12px; color: var(--accent2); margin-top: 8px; }
-    .deb-foot { margin-top: 14px; font-size: 11px; color: var(--dim); line-height: 1.5; }
-
-    @media (max-width: 640px) { .deb-charts { grid-template-columns: 1fr; } }
+    .deb-info-head { display: flex; align-items: flex-start; gap: 12px; padding-right: 34px; margin-bottom: 12px; }
+    .deb-info-head .swatch { flex: 0 0 auto; width: 15px; height: 15px; margin-top: 5px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }
+    .deb-info-head h2 { margin: 0; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 17px; letter-spacing: 0.02em; color: #e6f0fb; line-height: 1.25; }
+    .deb-info-sub { font-family: var(--mono); font-size: 12px; color: #8aa0b8; margin-top: 4px; }
+    .deb-info-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin: 4px 0 14px; }
+    .deb-info-stat { background: rgba(103, 200, 255, 0.06); border: 1px solid var(--line); border-radius: 7px; padding: 8px 10px; }
+    .deb-info-stat .k { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); }
+    .deb-info-stat .v { display: block; margin-top: 3px; font-family: var(--mono); font-size: 14px; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .deb-info-p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.6; color: var(--text); }
+    .deb-info-p em { color: #ffd27f; font-style: normal; }
+    .deb-info-trivia { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+    .deb-info-trivia .k { font-family: 'Orbitron', sans-serif; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
+    .deb-info-trivia ul { margin: 8px 0 0; padding-left: 18px; }
+    .deb-info-trivia li { font-size: 12.5px; line-height: 1.5; color: var(--dim); margin-bottom: 6px; }
   </style>
 </head>
 <body class="page-debris">
@@ -144,18 +143,28 @@
 
     <section class="panel">
       <a href="debris-stats.html" class="deb-stats-btn" style="display:block;text-align:center;text-decoration:none" title="Full cumulative history, country breakdown and charts from the whole SATCAT">📊 Statistics &amp; history</a>
+      <button type="button" id="debris-gaps-btn" class="deb-gaps-btn">ⓘ Why aren't US / India ASAT debris shown?</button>
       <div id="debris-status" class="debris-status" style="margin-top:8px">Booting…</div>
-      <div class="deb-hint" style="margin-top:8px">Hover any fragment for its details. Colours mark the event that created it.</div>
+      <div class="deb-hint" style="margin-top:8px">Hover any fragment for its details. Tap ⓘ on any event for its story.</div>
     </section>
   </aside>
 
   <div id="sat-tip" class="sat-tip-3d" hidden></div>
 
+  <!-- Info pop-up — story/facts/trivia for a debris class (opened by the ⓘ
+       buttons in the filter panel).  Body filled by debris.js renderInfo(). -->
+  <div id="debris-info-modal" class="deb-modal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="debris-info-title">
+    <div class="deb-modal-card">
+      <button type="button" id="debris-info-close" class="deb-modal-close" aria-label="Close">×</button>
+      <div id="debris-info-body"><!-- filled at runtime --></div>
+    </div>
+  </div>
+
   <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=11"></script>
-  <script src="debris.js?v=2"></script>
+  <script src="debris.js?v=3"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=10"></script>
 </body>

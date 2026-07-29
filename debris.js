@@ -175,12 +175,16 @@ function buildSourcePanel() {
       <span class="swatch" style="background:${s.color};color:${s.color}"></span>
       <span class="deb-lbl">${esc(s.short)} <span class="deb-country">${esc(s.country)}</span></span>
       <span class="deb-cnt" id="deb-cnt-${i}">…</span>
+      <button type="button" class="deb-info" data-key="${s.key}" title="The story behind this debris" aria-label="About ${esc(s.label)}">ⓘ</button>
     </div>`).join('');
   c.querySelectorAll('input[type=checkbox]').forEach(cb => {
     cb.addEventListener('change', () => {
       sourceEnabled[parseInt(cb.closest('.deb-row').dataset.idx, 10)] = cb.checked;
       rerenderFiltered();
     });
+  });
+  c.querySelectorAll('.deb-info').forEach(btn => {
+    btn.addEventListener('click', () => openInfo(btn.dataset.key));
   });
   $('deb-all').addEventListener('click', () => {
     c.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true);
@@ -375,6 +379,128 @@ function onMouseLeave() { pendingMouse = null; hoverId = -1; tip.hidden = true; 
   if (!cv) { requestAnimationFrame(attachHover); return; }
   cv.addEventListener('mousemove', onMouseMove);
   cv.addEventListener('mouseleave', onMouseLeave);
+})();
+
+// =========================================================================
+// Info pop-ups — the story behind each debris class, plus the tracking gaps
+// (why the US / India / early-Russia ASAT tests leave nothing to plot).
+// "ever / in orbit" figures are from CelesTrak's SATCAT.
+// =========================================================================
+const INFO = {
+  '99025': {
+    color: '#ff5b5b', title: 'Fengyun-1C — China’s 2007 ASAT test',
+    sub: '11 January 2007 · ~865 km altitude',
+    stats: [['Fragments catalogued', '3,534'], ['Still in orbit', '~2,321'], ['Break-up altitude', '~865 km']],
+    paras: [
+      'China destroyed its own defunct Fengyun-1C weather satellite with a ground-launched SC-19 kinetic interceptor — the first major anti-satellite test in over two decades. It produced the largest debris cloud in history and drew broad international condemnation.',
+      'Roughly two-thirds of its fragments are <em>still up there</em> nearly two decades later, because ~865 km is high enough that atmospheric drag barely bites. Many pieces will persist for centuries.',
+    ],
+    trivia: [
+      'It is the single biggest man-made contributor to the tracked low-Earth-orbit debris population.',
+      'The ISS and working satellites have had to manoeuvre to dodge Fengyun-1C fragments more than once.',
+    ],
+  },
+  '93036': {
+    color: '#4a90e2', title: 'Cosmos 2251 — the first big satellite crash',
+    sub: '10 February 2009 · ~789 km over Siberia',
+    stats: [['Fragments catalogued', '1,716'], ['Still in orbit', '~624'], ['Collision speed', '~11.7 km/s']],
+    paras: [
+      'The defunct Russian Cosmos 2251 military comms satellite (dead since the mid-1990s and unable to manoeuvre) slammed into the <em>active</em> US Iridium 33 — the first-ever accidental hypervelocity collision between two intact satellites.',
+      'It shattered into more than 1,700 catalogued pieces, of which several hundred are still in orbit.',
+    ],
+    trivia: [
+      'Neither operator had a precise warning — conjunction screening in 2009 was far cruder than today.',
+      'This crash, together with Fengyun-1C, is why the US now runs a rigorous conjunction-assessment service for operators worldwide.',
+    ],
+  },
+  '97051': {
+    color: '#67e8a4', title: 'Iridium 33 — the working satellite that got hit',
+    sub: '10 February 2009 · ~789 km',
+    stats: [['Fragments catalogued', '656'], ['Still in orbit', '~117'], ['Status at impact', 'fully operational']],
+    paras: [
+      'Iridium 33 was the other half of the 2009 collision — a live voice/data satellite in the 66-strong Iridium constellation, the only network with true pole-to-pole coverage.',
+      'It fragmented into fewer pieces than Cosmos 2251, and Iridium restored service within days using on-orbit spares.',
+    ],
+    trivia: [
+      'Iridium later replaced its entire first-generation fleet with Iridium NEXT (2017–2019).',
+      'Losing a satellite to space debris was a pointed irony for a company flying 66 of them.',
+    ],
+  },
+  '82092': {
+    color: '#f39c12', title: 'Cosmos 1408 — Russia’s 2021 ASAT test',
+    sub: '15 November 2021 · ~485 km',
+    stats: [['Fragments catalogued', '1,806'], ['Still in orbit', '~4'], ['Break-up altitude', '~485 km']],
+    paras: [
+      'Russia destroyed its defunct Cosmos 1408 electronic-intelligence satellite (launched 1982) with a Nudol direct-ascent missile. The ISS crew — including two cosmonauts — had to shelter in their return capsules as the station repeatedly passed through the fresh cloud.',
+      'But because the test was at only ~485 km, the debris is decaying fast: from ~1,800 fragments it is already down to a handful still tracked.',
+    ],
+    trivia: [
+      'A vivid lesson in altitude: the same kind of test as Fengyun-1C, but ~380 km lower — so it cleans itself up in a few years instead of centuries.',
+    ],
+  },
+  'other': {
+    color: '#9aa7b3', title: 'Other tracked debris',
+    sub: 'everything not from the four named clouds',
+    stats: [['On this globe', 'usually ~0'], ['In the full catalogue', '~12,500 in orbit']],
+    paras: [
+      'Across the whole catalogue, most debris is <em>not</em> from these four famous events: it is spent rocket upper stages that later exploded (leftover propellant or battery blasts), fragments from hundreds of smaller break-ups, and mission-related bits.',
+      'This globe only carries CelesTrak’s four dedicated debris groups, so “Other” is near zero here. For the complete ~12,500-object in-orbit debris population from every source, open the <strong>Statistics &amp; history</strong> dashboard.',
+    ],
+    trivia: [],
+  },
+  'gaps': {
+    color: '#ffd27f', title: 'Missing ASAT tests & tracking gaps',
+    sub: 'why US / Indian / early-Russian ASAT debris isn’t shown',
+    stats: [['US 1985 (Solwind)', '286 → 0 up'], ['US 2008 (USA-193)', '174 → 0 up'], ['India 2019 (Microsat-R)', '129 → 0 up']],
+    paras: [
+      'Four nations have destroyed satellites in orbit, but only two still show up here — and the reason is <strong>altitude</strong>:',
+      '• <strong>USA, 1985</strong> — an F-15-launched ASM-135 missile destroyed the P78-1 “Solwind” satellite at ~525 km. 286 fragments were tracked; the last re-entered in 2004.',
+      '• <strong>USA, 2008 (“Burnt Frost”)</strong> — a Navy SM-3 destroyed the failing USA-193 spy satellite at just ~247 km, deliberately low so the debris would decay within weeks. 174 tracked; none remain.',
+      '• <strong>India, 2019 (“Mission Shakti”)</strong> — India destroyed Microsat-R at ~283 km, again deliberately low. 129 tracked; none remain.',
+      '• <strong>Russia</strong> — the Soviet “IS” co-orbital ASAT programme (1968–1982) scattered Cosmos-numbered debris, most long since decayed.',
+      'So these aren’t hidden — there is simply nothing left in orbit to plot, which is exactly why CelesTrak keeps no live debris group for them. A low-altitude test is comparatively responsible: the mess clears in months. A high one like Fengyun-1C is a multi-century liability.',
+      'This globe intentionally shows only the four big persistent clouds. The <strong>Statistics &amp; history</strong> dashboard, built from the full SATCAT, counts <em>every</em> tracked debris object (~35,800 catalogued, ~12,500 still up) from all nations — that is where US, Indian and everyone else’s debris is fully accounted for.',
+    ],
+    trivia: [],
+  },
+};
+
+function renderInfo(key) {
+  const info = INFO[key];
+  if (!info) return;
+  const stat = (k, v) => `<div class="deb-info-stat"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`;
+  $('debris-info-body').innerHTML = `
+    <div class="deb-info-head">
+      <span class="swatch" style="background:${info.color};color:${info.color}"></span>
+      <div><h2 id="debris-info-title">${esc(info.title)}</h2><div class="deb-info-sub">${esc(info.sub)}</div></div>
+    </div>
+    ${info.stats && info.stats.length ? `<div class="deb-info-stats">${info.stats.map(s => stat(s[0], s[1])).join('')}</div>` : ''}
+    ${info.paras.map(p => `<p class="deb-info-p">${p}</p>`).join('')}
+    ${info.trivia && info.trivia.length ? `<div class="deb-info-trivia"><span class="k">Trivia</span><ul>${info.trivia.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : ''}
+  `;
+}
+
+let infoOpen = false;
+function openInfo(key) {
+  if (!INFO[key]) return;
+  renderInfo(key);
+  const m = $('debris-info-modal');
+  m.hidden = false;
+  m.setAttribute('aria-hidden', 'false');
+  m.querySelector('.deb-modal-card').scrollTop = 0;
+  infoOpen = true;
+}
+function closeInfo() {
+  const m = $('debris-info-modal');
+  m.hidden = true;
+  m.setAttribute('aria-hidden', 'true');
+  infoOpen = false;
+}
+(function setupInfo() {
+  $('debris-info-close')?.addEventListener('click', closeInfo);
+  $('debris-gaps-btn')?.addEventListener('click', () => openInfo('gaps'));
+  $('debris-info-modal')?.addEventListener('click', e => { if (e.target.id === 'debris-info-modal') closeInfo(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && infoOpen) closeInfo(); });
 })();
 
 // =========================================================================
