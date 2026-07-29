@@ -11,19 +11,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=32">
+  <link rel="stylesheet" href="styles.css?v=33">
   <style>
     /* News-archive chrome: a centred reading column over the dark theme.
-       Logo top-left, NAZAR nav button top-right (both via the shared classes,
-       just repositioned for this scrolling page). */
+       Top corners use the site-wide default — NAZAR button top-left, lighthouse
+       logo top-right. */
     body.page-news { overflow-y: auto; min-height: 100vh; }
-    body.page-news .top-nazar-btn { left: auto; right: 14px; top: 14px; }
-    body.page-news .top-logo { left: 14px; right: auto; top: 12px; }
-    /* On phones the ☰ hamburger owns the top-left corner, so drop the logo
-       there to avoid stacking — the page's own brand heading identifies it. */
-    @media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
-      body.page-news .top-logo { display: none; }
-    }
     /* Below ~1000px the centred column reaches the fixed NAZAR button, so stop
        pinning the toolbar (sticky would slide it under the button on scroll). */
     @media (max-width: 1000px) {

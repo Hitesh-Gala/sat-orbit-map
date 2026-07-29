@@ -12,16 +12,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=31">
+  <link rel="stylesheet" href="styles.css?v=33">
   <style>
     /* Overpass-only chrome: a left controls card + a right results card,
        both floating over the full-screen globe.  Reuses the shared .panel /
        .lookup-form / .goc-slider styles; this block is the page-specific bits. */
-    /* Deconflicted top corners: logo top-left, NAZAR button top-right, the two
-       control cards tucked below them.  The brand + tagline live inside the left
-       card (not a floating topbar) so nothing can cover them. */
-    body.page-overpass .top-nazar-btn { left: auto; right: 14px; top: 14px; }
-    body.page-overpass .top-logo { left: 14px; right: auto; }
+    /* Top corners use the site-wide default: NAZAR button top-left, lighthouse
+       logo top-right.  The brand + tagline live inside the left control card
+       (not a floating topbar), and both cards are tucked below the buttons. */
 
     .op-shell, .op-results {
       position: fixed;

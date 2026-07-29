@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=31">
+  <link rel="stylesheet" href="styles.css?v=33">
   <style>
     /* Page-specific HUD — taller than the viz3d panel because the
        category list runs to ~30 rows.  Same visual idiom otherwise. */
@@ -20,7 +20,7 @@
       position: fixed;
       top: 86px;
       left: 14px;
-      width: 320px;
+      width: 344px;
       max-width: calc(100vw - 28px);
       max-height: calc(100vh - 100px);
       overflow-y: auto;
@@ -41,8 +41,8 @@
       border-radius: 3px;
       color: var(--accent);
       font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.14em;
+      font-size: 12.5px;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       padding: 5px 8px;
       cursor: pointer;
@@ -56,8 +56,8 @@
       padding-bottom: 4px;
       font-family: 'Orbitron', sans-serif;
       font-weight: 500;
-      font-size: 11px;
-      letter-spacing: 0.20em;
+      font-size: 12.5px;
+      letter-spacing: 0.18em;
       color: var(--dim);
       text-transform: uppercase;
       border-bottom: 1px solid var(--line);
@@ -71,7 +71,7 @@
       cursor: default;
       user-select: none;
       font-family: var(--mono);
-      font-size: 12.5px;
+      font-size: 14px;
       border-bottom: 1px solid rgba(110, 200, 255, 0.05);
     }
     .sbo-row:hover { background: rgba(103, 200, 255, 0.05); }
@@ -107,8 +107,8 @@
       flex: 0 0 auto;
       color: var(--accent);
       font-variant-numeric: tabular-nums;
-      font-size: 12px;
-      min-width: 38px;
+      font-size: 13.5px;
+      min-width: 42px;
       text-align: right;
     }
     .sbo-row.zero .cnt { color: var(--dim); }
@@ -129,7 +129,7 @@
       background: rgba(103, 200, 255, 0.18);
       border-bottom-color: var(--accent);
     }
-    .sbo-status { font-size: 12px; color: var(--dim); line-height: 1.5; }
+    .sbo-status { font-size: 13.5px; color: var(--dim); line-height: 1.5; }
     .sbo-status strong { color: var(--accent); font-weight: normal; font-variant-numeric: tabular-nums; }
 
     /* Altitude / size sliders — same idiom as the viz3d page. */
@@ -138,9 +138,9 @@
       flex-direction: column;
       gap: 4px;
       margin: 6px 0 4px;
-      font-size: 12px;
+      font-size: 13.5px;
       color: var(--dim);
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
     }
     .sbo-slider .slider-row {

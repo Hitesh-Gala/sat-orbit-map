@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=31">
+  <link rel="stylesheet" href="styles.css?v=33">
   <style>
     /* Page-specific HUD — a left-edge legend / stats card that mirrors
        the visual language of game-of-cones .goc-shell but with a wider
@@ -22,7 +22,7 @@
       position: fixed;
       top: 86px;
       left: 14px;
-      width: 280px;
+      width: 300px;
       max-width: calc(100vw - 28px);
       max-height: calc(100vh - 100px);
       overflow-y: auto;
@@ -37,8 +37,8 @@
       justify-content: space-between;
       padding: 5px 0;
       font-family: var(--mono);
-      font-size: 13px;
-      letter-spacing: 0.06em;
+      font-size: 14.5px;
+      letter-spacing: 0.05em;
       border-bottom: 1px solid rgba(110, 200, 255, 0.07);
     }
     .viz-legend-row:last-child { border-bottom: 0; }
@@ -51,11 +51,11 @@
       box-shadow: 0 0 8px currentColor;
     }
     .viz-legend-row .desc { flex: 1; color: var(--text); }
-    .viz-legend-row .desc small { color: var(--dim); margin-left: 6px; font-size: 12px; }
+    .viz-legend-row .desc small { color: var(--dim); margin-left: 6px; font-size: 13px; }
     .viz-legend-row .count {
       color: var(--accent);
       font-variant-numeric: tabular-nums;
-      font-size: 14.5px;
+      font-size: 15.5px;
       letter-spacing: 0.04em;
     }
     .viz-controls { display: flex; flex-direction: column; gap: 6px; }
@@ -64,9 +64,9 @@
       align-items: center;
       gap: 8px;
       font-family: var(--mono);
-      font-size: 13px;
+      font-size: 14.5px;
       color: var(--dim);
-      letter-spacing: 0.06em;
+      letter-spacing: 0.05em;
       cursor: pointer;
       user-select: none;
     }
@@ -76,9 +76,9 @@
       justify-content: space-between;
       align-items: baseline;
       font-family: var(--mono);
-      font-size: 12px;
+      font-size: 13.5px;
       color: var(--dim);
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       margin-top: 4px;
     }
@@ -92,7 +92,7 @@
       width: 100%;
       accent-color: var(--accent);
     }
-    .viz-status { font-size: 12px; color: var(--dim); line-height: 1.5; }
+    .viz-status { font-size: 13.5px; color: var(--dim); line-height: 1.5; }
     .viz-status strong { color: var(--accent); font-weight: normal; font-variant-numeric: tabular-nums; }
 
     /* Bottom search box + upward-opening results. */

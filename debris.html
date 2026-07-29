@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=32">
+  <link rel="stylesheet" href="styles.css?v=33">
   <style>
     /* Left filter/legend card, same idiom as the Sats-by-Operator page. */
     .debris-shell {
@@ -24,26 +24,26 @@
     .deb-controls { display: flex; gap: 6px; margin-bottom: 8px; }
     .deb-controls button {
       flex: 1; background: rgba(103, 200, 255, 0.10); border: 1px solid var(--line);
-      border-radius: 3px; color: var(--accent); font-family: var(--mono); font-size: 11px;
-      letter-spacing: 0.14em; text-transform: uppercase; padding: 5px 8px; cursor: pointer;
+      border-radius: 3px; color: var(--accent); font-family: var(--mono); font-size: 12.5px;
+      letter-spacing: 0.12em; text-transform: uppercase; padding: 5px 8px; cursor: pointer;
     }
     .deb-controls button:hover { background: rgba(103, 200, 255, 0.22); border-color: var(--accent); }
     .deb-row {
       display: flex; align-items: center; gap: 8px; padding: 6px 2px;
-      font-family: var(--mono); font-size: 12.5px;
+      font-family: var(--mono); font-size: 14px;
       border-bottom: 1px solid rgba(110, 200, 255, 0.05);
     }
     .deb-row:last-child { border-bottom: 0; }
     .deb-row input[type="checkbox"] { flex: 0 0 auto; accent-color: var(--accent); cursor: pointer; }
     .deb-row .swatch { flex: 0 0 auto; width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
     .deb-lbl { flex: 1; min-width: 0; color: var(--text); }
-    .deb-country { color: var(--dim); font-size: 10.5px; letter-spacing: 0.06em; }
-    .deb-cnt { flex: 0 0 auto; color: var(--accent); font-variant-numeric: tabular-nums; font-size: 12px; min-width: 42px; text-align: right; }
-    .deb-slider { display: flex; flex-direction: column; gap: 4px; margin: 6px 0 4px; font-size: 12px; color: var(--dim); letter-spacing: 0.1em; text-transform: uppercase; }
+    .deb-country { color: var(--dim); font-size: 12px; letter-spacing: 0.04em; }
+    .deb-cnt { flex: 0 0 auto; color: var(--accent); font-variant-numeric: tabular-nums; font-size: 13.5px; min-width: 44px; text-align: right; }
+    .deb-slider { display: flex; flex-direction: column; gap: 4px; margin: 6px 0 4px; font-size: 13.5px; color: var(--dim); letter-spacing: 0.08em; text-transform: uppercase; }
     .deb-slider .slider-row { display: flex; justify-content: space-between; align-items: baseline; }
     .deb-slider .slider-value { color: var(--accent); font-variant-numeric: tabular-nums; letter-spacing: 0.04em; text-transform: none; }
     .deb-slider input[type="range"] { width: 100%; accent-color: var(--accent); }
-    .debris-status { font-size: 12px; color: var(--dim); line-height: 1.5; }
+    .debris-status { font-size: 13.5px; color: var(--dim); line-height: 1.5; }
     .deb-stats-btn {
       width: 100%; padding: 9px; border-radius: 5px; background: rgba(103, 200, 255, 0.14);
       border: 1px solid var(--accent); color: var(--accent); font-family: var(--mono);
@@ -51,7 +51,7 @@
       transition: background .15s, transform .15s;
     }
     .deb-stats-btn:hover { background: rgba(103, 200, 255, 0.26); transform: translateY(-1px); }
-    .deb-hint { font-size: 11.5px; color: var(--dim); line-height: 1.5; }
+    .deb-hint { font-size: 13px; color: var(--dim); line-height: 1.5; }
 
     /* ⓘ info button on each filter row + the "gaps" button */
     .deb-info {

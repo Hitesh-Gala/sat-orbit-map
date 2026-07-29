@@ -182,8 +182,8 @@ a:hover { text-decoration: underline; }
 .clock .label,
 .panel .label {
   color: var(--dim);
-  font-size: 13px;
-  letter-spacing: 0.16em;
+  font-size: 14px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 .clock .time {
@@ -234,8 +234,8 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
 .hint {
   color: var(--dim);
   margin: 8px 0 4px;
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .list {
@@ -257,9 +257,9 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   display: flex;
   flex-direction: column;
   gap: 3px;
-  font-size: 12px;
+  font-size: 13.5px;
   color: var(--dim);
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 .lookup-form input[type="number"] {
@@ -1509,9 +1509,10 @@ body.light .btn-sbo .btn-nav-icon { color: #d35400; text-shadow: none; }
    720-px centered-topbar rule keeps winning on mobile, where the
    button sits below the ☰ MENU toggle instead. */
 @media (min-width: 721px) {
-  body.page-viz3d .topbar,
-  body.page-sbo   .topbar,
-  body.page-goc   .topbar { padding-left: 165px; }
+  body.page-viz3d  .topbar,
+  body.page-sbo    .topbar,
+  body.page-goc    .topbar,
+  body.page-debris .topbar { padding-left: 165px; }
 }
 
 /* --- Switch 2D-3D view-mode toggle on the main page HUD.  Full-width
@@ -1682,13 +1683,13 @@ body.page-2d    .page-2d-header { padding-right: 110px; }
   position: fixed;
   pointer-events: none;
   z-index: 100;
-  max-width: 280px;
+  max-width: 300px;
   background: rgba(2, 6, 13, 0.94);
   border: 1px solid var(--line);
   border-radius: 5px;
   padding: 10px 12px;
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 13.5px;
   color: var(--text);
   line-height: 1.55;
   letter-spacing: 0.03em;
@@ -1700,15 +1701,15 @@ body.page-2d    .page-2d-header { padding-right: 110px; }
   display: block;
   margin-bottom: 4px;
   color: var(--accent);
-  font-size: 13px;
+  font-size: 14.5px;
   letter-spacing: 0.05em;
 }
 .sat-tip-3d .cls {
   display: inline-block;
   padding: 2px 8px;
   border-radius: 2px;
-  font-size: 10px;
-  letter-spacing: 0.18em;
+  font-size: 11.5px;
+  letter-spacing: 0.16em;
   margin: 2px 0 4px;
 }
 .sat-tip-3d strong { color: var(--accent); font-weight: normal; font-variant-numeric: tabular-nums; }
