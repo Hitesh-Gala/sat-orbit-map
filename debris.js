@@ -31,29 +31,9 @@ const SRC_INDEX = {};
 SOURCES.forEach((s, i) => { if (s.key !== 'other') SRC_INDEX[s.key] = i; });
 const SRC_COLOR = SOURCES.map(s => new THREE.Color(s.color));
 
-// Rich context for the statistics pop-up.  Figures from open sources.
-const SOURCE_INFO = {
-  '99025': {
-    title: 'Fengyun-1C — Chinese ASAT test',
-    when: '11 January 2007',
-    what: 'China destroyed its own defunct Fengyun-1C weather satellite with a ground-launched direct-ascent missile at ~865 km. It produced more than 3,500 catalogued fragments — the single worst debris-generating event in history — most in long-lived orbits that will persist for decades to centuries.',
-  },
-  '93036': {
-    title: 'Cosmos 2251 — accidental collision',
-    when: '10 February 2009',
-    what: 'The defunct Russian Cosmos 2251 communications satellite collided with the active US Iridium 33 at ~789 km over Siberia — the first major accidental hypervelocity collision between two intact satellites. The two clouds together added ~1,800+ tracked fragments.',
-  },
-  '97051': {
-    title: 'Iridium 33 — accidental collision',
-    when: '10 February 2009',
-    what: 'The active Iridium 33 satellite was the other half of the 2009 collision with Cosmos 2251. Its fragment cloud sits around the ~780 km Iridium shell.',
-  },
-  '82092': {
-    title: 'Cosmos 1408 — Russian ASAT test',
-    when: '15 November 2021',
-    what: 'Russia destroyed its defunct Cosmos 1408 ELINT satellite with a direct-ascent ASAT, creating ~1,500 catalogued fragments and forcing the ISS crew to shelter. Its lower altitude means the cloud is decaying comparatively quickly.',
-  },
-};
+// The rich per-event context + all charts live on the dedicated statistics
+// dashboard (debris-stats.html), computed from the full SATCAT — this globe
+// page just plots and filters the fragments.
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -395,123 +375,6 @@ function onMouseLeave() { pendingMouse = null; hoverId = -1; tip.hidden = true; 
   if (!cv) { requestAnimationFrame(attachHover); return; }
   cv.addEventListener('mousemove', onMouseMove);
   cv.addEventListener('mouseleave', onMouseLeave);
-})();
-
-// =========================================================================
-// Statistics pop-up (Chart.js)
-// =========================================================================
-let charts = [];
-function destroyCharts() { charts.forEach(c => c.destroy()); charts = []; }
-
-function computeStats() {
-  const bySource = SOURCES.map(() => 0);
-  const byCountry = {};
-  const altBuckets = [0, 0, 0, 0, 0, 0, 0];     // <400,400-600,600-800,800-1000,1000-1500,1500-2000,>2000
-  const incBuckets = new Array(10).fill(0);      // 0-180° in 18° bins
-  let withPos = 0;
-  for (let i = 0; i < allDebris.length; i++) {
-    const d = allDebris[i], st = satState[i];
-    bySource[d.src]++;
-    const ctry = SOURCES[d.src].country;
-    if (ctry !== '—') byCountry[ctry] = (byCountry[ctry] || 0) + 1;
-    if (st) {
-      withPos++;
-      const a = st.alt;
-      const b = a < 400 ? 0 : a < 600 ? 1 : a < 800 ? 2 : a < 1000 ? 3 : a < 1500 ? 4 : a < 2000 ? 5 : 6;
-      altBuckets[b]++;
-    }
-    const incDeg = d.rec && Number.isFinite(d.rec.inclo) ? d.rec.inclo * 180 / Math.PI : NaN;
-    if (Number.isFinite(incDeg)) incBuckets[Math.min(9, Math.floor(incDeg / 18))]++;
-  }
-  return { bySource, byCountry, altBuckets, incBuckets, withPos, total: allDebris.length };
-}
-
-const CHART_FONT = "'JetBrains Mono', monospace";
-function chartBase() {
-  return {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { labels: { color: '#aebfd0', font: { family: CHART_FONT, size: 11 } } } },
-    scales: {
-      x: { ticks: { color: '#8aa0b8', font: { family: CHART_FONT, size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
-      y: { ticks: { color: '#8aa0b8', font: { family: CHART_FONT, size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
-    },
-  };
-}
-
-function buildCharts() {
-  if (typeof Chart === 'undefined') { $('debris-stats-note').textContent = 'Chart library did not load.'; return; }
-  destroyCharts();
-  const s = computeStats();
-
-  // 1) fragments per breakup event
-  charts.push(new Chart($('chart-source'), {
-    type: 'bar',
-    data: { labels: SOURCES.map(x => x.short),
-      datasets: [{ data: s.bySource, backgroundColor: SOURCES.map(x => x.color), borderWidth: 0 }] },
-    options: Object.assign(chartBase(), { plugins: { legend: { display: false } } }),
-  }));
-
-  // 2) fragments by originating country
-  const cLabels = Object.keys(s.byCountry);
-  const cColorMap = { China: '#ff5b5b', Russia: '#4a90e2', USA: '#67e8a4' };
-  charts.push(new Chart($('chart-country'), {
-    type: 'doughnut',
-    data: { labels: cLabels, datasets: [{ data: cLabels.map(k => s.byCountry[k]),
-      backgroundColor: cLabels.map(k => cColorMap[k] || '#9aa7b3'), borderColor: '#0a0e14', borderWidth: 2 }] },
-    options: { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom', labels: { color: '#aebfd0', font: { family: CHART_FONT, size: 11 } } } } },
-  }));
-
-  // 3) altitude distribution
-  charts.push(new Chart($('chart-altitude'), {
-    type: 'bar',
-    data: { labels: ['<400', '400–600', '600–800', '800–1000', '1000–1500', '1500–2000', '>2000'],
-      datasets: [{ label: 'fragments', data: s.altBuckets, backgroundColor: '#4ea8ff', borderWidth: 0 }] },
-    options: Object.assign(chartBase(), { plugins: { legend: { display: false } } }),
-  }));
-
-  // 4) inclination distribution
-  charts.push(new Chart($('chart-inclination'), {
-    type: 'bar',
-    data: { labels: ['0–18', '18–36', '36–54', '54–72', '72–90', '90–108', '108–126', '126–144', '144–162', '162–180'],
-      datasets: [{ label: 'fragments', data: s.incBuckets, backgroundColor: '#c39bd3', borderWidth: 0 }] },
-    options: Object.assign(chartBase(), { plugins: { legend: { display: false } } }),
-  }));
-
-  // headline numbers + event notes
-  $('stat-total').textContent   = s.total.toLocaleString();
-  $('stat-events').textContent  = SOURCES.filter(x => x.key !== 'other').length;
-  $('stat-tracked').textContent = s.withPos.toLocaleString();
-  $('debris-events').innerHTML = SOURCES.filter(x => SOURCE_INFO[x.key]).map(x => {
-    const info = SOURCE_INFO[x.key];
-    const n = s.bySource[SOURCES.indexOf(x)];
-    return `<div class="deb-event">
-      <div class="deb-event-head"><span class="swatch" style="background:${x.color};color:${x.color}"></span>
-        <strong>${esc(info.title)}</strong><span class="deb-event-when">${esc(info.when)}</span>
-        <span class="deb-event-n">${n.toLocaleString()} tracked</span></div>
-      <p>${esc(info.what)}</p></div>`;
-  }).join('');
-}
-
-function openStats() {
-  const m = $('debris-stats-modal');
-  m.hidden = false;
-  m.setAttribute('aria-hidden', 'false');
-  requestAnimationFrame(buildCharts);
-}
-function closeStats() {
-  const m = $('debris-stats-modal');
-  m.hidden = true;
-  m.setAttribute('aria-hidden', 'true');
-  destroyCharts();
-}
-(function setupStats() {
-  $('debris-stats-btn')?.addEventListener('click', openStats);
-  $('debris-stats-close')?.addEventListener('click', closeStats);
-  $('debris-stats-modal')?.addEventListener('click', e => { if (e.target.id === 'debris-stats-modal') closeStats(); });
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && !$('debris-stats-modal').hidden) closeStats();
-  });
 })();
 
 // =========================================================================

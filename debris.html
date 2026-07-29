@@ -143,7 +143,7 @@
     </section>
 
     <section class="panel">
-      <button type="button" id="debris-stats-btn" class="deb-stats-btn">📊 Statistics</button>
+      <a href="debris-stats.html" class="deb-stats-btn" style="display:block;text-align:center;text-decoration:none" title="Full cumulative history, country breakdown and charts from the whole SATCAT">📊 Statistics &amp; history</a>
       <div id="debris-status" class="debris-status" style="margin-top:8px">Booting…</div>
       <div class="deb-hint" style="margin-top:8px">Hover any fragment for its details. Colours mark the event that created it.</div>
     </section>
@@ -151,54 +151,11 @@
 
   <div id="sat-tip" class="sat-tip-3d" hidden></div>
 
-  <!-- Statistics pop-up -->
-  <div id="debris-stats-modal" class="deb-modal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="deb-stats-title">
-    <div class="deb-modal-card">
-      <button type="button" id="debris-stats-close" class="deb-modal-close" aria-label="Close">×</button>
-      <h2 id="deb-stats-title">Debris Statistics</h2>
-      <div class="sub">Tracked fragments from the biggest on-orbit breakups — derived live from the same catalogue on the globe.</div>
-
-      <div class="deb-headline">
-        <div class="deb-stat"><span class="k">Tracked fragments</span><span class="v" id="stat-total">…</span></div>
-        <div class="deb-stat"><span class="k">Breakup events</span><span class="v" id="stat-events">…</span></div>
-        <div class="deb-stat"><span class="k">Positioned now</span><span class="v" id="stat-tracked">…</span></div>
-      </div>
-
-      <div class="deb-charts">
-        <div class="deb-chart-card">
-          <h3>Fragments per event</h3>
-          <div class="csub">How many catalogued pieces each breakup still contributes.</div>
-          <div class="deb-chart-box"><canvas id="chart-source"></canvas></div>
-        </div>
-        <div class="deb-chart-card">
-          <h3>By originating country</h3>
-          <div class="csub">Country that owned / destroyed the parent object.</div>
-          <div class="deb-chart-box"><canvas id="chart-country"></canvas></div>
-        </div>
-        <div class="deb-chart-card">
-          <h3>Altitude distribution</h3>
-          <div class="csub">Current altitude of each fragment (km). Higher = longer-lived.</div>
-          <div class="deb-chart-box"><canvas id="chart-altitude"></canvas></div>
-        </div>
-        <div class="deb-chart-card">
-          <h3>Orbital inclination</h3>
-          <div class="csub">Distribution in 18° bins, 0° equatorial → 180° retrograde.</div>
-          <div class="deb-chart-box"><canvas id="chart-inclination"></canvas></div>
-        </div>
-      </div>
-
-      <div class="deb-events" id="debris-events"></div>
-      <div class="deb-stats-note" id="debris-stats-note"></div>
-      <p class="deb-foot">Source: CelesTrak per-event debris element sets, propagated with SGP4 in your browser. Counts are the currently-catalogued (still-tracked) fragments — well below the totals originally created, as many pieces have since re-entered. Event figures compiled from open sources.</p>
-    </div>
-  </div>
-
   <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
   <script src="tle-loader.js?v=11"></script>
-  <script src="debris.js?v=1"></script>
+  <script src="debris.js?v=2"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=10"></script>
 </body>

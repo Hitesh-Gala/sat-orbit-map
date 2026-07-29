@@ -54,7 +54,9 @@ Each `.html` is paired with a same-name `.js`. All pages share `styles.css` and 
 | `viz3d.html` | `viz3d.js` | globe.gl + **bare three.js r157** | Every active sat at true altitude via one `THREE.InstancedMesh`; hover tooltip + click-to-isolate orbit tube; bottom search box highlights a sat (reuses `selectSat` → dim others + orbit ring + camera swing) |
 | `sats-by-ops.html` | `sats-by-ops.js` | globe.gl + **bare three.js r157** | Same InstancedMesh engine, sats colour-coded by ~37 operator/constellation categories with per-category toggles |
 | `game-of-cones.html` | `game-of-cones.js` | globe.gl + **bare three.js r157** | Land-cone and sat-cone geometry puzzles (ConeGeometry meshes added directly to `globe.scene()`) |
-| `sat-stats.html` | `sat-stats.js` | none | Cumulative satellite DB (localStorage) + Chart.js graphs + TLE Repo modal |
+| `sat-stats.html` | `sat-stats.js` | none | Cumulative satellite DB (localStorage) + Chart.js graphs + TLE Repo modal + Alpha-5 catalogue modal |
+| `debris.html` | `debris.js` | globe.gl + **bare three.js r157** | Debris Tracker — InstancedMesh globe of the four major breakup clouds (Fengyun-1C, Cosmos 2251, Iridium 33, Cosmos 1408), coloured by event, hover tooltips, per-event filter. Fetches CelesTrak per-event debris GROUPs (live → `argos.debris.tle.v1` 6 h cache → bundled `data/debris.tle`). Each fragment tagged to its source by the parent launch designator (line-1 cols 10–14). "📊 Statistics & history" links to debris-stats.html |
+| `debris-stats.html` | `debris-stats.js` | none | Debris Statistics dashboard — Chart.js charts from the precomputed `data/debris-history.json` (≈5 KB): the cumulative year-on-year build-up (created / decayed / net-in-orbit), per-country stacked area, altitude / inclination distributions, object-type split, and event cards. No live propagation — all derived from the SATCAT precompute |
 | `chinrepo.html` | `chinrepo.js` | none | Filterable table of every active PRC payload (joins CelesTrak SATCAT `OWNER=PRC` with active TLEs) |
 | `compendium.html` | (inline) | none | Self-contained PRC-program reference catalogue with embedded styles |
 | `news-archive.html` | `news-archive.js` | none | The "TICKER TAPE" click-through — a chronological, day-grouped repository of every headline the ticker has caught (since 01 Jul 2026), with filter / China-only / sort controls and plain-text PDF export (jsPDF: one combined chronological doc, or one per article) |
@@ -97,7 +99,9 @@ CelesTrak's `gp.php` aggressively 403s repeat callers from the same IP. During d
 `.github/workflows/refresh-data.yml` runs every 6 hours (cron `17 */6 * * *`) and on manual `workflow_dispatch`. It:
 
 1. Pulls the latest `/pub/satcat.csv` (CelesTrak's *static* file — NOT subject to the dynamic-endpoint 403 limit), filters to active payloads, and writes `data/satcat-active.json`.
-2. Best-effort fetches fresh TLEs from `gp.php?GROUP=active` and overwrites `data/active.tle`. This step is `continue-on-error: true` — a 403 just means we keep the previous snapshot and try again next cycle.
+2. Runs `scripts/gen_debris_history.py` against the same downloaded `satcat.csv` to precompute `data/debris-history.json` (the Debris Statistics dashboard's ~5 KB data file — cumulative debris by year, per country, altitude/inclination). Has its own sanity floor (≥15 000 debris).
+3. Best-effort fetches fresh TLEs from `gp.php?GROUP=active` and overwrites `data/active.tle`. This step is `continue-on-error: true` — a 403 just means we keep the previous snapshot and try again next cycle.
+4. Best-effort refreshes `data/debris.tle` (the Debris Tracker globe's bundled fallback) from the four breakup-cloud `gp.php` GROUPs — also `continue-on-error` with a sanity floor.
 3. Commits + pushes only if at least one file changed. Push is by `github-actions[bot]` with `contents: write` permission. GitHub Pages auto-rebuilds on the push.
 
 The job has a sanity floor (≥10 000 SATCAT records, ≥30 000 TLE lines) — if the response is truncated or replaced by an error page, the job aborts rather than commit a regressed file.

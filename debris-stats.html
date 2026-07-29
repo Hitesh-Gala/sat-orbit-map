@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>NAZAR · Debris Statistics</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=32">
+  <style>
+    body.page-debris-stats { overflow-y: auto; min-height: 100vh; }
+    body.page-debris-stats .top-nazar-btn { left: auto; right: 14px; top: 14px; }
+    body.page-debris-stats .top-logo { left: 14px; right: auto; top: 12px; }
+    @media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
+      body.page-debris-stats .top-logo { display: none; }
+    }
+
+    .ds-shell { max-width: 1120px; margin: 0 auto; padding: 62px 20px 80px; }
+
+    .ds-head { margin-bottom: 18px; }
+    .ds-brand {
+      font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(22px, 4vw, 34px);
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent);
+      text-shadow: 0 0 14px rgba(103, 200, 255, 0.5); margin: 0;
+    }
+    .ds-tagline {
+      font-family: var(--script, 'Caveat', cursive); font-size: 22px; color: var(--accent2, #ff6b6b);
+      margin: 2px 0 8px; text-shadow: 0 0 8px rgba(255, 107, 107, 0.3);
+    }
+    .ds-sub { font-family: var(--mono); font-size: 12px; color: var(--dim); line-height: 1.7; }
+    .ds-sub strong { color: var(--text); font-weight: normal; }
+    .ds-back { color: var(--accent); text-decoration: none; font-family: var(--mono); font-size: 12px; }
+    .ds-back:hover { text-decoration: underline; }
+
+    .ds-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 18px 0; }
+    .ds-tile { background: rgba(103, 200, 255, 0.06); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+    .ds-tile .k { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
+    .ds-tile .v { display: block; margin-top: 5px; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 26px; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .ds-tile .x { display: block; margin-top: 3px; font-size: 11px; color: var(--dim); }
+    .ds-tile.hero-red .v { color: #ff6b6b; }
+    .ds-tile.hero-green .v { color: #67e8a4; }
+
+    .ds-card {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--line); border-radius: 10px;
+      padding: 14px 16px 12px; margin-bottom: 16px;
+    }
+    .ds-card h2 { margin: 0 0 2px; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 15px; color: var(--text); }
+    .ds-card h3 { margin: 0 0 2px; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 13px; color: var(--text); }
+    .ds-card .csub { font-size: 12px; color: var(--dim); margin-bottom: 10px; line-height: 1.5; }
+    .ds-hero-box { position: relative; height: 360px; }
+    .ds-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .ds-box { position: relative; height: 240px; }
+
+    .ds-events { display: flex; flex-direction: column; gap: 10px; }
+    .ds-event { border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 7px; padding: 10px 12px; background: rgba(255,255,255,0.02); }
+    .ds-event-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .ds-event-head .swatch { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
+    .ds-event-head strong { color: var(--text); font-size: 13.5px; }
+    .ds-event-when { font-family: var(--mono); font-size: 11px; color: var(--dim); }
+    .ds-event-n { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--accent); }
+    .ds-event p { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--dim); }
+
+    .ds-note { font-size: 11.5px; color: var(--dim); line-height: 1.6; margin-top: 8px; }
+    .ds-note strong { color: #ffd27f; font-weight: normal; }
+    .ds-loading { color: var(--dim); font-size: 14px; padding: 40px 10px; text-align: center; }
+
+    @media (max-width: 680px) { .ds-grid { grid-template-columns: 1fr; } .ds-hero-box { height: 300px; } }
+  </style>
+</head>
+<body class="page-debris-stats">
+  <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
+    <img src="data/nazar-logo.svg?v=5" alt="NAZAR">
+  </a>
+  <a class="top-nazar-btn" href="index.html" title="NAZAR navigation menu">
+    <span class="ico">◯</span><span class="lbl">NAZAR</span>
+  </a>
+
+  <main class="ds-shell">
+    <header class="ds-head">
+      <h1 class="ds-brand">Debris Statistics</h1>
+      <div class="ds-tagline">Half a century of clutter, one honest curve.</div>
+      <div class="ds-sub" id="ds-meta">Loading the debris catalogue…</div>
+      <div style="margin-top:6px"><a class="ds-back" href="debris.html">← Back to the live Debris Tracker globe</a></div>
+    </header>
+
+    <div id="ds-body">
+      <div class="ds-loading">Loading…</div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+  <script src="debris-stats.js?v=1"></script>
+  <script src="nazar-bgm.js?v=4"></script>
+  <script src="mobile-menu.js?v=10"></script>
+</body>
+</html>

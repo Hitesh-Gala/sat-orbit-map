@@ -94,6 +94,13 @@ jobs:
               sys.exit(1)
           PY
 
+      # ---- Debris history ---------------------------------------------
+      # Reuse the SATCAT already downloaded above to precompute the compact
+      # (~5 KB) cumulative-history JSON the Debris Statistics dashboard reads,
+      # so browsers never download the 6.7 MB CSV.  Has its own sanity floor.
+      - name: Build debris history
+        run: python3 scripts/gen_debris_history.py /tmp/satcat.csv data/debris-history.json
+
       # ---- TLEs (best-effort) -----------------------------------------
       # gp.php is the dynamic endpoint and *is* rate-limited.  This step
       # is intentionally non-fatal: if it 403s we just keep the existing
@@ -116,6 +123,30 @@ jobs:
               fi
           else
               echo "TLE fetch failed (probably rate-limited 403) — keeping existing snapshot"
+          fi
+
+      # ---- Debris TLEs (best-effort) ----------------------------------
+      # Refresh the bundled debris.tle fallback (globe uses live gp.php first,
+      # this only kicks in on 403).  Fetches the four big breakup clouds; keeps
+      # the existing snapshot unless the combined result clears a sanity floor.
+      - name: Refresh debris TLEs (best-effort)
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          : > /tmp/debris.tle
+          ok=1
+          for g in fengyun-1c-debris cosmos-2251-debris iridium-33-debris cosmos-1408-debris; do
+            if ! curl -fsS "https://celestrak.org/NORAD/elements/gp.php?GROUP=$g&FORMAT=tle" >> /tmp/debris.tle; then
+              echo "debris group $g failed (probably 403)"; ok=0; break
+            fi
+            sleep 2
+          done
+          count=$(grep -c '^1 ' /tmp/debris.tle || true)
+          if [ "$ok" -eq 1 ] && [ "$count" -gt 500 ]; then
+            tr -d '\r' < /tmp/debris.tle | grep -v '^[[:space:]]*$' > data/debris.tle
+            echo "debris.tle refresh: $count fragments"
+          else
+            echo "debris refresh incomplete ($count fragments) — keeping existing snapshot"
           fi
 
       # ---- Commit + push ----------------------------------------------
