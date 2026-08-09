@@ -27,6 +27,37 @@
   }
 })();
 
+// ---------------------------------------------------------------------------
+// Space-policy credit that hugs the lighthouse logo, on every page.  Injected
+// here (rather than in each page's markup) so all ~15 pages stay in sync from
+// one place.  Two compact lines; styled via .logo-credit (beside / beneath the
+// logo) in styles.css, or via each self-contained page's own inline .logo-credit.
+//
+// Placement depends on where the logo lives:
+//   • logo is a direct <body> child (the shared-CSS pages) → append the credit
+//     to <body> too, so .logo-credit (position:absolute, top-right) can sit
+//     beside or beneath the mark and scroll with it just like the logo does.
+//   • logo sits inside a sticky/backdrop-filtered header (the self-contained
+//     pages) → insert the credit right after the logo, in that header's flow,
+//     so it rides along with the sticky bar instead of being trapped or adrift.
+// ---------------------------------------------------------------------------
+(function insertLogoCredit() {
+  function run() {
+    const logo = document.querySelector('.top-logo');
+    if (!logo) return;                                  // NAZAR pages only
+    if (document.querySelector('.logo-credit')) return; // never duplicate
+    const credit = document.createElement('div');
+    credit.className = 'logo-credit';
+    credit.innerHTML =
+      'For more on Space Policy,<br>visit - ' +
+      '<a href="https://takshashila.org.in" target="_blank" rel="noopener noreferrer">www.takshashila.org.in</a>';
+    if (logo.parentElement === document.body) document.body.appendChild(credit);
+    else logo.insertAdjacentElement('afterend', credit);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+  else run();
+})();
+
 // Universal mobile menu — loaded on every page.
 //
 // On phones (≤ 720 px) the page is otherwise unreadable because the
