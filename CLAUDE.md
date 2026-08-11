@@ -4,13 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this project is
 
-**NAZAR** — a static, client-only satellite tracker focused on Chinese spacecraft visibility. Deployed via GitHub Pages from the `main` branch of `https://github.com/hdgala-cpu/Third-Trial` to `https://hdgala-cpu.github.io/Third-Trial/`. No backend; everything runs in the browser.
+**NAZAR** — a static, client-only satellite tracker focused on Chinese spacecraft visibility. Deployed via GitHub Pages from the `main` branch of `https://github.com/Hitesh-Gala/sat-orbit-map` to `https://hitesh-gala.github.io/sat-orbit-map/`. No backend; everything runs in the browser.
 
 Every page consumes the same NORAD/CelesTrak TLE catalog and propagates orbits with SGP4 (satellite.js) locally. There is no JSON tracker API in the loop — `satellitetracker3d.com` is referenced in comments but not called.
 
 ## Where the code actually lives
 
-The site is the contents of the **`Third-Trial/`** directory (this directory). The sibling `../Argos/` folder is a different, unrelated project that just happens to share the parent workspace — do not edit it when working on NAZAR.
+The site is the contents of the **`sat-orbit-map/`** directory (this directory). The sibling `../Argos/` folder is a different, unrelated project that just happens to share the parent workspace — do not edit it when working on NAZAR.
 
 `../.claude/launch.json` defines two preview servers — port **8090** serves NAZAR, port 8080 serves the unrelated Argos project.
 
@@ -19,16 +19,16 @@ The site is the contents of the **`Third-Trial/`** directory (this directory). T
 The preview tool (`mcp__Claude_Preview__preview_start`) starts the static server defined in `../.claude/launch.json`:
 
 ```
-name: "Third-Trial static server"  →  python -m http.server 8090 --directory Third-Trial
+name: "sat-orbit-map static server"  →  python -m http.server 8090 --directory sat-orbit-map
 ```
 
-Equivalent ad-hoc command from the workspace root: `python -m http.server 8090 --directory Third-Trial`.
+Equivalent ad-hoc command from the workspace root: `python -m http.server 8090 --directory sat-orbit-map`.
 
 There is no build step, no bundler, no test suite, no linter. Edit a file → reload the browser.
 
 ## Deployment & cache busting
 
-Push to `main` → GitHub Pages auto-rebuilds (~30-60 s). Verify the live commit with `gh api repos/hdgala-cpu/Third-Trial/pages/builds --jq '.[0]'`.
+Push to `main` → GitHub Pages auto-rebuilds (~30-60 s). Verify the live commit with `gh api repos/Hitesh-Gala/sat-orbit-map/pages/builds --jq '.[0]'`.
 
 Local script tags carry a manual `?v=N` query string (e.g. `<script src="app.js?v=19">`). **Bump that integer whenever you change the corresponding JS file** — without it, browsers serve the previous cached copy and the page silently runs old code. After deploy, users still need a hard refresh to pick up `index.html` changes (Pages sets a 10-min cache header on HTML).
 
@@ -86,7 +86,7 @@ Pages that construct three.js objects directly (`app.js`, `viz3d.js`, `sats-by-o
 
 - **Never force-push `main`**. If you must roll back state, use the non-destructive `git read-tree -u --reset <commit>` then commit on top of HEAD — this preserves history and lets the user `git checkout <old-sha> -- path` to cherry-pick discarded work. There is precedent in the history (commit `f84faed`).
 - The user's local `core.autocrlf` rewrites line endings on commit; the `LF will be replaced by CRLF` warnings are expected and not actionable.
-- Commits land directly on `main` (no PR workflow). The author identity is set per-repo via `git -C Third-Trial config user.name/email`.
+- Commits land directly on `main` (no PR workflow). The author identity is set per-repo via `git -C sat-orbit-map config user.name/email`.
 
 ## CelesTrak rate-limit reality
 
