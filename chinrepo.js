@@ -128,7 +128,7 @@ function render() {
       <td class="muted">${esc(r.designator)}</td>
       <td>${esc(r.purpose)}</td>
       <td>${esc(r.launch) || '<span class="muted">—</span>'}</td>
-      <td class="muted">${esc(r.site) || '—'}</td>
+      <td>${r.site ? `<button type="button" class="site-cell" data-site="${esc(r.site)}" title="Show ${esc(r.site)} on the launch-site map">${esc(r.site)}</button>` : '<span class="muted">—</span>'}</td>
       <td class="col-num">${r.alt.toFixed(0)} km</td>
       <td class="muted">${r.lat.toFixed(2)}°, ${r.lon.toFixed(2)}°</td>
       <td>${r.cls}</td>
