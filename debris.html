@@ -97,6 +97,109 @@
     .deb-info-trivia .k { font-family: 'Orbitron', sans-serif; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
     .deb-info-trivia ul { margin: 8px 0 0; padding-left: 18px; }
     .deb-info-trivia li { font-size: 12.5px; line-height: 1.5; color: var(--dim); margin-bottom: 6px; }
+
+    /* ============================================================
+       2007 Chinese ASAT feature — right-edge button + long-read modal
+       ============================================================ */
+    .asat-btn {
+      position: fixed; right: 0; top: 46%; transform: translateY(-50%); z-index: 30;
+      display: flex; align-items: center; gap: 11px; width: 210px; text-align: left; cursor: pointer;
+      padding: 12px 14px; border-radius: 11px 0 0 11px;
+      background: linear-gradient(135deg, rgba(28,10,10,0.95), rgba(48,15,14,0.95));
+      border: 1px solid #ff6f5f; border-right: 0; color: #ffd9d2;
+      box-shadow: 0 10px 34px rgba(0,0,0,0.5), 0 0 22px rgba(255,90,66,0.28);
+      transition: transform .16s, box-shadow .16s;
+    }
+    .asat-btn:hover { transform: translateY(-50%) translateX(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 34px rgba(255,90,66,0.45); }
+    .asat-btn .ico { flex: 0 0 auto; font-size: 23px; line-height: 1; filter: drop-shadow(0 0 6px rgba(255,130,100,0.7)); }
+    .asat-btn .txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .asat-btn .txt b { font-family: 'Orbitron', sans-serif; font-size: 12.5px; letter-spacing: .03em; color: #fff2ef; line-height: 1.18; }
+    .asat-btn .txt small { font-family: var(--mono); font-size: 10px; letter-spacing: .01em; color: #ff9f93; }
+
+    .asat-modal {
+      position: fixed; inset: 0; z-index: 1100; display: flex; align-items: flex-start; justify-content: center;
+      padding: 3.5vh 16px; background: rgba(3,6,11,0.84); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+    }
+    .asat-modal[hidden] { display: none; }
+    .asat-card {
+      position: relative; width: min(900px, 96vw); max-height: 93vh; overflow-y: auto;
+      background: #070c13; border: 1px solid #24384f; border-radius: 14px; box-shadow: 0 30px 90px rgba(0,0,0,0.7);
+    }
+    .asat-head {
+      position: sticky; top: 0; z-index: 6; display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 12px 9px 16px; background: rgba(7,12,19,0.94);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-bottom: 1px solid #1a2a3c;
+    }
+    .asat-kicker { font-family: 'Orbitron', sans-serif; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #ff8b7d; }
+    .asat-close { width: 30px; height: 30px; border-radius: 7px; cursor: pointer; background: #10203a; color: #cfe0f2; border: 1px solid #24384f; font-size: 18px; line-height: 1; }
+    .asat-close:hover { background: #1b3559; border-color: #4ea8ff; }
+
+    .asat-body { padding: 0 clamp(16px, 3.4vw, 34px) 26px; }
+    .asat-hero { margin: 0 0 4px; position: relative; }
+    .asat-hero img { display: block; width: 100%; border-bottom: 1px solid #1a2a3c; }
+    .asat-hero figcaption, .asat-fig figcaption {
+      font-family: var(--mono); font-size: 10.5px; line-height: 1.5; color: #7d93ab; padding: 7px 2px 0; letter-spacing: .01em;
+    }
+    .asat-hero figcaption { padding: 7px clamp(16px, 3.4vw, 34px) 0; }
+    .asat-hero figcaption a, .asat-fig figcaption a, .asat-sources a { color: var(--accent); text-decoration: none; }
+    .asat-title { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(21px, 3.6vw, 30px); line-height: 1.12; letter-spacing: .01em; color: #fff; margin: 20px 0 6px; }
+    .asat-title .sub { display: block; font-family: var(--mono); font-weight: 400; font-size: 13px; letter-spacing: .02em; color: #ff9f93; margin-top: 8px; }
+    .asat-lede { font-size: 15px; line-height: 1.7; color: #d6e2f0; margin: 6px 0 4px; }
+
+    .asat-body h3 {
+      font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 15.5px; letter-spacing: .02em; color: #cfe4ff;
+      margin: 26px 0 8px; padding-top: 16px; border-top: 1px solid #16273a;
+    }
+    .asat-body p { font-size: 13.8px; line-height: 1.72; color: #c3d2e2; margin: 0 0 12px; }
+    .asat-body p b { color: #ffd7a0; font-weight: 600; }
+    .asat-body em { color: #ffd27f; font-style: normal; }
+
+    /* Fact sheet */
+    .asat-facts { margin: 16px 0 6px; border: 1px solid #24384f; border-radius: 12px; background: rgba(103,200,255,0.04); overflow: hidden; }
+    .asat-facts .fh { font-family: 'Orbitron', sans-serif; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: #8aa0b8; padding: 11px 14px; border-bottom: 1px solid #1a2a3c; background: rgba(103,200,255,0.05); }
+    .asat-fact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px; background: #16273a; }
+    .asat-fact { background: #070c13; padding: 10px 14px; }
+    .asat-fact .k { display: block; font-family: var(--mono); font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase; color: #718aa4; margin-bottom: 3px; }
+    .asat-fact .v { display: block; font-family: var(--mono); font-size: 13px; color: #e6f0fb; line-height: 1.35; }
+    .asat-fact .v b { color: #ff9f93; font-weight: 700; }
+
+    /* Figures (photos) */
+    .asat-fig { margin: 18px 0; }
+    .asat-fig img { display: block; width: 100%; border-radius: 10px; border: 1px solid #24384f; }
+    .asat-fig.side { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; align-items: center; }
+    .asat-fig.side .cap { margin: 0; }
+    .asat-fig.side .cap h3 { margin-top: 0; border-top: 0; padding-top: 0; }
+
+    /* Charts (inline SVG) */
+    .asat-chart { margin: 16px 0 6px; border: 1px solid #24384f; border-radius: 12px; padding: 14px 14px 10px; background: rgba(6,12,20,0.6); }
+    .asat-chart .ct { font-family: 'Orbitron', sans-serif; font-size: 12.5px; letter-spacing: .03em; color: #dbe8f7; margin: 0 0 2px; }
+    .asat-chart .cs { font-family: var(--mono); font-size: 10.5px; color: #7d93ab; margin: 0 0 8px; }
+    .asat-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .asat-chart .axis { stroke: #2a3e54; stroke-width: 1; }
+    .asat-chart .grid { stroke: #16273a; stroke-width: 1; }
+    .asat-chart .lbl { fill: #8399ae; font-family: 'IBM Plex Mono', monospace; font-size: 10px; }
+    .asat-chart .lbly { fill: #8399ae; font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; }
+    .asat-chart .val { fill: #e6f0fb; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; }
+    .asat-chart .note { fill: #ffca8a; font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; }
+    .asat-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 8px; font-family: var(--mono); font-size: 10.5px; color: #9fb2c6; }
+    .asat-legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .asat-legend i { width: 12px; height: 3px; border-radius: 2px; display: inline-block; }
+
+    /* Reaction / callout box */
+    .asat-callout { margin: 18px 0; border-left: 3px solid #ff6f5f; background: rgba(255,90,66,0.06); border-radius: 0 10px 10px 0; padding: 12px 16px; }
+    .asat-callout .k { font-family: 'Orbitron', sans-serif; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #ff9f93; margin-bottom: 6px; }
+    .asat-callout p { font-size: 13px; margin-bottom: 8px; }
+    .asat-callout p:last-child { margin-bottom: 0; }
+
+    .asat-sources { margin-top: 24px; border-top: 1px solid #16273a; padding-top: 12px; font-family: var(--mono); font-size: 10.5px; line-height: 1.7; color: #7d93ab; }
+    .asat-sources b { color: #9fb2c6; font-weight: 600; }
+
+    @media (max-width: 640px) {
+      .asat-btn { width: 150px; top: 42%; padding: 10px 12px; }
+      .asat-btn .txt b { font-size: 11px; }
+      .asat-btn .txt small { display: none; }
+      .asat-fig.side { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body class="page-debris">
@@ -149,6 +252,15 @@
     </section>
   </aside>
 
+  <!-- Right-edge feature button → opens the 2007 Chinese ASAT long-read -->
+  <button type="button" id="asat-open" class="asat-btn" aria-haspopup="dialog" aria-controls="asat-modal">
+    <span class="ico" aria-hidden="true">☄️</span>
+    <span class="txt">
+      <b>2007 Chinese ASAT</b>
+      <small>The largest debris event ever ›</small>
+    </span>
+  </button>
+
   <div id="sat-tip" class="sat-tip-3d" hidden></div>
 
   <!-- Info pop-up — story/facts/trivia for a debris class (opened by the ⓘ
@@ -160,6 +272,200 @@
     </div>
   </div>
 
+  <!-- ============ 2007 Chinese ASAT long-read pop-up ============ -->
+  <div id="asat-modal" class="asat-modal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="asat-title">
+    <article class="asat-card">
+      <div class="asat-head">
+        <span class="asat-kicker">NAZAR · Debris Files</span>
+        <button type="button" id="asat-close" class="asat-close" aria-label="Close">×</button>
+      </div>
+
+      <figure class="asat-hero">
+        <img src="data/asat/fengyun1c-debris.jpg" alt="NASA visualisation of the orbit planes of Fengyun-1C debris one month after the ASAT test — a dense band of red rings wrapping the Earth.">
+        <figcaption>The known orbit planes of Fengyun-1C debris just one month after the strike (orbits exaggerated for visibility). Image: <b>NASA Orbital Debris Program Office</b> — public domain.</figcaption>
+      </figure>
+
+      <div class="asat-body">
+        <h1 class="asat-title" id="asat-title">The 2007 Chinese ASAT Test
+          <span class="sub">How one missile made the largest cloud of space debris in history</span>
+        </h1>
+        <p class="asat-lede">On 11 January 2007, China reached up and destroyed one of its own satellites — and in the same instant created the single largest field of trackable space debris ever recorded, a hazard that will outlast everyone reading this.</p>
+
+        <div class="asat-facts">
+          <div class="fh">Fact sheet</div>
+          <div class="asat-fact-grid">
+            <div class="asat-fact"><span class="k">Date</span><span class="v"><b>11 January 2007</b></span></div>
+            <div class="asat-fact"><span class="k">Target</span><span class="v">Fengyun-1C (FY-1C) weather satellite</span></div>
+            <div class="asat-fact"><span class="k">Target launched</span><span class="v">10 May 1999</span></div>
+            <div class="asat-fact"><span class="k">Target mass</span><span class="v">~750 kg</span></div>
+            <div class="asat-fact"><span class="k">Orbit at impact</span><span class="v">Sun-synchronous · ~865 km · 98.8°</span></div>
+            <div class="asat-fact"><span class="k">Weapon</span><span class="v">SC-19 — modified DF-21 (CSS-5) missile</span></div>
+            <div class="asat-fact"><span class="k">Launch site</span><span class="v">Xichang, Sichuan</span></div>
+            <div class="asat-fact"><span class="k">Kill vehicle</span><span class="v">~600 kg kinetic impactor · no warhead</span></div>
+            <div class="asat-fact"><span class="k">Closing speed</span><span class="v"><b>~8 km/s</b> (~32,400 km/h), head-on</span></div>
+            <div class="asat-fact"><span class="k">Trackable debris</span><span class="v"><b>&gt; 3,000 pieces</b> — largest ever</span></div>
+            <div class="asat-fact"><span class="k">Smaller fragments</span><span class="v">tens of thousands (down to 1 cm)</span></div>
+            <div class="asat-fact"><span class="k">Debris altitude</span><span class="v">~175 – 3,600 km</span></div>
+            <div class="asat-fact"><span class="k">Longevity</span><span class="v"><b>~79%</b> still in orbit in 2108</span></div>
+            <div class="asat-fact"><span class="k">First dodge</span><span class="v">NASA's Terra sat, 22 Jun 2007</span></div>
+          </div>
+        </div>
+
+        <h3>A dying weather satellite</h3>
+        <p>Fengyun-1C — “Wind and Cloud” — was one of China's first weather satellites, launched in 1999 into a <em>sun-synchronous polar orbit</em> about 865 km up. By 2007 it was old and near the end of its working life, which is precisely why it made a convenient target: it could be destroyed without the loss of an operational spacecraft. What was <b>not</b> convenient was where it sat — deep inside the most crowded, most valuable band of low Earth orbit.</p>
+
+        <div class="asat-fig side">
+          <img src="data/asat/df21-launcher.jpg" alt="A road-mobile DF-21 missile on its transporter-erector-launcher, displayed at the Chinese Military Museum in Beijing.">
+          <div class="cap">
+            <h3>The weapon</h3>
+            <p>The interceptor — designated <b>SC-19</b> by U.S. intelligence — was a <em>direct-ascent</em> weapon: a road-mobile missile derived from the DF-21 (CSS-5) medium-range ballistic missile, fired from Xichang. It didn't go into orbit; it lobbed a ~600 kg <b>kinetic kill vehicle</b> onto a ballistic arc to meet the satellite. The kill vehicle carried no explosive at all. It didn't need one.</p>
+            <p class="asat-figcap" style="font-family:var(--mono);font-size:10.5px;color:#7d93ab;margin:0">A DF-21 launcher at the Chinese Military Museum, Beijing. Photo: Max Smith / Wikimedia Commons — public domain.</p>
+          </div>
+        </div>
+
+        <h3>Eight kilometres a second</h3>
+        <p>The kill vehicle met Fengyun-1C almost head-on at a closing speed of about <b>8 km/s</b> — roughly 32,000 km/h. At those <em>hypervelocity</em> speeds, solid metal behaves more like a fluid: the two bodies effectively flowed through each other, and the 750 kg satellite was shattered into a spray of thousands of fragments that kept racing along the original orbit. There was no fireball — just a sudden, silent expansion of shrapnel.</p>
+
+        <h3>A ring around the world</h3>
+        <p>Within minutes the fragments began smearing out along Fengyun-1C's path. Within about <b>ten days</b> they had wrapped the entire orbit into a ring; within three years they had spread across much of low Earth orbit. The map at the top of this page — NASA's rendering of the debris orbit planes one month after the strike — captures that ring as it closed.</p>
+
+        <div class="asat-fig">
+          <img src="data/asat/leo-debris.jpg" alt="NASA computer-generated image of tracked debris objects in low Earth orbit, shown as a dense shell of white dots around the Earth.">
+          <figcaption>Tracked objects in low Earth orbit (each dot an individual catalogued item; sizes not to scale). Fengyun-1C's fragments are a major contributor to this shell. Image: <b>NASA</b> — public domain.</figcaption>
+        </div>
+
+        <h3>The largest debris cloud ever made</h3>
+        <p>The U.S. Space Surveillance Network eventually catalogued <b>more than 3,000 trackable fragments</b> — golf-ball-sized and larger, more than any single event before or since — with estimates of <b>tens of thousands more</b> too small to track. The debris was flung across an enormous altitude band, from as low as ~175 km to as high as ~3,600 km, but its densest core stayed near Fengyun-1C's original ~865 km orbit — right in the busiest neighbourhood of space.</p>
+
+        <div class="asat-chart">
+          <p class="ct">Where the debris ended up — spread by altitude</p>
+          <p class="cs">Relative number of fragments by altitude band (km). The cloud spans ~175–3,600 km, but its core stayed near the ~865 km orbit.</p>
+          <svg viewBox="0 0 520 210" role="img" aria-label="Bar chart of debris amount by altitude band; a tall peak sits at 865 km">
+            <line class="axis" x1="52" y1="180" x2="500" y2="180"/>
+            <rect x="68"  y="168" width="40" height="12"  fill="#3f7fb0"/>
+            <rect x="131" y="152" width="40" height="28"  fill="#4f9fd0"/>
+            <rect x="195" y="127" width="40" height="53"  fill="#5bb4ea"/>
+            <rect x="258" y="24"  width="40" height="156" fill="#ffb055"/>
+            <rect x="321" y="118" width="40" height="62"  fill="#5bb4ea"/>
+            <rect x="385" y="158" width="40" height="22"  fill="#4f9fd0"/>
+            <rect x="448" y="172" width="40" height="8"   fill="#3f7fb0"/>
+            <text class="lbl" x="88"  y="194" text-anchor="middle">300</text>
+            <text class="lbl" x="151" y="194" text-anchor="middle">500</text>
+            <text class="lbl" x="215" y="194" text-anchor="middle">700</text>
+            <text class="lbl" x="278" y="194" text-anchor="middle">865</text>
+            <text class="lbl" x="341" y="194" text-anchor="middle">1,200</text>
+            <text class="lbl" x="405" y="194" text-anchor="middle">2,000</text>
+            <text class="lbl" x="468" y="194" text-anchor="middle">3,200</text>
+            <text class="note" x="278" y="16" text-anchor="middle">← original FY-1C orbit</text>
+          </svg>
+        </div>
+
+        <div class="asat-chart">
+          <p class="ct">How the tracked count grew</p>
+          <p class="cs">Fragments associated with the Fengyun-1C event · U.S. Space Surveillance Network. New pieces kept being detected for years; others slowly reenter.</p>
+          <svg viewBox="0 0 520 224" role="img" aria-label="Line chart of Fengyun-1C tracked fragments over time, climbing then levelling off">
+            <line class="grid" x1="52" y1="196" x2="500" y2="196"/>
+            <line class="grid" x1="52" y1="154" x2="500" y2="154"/>
+            <line class="grid" x1="52" y1="111" x2="500" y2="111"/>
+            <line class="grid" x1="52" y1="69"  x2="500" y2="69"/>
+            <line class="grid" x1="52" y1="27"  x2="500" y2="27"/>
+            <text class="lbly" x="46" y="199" text-anchor="end">0</text>
+            <text class="lbly" x="46" y="157" text-anchor="end">1,000</text>
+            <text class="lbly" x="46" y="114" text-anchor="end">2,000</text>
+            <text class="lbly" x="46" y="72"  text-anchor="end">3,000</text>
+            <text class="lbly" x="46" y="30"  text-anchor="end">4,000</text>
+            <text class="lbl" x="52"  y="212" text-anchor="middle">2007</text>
+            <text class="lbl" x="131" y="212" text-anchor="middle">2010</text>
+            <text class="lbl" x="210" y="212" text-anchor="middle">2013</text>
+            <text class="lbl" x="289" y="212" text-anchor="middle">2016</text>
+            <text class="lbl" x="368" y="212" text-anchor="middle">2019</text>
+            <text class="lbl" x="447" y="212" text-anchor="middle">2022</text>
+            <line class="axis" x1="52" y1="196" x2="500" y2="196"/>
+            <polyline fill="none" stroke="#ffb055" stroke-width="2.4" points="52,190 65,86 78,73 131,54 184,34 237,27 289,25 395,24 500,24"/>
+            <polyline fill="none" stroke="#67c8ff" stroke-width="2.4" points="52,190 65,99 78,84 131,73 210,72 289,75 395,77 500,79"/>
+          </svg>
+          <div class="asat-legend">
+            <span><i style="background:#ffb055"></i>Fragments identified (≈ 4,050)</span>
+            <span><i style="background:#67c8ff"></i>Still in orbit (≈ 2,800)</span>
+          </div>
+        </div>
+
+        <h3>Everyone has to dodge</h3>
+        <p>The debris did not stay China's problem. On 22 January 2007, two-thirds of all catalogued payloads in orbit — <b>1,899 of 2,864</b> — passed through the affected altitudes. That June, NASA fired the thrusters on its <b>Terra</b> environmental satellite to sidestep a fragment. In 2011 a piece passed within about <b>6 km</b> of the International Space Station, and in 2013 a Fengyun-1C fragment is believed to have struck the small Russian <b>BLITS</b> satellite and knocked it out of service — debris from the test hitting another spacecraft, exactly the cascade risk everyone had feared.</p>
+
+        <h3>A multi-century liability</h3>
+        <p>Because so much of the cloud rides high above the drag of the upper atmosphere, it decays extraordinarily slowly. Only about <b>6%</b> had reentered a decade later; projections put roughly <b>79% still in orbit in 2108</b>. Some analyses warned the test nudged the debris density in this band toward the threshold of the <em>Kessler Syndrome</em> — a runaway chain of collisions that feeds on its own wreckage. The contrast with the U.S. is stark: when America destroyed a satellite in 2008 (Operation Burnt Frost), it did so deliberately at very low altitude, and that debris cleared within weeks.</p>
+
+        <div class="asat-chart">
+          <p class="ct">Why it won't go away — predicted lifespan</p>
+          <p class="cs">Projected share of Fengyun-1C debris still in orbit across the century after the test.</p>
+          <svg viewBox="0 0 520 214" role="img" aria-label="Curve showing most Fengyun-1C debris still in orbit a century later">
+            <line class="grid" x1="52" y1="188" x2="500" y2="188"/>
+            <line class="grid" x1="52" y1="146" x2="500" y2="146"/>
+            <line class="grid" x1="52" y1="104" x2="500" y2="104"/>
+            <line class="grid" x1="52" y1="62"  x2="500" y2="62"/>
+            <line class="grid" x1="52" y1="20"  x2="500" y2="20"/>
+            <text class="lbly" x="46" y="191" text-anchor="end">0%</text>
+            <text class="lbly" x="46" y="149" text-anchor="end">25%</text>
+            <text class="lbly" x="46" y="107" text-anchor="end">50%</text>
+            <text class="lbly" x="46" y="65"  text-anchor="end">75%</text>
+            <text class="lbly" x="46" y="23"  text-anchor="end">100%</text>
+            <text class="lbl" x="52"  y="206" text-anchor="middle">2007</text>
+            <text class="lbl" x="142" y="206" text-anchor="middle">2027</text>
+            <text class="lbl" x="231" y="206" text-anchor="middle">2047</text>
+            <text class="lbl" x="320" y="206" text-anchor="middle">2067</text>
+            <text class="lbl" x="410" y="206" text-anchor="middle">2087</text>
+            <text class="lbl" x="500" y="206" text-anchor="middle">2107</text>
+            <line class="axis" x1="52" y1="188" x2="500" y2="188"/>
+            <path d="M52,20 L65,25 L97,32 L142,37 L186,40 L276,45 L366,50 L500,55 L500,188 L52,188 Z" fill="rgba(255,111,95,0.12)" stroke="none"/>
+            <polyline fill="none" stroke="#ff6f5f" stroke-width="2.6" points="52,20 65,25 97,32 142,37 186,40 276,45 366,50 500,55"/>
+            <circle cx="97" cy="32" r="3" fill="#ffca8a"/>
+            <text class="note" x="104" y="30">~6% gone by 2017</text>
+            <circle cx="500" cy="55" r="3.6" fill="#ff6f5f"/>
+            <text class="note" x="494" y="49" text-anchor="end">~79% still up in 2108</text>
+          </svg>
+        </div>
+
+        <h3>Where it fits on this globe</h3>
+        <p>Fengyun-1C is one of the four great breakup clouds you can switch on and off in this Debris Tracker — and by a wide margin the biggest single deliberate act. Two of the other three are also intentional strikes: Russia's 2021 Cosmos 1408 ASAT and, historically, the low-altitude U.S. test of 2008.</p>
+
+        <div class="asat-chart">
+          <p class="ct">The biggest debris-making events, side by side</p>
+          <p class="cs">Approx. catalogued fragments per event (NASA Orbital Debris Program Office). Gold = the 2007 Chinese ASAT; blue = the other clouds on this globe; grey = the 2008 U.S. test, which mostly reentered.</p>
+          <svg viewBox="0 0 520 200" role="img" aria-label="Bar chart comparing catalogued debris per breakup event; Fengyun-1C is by far the largest">
+            <rect x="150" y="16"  width="350" height="20" rx="3" fill="#ffb055"/>
+            <rect x="150" y="53"  width="170" height="20" rx="3" fill="#5bb4ea"/>
+            <rect x="150" y="90"  width="150" height="20" rx="3" fill="#5bb4ea"/>
+            <rect x="150" y="127" width="63"  height="20" rx="3" fill="#5bb4ea"/>
+            <rect x="150" y="164" width="18"  height="20" rx="3" fill="#5a6b7d"/>
+            <text class="lbl" x="146" y="30"  text-anchor="end" style="fill:#ffd7a0">Fengyun-1C · 2007</text>
+            <text class="lbl" x="146" y="67"  text-anchor="end">Cosmos 2251 · 2009</text>
+            <text class="lbl" x="146" y="104" text-anchor="end">Cosmos 1408 · 2021</text>
+            <text class="lbl" x="146" y="141" text-anchor="end">Iridium 33 · 2009</text>
+            <text class="lbl" x="146" y="178" text-anchor="end" style="fill:#7d8ea0">USA-193 · 2008</text>
+            <text class="val" x="492" y="30"  text-anchor="end" style="fill:#241a08">~3,500</text>
+            <text class="val" x="326" y="67"  style="fill:#cfe0f2">~1,700</text>
+            <text class="val" x="306" y="104" style="fill:#cfe0f2">~1,500</text>
+            <text class="val" x="219" y="141" style="fill:#cfe0f2">~630</text>
+            <text class="val" x="174" y="178" style="fill:#9fb2c6">~170</text>
+          </svg>
+        </div>
+
+        <div class="asat-callout">
+          <div class="k">The world reacted</div>
+          <p>Japan urged that space be used only for peaceful ends; Australia warned of an arms race spreading into orbit; the United States called the test inconsistent with the spirit of cooperation. China insisted it had given other nations advance notice and was not seeking an arms race in space.</p>
+          <p>Whatever the diplomacy, the physics is indifferent: the fragments are still up there, and will be for generations.</p>
+        </div>
+
+        <div class="asat-sources">
+          <b>Sources:</b> Wikipedia, “2007 Chinese anti-satellite missile test” · Secure World Foundation, “2007 Chinese Anti-Satellite Test Fact Sheet” (Brian Weeden) · J. V. Lambert, “Fengyun-1C Debris Cloud Evolution Over One Decade,” AMOS 2018.<br>
+          <b>Images:</b> NASA Orbital Debris Program Office (debris orbit planes; LEO population) — public domain; DF-21 launcher by Max Smith / Wikimedia Commons — public domain.<br>
+          <b>Charts</b> are original to NAZAR, drawn from figures and data in the sources above; approximate values, rounded for legibility.
+        </div>
+      </div>
+    </article>
+  </div>
+
   <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
@@ -167,5 +473,28 @@
   <script src="debris.js?v=3"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=13"></script>
+  <script>
+    /* 2007 Chinese ASAT long-read — open / close (self-contained) */
+    (function () {
+      var modal = document.getElementById('asat-modal');
+      var openBtn = document.getElementById('asat-open');
+      var closeBtn = document.getElementById('asat-close');
+      if (!modal || !openBtn) return;
+      function openModal() {
+        modal.hidden = false;
+        modal.setAttribute('aria-hidden', 'false');
+        var card = modal.querySelector('.asat-card');
+        if (card) card.scrollTop = 0;
+      }
+      function closeModal() {
+        modal.hidden = true;
+        modal.setAttribute('aria-hidden', 'true');
+      }
+      openBtn.addEventListener('click', openModal);
+      if (closeBtn) closeBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
+    })();
+  </script>
 </body>
 </html>
