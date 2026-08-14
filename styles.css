@@ -1509,10 +1509,11 @@ body.light .btn-sbo .btn-nav-icon { color: #d35400; text-shadow: none; }
    720-px centered-topbar rule keeps winning on mobile, where the
    button sits below the ☰ MENU toggle instead. */
 @media (min-width: 721px) {
-  body.page-viz3d  .topbar,
-  body.page-sbo    .topbar,
-  body.page-goc    .topbar,
-  body.page-debris .topbar { padding-left: 165px; }
+  body.page-viz3d     .topbar,
+  body.page-sbo       .topbar,
+  body.page-goc       .topbar,
+  body.page-debris    .topbar,
+  body.page-launchmap .topbar { padding-left: 165px; }
 }
 
 /* --- Switch 2D-3D view-mode toggle on the main page HUD.  Full-width
