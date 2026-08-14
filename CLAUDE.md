@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this project is
 
-**NAZAR** — a static, client-only satellite tracker focused on Chinese spacecraft visibility. Deployed via GitHub Pages from the `main` branch of `https://github.com/Hitesh-Gala/sat-orbit-map` to `https://hitesh-gala.github.io/sat-orbit-map/`. No backend; everything runs in the browser.
+**NAZAR** — a static, client-only satellite tracker that began focused on Chinese spacecraft visibility. Deployed via GitHub Pages from the `main` branch of `https://github.com/Hitesh-Gala/sat-orbit-map` to `https://hitesh-gala.github.io/sat-orbit-map/`. No backend; everything runs in the browser.
 
-Every page consumes the same NORAD/CelesTrak TLE catalog and propagates orbits with SGP4 (satellite.js) locally. There is no JSON tracker API in the loop — `satellitetracker3d.com` is referenced in comments but not called.
+It has since grown into a broader space portal: live tracking and 3-D globes, an orbital-debris tracker (with a 2007-ASAT long-read), a global launch-site atlas + photo gallery, and reference sections on the Chinese and Indian private-space industries.
+
+The tracking pages consume the same NORAD/CelesTrak TLE catalog and propagate orbits with SGP4 (satellite.js) locally; the reference/atlas pages (ChinRepo map, Indi-Space, Global Launch Sites, gallery) are driven by bundled JSON under `data/` instead. There is no JSON tracker API in the loop — `satellitetracker3d.com` is referenced in comments but not called.
 
 ## Where the code actually lives
 
@@ -55,15 +57,34 @@ Each `.html` is paired with a same-name `.js`. All pages share `styles.css` and 
 | `sats-by-ops.html` | `sats-by-ops.js` | globe.gl + **bare three.js r157** | Same InstancedMesh engine, sats colour-coded by ~37 operator/constellation categories with per-category toggles |
 | `game-of-cones.html` | `game-of-cones.js` | globe.gl + **bare three.js r157** | Land-cone and sat-cone geometry puzzles (ConeGeometry meshes added directly to `globe.scene()`) |
 | `sat-stats.html` | `sat-stats.js` | none | Cumulative satellite DB (localStorage) + Chart.js graphs + TLE Repo modal + Alpha-5 catalogue modal |
-| `debris.html` | `debris.js` | globe.gl + **bare three.js r157** | Debris Tracker — InstancedMesh globe of the four major breakup clouds (Fengyun-1C, Cosmos 2251, Iridium 33, Cosmos 1408), coloured by event, hover tooltips, per-event filter. Fetches CelesTrak per-event debris GROUPs (live → `argos.debris.tle.v1` 6 h cache → bundled `data/debris.tle`). Each fragment tagged to its source by the parent launch designator (line-1 cols 10–14). "📊 Statistics & history" links to debris-stats.html |
+| `debris.html` | `debris.js` | globe.gl + **bare three.js r157** | Debris Tracker — InstancedMesh globe of the four major breakup clouds (Fengyun-1C, Cosmos 2251, Iridium 33, Cosmos 1408), coloured by event, hover tooltips, per-event filter. Fetches CelesTrak per-event debris GROUPs (live → `argos.debris.tle.v1` 6 h cache → bundled `data/debris.tle`). Each fragment tagged to its source by the parent launch designator (line-1 cols 10–14). "📊 Statistics & history" links to debris-stats.html. A right-edge button opens a self-contained **2007 Chinese ASAT** long-read (story + fact sheet + public-domain photos under `data/asat/` + original inline-SVG charts) |
 | `debris-stats.html` | `debris-stats.js` | none | Debris Statistics dashboard — Chart.js charts from the precomputed `data/debris-history.json` (≈5 KB): the cumulative year-on-year build-up (created / decayed / net-in-orbit), per-country stacked area, altitude / inclination distributions, object-type split, and event cards. No live propagation — all derived from the SATCAT precompute |
-| `chinrepo.html` | `chinrepo.js` | none | Filterable table of every active PRC payload (joins CelesTrak SATCAT `OWNER=PRC` with active TLEs) |
+| `chinrepo.html` | `chinrepo.js` + `launch-sites.js` | none | Filterable table of every active PRC payload (joins CelesTrak SATCAT `OWNER=PRC` with active TLEs). The red **Site** column header (and each row's site code) opens `launch-sites.js`' interactive **China launch-site map** — relief / political / photo-explorer tabs, markers projected with the Wikimedia "China edcp" conic formula; base maps + site photos under `data/launch-sites/` |
 | `compendium.html` | (inline) | none | Self-contained PRC-program reference catalogue with embedded styles |
+| `china-sat-series.html` | (inline) | none | Self-contained, light-themed downloadable field guide to China's satellite series (linked from ChinRepo); own inline styles, does not link `styles.css` |
+| `indi-space.html` | `indi-space.js` | none | **Password-gated** (main-page 🔒 button → password `NAZAR` → sets a `nazar.indispace` session flag; the page bounces direct hits back to index). "India's private space ecosystem" — 36 colour-coded, filterable/searchable company vignettes from `data/indi-space.json`, each opening a rich modal (fact chips, achievements, founder bios, quote, origin story, sources, official-site link). Parsed from the *People Behind India's Private Space Industry* volume |
+| `launch-map.html` | `launch-map.js` | globe.gl | **Global launch-site atlas** — 46 markers (launch sites / agency HQs / facilities) from `data/launch-map.json`, colour-coded by type, with hover tooltips (name, altitude, area, ≈ total launches). Toggles between a realistic Blue-Marble globe and a **political globe** (dark Earth + country polygons from bundled `data/countries-110m.geojson`). A button opens the gallery page |
+| `launch-gallery.html` | `launch-gallery.js` | none | Photo gallery for the launch atlas — 12 freely-licensed spaceport photos (`data/launch-gallery/` + `_manifest.json`) as thumbnails → lightbox with per-image credit |
 | `news-archive.html` | `news-archive.js` | none | The "TICKER TAPE" click-through — a chronological, day-grouped repository of every headline the ticker has caught (since 01 Jul 2026), with filter / China-only / sort controls and plain-text PDF export (jsPDF: one combined chronological doc, or one per article) |
 | `news-ticker.js` | (included on `index.html`) | none | Scrolling ticker on `index.html`, numbered and China-first, ≤20 items from the last ~month. Pure UI — all data comes from `news-core.js` |
 | `news-core.js` | (shared by ticker + archive) | none | Feed layer + persistent localStorage archive. See "News feeds" below |
 
-`styles.css` is shared. Page-specific rules are scoped by `body.page-2d`, `body.page-repo`, `body.page-orbit`, `body.page-news`, etc. CSS custom properties (`:root`) drive the dark theme; light-mode is implemented by re-defining the same properties under `body.light`.
+`styles.css` is shared. Page-specific rules are scoped by `body.page-2d`, `body.page-repo`, `body.page-orbit`, `body.page-news`, `body.page-indispace`, `body.page-launchmap`, `body.page-lgal`, etc. CSS custom properties (`:root`) drive the dark theme; light-mode is implemented by re-defining the same properties under `body.light`.
+
+## Shared chrome (`mobile-menu.js`)
+
+Loaded on every page. Besides the phone drawer, it: (1) injects the small **Takshashila "For more on Space Policy…" credit** (`.logo-credit`) as a `<body>` child so it escapes any header containing-block — a fixed bottom-right chip on dense pages, tucked under the logo on globe pages (see `.logo-credit` rules in `styles.css`); and (2) hosts the top-left **NAZAR dropdown**. The `Indi-Space` nav button lives only in `index.html`'s `.left-nav` (never in the shared dropdown), so that gated section stays off every sub-page. The top-right lighthouse mark is `.top-logo`; most pages also carry a `.top-nazar-btn` back-button.
+
+## Static reference & media assets (hand-built, not auto-refreshed)
+
+Downloaded or authored once and committed under `data/` — distinct from the auto-refreshed TLE/SATCAT snapshots:
+
+- `data/indi-space.json` — 36 Indian-company profiles parsed from the *People Behind India's Private Space Industry* volume (Indi-Space).
+- `data/launch-map.json` — 46 world launch sites / agency HQs / facilities (Global Launch Sites); `data/countries-110m.geojson` — Natural Earth 110m countries for the political globe.
+- `data/launch-sites/` — China "edcp" relief + political base maps and per-site launch photos (the ChinRepo map).
+- `data/launch-gallery/` and `data/asat/` — freely-licensed photo sets (spaceport gallery; the 2007-ASAT long-read), each with a `_manifest.json` / in-page attribution.
+
+All bundled photos are public-domain or Creative-Commons and credited in-page; the charts/graphs on these pages are **original inline SVG**, not copied figures.
 
 ## News feeds (`news-core.js`)
 
