@@ -81,6 +81,43 @@
       .allsats-legend{ display:none; }
       .allsats-card{ height:90vh; }
     }
+    /* Indi-Space nav button (main page only) — locked / premium feel */
+    .btn-indispace {
+      position: relative; cursor: pointer;
+      background: linear-gradient(100deg, rgba(255,153,51,0.16), rgba(19,136,8,0.16));
+      border: 1px solid rgba(255,153,51,0.55);
+    }
+    .btn-indispace:hover { border-color: #ff9933; box-shadow: 0 0 18px rgba(255,153,51,0.35); }
+    .btn-indispace .btn-nav-label { color: #ffd9a8; }
+
+    /* Password gate */
+    .ispace-gate {
+      position: fixed; inset: 0; z-index: 400; display: flex; align-items: center; justify-content: center;
+      padding: 20px; background: rgba(3,6,11,0.82); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+    }
+    .ispace-gate[hidden] { display: none; }
+    .ispace-gate-card {
+      position: relative; width: min(360px, 92vw); text-align: center;
+      background: #0a1119; border: 1px solid #24384f; border-radius: 14px; padding: 26px 24px 24px;
+      box-shadow: 0 26px 70px rgba(0,0,0,0.7);
+    }
+    .ispace-gate-card.shake { animation: ispace-shake .4s; }
+    @keyframes ispace-shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
+    .ispace-gate-close { position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; background: #10203a; color: #cfe0f2; border: 1px solid #24384f; font-size: 17px; line-height: 1; }
+    .ispace-gate-close:hover { background: #1b3559; }
+    .ispace-gate-flag { display: flex; flex-direction: column; width: 46px; height: 32px; margin: 0 auto 12px; border-radius: 4px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+    .ispace-gate-flag i { flex: 1; display: block; }
+    .ispace-gate-flag i:nth-child(1){ background:#ff9933 } .ispace-gate-flag i:nth-child(2){ background:#f4f4f4 } .ispace-gate-flag i:nth-child(3){ background:#138808 }
+    .ispace-gate-title { font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 800; color: #fff; letter-spacing: .04em; }
+    .ispace-gate-sub { font-family: var(--mono, monospace); font-size: 11.5px; color: #8aa0b8; margin-top: 4px; }
+    .ispace-gate-label { display: block; margin: 18px 0 7px; font-family: var(--mono, monospace); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #9fb2c6; }
+    .ispace-gate-row { display: flex; gap: 8px; }
+    #ispace-pw { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 8px; border: 1px solid #24384f; background: #050a11; color: #eaf2fb; font-family: var(--mono, monospace); font-size: 15px; letter-spacing: .2em; text-align: center; outline: none; }
+    #ispace-pw:focus { border-color: #ff9933; box-shadow: 0 0 0 2px rgba(255,153,51,0.25); }
+    .ispace-gate-go { flex: 0 0 auto; padding: 10px 14px; border-radius: 8px; cursor: pointer; border: 1px solid #138808; background: rgba(19,136,8,0.25); color: #b8f0b0; font-family: var(--mono, monospace); font-size: 13px; font-weight: 700; }
+    .ispace-gate-go:hover { background: rgba(19,136,8,0.4); border-color: #1aa80a; }
+    .ispace-gate-err { margin-top: 10px; font-family: var(--mono, monospace); font-size: 11.5px; color: #ff8b7d; }
+    .ispace-gate-err[hidden] { display: none; }
   </style>
 </head>
 <body class="page-main">
@@ -131,7 +168,27 @@
       <span class="btn-nav-icon">✷</span>
       <span class="btn-nav-label">Debris Tracker</span>
     </a>
+    <button type="button" class="btn-nav btn-indispace" id="indispace-btn" title="NAZAR on India's private space ecosystem — password protected">
+      <span class="btn-nav-icon">🔒</span>
+      <span class="btn-nav-label">Indi-Space</span>
+    </button>
   </nav>
+
+  <!-- Password gate for the Indi-Space section (main page only) -->
+  <div id="indispace-gate" class="ispace-gate" hidden aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="ispace-gate-card">
+      <button type="button" class="ispace-gate-close" id="ispace-gate-close" aria-label="Close">×</button>
+      <div class="ispace-gate-flag"><i></i><i></i><i></i></div>
+      <div class="ispace-gate-title">Indi-Space</div>
+      <div class="ispace-gate-sub">NAZAR on India’s private space ecosystem</div>
+      <label class="ispace-gate-label" for="ispace-pw">Enter password</label>
+      <div class="ispace-gate-row">
+        <input id="ispace-pw" type="password" autocomplete="off" spellcheck="false" placeholder="••••••">
+        <button type="button" id="ispace-go" class="ispace-gate-go">Enter →</button>
+      </div>
+      <div id="ispace-err" class="ispace-gate-err" hidden>Incorrect password — try again.</div>
+    </div>
+  </div>
 
   <div class="news-ticker" id="news-ticker" aria-label="Chinese-launch news ticker">
     <a class="ticker-label" href="news-archive.html" title="Open the news archive — full repository of headlines since 01 Jul 2026, with chronological PDF export">TICKER TAPE <span class="ticker-label-go">↗</span></a>
@@ -292,5 +349,32 @@
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=13"></script>
   <script src="flash-popup.js?v=5"></script>
+  <script>
+    /* Indi-Space password gate — reveals a password field, opens the section on "NAZAR" */
+    (function () {
+      var btn = document.getElementById('indispace-btn'),
+          gate = document.getElementById('indispace-gate'),
+          card = gate && gate.querySelector('.ispace-gate-card'),
+          pw = document.getElementById('ispace-pw'),
+          go = document.getElementById('ispace-go'),
+          err = document.getElementById('ispace-err');
+      if (!btn || !gate) return;
+      function openGate() { gate.hidden = false; gate.setAttribute('aria-hidden', 'false'); err.hidden = true; pw.value = ''; setTimeout(function () { pw.focus(); }, 60); }
+      function closeGate() { gate.hidden = true; gate.setAttribute('aria-hidden', 'true'); }
+      function submit() {
+        if (pw.value.trim().toUpperCase() === 'NAZAR') {
+          try { sessionStorage.setItem('nazar.indispace', '1'); } catch (e) {}
+          location.href = 'indi-space.html';
+        } else {
+          err.hidden = false; card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake'); pw.select();
+        }
+      }
+      btn.addEventListener('click', openGate);
+      go.addEventListener('click', submit);
+      document.getElementById('ispace-gate-close').addEventListener('click', closeGate);
+      pw.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); else if (e.key === 'Escape') closeGate(); });
+      gate.addEventListener('click', function (e) { if (e.target === gate) closeGate(); });
+    })();
+  </script>
 </body>
 </html>
