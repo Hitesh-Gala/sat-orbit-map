@@ -94,5 +94,77 @@
   "author": "Kalyan Shah",
   "license": "CC BY-SA 3.0",
   "page": "https://commons.wikimedia.org/wiki/File%3AGSLV_ROCKET.JPG"
+ },
+ {
+  "file": "g-vlt.jpg",
+  "caption": "The Very Large Telescope under a twilight sky",
+  "site": "Paranal Observatory (VLT), Chile",
+  "author": "ESO/Y. Beletsky",
+  "license": "CC BY 4.0",
+  "page": "https://commons.wikimedia.org/wiki/File%3AESO%E2%80%99s_Very_Large_Telescope_%28VLT%29_observatory_at_Paranal.jpg"
+ },
+ {
+  "file": "g-alma.jpg",
+  "caption": "ALMA's antennas on the Chajnantor plateau",
+  "site": "ALMA, Chile",
+  "author": "ESO/Max Alexander",
+  "license": "CC BY 4.0",
+  "page": "https://commons.wikimedia.org/wiki/File%3AALMA_antenna_array_%28max_a212100s%29.jpg"
+ },
+ {
+  "file": "g-arecibo.jpg",
+  "caption": "The 305 m dish before its 2020 collapse",
+  "site": "Arecibo Observatory, Puerto Rico",
+  "author": "Alessandro Cai (OliverZena)",
+  "license": "Public domain",
+  "page": "https://commons.wikimedia.org/wiki/File%3AArecibo_Observatory_Aerial.jpg"
+ },
+ {
+  "file": "g-vla.jpg",
+  "caption": "The Very Large Array's radio dishes",
+  "site": "Very Large Array, USA",
+  "author": "dconvertini",
+  "license": "CC BY-SA 2.0",
+  "page": "https://commons.wikimedia.org/wiki/File%3ANRAO_Very_Large_Array%2C_New_Mexico%2C_USA_2024_1.jpg"
+ },
+ {
+  "file": "g-greenbank.jpg",
+  "caption": "The world's largest fully-steerable dish",
+  "site": "Green Bank Telescope, USA",
+  "author": "NRAO/AUI",
+  "license": "CC BY 3.0",
+  "page": "https://commons.wikimedia.org/wiki/File%3AGreen_Bank_100m_diameter_Radio_Telescope.jpg"
+ },
+ {
+  "file": "g-fast.jpg",
+  "caption": "China's 500 m 'Sky Eye'",
+  "site": "FAST, China",
+  "author": "Nathanial Bradford from UK",
+  "license": "CC BY 2.0",
+  "page": "https://commons.wikimedia.org/wiki/File%3A%22FAST%22_Radio_Telescope_%2819404171033%29.png"
+ },
+ {
+  "file": "g-jodrell.jpg",
+  "caption": "The Lovell radio telescope",
+  "site": "Jodrell Bank, UK",
+  "author": "Photograph by Mike Peel (www.mikepeel.net).",
+  "license": "CC BY-SA 4.0",
+  "page": "https://commons.wikimedia.org/wiki/File%3AAt_Jodrell_Bank_Observatory_2024_002.jpg"
+ },
+ {
+  "file": "g-parkes.jpg",
+  "caption": "The 'Dish' that relayed Apollo 11",
+  "site": "Parkes Observatory, Australia",
+  "author": "Amanda Slater",
+  "license": "CC BY-SA 2.0",
+  "page": "https://commons.wikimedia.org/wiki/File%3ACSIRO_Parkes_Radio_Telescope_from_entry.jpg"
+ },
+ {
+  "file": "g-minuteman.jpg",
+  "caption": "A Minuteman III ICBM test launch",
+  "site": "Minuteman fields, USA",
+  "author": "Stephen DeLoriea",
+  "license": "Public domain",
+  "page": "https://commons.wikimedia.org/wiki/File%3AMinuteman_III_Launch_%282000550566%29.jpg"
  }
 ]

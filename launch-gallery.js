@@ -42,7 +42,7 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !lb.hidden) closeLB(); });
 
   empty.hidden = false;
-  fetch(DIR + '_manifest.json')
+  fetch(DIR + 'manifest.json')
     .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(render)
     .catch(function (err) { empty.hidden = false; empty.textContent = 'Could not load gallery: ' + err.message; });

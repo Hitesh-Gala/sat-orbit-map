@@ -26,10 +26,18 @@
     }
     .lm-toggle button:hover { color: var(--text); border-color: #35506f; }
     .lm-toggle button.active { color: #06101a; background: var(--accent); border-color: var(--accent); font-weight: 700; }
-    .lm-legend { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
-    .lm-legend > div { display: flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 14px; color: var(--text); }
-    .lm-legend .sw { flex: 0 0 auto; width: 13px; height: 13px; border-radius: 50%; box-shadow: 0 0 7px currentColor; }
-    .lm-legend b { margin-left: auto; color: var(--accent); font-variant-numeric: tabular-nums; font-size: 14px; }
+    .lm-cat-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .lm-catbtns { display: flex; gap: 5px; }
+    .lm-catbtns button { cursor: pointer; background: rgba(103,200,255,0.08); border: 1px solid var(--line); border-radius: 5px; color: var(--dim); font-family: var(--mono); font-size: 11px; padding: 3px 9px; }
+    .lm-catbtns button:hover { color: var(--text); border-color: #35506f; }
+    .lm-legend { display: flex; flex-direction: column; gap: 2px; }
+    .lm-cat { display: flex; align-items: center; gap: 8px; padding: 4px 3px; cursor: pointer; font-family: var(--mono); font-size: 13.5px; color: var(--text); border-radius: 5px; }
+    .lm-cat:hover { background: rgba(103,200,255,0.06); }
+    .lm-cat input { flex: 0 0 auto; accent-color: var(--accent); cursor: pointer; width: 15px; height: 15px; }
+    .lm-cat .sw { flex: 0 0 auto; width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 7px currentColor; }
+    .lm-cat .nm { flex: 1; min-width: 0; }
+    .lm-cat b { flex: 0 0 auto; color: var(--accent); font-variant-numeric: tabular-nums; font-size: 13px; }
+    .lm-country { font-family: 'Orbitron', sans-serif; font-size: 13px; font-weight: 700; color: #fff; background: rgba(6,11,18,0.92); border: 1px solid #2a4157; border-radius: 8px; padding: 5px 11px; text-shadow: 0 1px 3px #000; }
     .lm-hint { font-size: 13.5px; color: var(--dim); line-height: 1.5; margin-top: 10px; }
     .lm-gallery-btn {
       width: 100%; padding: 11px; border-radius: 8px; cursor: pointer;
@@ -77,7 +85,7 @@
       <span class="brand-short">NAZAR</span>
       <span class="brand-long"> · Global Launch Sites</span>
     </div>
-    <div class="sub">Every major rocket launch site, space-agency HQ and space facility on Earth.</div>
+    <div class="sub">Launch sites, agency HQs, GNSS ground stations, observatories, ICBM ranges and more.</div>
   </header>
 
   <aside class="lm-shell" aria-label="Globe controls">
@@ -90,13 +98,12 @@
     </section>
 
     <section class="panel">
-      <div class="label" style="margin-bottom: 8px">Site types</div>
-      <div class="lm-legend">
-        <div><span class="sw" style="background:#ff7a3c;color:#ff7a3c"></span>Launch site <b id="lm-n-launch">…</b></div>
-        <div><span class="sw" style="background:#67c8ff;color:#67c8ff"></span>Space agency HQ <b id="lm-n-agency">…</b></div>
-        <div><span class="sw" style="background:#c9a0ff;color:#c9a0ff"></span>Facility / centre <b id="lm-n-facility">…</b></div>
+      <div class="lm-cat-head">
+        <div class="label">Categories</div>
+        <div class="lm-catbtns"><button type="button" id="lm-all">All</button><button type="button" id="lm-none">None</button></div>
       </div>
-      <div class="lm-hint">Hover any marker for its name, altitude, area and total launches. Drag to spin the globe.</div>
+      <div id="lm-legend" class="lm-legend"></div>
+      <div class="lm-hint">Tick a category to show it. Hover a marker for its details; on the Political globe, hover a country for its name.</div>
     </section>
 
     <section class="panel">
@@ -107,7 +114,7 @@
 
   <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
-  <script src="launch-map.js?v=1"></script>
+  <script src="launch-map.js?v=2"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=13"></script>
 </body>
