@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4, viewport-fit=cover">
+  <title>NAZAR · Launch-Site Gallery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=42">
+  <style>
+    body.page-lgal { overflow-y: auto; }
+    .lg-hero { max-width: 1120px; margin: 0 auto; padding: 70px 22px 4px; text-align: center; }
+    .lg-back {
+      display: inline-flex; align-items: center; gap: 7px; text-decoration: none; margin-bottom: 14px;
+      font-family: var(--mono); font-size: 13px; color: #ffd9a8; border: 1px solid #ff9f6a;
+      border-radius: 999px; padding: 7px 15px; background: rgba(255,122,60,0.1);
+    }
+    .lg-back:hover { border-color: #ffb37a; box-shadow: 0 0 16px rgba(255,140,80,0.3); }
+    .lg-title { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(24px, 4.4vw, 38px); color: #fff; margin: 4px 0 8px; letter-spacing: .01em; }
+    .lg-sub { max-width: 680px; margin: 0 auto; font-size: 14.5px; line-height: 1.65; color: #b7c6d8; }
+
+    .lg-grid {
+      max-width: 1200px; margin: 26px auto 10px; padding: 6px 22px 20px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;
+    }
+    .lg-thumb {
+      position: relative; cursor: pointer; border: 0; padding: 0; text-align: left; overflow: hidden;
+      border-radius: 12px; border: 1px solid #1c2c40; background: #0b1119; transition: transform .14s, box-shadow .14s, border-color .14s;
+    }
+    .lg-thumb:hover { transform: translateY(-3px); border-color: #ff9f6a; box-shadow: 0 16px 36px rgba(0,0,0,.5); }
+    .lg-thumb img { display: block; width: 100%; height: 190px; object-fit: cover; }
+    .lg-cap { padding: 10px 13px 12px; }
+    .lg-cap .site { font-family: 'Orbitron', sans-serif; font-size: 13px; color: #ffb37a; letter-spacing: .02em; }
+    .lg-cap .what { font-family: var(--mono); font-size: 12px; color: #9fb2c6; margin-top: 4px; line-height: 1.45; }
+    .lg-cap .cred { font-family: var(--mono); font-size: 10px; color: #5d738c; margin-top: 6px; }
+
+    .lg-foot { max-width: 900px; margin: 8px auto; padding: 14px 22px 44px; text-align: center; font-family: var(--mono); font-size: 11px; line-height: 1.7; color: #63788f; }
+    .lg-empty { text-align: center; color: #7d93ab; font-family: var(--mono); font-size: 14px; padding: 40px; }
+
+    /* lightbox */
+    .lg-lightbox { position: fixed; inset: 0; z-index: 1300; display: flex; align-items: center; justify-content: center; padding: 4vh 4vw; background: rgba(2,5,9,0.93); }
+    .lg-lightbox[hidden] { display: none; }
+    .lg-lightbox figure { margin: 0; max-width: 100%; max-height: 100%; display: flex; flex-direction: column; align-items: center; }
+    .lg-lightbox img { max-width: 100%; max-height: 80vh; border-radius: 10px; border: 1px solid #24384f; }
+    .lg-lightbox figcaption { margin-top: 12px; text-align: center; max-width: 760px; }
+    .lg-lb-site { font-family: 'Orbitron', sans-serif; font-size: 16px; color: #ffb37a; }
+    .lg-lb-what { font-family: var(--mono); font-size: 13px; color: #cbd8e6; margin-top: 5px; }
+    .lg-lb-cred { font-family: var(--mono); font-size: 11px; color: #7d93ab; margin-top: 8px; }
+    .lg-lb-cred a { color: #67c8ff; text-decoration: none; }
+    .lg-lb-close { position: fixed; top: 16px; right: 18px; width: 38px; height: 38px; border-radius: 9px; cursor: pointer; background: rgba(16,32,58,.7); color: #eaf2fb; border: 1px solid #35506f; font-size: 22px; line-height: 1; }
+  </style>
+</head>
+<body class="page-lgal">
+  <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
+    <img src="data/nazar-logo.svg?v=5" alt="NAZAR">
+  </a>
+  <a class="top-nazar-btn" href="index.html" title="Back to the NAZAR main view">
+    <span class="ico">◯</span><span class="lbl">NAZAR</span>
+  </a>
+
+  <header class="lg-hero">
+    <a class="lg-back" href="launch-map.html">← Back to the globe</a>
+    <h1 class="lg-title">Launch Sites — Photo Gallery</h1>
+    <p class="lg-sub">A tour of the world's great spaceports and space centres. Tap any photograph to view it larger.</p>
+  </header>
+
+  <main class="lg-grid" id="lg-grid" aria-live="polite"></main>
+  <div class="lg-empty" id="lg-empty" hidden>Loading photographs…</div>
+
+  <footer class="lg-foot">
+    All photographs are public-domain or Creative-Commons licensed, sourced from Wikimedia Commons and credited on each image.
+  </footer>
+
+  <div class="lg-lightbox" id="lg-lightbox" hidden>
+    <button type="button" class="lg-lb-close" id="lg-lb-close" aria-label="Close">×</button>
+    <figure>
+      <img id="lg-lb-img" alt="">
+      <figcaption>
+        <div class="lg-lb-site" id="lg-lb-site"></div>
+        <div class="lg-lb-what" id="lg-lb-what"></div>
+        <div class="lg-lb-cred" id="lg-lb-cred"></div>
+      </figcaption>
+    </figure>
+  </div>
+
+  <script src="mobile-menu.js?v=13"></script>
+  <script src="launch-gallery.js?v=1"></script>
+</body>
+</html>

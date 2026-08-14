@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>NAZAR · Global Launch Sites</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=42">
+  <style>
+    .lm-shell {
+      position: fixed; top: 86px; left: 14px; width: 292px;
+      max-width: calc(100vw - 28px); max-height: calc(100vh - 100px);
+      overflow-y: auto; z-index: 10; display: flex; flex-direction: column; gap: 8px;
+    }
+    .lm-toggle { display: flex; gap: 6px; }
+    .lm-toggle button {
+      flex: 1; cursor: pointer; padding: 9px 6px; border-radius: 7px;
+      background: rgba(103,200,255,0.08); border: 1px solid var(--line);
+      color: var(--dim); font-family: var(--mono); font-size: 13.5px; letter-spacing: .02em; transition: .12s;
+    }
+    .lm-toggle button:hover { color: var(--text); border-color: #35506f; }
+    .lm-toggle button.active { color: #06101a; background: var(--accent); border-color: var(--accent); font-weight: 700; }
+    .lm-legend { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
+    .lm-legend > div { display: flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 14px; color: var(--text); }
+    .lm-legend .sw { flex: 0 0 auto; width: 13px; height: 13px; border-radius: 50%; box-shadow: 0 0 7px currentColor; }
+    .lm-legend b { margin-left: auto; color: var(--accent); font-variant-numeric: tabular-nums; font-size: 14px; }
+    .lm-hint { font-size: 13.5px; color: var(--dim); line-height: 1.5; margin-top: 10px; }
+    .lm-gallery-btn {
+      width: 100%; padding: 11px; border-radius: 8px; cursor: pointer;
+      background: linear-gradient(120deg, rgba(255,122,60,0.16), rgba(103,200,255,0.16));
+      border: 1px solid #ff9f6a; color: #ffd9a8; font-family: var(--mono);
+      font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      transition: .14s; text-decoration: none; display: block; text-align: center;
+    }
+    .lm-gallery-btn:hover { border-color: #ffb37a; box-shadow: 0 0 20px rgba(255,140,80,0.3); transform: translateY(-1px); }
+    .lm-status { font-size: 13px; color: var(--dim); line-height: 1.5; margin-top: 8px; }
+
+    /* hover tooltip (globe.gl injects .scene-tooltip) */
+    .scene-tooltip { pointer-events: none; }
+    .lm-tip {
+      min-width: 210px; max-width: 300px; background: rgba(6,11,18,0.96);
+      border: 1px solid #2a4157; border-radius: 10px; padding: 11px 13px;
+      box-shadow: 0 12px 34px rgba(0,0,0,0.6); text-align: left; font-family: var(--mono);
+    }
+    .lm-tip .name { font-family: 'Orbitron', sans-serif; font-size: 14.5px; font-weight: 700; color: #fff; line-height: 1.2; }
+    .lm-tip .type { font-size: 11px; letter-spacing: .04em; margin: 4px 0 8px; }
+    .lm-tip .rows { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; font-size: 12px; }
+    .lm-tip .rows .k { color: #7d93ab; }
+    .lm-tip .rows .v { color: #e6f0fb; font-variant-numeric: tabular-nums; }
+    .lm-tip .note { margin-top: 8px; padding-top: 8px; border-top: 1px solid #1a2a3c; font-size: 11.5px; line-height: 1.5; color: #b7c6d8; white-space: normal; font-family: system-ui, sans-serif; }
+
+    @media (max-width: 720px) {
+      .lm-shell { width: 240px; }
+    }
+  </style>
+</head>
+<body class="page-launchmap">
+  <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
+    <img src="data/nazar-logo.svg?v=5" alt="NAZAR">
+  </a>
+
+  <div id="globe"></div>
+
+  <a class="top-nazar-btn" href="index.html" title="Back to the NAZAR main view">
+    <span class="ico">◯</span>
+    <span class="lbl">NAZAR</span>
+  </a>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-short">NAZAR</span>
+      <span class="brand-long"> · Global Launch Sites</span>
+    </div>
+    <div class="sub">Every major rocket launch site, space-agency HQ and space facility on Earth.</div>
+  </header>
+
+  <aside class="lm-shell" aria-label="Globe controls">
+    <section class="panel">
+      <div class="label" style="margin-bottom: 7px">Globe style</div>
+      <div class="lm-toggle">
+        <button type="button" class="active" data-globe="realistic">🌍 Realistic</button>
+        <button type="button" data-globe="political">🗺 Political</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="label" style="margin-bottom: 8px">Site types</div>
+      <div class="lm-legend">
+        <div><span class="sw" style="background:#ff7a3c;color:#ff7a3c"></span>Launch site <b id="lm-n-launch">…</b></div>
+        <div><span class="sw" style="background:#67c8ff;color:#67c8ff"></span>Space agency HQ <b id="lm-n-agency">…</b></div>
+        <div><span class="sw" style="background:#c9a0ff;color:#c9a0ff"></span>Facility / centre <b id="lm-n-facility">…</b></div>
+      </div>
+      <div class="lm-hint">Hover any marker for its name, altitude, area and total launches. Drag to spin the globe.</div>
+    </section>
+
+    <section class="panel">
+      <a href="launch-gallery.html" class="lm-gallery-btn" id="lm-gallery-btn" title="Photo gallery of the world's launch sites">📷 Photo Gallery</a>
+      <div id="lm-status" class="lm-status">Loading globe…</div>
+    </section>
+  </aside>
+
+  <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+  <script src="launch-map.js?v=1"></script>
+  <script src="nazar-bgm.js?v=4"></script>
+  <script src="mobile-menu.js?v=13"></script>
+</body>
+</html>
