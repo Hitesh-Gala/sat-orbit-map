@@ -28,16 +28,11 @@
   // Pop-up globe styles. `layer` selects a data-driven look; otherwise textured.
   var STYLES = [
     { key: 'blue', icon: '🌍', name: 'Blue Marble', desc: 'Realistic satellite view + terrain relief', img: BLUE, bump: TOPO, bg: NIGHT, atmo: '#5aa9ff' },
-    { key: 'satellite', icon: '🛰', name: 'Satellite (cloudless)', desc: 'True-colour land, ocean & ice', img: G + 'globe-realistic.jpg', bg: NIGHT, atmo: '#7fb6ff' },
-    { key: 'physical', icon: '🗺', name: 'Physical map', desc: 'Natural-Earth terrain with a graticule', img: G + 'globe-physical.jpg', bg: '#050a12', atmo: '#88b6e0' },
     { key: 'night', icon: '🌃', name: 'Night lights', desc: 'City lights of the human world', img: G + 'globe-night.jpg', bg: NIGHT, atmo: '#3a6bd0' },
     { key: 'relief', icon: '⛰️', name: 'Topographic relief', desc: 'SRTM shaded elevation of the land', img: G + 'globe-elevation.jpg', bg: '#000000', atmo: null },
     { key: 'ocean', icon: '🌊', name: 'Land & ocean', desc: 'Simplified blue-planet mask', img: WATER, bg: '#04101c', atmo: '#4aa3ff' },
-    { key: 'dark', icon: '⬛', name: 'Dark minimal', desc: 'Muted dark globe — markers pop', img: DARK, bg: '#000008', atmo: null },
     { key: 'political', icon: '🏛️', name: 'Political', desc: 'Countries in colour · hover for names', img: DARK, bg: '#020610', layer: 'political', atmo: null },
     { key: 'choropleth', icon: '📊', name: 'Launch sites by country', desc: 'Countries shaded by number of launch sites', img: DARK, bg: '#020610', layer: 'choropleth', atmo: null },
-    { key: 'density', icon: '🔥', name: 'Site density', desc: 'Hex-bin heat-map of every plotted site', img: DARK, bg: NIGHT, layer: 'density', atmo: '#5aa9ff' },
-    { key: 'wire', icon: '🕸️', name: 'Wireframe / graticule', desc: 'Dark globe with a coordinate grid', img: DARK, bg: '#01040a', graticule: true, atmo: '#3a6bd0' },
   ];
 
   function esc(s) {
