@@ -176,7 +176,7 @@
     if (gGlobe) return;
     gGlobe = Globe()(gContainer)
       .objectLat('lat').objectLng('lon').objectAltitude(0.012).objectFacesSurface(false)
-      .objectThreeObject(coneMesh).objectLabel(tip)
+      .objectThreeObject(coneMesh).objectLabel(tip).onObjectClick(openFlythrough)
       .polygonSideColor(function () { return 'rgba(0,0,0,0)'; }).polygonAltitude(0.006)
       .hexBinPointLat(function (d) { return d.lat; }).hexBinPointLng(function (d) { return d.lon; })
       .hexBinPointWeight(1).hexBinResolution(3).hexBinMerge(false)
@@ -236,6 +236,46 @@
     return 'Texture: NASA / three-globe';
   }
 
+  // --- fly-through pop-up: Esri satellite mini-map + Google Earth fly-in -----
+  var flyMap = null, flyMarker = null;
+  function openFlythrough(d) {
+    if (!d) return;
+    var cat = CAT[d.t] || CAT.facility;
+    document.getElementById('lm-fly-title').textContent = d.n;
+    document.getElementById('lm-fly-sub').innerHTML =
+      '<span style="color:' + cat.color + '">' + cat.icon + ' ' + esc(cat.label) + '</span> · ' +
+      esc(d.cty) + ' · ' + d.lat.toFixed(3) + '°, ' + d.lon.toFixed(3) + '°' +
+      (d.el != null ? ' · ' + fmt(d.el) + ' m' : '');
+    var alt = d.el != null ? d.el : 0;
+    document.getElementById('lm-fly-ge').href =
+      'https://earth.google.com/web/@' + d.lat + ',' + d.lon + ',' + alt + 'a,3500d,35y,0h,55t,0r';
+    document.getElementById('lm-fly-gm').href =
+      'https://www.google.com/maps/search/?api=1&query=' + d.lat + ',' + d.lon;
+    document.getElementById('lm-fly').hidden = false;
+    var z = (d.t === 'agency' || d.t === 'gnss' || d.t === 'training') ? 14 : 13;
+    setTimeout(function () {
+      var el = document.getElementById('lm-fly-map');
+      if (typeof L === 'undefined') { el.innerHTML = '<div class="lm-fly-fallback">Map library didn’t load — use the buttons below to view the site.</div>'; return; }
+      if (!flyMap) {
+        flyMap = L.map(el, { zoomControl: true, attributionControl: true, worldCopyJump: true });
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          { maxZoom: 18, attribution: 'Imagery © Esri, Maxar, Earthstar Geographics' }).addTo(flyMap);
+      }
+      flyMap.setView([d.lat, d.lon], z);
+      if (flyMarker) flyMap.removeLayer(flyMarker);
+      flyMarker = L.circleMarker([d.lat, d.lon], { radius: 9, color: '#fff', weight: 2, fillColor: cat.color, fillOpacity: 0.85 })
+        .addTo(flyMap).bindTooltip(d.n, { direction: 'top' });
+      flyMap.invalidateSize();
+    }, 70);
+  }
+  function closeFlythrough() { document.getElementById('lm-fly').hidden = true; }
+  function setupFlythrough() {
+    var m = document.getElementById('lm-fly');
+    document.getElementById('lm-fly-close').addEventListener('click', closeFlythrough);
+    m.addEventListener('click', function (e) { if (e.target === m) closeFlythrough(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !m.hidden) closeFlythrough(); });
+  }
+
   // --- boot -----------------------------------------------------------------
   function boot(data, geo, creds) {
     sites = data; countries = geo || { features: [] }; window.__globeCredits = creds || [];
@@ -245,7 +285,7 @@
       .backgroundImageUrl(NIGHT).globeImageUrl(BLUE).bumpImageUrl(TOPO)
       .showAtmosphere(true).atmosphereColor('#5aa9ff').atmosphereAltitude(0.16)
       .objectsData(sites).objectLat('lat').objectLng('lon').objectAltitude(0.012)
-      .objectFacesSurface(false).objectThreeObject(coneMesh).objectLabel(tip)
+      .objectFacesSurface(false).objectThreeObject(coneMesh).objectLabel(tip).onObjectClick(openFlythrough)
       .polygonsData([]).polygonCapColor(fillColor).polygonSideColor(function () { return 'rgba(0,0,0,0)'; })
       .polygonStrokeColor(function () { return 'rgba(190,210,230,0.35)'; }).polygonAltitude(0.006)
       .polygonLabel(function (f) { return '<div class="lm-country">' + esc(polyName(f)) + '</div>'; });
@@ -253,6 +293,7 @@
 
     buildLegend();
     buildStyleButtons();
+    setupFlythrough();
     document.getElementById('lm-status').textContent = sites.length + ' sites plotted';
     document.querySelector('.lm-toggle').addEventListener('click', function (e) {
       var b = e.target.closest('button'); if (b) setStyleMain(b.dataset.globe);

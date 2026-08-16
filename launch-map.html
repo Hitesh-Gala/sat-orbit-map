@@ -12,6 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=43">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
     .lm-shell {
       position: fixed; top: 86px; left: 14px; width: 292px;
@@ -99,11 +100,31 @@
     .lm-gmodal-cred { margin-left: auto; color: #63788f; }
     .lm-gmodal-cred a { color: #7d93ab; text-decoration: none; }
 
+    /* marker fly-through pop-up (satellite preview + Google Earth link) */
+    .lm-fly { position: fixed; inset: 0; z-index: 1400; display: flex; align-items: center; justify-content: center; padding: 3vh 2vw; background: rgba(2,5,9,0.9); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+    .lm-fly[hidden] { display: none; }
+    .lm-fly-card { position: relative; width: min(920px, 96vw); height: min(86vh, 760px); display: flex; flex-direction: column; background: #05090f; border: 1px solid #24384f; border-radius: 14px; overflow: hidden; box-shadow: 0 30px 90px rgba(0,0,0,0.8); }
+    .lm-fly-head { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #16273a; }
+    .lm-fly-head h2 { margin: 0; font-family: 'Orbitron', sans-serif; font-size: 17px; color: #eaf2fb; line-height: 1.2; }
+    .lm-fly-head p { margin: 4px 0 0; font-family: var(--mono); font-size: 11.5px; color: #8aa0b8; }
+    .lm-fly-close { margin-left: auto; width: 32px; height: 32px; flex: 0 0 auto; border-radius: 8px; cursor: pointer; background: #10203a; color: #cfe0f2; border: 1px solid #24384f; font-size: 19px; line-height: 1; }
+    .lm-fly-close:hover { background: #1b3559; border-color: #4ea8ff; }
+    .lm-fly-map { flex: 1; min-height: 0; position: relative; background: #0a1119; }
+    .lm-fly-map iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .lm-fly-fallback { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; font-family: var(--mono); font-size: 13px; color: #8aa0b8; padding: 24px; line-height: 1.6; }
+    .lm-fly-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 11px 16px; border-top: 1px solid #16273a; }
+    .lm-fly-ge { display: inline-flex; align-items: center; gap: 7px; text-decoration: none; font-family: var(--mono); font-size: 13px; font-weight: 700; color: #06101a; background: linear-gradient(120deg, #6bd06b, #67c8ff); border-radius: 8px; padding: 9px 15px; }
+    .lm-fly-ge:hover { filter: brightness(1.08); }
+    .lm-fly-gm { font-family: var(--mono); font-size: 12px; color: #9fb2c6; text-decoration: none; border: 1px solid var(--line); border-radius: 8px; padding: 8px 13px; }
+    .lm-fly-gm:hover { color: #eaf2fb; border-color: var(--accent); }
+    .lm-fly-note { font-family: var(--mono); font-size: 10.5px; color: #63788f; margin-left: auto; }
+
     @media (max-width: 720px) {
       .lm-shell { width: 232px; }
       .lm-globes { width: 176px; top: 92px; padding: 8px; }
       .lm-gbtn .gt small { display: none; }
       .lm-gbtn .gt b { font-size: 12px; }
+      .lm-fly-note { display: none; }
     }
   </style>
 </head>
@@ -142,7 +163,7 @@
         <div class="lm-catbtns"><button type="button" id="lm-all">All</button><button type="button" id="lm-none">None</button></div>
       </div>
       <div id="lm-legend" class="lm-legend"></div>
-      <div class="lm-hint">Tick a category to show it. Hover a marker for its details; on the Political globe, hover a country for its name.</div>
+      <div class="lm-hint">Tick a category to show it. Hover a marker for its details, or <b>click it</b> for a satellite view + Google Earth fly-through. On the Political globe, hover a country for its name.</div>
     </section>
 
     <section class="panel">
@@ -167,9 +188,26 @@
     </div>
   </div>
 
+  <!-- fly-through pop-up: opens when a marker is clicked -->
+  <div class="lm-fly" id="lm-fly" hidden role="dialog" aria-modal="true" aria-labelledby="lm-fly-title">
+    <div class="lm-fly-card">
+      <div class="lm-fly-head">
+        <div><h2 id="lm-fly-title"></h2><p id="lm-fly-sub"></p></div>
+        <button type="button" class="lm-fly-close" id="lm-fly-close" aria-label="Close">×</button>
+      </div>
+      <div class="lm-fly-map" id="lm-fly-map"></div>
+      <div class="lm-fly-foot">
+        <a id="lm-fly-ge" class="lm-fly-ge" target="_blank" rel="noopener noreferrer">🌍 Fly there in Google Earth ↗</a>
+        <a id="lm-fly-gm" class="lm-fly-gm" target="_blank" rel="noopener noreferrer">Open in Google Maps ↗</a>
+        <span class="lm-fly-note">Satellite preview · the button opens the 3-D fly-in</span>
+      </div>
+    </div>
+  </div>
+
   <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
-  <script src="launch-map.js?v=4"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="launch-map.js?v=6"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=13"></script>
 </body>
