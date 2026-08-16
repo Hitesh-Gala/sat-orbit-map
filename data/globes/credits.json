@@ -1,0 +1,30 @@
+[
+ {
+  "file": "globe-realistic.jpg",
+  "title": "File:Land ocean ice 2048.jpg",
+  "author": "NASA",
+  "license": "CC BY-SA 3.0",
+  "page": "https://commons.wikimedia.org/wiki/File%3ALand_ocean_ice_2048.jpg"
+ },
+ {
+  "file": "globe-physical.jpg",
+  "title": "File:Equirectangular projection SW.jpg",
+  "author": "Tobias Jung / Strebe",
+  "license": "CC BY-SA 3.0",
+  "page": "https://commons.wikimedia.org/wiki/File%3AEquirectangular_projection_SW.jpg"
+ },
+ {
+  "file": "globe-elevation.jpg",
+  "title": "File:Srtm ramp2.world.21600x10800.jpg",
+  "author": "NASA / JPL SRTM",
+  "license": "Public domain",
+  "page": "https://commons.wikimedia.org/wiki/File%3ASrtm_ramp2.world.21600x10800.jpg"
+ },
+ {
+  "file": "globe-night.jpg",
+  "title": "File:The earth at night.jpg",
+  "author": "NASA Earth Observatory",
+  "license": "Public domain",
+  "page": "https://commons.wikimedia.org/wiki/File%3AThe_earth_at_night.jpg"
+ }
+]
