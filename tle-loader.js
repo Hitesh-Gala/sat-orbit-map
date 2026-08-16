@@ -103,6 +103,123 @@ window.Argos = (function () {
     try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), v })); } catch {}
   }
 
+  // =======================================================================
+  // TLE refresh log — a client-side record of which element sets changed
+  // between successive live pulls of the active catalogue.
+  //
+  // There is no server to diff refreshes for us, so we capture them at the
+  // exact moment a fresh CelesTrak pull is about to replace the cached set:
+  // the cache we're overwriting holds each object's PREVIOUS two lines, the
+  // incoming set holds the NEW ones.  Only objects whose lines actually
+  // changed are logged.  No separate full-catalogue snapshot is stored (the
+  // cache itself is the baseline), so this costs no extra localStorage beyond
+  // the capped log.  Consumed by Sat-Stats' "TLE Analytics" pop-up.
+  // =======================================================================
+  const TLE_CACHE_KEY    = 'argos.tle.v2';
+  const REFRESH_LOG_KEY  = 'nazar.tle.refreshlog.v1';
+  const REFRESH_LOG_MAX  = 1000;                    // newest N kept / shown
+  const REFRESH_LOG_MS   = 15 * 24 * 3600 * 1000;   // 15-day window
+
+  function loadRefreshLog() {
+    try {
+      const arr = JSON.parse(localStorage.getItem(REFRESH_LOG_KEY) || '[]');
+      return Array.isArray(arr) ? arr : [];
+    } catch { return []; }
+  }
+  function saveRefreshLog(arr) {
+    try { localStorage.setItem(REFRESH_LOG_KEY, JSON.stringify(arr)); }
+    catch {
+      // Over quota — persist the newest half so recent refreshes still stick.
+      try { localStorage.setItem(REFRESH_LOG_KEY, JSON.stringify(arr.slice(0, Math.floor(arr.length / 2)))); } catch {}
+    }
+  }
+
+  // Raw (TTL-ignoring) read of the cached parsed catalogue.  cacheGet() returns
+  // null once the 6 h TTL lapses, but the bytes are still there — and a lapsed
+  // cache is exactly the "previous refresh" we want to diff the new pull against.
+  function readRawTLECache() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(TLE_CACHE_KEY) || 'null');
+      return parsed && Array.isArray(parsed.v) ? parsed.v : null;
+    } catch { return null; }
+  }
+
+  // Epoch substring (line-1 cols 19–32) — the per-object dedupe discriminator.
+  function epochField(l1) { return (l1 || '').slice(18, 32); }
+
+  // Compare two parsed TLE sets; append an entry for every object whose two
+  // lines changed.  `when` is the observation instant we stamp the refresh
+  // with.  Deduped by (noradId + new-epoch) so re-runs over the same data never
+  // double-log.  Returns the number of new entries added.
+  function diffAndLog(prev, next, when) {
+    if (!Array.isArray(prev) || !prev.length || !Array.isArray(next) || !next.length) return 0;
+    const prevById = new Map();
+    for (const t of prev) if (Number.isFinite(t.noradId)) prevById.set(t.noradId, t);
+
+    const log = loadRefreshLog();
+    const seen = new Set(log.map(e => e.id + '|' + epochField(e.n1)));
+    const fresh = [];
+    for (const t of next) {
+      if (!Number.isFinite(t.noradId)) continue;
+      const old = prevById.get(t.noradId);
+      if (!old) continue;                                   // brand-new object, not a "refresh"
+      if (old.l1 === t.l1 && old.l2 === t.l2) continue;     // unchanged
+      const key = t.noradId + '|' + epochField(t.l1);
+      if (seen.has(key)) continue;                          // this exact new element set already logged
+      seen.add(key);
+      fresh.push({ id: t.noradId, nm: t.name, o1: old.l1, o2: old.l2, n1: t.l1, n2: t.l2, ts: when });
+      if (fresh.length >= REFRESH_LOG_MAX) break;           // one cycle can't exceed the cap
+    }
+    if (!fresh.length) return 0;
+    const cutoff = when - REFRESH_LOG_MS;
+    const pruned = fresh.concat(log).filter(e => e.ts >= cutoff).slice(0, REFRESH_LOG_MAX);
+    saveRefreshLog(pruned);
+    return fresh.length;
+  }
+
+  // The bundled snapshot re-parsed, used as the baseline for the very first
+  // live pull on a fresh browser (no prior cache to diff against).  Up to ~6 h
+  // stale, so the diff reads as "what CelesTrak has refreshed since the bundle".
+  async function fetchBaselineFromBundle() {
+    try {
+      const r = await fetch(TLE_FALLBACK_URL, { cache: 'no-cache' });
+      if (!r.ok) return null;
+      return parseTLE(await r.text());
+    } catch { return null; }
+  }
+
+  // Diff off the main thread so it never delays the caller's first paint.
+  function scheduleRefreshDiff(prevCache, next) {
+    setTimeout(async () => {
+      try {
+        let prev = prevCache;
+        if (!prev || !prev.length) prev = await fetchBaselineFromBundle();
+        diffAndLog(prev, next, Date.now());
+      } catch {}
+    }, 0);
+  }
+
+  // Public: the refresh log, newest-first, pruned to the 15-day window and the
+  // row cap.  Prunes on read too, so a stale tail never surfaces even if
+  // nothing has refreshed in a while.
+  function getTLERefreshLog() {
+    const cutoff = Date.now() - REFRESH_LOG_MS;
+    return loadRefreshLog().filter(e => e.ts >= cutoff).slice(0, REFRESH_LOG_MAX);
+  }
+
+  // One-time seed so the analytics table isn't empty on a fresh visit.  If the
+  // log has no entries yet but a catalogue is already cached, diff the bundled
+  // snapshot (older baseline) against that cached set — i.e. "what CelesTrak
+  // has refreshed since the shipped snapshot".  A no-op once any refresh has
+  // been captured, and deduped against later live pulls by (noradId + epoch).
+  async function ensureRefreshBootstrap() {
+    if (getTLERefreshLog().length) return 0;
+    const cache = readRawTLECache();
+    if (!cache || !cache.length) return 0;
+    const base = await fetchBaselineFromBundle();
+    return diffAndLog(base, cache, Date.now());
+  }
+
   // The classic TLE catalog field is 5 columns, so it tops out at 99999.  Past
   // that, Space-Track/CelesTrak switched to "Alpha-5": the first column becomes
   // a letter (A–Z, skipping I and O), A=10 … Z=33, covering 100000–339999.
@@ -197,7 +314,9 @@ window.Argos = (function () {
       if (r.ok) {
         const parsed = parseTLE(await r.text());
         if (parsed.length > 100) {
-          cacheSet('argos.tle.v2', parsed);
+          const prevCache = readRawTLECache();   // the set we're about to replace
+          cacheSet(TLE_CACHE_KEY, parsed);
+          scheduleRefreshDiff(prevCache, parsed);
           return { tles: parsed, source: 'celestrak' };
         }
       } else {
@@ -384,6 +503,6 @@ window.Argos = (function () {
   return {
     OBSERVER, EARTH_R_KM,
     inferPurpose, parseTLE, propagate, makeSatrecs, catalogNumber,
-    fetchTLEs, fetchChinaSatcat,
+    fetchTLEs, fetchChinaSatcat, getTLERefreshLog, ensureRefreshBootstrap,
   };
 })();

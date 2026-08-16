@@ -102,7 +102,45 @@
       white-space: normal; min-width: 230px; max-width: 420px;
       font-size: 12px; line-height: 1.45; color: var(--text);
     }
-  </style>
+
+    /* --- TLE Analytics modal --- */
+    #tle-analytics-modal .tle-modal-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+    #tle-analytics-search {
+      flex: 1 1 260px; min-width: 190px;
+      font: 13px var(--mono); padding: 7px 11px;
+      border: 1px solid var(--line); border-radius: 4px;
+      background: rgba(103, 200, 255, 0.05); color: var(--text);
+    }
+    #tle-analytics-search:focus { outline: none; border-color: var(--accent); }
+    /* Two side-by-side TLE columns (old + new) — let the body scroll to hold them.
+       The old cell reads dim, the new cell reads bright, so a scan down the two
+       columns shows at a glance which lines moved. */
+    #tle-analytics-modal td.ta-old div { color: var(--dim); }
+    #tle-analytics-modal td.ta-new div { color: var(--text); }
+    #tle-analytics-modal td.col-when { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    #tle-analytics-modal td.col-when .ta-seen { display: block; margin-top: 3px; font-size: 10px; color: var(--dim); }
+    #tle-analytics-modal .col-remarks {
+      white-space: normal; min-width: 250px; max-width: 440px;
+      font-size: 12px; line-height: 1.7; color: var(--text);
+    }
+    /* One "field: old → new" delta chip inside a Remarks cell. */
+    .ta-delta {
+      display: inline-block; margin: 0 6px 4px 0; padding: 1px 7px; border-radius: 4px;
+      background: rgba(103, 200, 255, 0.08); border: 1px solid var(--line);
+      font-family: var(--mono); font-size: 11px; white-space: nowrap;
+    }
+    .ta-delta .k { color: var(--dim); }
+    .ta-delta .v { color: var(--text); }
+    .ta-delta .up   { color: #ff9966; }   /* value rose  */
+    .ta-delta .down { color: #67e8a4; }   /* value fell  */
+    .ta-epoch { color: #67c8ff; }
+    .ta-alpha {
+      display: inline-block; margin: 2px 6px 4px 0;
+      font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      color: #0a0e14; background: #ffd27f; padding: 2px 7px; border-radius: 4px;
+    }
+    #tle-analytics-empty { padding: 26px; text-align: center; color: var(--dim); line-height: 1.7; }
+</style>
 </head>
 <body class="page-stats">
   <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
@@ -117,6 +155,7 @@
         <button type="button" id="pdf-btn" class="btn-back" disabled title="Loading… the PDF export unlocks once the catalogue has finished loading">⏳ PDF…</button>
         <button type="button" id="tle-repo-btn" class="btn-back" title="Open the raw TLE catalogue used by every page on this site">⌗ TLE Repo</button>
         <button type="button" id="alpha5-btn" class="btn-back" title="Objects whose catalog number has outgrown the classic 5-digit TLE — the new Alpha-5 format (catalog ≥ 100,000)">⌗ Alpha-5 TLEs</button>
+        <button type="button" id="tle-analytics-btn" class="btn-back" title="Every element-set change captured over the last 15 days of catalogue refreshes — old vs new TLE, epoch shift and what changed">⟳ TLE Analytics</button>
         <a class="btn-back" href="index.html">← NAZAR</a>
       </div>
     </header>
@@ -480,14 +519,93 @@
     </div>
   </div>
 
+  <!-- TLE Analytics modal — opened by #tle-analytics-btn.  Every element-set
+       change captured over the last 15 days of catalogue refreshes: old vs new
+       two-line elements, the epoch shift, and a Remarks column highlighting
+       exactly which orbital fields moved (with an Alpha-5 flag where the
+       object's catalog number is ≥ 100,000).  Populated by sat-stats.js
+       openTleAnalytics(); the underlying log is built in tle-loader.js at the
+       moment each fresh CelesTrak pull replaces the cached catalogue. -->
+  <div id="tle-analytics-modal" class="tle-modal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="tle-analytics-title">
+    <div class="tle-modal-card">
+      <header class="tle-modal-header">
+        <div class="tle-modal-title-block">
+          <h2 id="tle-analytics-title">TLE Analytics — refresh log</h2>
+          <div class="tle-modal-meta">
+            <strong id="tle-analytics-count">…</strong> element-set refreshes ·
+            last 15 days · newest <strong id="tle-analytics-cap">1,000</strong> shown
+          </div>
+        </div>
+        <button type="button" id="tle-analytics-close" class="tle-modal-close" aria-label="Close">×</button>
+      </header>
+      <div class="tle-modal-toolbar">
+        <input type="search" id="tle-analytics-search" placeholder="Filter by name or NORAD…" autocomplete="off">
+        <span class="tle-modal-pager">
+          <button type="button" id="tle-analytics-prev" class="tle-modal-page-btn" aria-label="Previous page">‹</button>
+          Page <strong id="tle-analytics-page-current">1</strong> / <strong id="tle-analytics-page-total">1</strong>
+          <button type="button" id="tle-analytics-next" class="tle-modal-page-btn" aria-label="Next page">›</button>
+        </span>
+        <span class="tle-modal-hint">100 per page · each row is one satellite whose orbital elements changed between two catalogue pulls.</span>
+      </div>
+      <div class="tle-modal-body">
+        <table class="tle-table">
+          <thead>
+            <tr>
+              <th>Satellite</th>
+              <th>NORAD</th>
+              <th class="col-tle">Old TLE (L1 / L2)</th>
+              <th class="col-tle">New TLE (L1 / L2)</th>
+              <th>Refreshed</th>
+              <th class="col-remarks">Remarks — what changed</th>
+            </tr>
+          </thead>
+          <tbody id="tle-analytics-rows"></tbody>
+        </table>
+
+        <div id="tle-analytics-empty" hidden></div>
+
+        <section class="tle-explainer">
+          <h3>How this refresh log is built</h3>
+          <p>
+            NORAD re-determines each satellite's orbit continually and
+            CelesTrak republishes the updated <strong>Two-Line Element set</strong>
+            — usually at least once a day per object. NAZAR has no server, so it
+            captures these refreshes <em>in your browser</em>: every time a fresh
+            pull of the active catalogue replaces the cached one, the set being
+            replaced supplies each object's <strong>old</strong> TLE and the
+            incoming pull supplies the <strong>new</strong> one. Only objects
+            whose two lines actually changed are recorded.
+          </p>
+          <p>
+            The <strong>Refreshed</strong> column shows the new element set's own
+            <span class="ta-epoch">epoch</span> (the UTC instant the orbit was
+            determined), with the time NAZAR logged it beneath. The
+            <strong>Remarks</strong> column highlights which fields moved — the
+            epoch advance, plus any shift in mean motion (orbital decay),
+            inclination, RAAN, eccentricity, drag term (B*) and the element-set
+            counter. Objects numbered <strong>100,000+</strong> carry an
+            <span class="ta-alpha">ALPHA-5</span> flag, since their catalog
+            number no longer fits the classic 5-digit TLE field.
+          </p>
+          <p class="tle-foot">
+            The log keeps the last <strong>15 days</strong> of changes and shows
+            the newest <strong>1,000</strong>. It fills in as the catalogue
+            refreshes over your visits; the first entries appear once a live
+            CelesTrak pull differs from the bundled snapshot NAZAR ships with.
+          </p>
+        </section>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <!-- PDF export (sat-stats.js #pdf-btn).  jsPDF first, then the autotable
        plugin which attaches doc.autoTable to the jsPDF prototype. -->
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
-  <script src="tle-loader.js?v=11"></script>
-  <script src="sat-stats.js?v=17"></script>
+  <script src="tle-loader.js?v=12"></script>
+  <script src="sat-stats.js?v=18"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=13"></script>
 </body>

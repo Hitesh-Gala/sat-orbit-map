@@ -1342,6 +1342,12 @@ async function boot() {
   renderCharts(db);
 
   enablePdfButton();   // page is fully loaded — the PDF export can now run
+
+  // Seed the TLE-refresh log if it's still empty (e.g. this visit hit the
+  // cached catalogue rather than a fresh live pull) so the analytics pop-up
+  // shows real data immediately.  Fire-and-forget — the pop-up re-reads the
+  // log every time it opens.
+  window.Argos.ensureRefreshBootstrap?.().catch(() => {});
 }
 
 $('filter').addEventListener('input', () => { currentPage = 0; renderTable(db); });
@@ -1782,6 +1788,228 @@ function renderAlpha5Rows() {
     });
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && !$('alpha5-modal').hidden) closeAlpha5();
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bind);
+  } else {
+    bind();
+  }
+})();
+
+// =========================================================================
+// TLE Analytics modal — the element-set refresh log.
+//
+// window.Argos.getTLERefreshLog() returns, newest-first, every object whose
+// two lines changed between successive live pulls of the active catalogue over
+// the last 15 days (capped at the newest 1,000).  Each entry carries the old
+// and new lines, so the exact field-by-field diff is derived here at render
+// time.  The capture itself happens in tle-loader.js the moment a fresh
+// CelesTrak pull replaces the cached catalogue.
+// =========================================================================
+
+const TLE_ANALYTICS_PAGE_SIZE = 100;
+let taLog  = null;   // snapshot of the refresh log for the current open
+let taPage = 0;
+
+// Parse a TLE B*/exponential field ("69294-3" → 0.69294 × 10⁻³), or NaN.
+function parseTLEExp(field) {
+  const m = /^([+-]?)(\d{5})([+-]\d)$/.exec((field || '').trim());
+  if (!m) return NaN;
+  const sign = m[1] === '-' ? -1 : 1;
+  return sign * (parseInt(m[2], 10) / 1e5) * Math.pow(10, parseInt(m[3], 10));
+}
+
+// Extract one numeric orbital field from a TLE line pair by key.
+function taField(l1, l2, key) {
+  switch (key) {
+    case 'mm':    return parseFloat((l2 || '').slice(52, 63));
+    case 'inc':   return parseFloat((l2 || '').slice(8, 16));
+    case 'raan':  return parseFloat((l2 || '').slice(17, 25));
+    case 'ecc':   { const s = (l2 || '').slice(26, 33).trim(); return s ? parseFloat('0.' + s) : NaN; }
+    case 'bstar': return parseTLEExp((l1 || '').slice(53, 61));
+    case 'esn':   return parseInt((l1 || '').slice(64, 68), 10);
+    default:      return NaN;
+  }
+}
+
+// Slowly-varying, physically-meaningful fields worth diffing.  (Mean anomaly,
+// argument of perigee and the revolution counter advance a full cycle every
+// orbit, so their raw deltas are noise — deliberately omitted.)
+const TA_FIELDS = [
+  { key: 'mm',    label: 'mean motion', dp: 8,   eps: 1e-7, suf: '' },
+  { key: 'inc',   label: 'incl',        dp: 4,   eps: 2e-4, suf: '°' },
+  { key: 'raan',  label: 'RAAN',        dp: 3,   eps: 2e-3, suf: '°', wrap: 360 },
+  { key: 'ecc',   label: 'ecc',         dp: 7,   eps: 2e-7, suf: '' },
+  { key: 'bstar', label: 'B*',          dp: 'e', eps: 1e-9, suf: '' },
+  { key: 'esn',   label: 'set #',       dp: 0,   eps: 0.5,  suf: '', int: true },
+];
+
+function taFmt(v, f) {
+  if (!Number.isFinite(v)) return '—';
+  if (f.dp === 'e') return v.toExponential(2);
+  if (f.int)        return String(Math.round(v));
+  return v.toFixed(f.dp);
+}
+
+// Build the "what changed" Remarks HTML for one refresh entry.
+function refreshRemarksHtml(e) {
+  const chips = [];
+
+  // Alpha-5 flag first — the object whose catalog number outgrew the 5-digit field.
+  const field = catalogField(e.n1);
+  if (isAlpha5Field(field)) {
+    const dec = Number.isFinite(e.id) ? e.id.toLocaleString() : '?';
+    chips.push(`<span class="ta-alpha" title="Catalog ≥ 100,000 — Alpha-5 numbering (${esc(field)} = ${dec})">ALPHA-5 ${esc(field)}</span>`);
+  }
+
+  // Epoch advance — the headline of any refresh.
+  const oe = parseTLEEpoch(e.o1), ne = parseTLEEpoch(e.n1);
+  if (oe && ne) {
+    const dh = (ne - oe) / 3600000;
+    const txt = Math.abs(dh) >= 48 ? `${(dh / 24).toFixed(1)} d` : `${dh.toFixed(2)} h`;
+    chips.push(`<span class="ta-delta"><span class="k">epoch</span> <span class="v ta-epoch">${dh >= 0 ? '+' : ''}${txt}</span></span>`);
+  }
+
+  // Orbital-element shifts.
+  for (const f of TA_FIELDS) {
+    const ov = taField(e.o1, e.o2, f.key), nv = taField(e.n1, e.n2, f.key);
+    if (!Number.isFinite(ov) || !Number.isFinite(nv)) continue;
+    let d = nv - ov;
+    if (f.wrap) d = ((d + f.wrap * 1.5) % f.wrap) - f.wrap / 2;   // shortest signed arc
+    if (Math.abs(d) < f.eps) continue;
+    const cls  = d > 0 ? 'up' : 'down';
+    const dAbs = f.dp === 'e' ? Math.abs(d).toExponential(1)
+               : f.int        ? String(Math.abs(Math.round(d)))
+               :                 Math.abs(d).toFixed(f.dp);
+    chips.push(`<span class="ta-delta"><span class="k">${esc(f.label)}</span> `
+      + `<span class="v">${taFmt(ov, f)}${f.suf}→${taFmt(nv, f)}${f.suf}</span> `
+      + `<span class="${cls}">${d > 0 ? '+' : '−'}${dAbs}</span></span>`);
+  }
+
+  return chips.length ? chips.join(' ') : '<span class="muted">re-issued with identical element values</span>';
+}
+
+// "Refreshed" cell — the new element set's own epoch (UTC), plus when NAZAR
+// logged it beneath.
+function taWhenCell(e) {
+  const ep = parseTLEEpoch(e.n1);
+  const epStr = ep ? ep.toISOString().slice(0, 16).replace('T', ' ') + ' UTC' : '—';
+  let seenStr = '';
+  const seen = new Date(e.ts);
+  if (!isNaN(seen)) {
+    seenStr = seen.toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+  return `<span class="mono">${esc(epStr)}</span>${seenStr ? `<span class="ta-seen">logged ${esc(seenStr)}</span>` : ''}`;
+}
+
+function openTleAnalytics() {
+  const modal = $('tle-analytics-modal');
+  modal.hidden = false;
+  modal.setAttribute('aria-hidden', 'false');
+  setTimeout(() => modal.classList.add('shown'), 16);
+  taPage = 0;
+  taLog = (window.Argos && typeof window.Argos.getTLERefreshLog === 'function')
+    ? window.Argos.getTLERefreshLog() : [];
+  renderTleAnalytics();
+}
+
+function closeTleAnalytics() {
+  const modal = $('tle-analytics-modal');
+  modal.classList.remove('shown');
+  modal.setAttribute('aria-hidden', 'true');
+  setTimeout(() => { modal.hidden = true; }, 220);
+}
+
+function taSetPager(cur, total, disabled) {
+  $('tle-analytics-page-current').textContent = cur.toLocaleString();
+  $('tle-analytics-page-total').textContent   = total.toLocaleString();
+  $('tle-analytics-prev').disabled = disabled || cur <= 1;
+  $('tle-analytics-next').disabled = disabled || cur >= total;
+}
+
+function renderTleAnalytics() {
+  if (!taLog) return;
+  const tbody   = $('tle-analytics-rows');
+  const emptyEl = $('tle-analytics-empty');
+  const table   = tbody.closest('table');
+  $('tle-analytics-count').textContent = taLog.length.toLocaleString();
+
+  // No refreshes captured yet on this browser.
+  if (!taLog.length) {
+    table.hidden = true;
+    tbody.innerHTML = '';
+    emptyEl.hidden = false;
+    emptyEl.innerHTML = 'No TLE refreshes captured yet. This log fills in as the active catalogue refreshes across your visits — the first rows appear once a live CelesTrak pull differs from the bundled snapshot NAZAR ships with (typically within a day). Come back after the next refresh cycle.';
+    taSetPager(1, 1, true);
+    return;
+  }
+
+  const q = $('tle-analytics-search').value.trim().toLowerCase();
+  const rows = q ? taLog.filter(e => `${e.nm} ${e.id}`.toLowerCase().includes(q)) : taLog;
+
+  if (!rows.length) {
+    table.hidden = true;
+    tbody.innerHTML = '';
+    emptyEl.hidden = false;
+    emptyEl.textContent = 'No matching satellites in the refresh log — try a different filter.';
+    taSetPager(1, 1, true);
+    return;
+  }
+
+  emptyEl.hidden = true;
+  table.hidden = false;
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / TLE_ANALYTICS_PAGE_SIZE));
+  if (taPage >= totalPages) taPage = totalPages - 1;
+  if (taPage < 0) taPage = 0;
+  const start = taPage * TLE_ANALYTICS_PAGE_SIZE;
+  const end   = Math.min(start + TLE_ANALYTICS_PAGE_SIZE, rows.length);
+
+  const out = [];
+  for (let i = start; i < end; i++) {
+    const e = rows[i];
+    out.push(`<tr>
+      <td class="col-name">${esc(e.nm)}</td>
+      <td class="mono">${Number.isFinite(e.id) ? e.id.toLocaleString() : esc(String(e.id))}</td>
+      <td class="tle-cell ta-old"><div>${esc(e.o1)}</div><div>${esc(e.o2)}</div></td>
+      <td class="tle-cell ta-new"><div>${esc(e.n1)}</div><div>${esc(e.n2)}</div></td>
+      <td class="col-when">${taWhenCell(e)}</td>
+      <td class="col-remarks">${refreshRemarksHtml(e)}</td>
+    </tr>`);
+  }
+  tbody.innerHTML = out.join('');
+  taSetPager(taPage + 1, totalPages, false);
+}
+
+(function setupTleAnalytics() {
+  function bind() {
+    $('tle-analytics-btn')?.addEventListener('click', openTleAnalytics);
+    $('tle-analytics-close')?.addEventListener('click', closeTleAnalytics);
+    $('tle-analytics-search')?.addEventListener('input', () => {
+      taPage = 0;
+      renderTleAnalytics();
+      const body = $('tle-analytics-modal')?.querySelector('.tle-modal-body');
+      if (body) body.scrollTop = 0;
+    });
+    $('tle-analytics-prev')?.addEventListener('click', () => {
+      if (taPage <= 0) return;
+      taPage--;
+      renderTleAnalytics();
+      const body = $('tle-analytics-modal')?.querySelector('.tle-modal-body');
+      if (body) body.scrollTop = 0;
+    });
+    $('tle-analytics-next')?.addEventListener('click', () => {
+      taPage++;
+      renderTleAnalytics();
+      const body = $('tle-analytics-modal')?.querySelector('.tle-modal-body');
+      if (body) body.scrollTop = 0;
+    });
+    $('tle-analytics-modal')?.addEventListener('click', e => {
+      if (e.target.id === 'tle-analytics-modal') closeTleAnalytics();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && $('tle-analytics-modal') && !$('tle-analytics-modal').hidden) closeTleAnalytics();
     });
   }
   if (document.readyState === 'loading') {
