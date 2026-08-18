@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>NAZAR · Orbit Maker</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=44">
+  <style>
+    /* ---- Control panel (same idiom as the Sats-by-Operator HUD) ---- */
+    .om-shell {
+      position: fixed; top: 86px; left: 14px; width: 356px;
+      max-width: calc(100vw - 28px); max-height: calc(100vh - 100px);
+      overflow-y: auto; z-index: 10; display: flex; flex-direction: column; gap: 10px;
+    }
+    .om-shell .panel { padding: 12px 14px; }
+    .om-intro { font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--dim); }
+    .om-intro b { color: var(--text); }
+    .om-panel-title {
+      font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 13px;
+      letter-spacing: 0.06em; color: var(--accent); margin-bottom: 10px;
+    }
+
+    /* ---- Sliders ---- */
+    .om-slider { margin-bottom: 13px; }
+    .om-slider:last-child { margin-bottom: 2px; }
+    .om-slider-head { display: flex; align-items: baseline; gap: 8px; }
+    .om-sym {
+      font-family: 'Cambria Math', 'Times New Roman', serif; font-style: italic;
+      font-size: 18px; font-weight: 700; color: var(--accent); width: 20px; text-align: center; flex: none;
+    }
+    .om-name { font-family: var(--mono); font-size: 12px; color: var(--text); flex: 1 1 auto; }
+    .om-val { font-family: var(--mono); font-size: 12.5px; color: #ffd27f; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .om-val .u { color: var(--dim); font-size: 11px; }
+
+    .om-slider input[type=range] {
+      -webkit-appearance: none; appearance: none; width: 100%; height: 5px; margin: 9px 0 0;
+      background: rgba(103, 200, 255, 0.16); border-radius: 4px; outline: none; cursor: pointer;
+    }
+    .om-slider input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none; width: 17px; height: 17px; border-radius: 50%;
+      background: var(--accent); border: 2px solid #071018; cursor: pointer;
+      box-shadow: 0 0 9px rgba(103, 200, 255, 0.75);
+    }
+    .om-slider input[type=range]::-moz-range-thumb {
+      width: 15px; height: 15px; border-radius: 50%; background: var(--accent);
+      border: 2px solid #071018; cursor: pointer; box-shadow: 0 0 9px rgba(103, 200, 255, 0.75);
+    }
+
+    /* ---- Readout grid ---- */
+    .om-readout { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 12px; }
+    .om-read { display: flex; flex-direction: column; gap: 1px; }
+    .om-read .k { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
+    .om-read .v { font-family: var(--mono); font-size: 13px; color: var(--text); font-variant-numeric: tabular-nums; }
+    .om-read .v b { color: #ffd27f; font-weight: 700; }
+    .om-type {
+      grid-column: 1 / -1; margin-top: 2px; font-family: var(--mono); font-size: 12px;
+      color: var(--accent); padding: 5px 8px; border: 1px solid var(--line);
+      border-radius: 4px; background: rgba(103, 200, 255, 0.06);
+    }
+    .om-warn {
+      grid-column: 1 / -1; margin-top: 4px; font-family: var(--mono); font-size: 11.5px; line-height: 1.4;
+      color: #ff9a6b; padding: 6px 9px; border: 1px solid rgba(255, 107, 107, 0.5);
+      border-radius: 4px; background: rgba(255, 107, 107, 0.10);
+    }
+    .om-warn[hidden] { display: none; }
+
+    /* ---- Toggles ---- */
+    .om-toggles { display: flex; flex-direction: column; gap: 8px; }
+    .om-toggle { display: flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 12.5px; color: var(--text); cursor: pointer; }
+    .om-toggle input { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; flex: none; }
+    .om-toggle .sw { width: 11px; height: 11px; border-radius: 3px; flex: none; box-shadow: 0 0 6px currentColor; }
+
+    /* ---- Presets & action buttons ---- */
+    .om-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+    .om-btns button {
+      flex: 1 1 auto; min-width: 84px; background: rgba(103, 200, 255, 0.10);
+      border: 1px solid var(--line); color: var(--text); border-radius: 5px;
+      font-family: var(--mono); font-size: 11.5px; padding: 7px 8px; cursor: pointer;
+      transition: border-color .14s, background .14s, color .14s;
+    }
+    .om-btns button:hover { border-color: var(--accent); color: var(--accent); background: rgba(103, 200, 255, 0.18); }
+    .om-btns.om-actions button.om-play.on { border-color: #67e8a4; color: #67e8a4; background: rgba(103, 232, 164, 0.14); }
+
+    /* ---- Legend (bottom-right) ---- */
+    .om-legend {
+      position: fixed; right: 14px; bottom: 16px; z-index: 10;
+      background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+      padding: 10px 12px; font-family: var(--mono); font-size: 11px; color: var(--text);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); max-width: 44vw;
+    }
+    .om-legend .lg-row { display: flex; align-items: center; gap: 7px; padding: 2px 0; }
+    .om-legend .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; box-shadow: 0 0 6px currentColor; }
+    .om-legend .bar { width: 14px; height: 3px; border-radius: 2px; flex: none; }
+
+    @media (max-width: 720px) {
+      .om-legend { display: none; }
+      .om-shell { top: 78px; width: calc(100vw - 20px); left: 10px; max-height: calc(100vh - 88px); }
+    }
+  </style>
+</head>
+<body class="page-orbitmaker">
+  <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
+    <img src="data/nazar-logo.svg?v=5" alt="NAZAR">
+  </a>
+
+  <div id="globe"></div>
+
+  <a class="top-nazar-btn" href="index.html" title="Back to the NAZAR main view">
+    <span class="ico">◯</span>
+    <span class="lbl">NAZAR</span>
+  </a>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-short">NAZAR</span>
+      <span class="brand-long"> · Orbit Maker</span>
+    </div>
+    <div class="sub">Dial in the six Keplerian elements and watch the orbit take shape.</div>
+  </header>
+
+  <aside class="om-shell" aria-label="Orbit controls">
+    <section class="panel">
+      <div class="om-intro">
+        Set the six <b>classical (Keplerian) orbital elements</b> below. Two fix the
+        <b>size &amp; shape</b> (a, e), three fix the <b>orientation</b> of the orbit plane
+        (i, Ω, ω), and the last places the satellite <b>along</b> the orbit (θ).
+        Drag the globe to look around; scroll to zoom.
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="om-panel-title">Orbital elements</div>
+
+      <div class="om-slider">
+        <div class="om-slider-head">
+          <span class="om-sym">a</span>
+          <span class="om-name">Semi-major axis</span>
+          <span class="om-val"><span id="om-a-val">10000</span> <span class="u">km</span></span>
+        </div>
+        <input type="range" id="om-a" min="6600" max="50000" step="50" value="10000">
+      </div>
+
+      <div class="om-slider">
+        <div class="om-slider-head">
+          <span class="om-sym">e</span>
+          <span class="om-name">Eccentricity</span>
+          <span class="om-val"><span id="om-e-val">0.20</span></span>
+        </div>
+        <input type="range" id="om-e" min="0" max="0.9" step="0.005" value="0.2">
+      </div>
+
+      <div class="om-slider">
+        <div class="om-slider-head">
+          <span class="om-sym">i</span>
+          <span class="om-name">Inclination</span>
+          <span class="om-val"><span id="om-i-val">45</span><span class="u">°</span></span>
+        </div>
+        <input type="range" id="om-i" min="0" max="180" step="0.5" value="45">
+      </div>
+
+      <div class="om-slider">
+        <div class="om-slider-head">
+          <span class="om-sym">Ω</span>
+          <span class="om-name">Long. of ascending node</span>
+          <span class="om-val"><span id="om-O-val">0</span><span class="u">°</span></span>
+        </div>
+        <input type="range" id="om-O" min="0" max="360" step="1" value="0">
+      </div>
+
+      <div class="om-slider">
+        <div class="om-slider-head">
+          <span class="om-sym">ω</span>
+          <span class="om-name">Argument of perigee</span>
+          <span class="om-val"><span id="om-w-val">0</span><span class="u">°</span></span>
+        </div>
+        <input type="range" id="om-w" min="0" max="360" step="1" value="0">
+      </div>
+
+      <div class="om-slider">
+        <div class="om-slider-head">
+          <span class="om-sym">θ</span>
+          <span class="om-name">True anomaly</span>
+          <span class="om-val"><span id="om-nu-val">0</span><span class="u">°</span></span>
+        </div>
+        <input type="range" id="om-nu" min="0" max="360" step="1" value="0">
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="om-panel-title">Resulting orbit</div>
+      <div class="om-readout">
+        <div class="om-read"><span class="k">Perigee alt</span><span class="v"><b id="om-peri">…</b> km</span></div>
+        <div class="om-read"><span class="k">Apogee alt</span><span class="v"><b id="om-apo">…</b> km</span></div>
+        <div class="om-read"><span class="k">Period</span><span class="v"><b id="om-period">…</b></span></div>
+        <div class="om-read"><span class="k">Satellite alt</span><span class="v"><b id="om-alt">…</b> km</span></div>
+        <div class="om-read"><span class="k">Speed now</span><span class="v"><b id="om-speed">…</b> km/s</span></div>
+        <div class="om-read"><span class="k">Radius r</span><span class="v"><b id="om-r">…</b> km</span></div>
+        <div class="om-type" id="om-type">…</div>
+        <div class="om-warn" id="om-warn" hidden></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="om-panel-title">Presets</div>
+      <div class="om-btns" id="om-presets">
+        <button type="button" data-preset="leo">LEO (ISS)</button>
+        <button type="button" data-preset="sso">Polar / SSO</button>
+        <button type="button" data-preset="geo">Geostationary</button>
+        <button type="button" data-preset="molniya">Molniya</button>
+        <button type="button" data-preset="gto">GTO</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="om-panel-title">Show</div>
+      <div class="om-toggles">
+        <label class="om-toggle"><input type="checkbox" id="om-t-plane" checked><span class="sw" style="background:#67c8ff;color:#67c8ff"></span> Orbital plane</label>
+        <label class="om-toggle"><input type="checkbox" id="om-t-equator" checked><span class="sw" style="background:#8aa0b8;color:#8aa0b8"></span> Equatorial plane</label>
+        <label class="om-toggle"><input type="checkbox" id="om-t-nodes" checked><span class="sw" style="background:#ffd166;color:#ffd166"></span> Line of nodes</label>
+        <label class="om-toggle"><input type="checkbox" id="om-t-frame" checked><span class="sw" style="background:#ff6b6b;color:#ff6b6b"></span> Reference frame (♈ &amp; poles)</label>
+      </div>
+      <div class="om-btns om-actions" style="margin-top:11px">
+        <button type="button" class="om-play" id="om-play">▶ Animate</button>
+        <button type="button" id="om-fit">⤢ Fit view</button>
+      </div>
+    </section>
+  </aside>
+
+  <div class="om-legend" aria-hidden="true">
+    <div class="lg-row"><span class="bar" style="background:#67c8ff"></span> Orbit path</div>
+    <div class="lg-row"><span class="dot" style="background:#ffffff;color:#67c8ff"></span> Satellite (θ)</div>
+    <div class="lg-row"><span class="dot" style="background:#67e8a4;color:#67e8a4"></span> Perigee</div>
+    <div class="lg-row"><span class="dot" style="background:#ffb86b;color:#ffb86b"></span> Apogee</div>
+    <div class="lg-row"><span class="dot" style="background:#ffd166;color:#ffd166"></span> Asc / desc node (AN / DN)</div>
+    <div class="lg-row"><span class="bar" style="background:#ff6b6b"></span> γ reference direction (vernal equinox)</div>
+  </div>
+
+  <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+  <script src="orbit-maker.js?v=2"></script>
+  <script src="nazar-bgm.js?v=4"></script>
+  <script src="mobile-menu.js?v=13"></script>
+</body>
+</html>

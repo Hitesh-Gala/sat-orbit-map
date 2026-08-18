@@ -1513,7 +1513,8 @@ body.light .btn-sbo .btn-nav-icon { color: #d35400; text-shadow: none; }
   body.page-sbo       .topbar,
   body.page-goc       .topbar,
   body.page-debris    .topbar,
-  body.page-launchmap .topbar { padding-left: 165px; }
+  body.page-launchmap .topbar,
+  body.page-orbitmaker .topbar { padding-left: 165px; }
 }
 
 /* --- Switch 2D-3D view-mode toggle on the main page HUD.  Full-width
