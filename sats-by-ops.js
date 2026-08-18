@@ -25,10 +25,11 @@ const CATEGORIES = [
   // ----- GNSS constellations ---------------------------------------------
   { id: 'gnss-gps',     tier: 'GNSS',           label: 'GPS / NAVSTAR',           color: '#4a90e2', test: n => /^(NAVSTAR|GPS\s|GPS-)/i.test(n) },
   { id: 'gnss-glonass', tier: 'GNSS',           label: 'GLONASS',                 color: '#9b59b6', test: n => /^GLONASS\b/i.test(n) },
-  { id: 'gnss-galileo', tier: 'GNSS',           label: 'Galileo',                 color: '#5fc7e6', test: n => /^GALILEO\b/i.test(n) },
+  { id: 'gnss-galileo', tier: 'GNSS',           label: 'Galileo',                 color: '#5fc7e6', test: n => /^GALILEO\b/i.test(n) || /^GSAT0\d/i.test(n) },
   { id: 'gnss-beidou',  tier: 'GNSS',           label: 'BeiDou',                  color: '#e74c3c', test: n => /^BEIDOU\b/i.test(n) },
   { id: 'gnss-qzss',    tier: 'GNSS',           label: 'QZSS (Japan)',            color: '#e67e22', test: n => /^QZS-/i.test(n) || /^QZSS\b/i.test(n) },
   { id: 'gnss-navic',   tier: 'GNSS',           label: 'NAVIC / IRNSS (India)',   color: '#27ae60', test: n => /^(IRNSS|NVS-)/i.test(n) },
+  { id: 'gnss-centispace', tier: 'GNSS',        label: 'CentiSpace (China LEO PNT)', color: '#6c5ce7', test: n => /^CENTISPACE/i.test(n) },
 
   // ----- Mega-constellations / LEO comms ---------------------------------
   { id: 'op-starlink',  tier: 'Constellations', label: 'Starlink (SpaceX)',       color: '#67e8a4', test: n => /^STARLINK/i.test(n) },
@@ -37,8 +38,14 @@ const CATEGORIES = [
   { id: 'op-iridium',   tier: 'Constellations', label: 'Iridium',                 color: '#bdc3c7', test: n => /^IRIDIUM/i.test(n) },
   { id: 'op-globalstar',tier: 'Constellations', label: 'Globalstar',              color: '#7f8c8d', test: n => /^GLOBALSTAR/i.test(n) },
   { id: 'op-orbcomm',   tier: 'Constellations', label: 'ORBCOMM',                 color: '#aab2bd', test: n => /^ORBCOMM/i.test(n) },
-  { id: 'op-guowang',   tier: 'Constellations', label: 'Guowang (China SatNet)',  color: '#ff7f50', test: n => /^GUOWANG/i.test(n) },
+  { id: 'op-guowang',   tier: 'Constellations', label: 'Guowang / Xingwang (China)', color: '#ff7f50', test: n => /^(GUOWANG|HULIANWANG|XINGWANG|GW[- ])/i.test(n) },
   { id: 'op-qianfan',   tier: 'Constellations', label: 'Qianfan / G60 (China)',   color: '#ffa07a', test: n => /^(QIANFAN|G60)/i.test(n) },
+  { id: 'op-kineis',    tier: 'Constellations', label: 'Kinéis (France IoT)',     color: '#2ecc71', test: n => /^KINEIS/i.test(n) },
+  { id: 'op-spacemobile',tier: 'Constellations',label: 'AST SpaceMobile (D2C)',   color: '#a3e635', test: n => /^(SPACEMOBILE|BLUEWALKER|BLUEBIRD)/i.test(n) },
+  { id: 'op-gonets',    tier: 'Constellations', label: 'Gonets (Russia)',         color: '#5fae8c', test: n => /^GONETS/i.test(n) },
+  { id: 'op-geespace',  tier: 'Constellations', label: 'GeeSpace / Geely (China)', color: '#e6b800', test: n => /^GEESAT/i.test(n) },
+  { id: 'op-tianqi',    tier: 'Constellations', label: 'Tianqi IoT (China)',      color: '#ff9e4a', test: n => /^TIANQI[- ]/i.test(n) },
+  { id: 'op-sitro',     tier: 'Constellations', label: 'Sitronics SITRO-AIS (Russia)', color: '#7fd1b0', test: n => /^SITRO/i.test(n) },
 
   // ----- Earth observation companies -------------------------------------
   { id: 'eo-planet',    tier: 'Earth Obs',      label: 'Planet (Flock / SkySat)', color: '#16a085', test: n => /^(FLOCK|SKYSAT|PELICAN|TANAGER)/i.test(n) },
@@ -47,14 +54,26 @@ const CATEGORIES = [
   { id: 'eo-blacksky',  tier: 'Earth Obs',      label: 'BlackSky',                color: '#5b6dcd', test: n => /^BLACKSKY/i.test(n) },
   { id: 'eo-capella',   tier: 'Earth Obs',      label: 'Capella Space (SAR)',     color: '#8e44ad', test: n => /^CAPELLA/i.test(n) },
   { id: 'eo-iceye',     tier: 'Earth Obs',      label: 'ICEYE (SAR)',             color: '#2980b9', test: n => /^ICEYE/i.test(n) },
+  { id: 'eo-hawkeye',   tier: 'Earth Obs',      label: 'HawkEye 360 (RF)',        color: '#00b8d4', test: n => /^HAWK[- ]/i.test(n) },
+  { id: 'eo-satellogic',tier: 'Earth Obs',      label: 'Satellogic (NuSat)',      color: '#26c6a8', test: n => /^(NUSAT|ÑUSAT)/i.test(n) },
+  { id: 'eo-synspective',tier: 'Earth Obs',     label: 'Synspective (StriX SAR)', color: '#7e57c2', test: n => /^STRIX/i.test(n) },
+  { id: 'eo-iqps',      tier: 'Earth Obs',      label: 'iQPS (QPS-SAR)',          color: '#9575cd', test: n => /^QPS-SAR/i.test(n) },
+  { id: 'eo-unseenlabs',tier: 'Earth Obs',      label: 'Unseenlabs (BRO, RF)',    color: '#0097a7', test: n => /^BRO-/i.test(n) },
+  { id: 'eo-iride',     tier: 'Earth Obs',      label: 'IRIDE (Italy)',           color: '#4dd0e1', test: n => /^IRIDE/i.test(n) },
+  { id: 'eo-ghgsat',    tier: 'Earth Obs',      label: 'GHGSat (methane)',        color: '#66bb6a', test: n => /^GHGSAT/i.test(n) },
+  { id: 'eo-superview', tier: 'Earth Obs',      label: 'SuperView / Gaojing (China)', color: '#5c9ce6', test: n => /^SUPERVIEW/i.test(n) },
+  { id: 'eo-sentinel',  tier: 'Earth Obs',      label: 'Copernicus Sentinel (EU)', color: '#3d9970', test: n => /^SENTINEL/i.test(n) },
 
   // ----- Communications (mostly GEO) -------------------------------------
   { id: 'com-inmarsat', tier: 'Communications', label: 'Viasat / Inmarsat',       color: '#d35400', test: n => /^(INMARSAT|VIASAT)/i.test(n) },
-  { id: 'com-intelsat', tier: 'Communications', label: 'Intelsat (SES Group)',    color: '#c0392b', test: n => /^INTELSAT/i.test(n) },
+  { id: 'com-intelsat', tier: 'Communications', label: 'Intelsat / Galaxy (SES Group)', color: '#c0392b', test: n => /^(INTELSAT|GALAXY )/i.test(n) },
   { id: 'com-eutelsat', tier: 'Communications', label: 'Eutelsat',                color: '#e74c3c', test: n => /^EUTELSAT/i.test(n) },
   { id: 'com-ses',      tier: 'Communications', label: 'SES / O3b',               color: '#f1c40f', test: n => /^(SES[- ]|ASTRA|O3B)/i.test(n) },
   { id: 'com-chinasat', tier: 'Communications', label: 'ChinaSat / Zhongxing',    color: '#c39bd3', test: n => /^(CHINASAT|ZHONGXING|ZX[- ])/i.test(n) },
   { id: 'com-apstar',   tier: 'Communications', label: 'APSTAR / AsiaSat',        color: '#d2b4de', test: n => /^(APSTAR|ASIASAT)/i.test(n) },
+  { id: 'com-gsat',     tier: 'Communications', label: 'GSAT (India, ISRO/NSIL)', color: '#e59866', test: n => /^GSAT[- ]/i.test(n) },
+  { id: 'com-echostar', tier: 'Communications', label: 'EchoStar / DirecTV / Dish (US DBS)', color: '#eb984e', test: n => /^(ECHOSTAR|DIRECTV|DISH )/i.test(n) },
+  { id: 'com-express',  tier: 'Communications', label: 'Express (Russia, RSCC)',  color: '#cd6155', test: n => /^EXPRESS-/i.test(n) },
 
   // ----- Meteorology -----------------------------------------------------
   { id: 'met-noaa',     tier: 'Meteorology',    label: 'NOAA / GOES (USA)',       color: '#5dade2', test: n => /^(NOAA\s|GOES)/i.test(n) },
@@ -68,6 +87,7 @@ const CATEGORIES = [
   { id: 'isr-gaofen',   tier: 'ISR',            label: 'Gaofen (China)',          color: '#ff8c52', test: n => /^GAOFEN/i.test(n) },
   { id: 'isr-jilin',    tier: 'ISR',            label: 'Jilin (China)',           color: '#ffaa6b', test: n => /^JILIN/i.test(n) },
   { id: 'isr-usa',      tier: 'ISR',            label: 'USA-series (US classified)', color: '#bd1a1a', test: n => /^USA\s*\d/i.test(n) },
+  { id: 'isr-sda',      tier: 'ISR',            label: 'SDA Tranche (US military)', color: '#cb4335', test: n => /^(SDA[ _-]?\d|PRAETORIAN)/i.test(n) },
   { id: 'isr-cosmos',   tier: 'ISR',            label: 'Cosmos (Russia)',         color: '#76448a', test: n => /^COSMOS\s*\d/i.test(n) },
 
   // ----- Catch-all -------------------------------------------------------
@@ -108,7 +128,8 @@ const COMPANY_INFO = {
     name: 'Galileo', operator: 'EUSPA / ESA (European Union)', founded: '2011 (first launch)',
     fleet: '~30 launched', active: '~24 operational + spares', retired: 'Two early IOV/GIOVE test sats retired',
     desc: 'The EU’s civil-controlled GNSS — the most accurate open positioning signal available. Second-generation (G2) satellites are in build.',
-    news: 'Galileo Second Generation (G2-G) satellites ordered; constellation being completed to full 24+spares.' },
+    news: 'Galileo Second Generation (G2-G) satellites ordered; constellation being completed to full 24+spares.',
+    note: 'Galileo satellites are catalogued under their build designation “GSAT0101 …”, so most appear as “GSAT0xxx” rather than “GALILEO” — this category folds both spellings in.' },
   'gnss-beidou': {
     name: 'BeiDou (BDS)', operator: 'CSNO (China)', founded: '2000 (BDS-3 global 2020)',
     fleet: '~60 launched across BDS-1/2/3', active: '~45 operational', retired: 'BDS-1 and early BDS-2 units retired',
@@ -124,6 +145,12 @@ const COMPANY_INFO = {
     fleet: '~11 launched', active: '7–8 operational', retired: 'IRNSS-1A (atomic-clock failure) retired',
     desc: 'India’s regional navigation system over the subcontinent. NVS-series (NVS-01/-02) are the modernised second generation.',
     news: 'NVS-series replacing first-gen IRNSS birds with L1 civil signals.' },
+  'gnss-centispace': {
+    name: 'CentiSpace (未来导航)', operator: 'Beijing Future Navigation Technology (China)', founded: '2018 (first test satellites)',
+    fleet: '~33 launched', active: '~30 operational', retired: 'Early CentiSpace-1 test units',
+    desc: 'A Chinese LEO navigation-augmentation constellation that broadcasts correction signals to sharpen GPS/BeiDou/Galileo positioning from metres toward centimetres — a low-orbit PNT enhancement layer rather than a standalone GNSS.',
+    news: 'Multiple 2024–25 batches expanding toward a planned ~160-satellite constellation.',
+    note: 'Augmentation birds named “CENTISPACE-…”; they enhance existing GNSS rather than replace it.' },
 
   // ---- LEO mega-constellations ----
   'op-starlink': {
@@ -159,15 +186,49 @@ const COMPANY_INFO = {
     desc: 'The first LEO network built exclusively for IoT / machine-to-machine — 2.4M+ subscribers in transport, maritime, energy and agriculture.',
     news: 'Taken private by GI Partners (2021); OGx high-throughput IoT service now live.' },
   'op-guowang': {
-    name: 'Guowang (国网)', operator: 'China SatNet / CAST', founded: '2021 (first launch Dec 2024)',
-    fleet: '~126 launched in 2025', active: '100+ operational', retired: '—',
-    desc: 'China’s state-backed ~13,000-satellite LEO broadband constellation, with assessed PNT / imaging / SIGINT side-functions.',
-    news: 'Passed 100+ satellites by Nov 2025 across 16 launches.' },
+    name: 'Guowang / Xingwang (国网)', operator: 'China Satellite Network Group (SatNet)', founded: '2021 (first launch Dec 2024)',
+    fleet: '~180+ launched (2024–2026)', active: '~180 in orbit', retired: '—',
+    desc: 'China’s state-backed ~13,000-satellite LEO broadband constellation, with assessed PNT / imaging / SIGINT side-functions — the larger of China’s two flagship LEO networks by count.',
+    news: 'Rapid 2025–26 build-out across many launches; individual spacecraft are the "Hulianwang Weixing Digui" (HWD) / Xingwang Digui satellites.',
+    note: 'Catalogued mostly under the Chinese descriptors “HULIANWANG DIGUI” (互联网低轨, “internet low-orbit”) and “HULIANWANG JISHU SHIYAN” (internet-technology test), plus a few “GUOWANG” test objects — this category now folds all of them together, which is why the live count is much higher than the old “GUOWANG”-only match.' },
   'op-qianfan': {
     name: 'Qianfan / G60 (Thousand Sails)', operator: 'Shanghai Spacecom (SSST)', founded: '2024',
     fleet: '~200 launched by 2026', active: '~200', retired: '—',
     desc: 'Shanghai-backed commercial LEO broadband "Starlink rival" — Phase 1 of 1,296 satellites, 15,000+ planned.',
     news: 'Deployment paced by early-batch issues; still one of China’s two flagship mega-constellations.' },
+  'op-kineis': {
+    name: 'Kinéis', operator: 'Kinéis (France)', founded: '2018 (spun out of CLS; Argos heritage from 1978)',
+    fleet: '25 launched', active: '25 operational', retired: '—',
+    desc: 'A French 25-satellite nanosatellite constellation for global Internet-of-Things connectivity and continuation of the Argos environmental / wildlife-tracking system that has run since 1978.',
+    news: 'Constellation completed across five Rocket Lab Electron launches in 2024–25.',
+    note: 'A small dedicated IoT fleet named “KINEIS-…”, so expect ~25 dots, not thousands.' },
+  'op-spacemobile': {
+    name: 'AST SpaceMobile', operator: 'AST SpaceMobile (USA)', founded: '2017',
+    fleet: '~6 launched (BlueWalker 3 + BlueBird)', active: '~6', retired: '—',
+    desc: 'Building a space-based cellular broadband network that connects directly to ordinary smartphones ("direct-to-cell") using very large phased-array satellites — partnered with AT&T, Verizon and Vodafone.',
+    news: 'BlueWalker 3 test satellite (2022); first five commercial BlueBird satellites launched Sept 2024, with larger Block-2 birds to follow.',
+    note: 'Catalogued as “SPACEMOBILE-…”, “BLUEBIRD” and “BLUEWALKER-3”. Few but huge satellites, so only a handful of dots appear.' },
+  'op-gonets': {
+    name: 'Gonets (Гонец)', operator: 'JSC Gonets / Roscosmos (Russia)', founded: '1996 (civil service)',
+    fleet: '~40+ launched across two generations', active: '~23 Gonets-M', retired: 'First-generation Gonets-D units retired',
+    desc: 'Russia’s low-data-rate store-and-forward LEO messaging system — the civil sibling of the military Strela constellation — used for telemetry, dispatch and remote-area comms.',
+    news: 'Gonets-M fleet periodically replenished; a next-generation "Gonets-M1" system is planned.' },
+  'op-geespace': {
+    name: 'GeeSpace (Geely)', operator: 'Zhejiang Geely Holding (China)', founded: '2018 (Geespace); first launch 2022',
+    fleet: '~63 launched', active: '~60 operational', retired: '—',
+    desc: 'The "Geely Future Mobility Constellation" (GeeSAT) — a commercial LEO network providing high-precision positioning and communications for autonomous vehicles and consumer devices, built by carmaker Geely.',
+    news: 'Second 11-satellite batch and beyond through 2025; near-term target ~72, long-term plan 5,676 satellites.' },
+  'op-tianqi': {
+    name: 'Tianqi (天启)', operator: 'Guodian Gaoke (China)', founded: '2015',
+    fleet: '~30 launched', active: '~30 operational', retired: 'A few early units',
+    desc: 'China’s "Apocalypse/Tianqi" narrowband IoT and data-relay constellation — short-message and machine-to-machine connectivity for sensors, transport and industry.',
+    news: 'Constellation approaching its ~38-satellite target.',
+    note: 'Named “TIANQI-…” (distinct from the “TianQin” gravitational-wave craft).' },
+  'op-sitro': {
+    name: 'Sitronics SITRO-AIS', operator: 'Sitronics Space (Russia)', founded: '2020',
+    fleet: '~47 launched', active: '~47 in orbit', retired: '—',
+    desc: 'A Russian nanosatellite constellation tracking ships via their AIS (Automatic Identification System) transponders — maritime traffic monitoring sold as a data service — the largest single Russian commercial fleet by count.',
+    news: 'Rapidly grew past 40 satellites in 2024–25 toward a planned ~100+ Earth-monitoring network.' },
 
   // ---- Earth observation ----
   'eo-planet': {
@@ -205,6 +266,60 @@ const COMPANY_INFO = {
     desc: 'X-band SAR for flood, disaster and defence monitoring — also builds and sells dedicated satellites to sovereign customers.',
     news: 'Fourth-generation (Gen4) SAR with ~16 cm resolution; 22 satellites launched in 2025.',
     note: 'Many ICEYE craft are owned by customer/sovereign missions and can be catalogued under other names, so the "ICEYE-…" dots undercount the fleet ICEYE actually built.' },
+  'eo-hawkeye': {
+    name: 'HawkEye 360', operator: 'HawkEye 360 (USA)', founded: '2015',
+    fleet: '~39 launched', active: '~30+ operational', retired: 'Pathfinder trio retired',
+    desc: 'Commercial radio-frequency (RF) intelligence — detects and geolocates radio emitters (ships going "dark", GPS interference, emergency beacons) by flying satellites in tightly-spaced clusters of three that triangulate signals.',
+    news: 'Successive "Cluster" launches building toward ~60 satellites; strong defence/maritime-domain demand.',
+    note: 'Named “HAWK-…” and flown in threes, so the dots cluster in trios.' },
+  'eo-satellogic': {
+    name: 'Satellogic', operator: 'Satellogic (Argentina / USA)', founded: '2010',
+    fleet: '~40+ launched', active: '~19 operational', retired: 'Early ÑuSat units retired',
+    desc: 'Vertically-integrated sub-metre optical + hyperspectral Earth imaging, aiming to remap the whole planet at high frequency and low cost. Its satellites are named "ÑuSat / NuSat" (a.k.a. NewSat).',
+    news: 'Went public via SPAC in 2022; scaling toward a planned ~200-satellite constellation.',
+    note: 'Catalogued as “NUSAT-nn (name)”.' },
+  'eo-synspective': {
+    name: 'Synspective', operator: 'Synspective (Japan)', founded: '2018',
+    fleet: '~8 launched', active: '~8 operational', retired: '—',
+    desc: 'Japanese small synthetic-aperture-radar (SAR) company imaging through cloud and darkness for disaster response, infrastructure monitoring and land-deformation ("StriX" satellites).',
+    news: 'Regular StriX launches (several on Rocket Lab Electron) building toward a 30-satellite constellation.',
+    note: 'Named “STRIX-…”.' },
+  'eo-iqps': {
+    name: 'iQPS', operator: 'Institute for Q-shu Pioneers of Space (Japan)', founded: '2005',
+    fleet: '~9 launched', active: '~7 operational', retired: 'Earliest QPS-SAR units',
+    desc: 'A Kyushu-based SAR company whose lightweight satellites carry a large deployable mesh antenna for ~0.5–1 m radar imaging, day or night, through cloud ("QPS-SAR").',
+    news: 'Ramping launches (Electron / H3) toward a planned 36-satellite constellation.',
+    note: 'Named “QPS-SAR-n (name)”.' },
+  'eo-unseenlabs': {
+    name: 'Unseenlabs', operator: 'Unseenlabs (France)', founded: '2015',
+    fleet: '~16 launched', active: '~13 operational', retired: 'Earliest BRO units',
+    desc: 'European RF-based maritime surveillance — detects, characterises and geolocates ships by the radio signals they emit, independent of AIS, for fisheries, security and anti-piracy ("BRO" — Breizh Reconnaissance Orbiter).',
+    news: 'Steady BRO launches expanding revisit; a European counterpart to HawkEye 360.',
+    note: 'Named “BRO-…”.' },
+  'eo-iride': {
+    name: 'IRIDE', operator: 'Italy (ASI / ESA, EU-funded)', founded: '2023 (programme funded)',
+    fleet: '~31 launched (deploying)', active: 'ramping through 2025–26', retired: '—',
+    desc: 'A national multi-sensor Earth-observation constellation for Italy — optical, SAR and hyperspectral satellites in several sub-constellations — funded by Italy’s PNRR recovery plan and procured via ESA from a domestic industry consortium.',
+    news: 'First IRIDE satellites reached orbit in 2025; the full constellation completes 2025–26.',
+    note: 'Named “IRIDE-…”; a government EO system, not a commercial operator.' },
+  'eo-ghgsat': {
+    name: 'GHGSat', operator: 'GHGSat (Canada)', founded: '2011',
+    fleet: '~12 launched', active: '~10 operational', retired: 'GHGSat-D "Claire" demo retired',
+    desc: 'Commercial high-resolution greenhouse-gas monitoring from space — pinpoints methane (and CO₂) emissions from individual industrial sites for energy, regulators and carbon-tracking ("GHGSat-C / Vanguard").',
+    news: 'Expanding the "Vanguard" microsat fleet to sharpen global methane detection.',
+    note: 'A niche but distinctive EO fleet named “GHGSAT-…”.' },
+  'eo-superview': {
+    name: 'SuperView / Gaojing (高景)', operator: 'China Siwei / Beijing Space View (China)', founded: '2016',
+    fleet: '~13 launched', active: '~13 operational', retired: 'A few early units',
+    desc: 'China’s commercial sub-metre optical imaging constellation — SuperView-1 (0.5 m) and the higher-resolution SuperView Neo — sold as commercial satellite imagery by state-linked China Siwei.',
+    news: 'SuperView Neo batches added sharper optical capacity through the 2020s.',
+    note: 'Named “SUPERVIEW-…” / “SUPERVIEW NEO-…”.' },
+  'eo-sentinel': {
+    name: 'Copernicus Sentinel', operator: 'ESA / European Union', founded: '2014 (Sentinel-1A)',
+    fleet: '~14 launched across the families', active: '~11 operational', retired: 'Sentinel-1B (2022 power failure) retired',
+    desc: 'The satellite backbone of the EU’s Copernicus programme — the world’s largest free-and-open Earth-observation data source: Sentinel-1 (radar), -2 (optical), -3 (ocean/land), -5P (air quality) and -6 (sea-level altimetry).',
+    news: 'Sentinel-1C launched Dec 2024 to restore the radar pair; next-generation "Expansion" missions in build.',
+    note: 'A government science programme named “SENTINEL-…”, not a commercial operator.' },
 
   // ---- Communications (mostly GEO) ----
   'com-inmarsat': {
@@ -214,11 +329,11 @@ const COMPANY_INFO = {
     news: 'ViaSat-3 F2/F3 high-capacity satellites rolling out to complete global Ka-band coverage.',
     note: 'A GEO operator — a couple of dozen big satellites parked over the equator, so only a thin arc of dots shows.' },
   'com-intelsat': {
-    name: 'Intelsat', operator: 'SES Group (Luxembourg)', founded: 'Intelsat 1964; merged into SES, July 2025',
+    name: 'Intelsat / Galaxy', operator: 'SES Group (Luxembourg)', founded: 'Intelsat 1964; merged into SES, July 2025',
     fleet: '100+ Intelsat satellites over its history', active: '~50 GEO (now within SES)', retired: 'Dozens of legacy Intelsat birds retired',
     desc: 'One of the oldest and largest GEO operators. SES completed its ~$3.1B acquisition of Intelsat on 17 July 2025, creating a ~120-satellite multi-orbit operator.',
     news: 'SES–Intelsat merger closed July 2025; some planned GEO expansion satellites were cancelled.',
-    note: 'GEO fleet — a few dozen satellites on the geostationary belt, so expect a sparse ring rather than a swarm.' },
+    note: 'GEO fleet — a few dozen satellites on the geostationary belt, so expect a sparse ring rather than a swarm. Includes Intelsat’s “GALAXY” North-American broadcast satellites, which are catalogued under that name rather than “INTELSAT”.' },
   'com-eutelsat': {
     name: 'Eutelsat', operator: 'Eutelsat Group (France)', founded: '1977',
     fleet: '~31 GEO satellites', active: '~31 GEO + Eutelsat OneWeb LEO', retired: 'Many first-gen Eutelsat/Hot Bird craft retired',
@@ -242,6 +357,24 @@ const COMPANY_INFO = {
     fleet: '~20 satellites over their history', active: '~10 GEO', retired: 'Early AsiaSat/APStar craft retired',
     desc: 'Hong Kong-based commercial GEO operators leasing C/Ku/Ka capacity across Asia-Pacific and beyond.',
     note: 'GEO fleet — only a handful of active satellites on the equatorial belt.' },
+  'com-gsat': {
+    name: 'GSAT (India)', operator: 'ISRO / NewSpace India Ltd', founded: '2001 (GSAT-1)',
+    fleet: '~24 GSAT launched', active: '~17 GEO', retired: 'Several early GSAT birds retired',
+    desc: 'India’s geostationary communications fleet — television, broadband and secure/defence links (e.g. the GSAT-7 "Rukmini" naval satellite, GSAT-N2/-24 high-throughput broadband), now commercialised through NewSpace India Ltd.',
+    news: 'GSAT-N2 (2024, launched on Falcon 9) and GSAT-N3 add Ka-band broadband capacity.',
+    note: 'GEO fleet named “GSAT-…”. Galileo’s satellites share a “GSAT0xxx” designation but are grouped under Galileo above, not here.' },
+  'com-echostar': {
+    name: 'EchoStar / DirecTV / Dish', operator: 'EchoStar Corp + DirecTV (USA)', founded: 'DBS service from the mid-1990s',
+    fleet: '~30+ launched across the operators', active: '~18 GEO', retired: 'Many early EchoStar/DirecTV birds retired',
+    desc: 'The big US direct-broadcast-satellite (DBS) television and broadband fleets — EchoStar/Dish and DirecTV — parked on the geostationary belt beaming TV to home dishes across North America.',
+    news: 'Dish and EchoStar re-merged as EchoStar Corp in 2023; the industry is shifting from linear TV toward streaming + direct-to-device.',
+    note: 'GEO broadcasters named “ECHOSTAR …”, “DIRECTV …” and “DISH …” — a couple dozen satellites on the belt.' },
+  'com-express': {
+    name: 'Express (Экспресс)', operator: 'RSCC — Russian Satellite Communications Company', founded: '1994',
+    fleet: '~30 Express launched over its history', active: '~18 GEO', retired: 'Early Express / Express-A units retired',
+    desc: 'Russia’s civil geostationary communications backbone — TV/radio distribution, telephony, broadband and government links across Russia and neighbouring regions (Express-AM / AMU / AT series).',
+    news: 'Express-AMU and Express-RV (highly-elliptical) satellites refreshing coverage, including the Arctic.',
+    note: 'State GEO fleet named “EXPRESS-…”.' },
 
   // ---- Meteorology (government agencies) ----
   'met-noaa': {
@@ -293,6 +426,12 @@ const COMPANY_INFO = {
     desc: 'A catch-all designation for classified US payloads — NRO reconnaissance, missile-warning, Space Development Agency and other military satellites.',
     news: 'NRO proliferated-architecture launches and SDA tranches have added many "USA-nnn" objects recently.',
     note: 'By design, true capabilities and counts are classified — the catalogue lists these only as "USA-nnn", so the dots reveal orbits, not identities.' },
+  'isr-sda': {
+    name: 'SDA Tranche', operator: 'U.S. Space Development Agency', founded: '2019 (agency); first launch 2023',
+    fleet: '~40+ launched', active: '~42 in orbit', retired: 'Tranche 0 demo units ageing out',
+    desc: 'The Pentagon’s proliferated LEO "Proliferated Warfighter Space Architecture" — a Transport layer (resilient data relay / connectivity) and a Tracking layer (missile warning and missile tracking) fielded in successive tranches, distinct from the older bespoke "USA-nnn" satellites.',
+    news: 'Tranche 0 launched 2023; Tranche 1 Transport/Tracking deployment scaling through 2025–26 toward hundreds of satellites.',
+    note: 'Catalogued as “SDA_nnnn” and “PRAETORIAN SDA_nnn” — a fast-growing LEO military mesh.' },
   'isr-cosmos': {
     name: 'Cosmos (Космос)', operator: 'Russian VKS / Roscosmos', founded: '1962 (Cosmos-1)',
     fleet: '2,500+ "Cosmos" launches since 1962', active: 'Dozens operational', retired: 'The vast majority have re-entered',
@@ -318,6 +457,7 @@ const COMPANY_HISTORY = {
   'gnss-beidou': [['2000','BDS-1 regional demo (China)'],['2012','BDS-2 covers Asia-Pacific'],['2020','BDS-3 completes global service'],['2025','Next-generation design finalised']],
   'gnss-qzss': [['2010','QZS-1 “Michibiki” launched (Japan)'],['2018','4-satellite service begins'],['late 2020s','Expanding to 7 satellites']],
   'gnss-navic': [['2013','IRNSS-1A launched (ISRO, India)'],['2016','Operational; branded NavIC'],['2023','NVS-01 starts 2nd generation']],
+  'gnss-centispace': [['2018','First CentiSpace-1 test satellites'],['2022–25','Constellation build-out'],['plan','~160-satellite LEO PNT layer']],
 
   'op-starlink': [['2002','SpaceX founded'],['2015','Starlink announced'],['2019','First operational batch launched'],['2020','Public beta service'],['2024','Direct-to-Cell service begins']],
   'op-oneweb': [['2012','Founded as WorldVu by Greg Wyler'],['~2014','Renamed OneWeb'],['2020','Chapter 11; rescued by UK govt + Bharti'],['2023','Merged with Eutelsat → Eutelsat OneWeb']],
@@ -327,6 +467,12 @@ const COMPANY_HISTORY = {
   'op-orbcomm': [['1993','Founded (Orbital Sciences unit)'],['2000','Bankruptcy, later reorganised'],['2008','OG1 IoT network operating'],['2021','Taken private by GI Partners']],
   'op-guowang': [['2021','China SatNet established'],['2024','First Guowang satellites launched'],['2025','Passes 100 satellites in orbit']],
   'op-qianfan': [['2024','SSST launches first “Thousand Sails” batch'],['2025','~200 satellites in orbit'],['plan','15,000-satellite build-out']],
+  'op-kineis': [['1978','Argos environmental system begins (CNES/NOAA)'],['2018','Kinéis spun out of CLS'],['2024–25','25-satellite IoT constellation deployed on Electron']],
+  'op-spacemobile': [['2017','Founded by Abel Avellan'],['2021','Public via SPAC'],['2022','BlueWalker 3 test satellite'],['2024','First five BlueBird satellites launched']],
+  'op-gonets': [['1992','First Gonets-D demo (Russia)'],['1996','Gonets civil service begins'],['2015–','Gonets-M fleet refreshed']],
+  'op-geespace': [['2018','Geespace established by Geely'],['2022','First nine GeeSAT-1 launched'],['2025','~60+ in orbit; targeting 72 then thousands']],
+  'op-tianqi': [['2015','Guodian Gaoke founded'],['2018','First Tianqi IoT satellites'],['2020s','~30-satellite constellation operating']],
+  'op-sitro': [['2020','Sitronics Space formed'],['2022–25','SITRO-AIS maritime fleet grows past 40']],
 
   'eo-planet': [['2010','Founded as Cosmogia → Planet Labs'],['2017','Buys Terra Bella (SkySat) from Google'],['2021','Public via SPAC → Planet Labs PBC'],['2024–25','Adds Pelican (high-res) + Tanager (hyperspectral)']],
   'eo-spire': [['2012','Founded as Nanosatisfi'],['2014','Renamed Spire Global; first LEMURs'],['2021','Public via SPAC']],
@@ -334,6 +480,15 @@ const COMPANY_HISTORY = {
   'eo-blacksky': [['2014','Founded within Spaceflight Industries'],['2018','First BlackSky imaging satellites'],['2021','Public via SPAC → BlackSky Technology'],['2025','Gen-3 (~35 cm) enters service']],
   'eo-capella': [['2016','Founded (US)'],['2020','First operational SAR satellite'],['2023–','Acadia-class SAR replenishment']],
   'eo-iceye': [['2014','Founded; spun from Aalto University, Finland'],['2018','Launches world’s first sub-100 kg SAR satellite'],['2025','Gen4 SAR (~16 cm); 60+ launched to date']],
+  'eo-hawkeye': [['2015','Founded (USA)'],['2018','First RF-mapping cluster'],['2020s','Scaling toward ~60 satellites']],
+  'eo-satellogic': [['2010','Founded (Argentina)'],['2016–','ÑuSat imaging ramps'],['2022','Public via SPAC']],
+  'eo-synspective': [['2018','Founded (Japan)'],['2020','StriX-α, first SAR satellite'],['2020s','Building toward 30 SAR satellites']],
+  'eo-iqps': [['2005','Founded in Kyushu, Japan'],['2019','First QPS-SAR'],['2020s','Deploying toward 36 SAR satellites']],
+  'eo-unseenlabs': [['2015','Founded in Rennes, France'],['2019','First BRO RF satellite'],['2020s','~16 satellites for maritime RF']],
+  'eo-iride': [['2023','Italy funds IRIDE (PNRR + ESA)'],['2025','First IRIDE satellites launched'],['2026','Multi-sensor constellation completing']],
+  'eo-ghgsat': [['2011','Founded (Montreal)'],['2016','GHGSat-D “Claire” demo'],['2020s','GHGSat-C commercial methane fleet']],
+  'eo-superview': [['2016','First SuperView-1 pair'],['2022','SuperView Neo higher-res birds'],['2020s','China Siwei commercial imagery']],
+  'eo-sentinel': [['2014','Sentinel-1A launched'],['2015–18','Sentinel-2/-3/-5P follow'],['2024','Sentinel-1C restores the radar pair']],
 
   'com-inmarsat': [['1979','Inmarsat founded (maritime-safety body)'],['1986','Viasat founded (US)'],['1999','Inmarsat privatised'],['2023','Viasat acquires Inmarsat']],
   'com-intelsat': [['1964','Founded as intergovernmental consortium INTELSAT'],['2001','Privatised'],['2022','Exits Chapter 11'],['2025','Acquired by SES']],
@@ -341,6 +496,9 @@ const COMPANY_HISTORY = {
   'com-ses': [['1985','Founded in Luxembourg (Astra satellites)'],['2001','Acquires GE Americom → SES Global'],['2016','Full takeover of O3b (MEO)'],['2025','Acquires Intelsat']],
   'com-chinasat': [['1984','China’s first comsat (DFH-2)'],['2001','China Satcom formed'],['2009','Absorbs CASC satellite-comms arm'],['2010s–','ChinaSat / Zhongxing GEO fleet grows']],
   'com-apstar': [['1988','AsiaSat founded (Hong Kong)'],['1992','APT Satellite (APStar) founded'],['1990s–','C/Ku/Ka GEO fleets serve Asia-Pacific']],
+  'com-gsat': [['2001','GSAT-1 launched (ISRO)'],['2010s','GSAT comms + GSAT-7 defence birds'],['2024','GSAT-N2 broadband on Falcon 9']],
+  'com-echostar': [['1996','EchoStar I launched (Dish)'],['1990s','DirecTV DBS fleet expands'],['2023','Dish + EchoStar re-merge as EchoStar Corp']],
+  'com-express': [['1994','First modern Express satellites'],['2009–14','Express-AM fleet renewed'],['2020s','Express-AMU / Express-RV additions']],
 
   'met-noaa': [['1960','TIROS-1, first weather satellite'],['1975','First GOES geostationary satellite'],['2016','GOES-R / GOES-16 next-gen begins'],['2025','Legacy POES constellation retired']],
   'met-meteosat': [['1977','Meteosat-1 launched'],['1986','EUMETSAT established'],['2002','Meteosat Second Generation begins'],['2022','Meteosat Third Generation (MTG-I1)']],
@@ -352,6 +510,7 @@ const COMPANY_HISTORY = {
   'isr-gaofen': [['2013','GF-1 launches the CHEOS programme'],['2015','GF-4 geostationary starer'],['2020s','Higher-numbered dual-use craft added']],
   'isr-jilin': [['2014','Chang Guang (CGSTL) founded'],['2015','First Jilin-1 satellites'],['2024','117+ in orbit; targeting 300']],
   'isr-usa': [['1984','First “USA”-designated payload'],['1990s–2010s','NRO recon + military comsats'],['2020s','Proliferated NRO + SDA tranches']],
+  'isr-sda': [['2019','Space Development Agency established'],['2023','Tranche 0 Transport + Tracking launched'],['2024–25','Tranche 1 deployment begins']],
   'isr-cosmos': [['1962','Cosmos-1 launched (USSR)'],['1960s–91','Thousands of Soviet Cosmos payloads'],['1992–','Continued by Russia (VKS / Roscosmos)']],
 };
 
