@@ -10,11 +10,12 @@
 // GitHub Pages has no backend, so by default every submission is stored in
 // the visitor's OWN browser (localStorage): the review panel on a given
 // device shows the feedback left on that device only.  To collect feedback
-// from ALL visitors in one private place, set CONFIG.endpoint below to a
-// backend URL (see feedback-backend.gs for a ready 5-minute Google Apps
-// Script that appends each submission — with its IP / geo / device — to a
-// private Google Sheet only you can see).  When an endpoint is set, every
-// submission is ALSO forwarded there; the in-page review stays local.
+// from ALL visitors — and get each one EMAILED to you automatically — set
+// CONFIG.endpoint below to your backend URL.  feedback-backend.gs is a ready
+// ~2-minute Google Apps Script that emails every new comment (with its
+// contact / IP / geo / device) to your inbox from your own Gmail, and can
+// optionally log to a private Sheet too.  When an endpoint is set, every
+// submission is forwarded there; the in-page review stays local.
 
 (function () {
   'use strict';
@@ -26,8 +27,9 @@
     // this file), so treat it as a convenience lock, not real security —
     // real privacy comes from the backend below.  CHANGE THIS.
     adminPassword: 'nazar-admin',
-    // Leave '' for local-only mode.  Paste your backend /exec URL to also
-    // forward every submission there (see feedback-backend.gs).
+    // Leave '' for local-only mode.  Paste your Apps Script /exec URL here to
+    // AUTO-EMAIL every new comment to your inbox (see feedback-backend.gs).
+    // e.g. endpoint: 'https://script.google.com/macros/s/AKfy…/exec'
     endpoint: '',
   };
 
