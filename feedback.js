@@ -27,9 +27,13 @@
     // this file), so treat it as a convenience lock, not real security —
     // real privacy comes from the backend below.  CHANGE THIS.
     adminPassword: 'nazar-admin',
-    // Leave '' for local-only mode.  Paste your Apps Script /exec URL here to
-    // AUTO-EMAIL every new comment to your inbox (see feedback-backend.gs).
-    // e.g. endpoint: 'https://script.google.com/macros/s/AKfy…/exec'
+    // AUTO-EMAIL each new comment to the owner.  Set ONE of the two:
+    //  • web3formsKey — a Web3Forms access key (web3forms.com).  No server to
+    //    deploy; Web3Forms relays the email to the address the key is bound to
+    //    (hdgala@gmail.com).  This key is meant to live in client code.
+    web3formsKey: '19a6f8ac-ba1f-4dcb-a3a3-6c12091a30aa',
+    //  • endpoint — a Google Apps Script /exec URL (see feedback-backend.gs),
+    //    which emails from your own Gmail.  Leave '' when using web3formsKey.
     endpoint: '',
   };
 
@@ -111,17 +115,52 @@
   function load() { try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]') || []; } catch (e) { return []; } }
   function save(a) { try { localStorage.setItem(LS_KEY, JSON.stringify(a)); } catch (e) {} }
 
-  // Forward to the configured backend (fire-and-forget; text/plain avoids a
-  // CORS preflight so simple endpoints like Apps Script accept it).
+  // True when an auto-email backend is configured.
+  function connected() { return !!(CONFIG.web3formsKey || CONFIG.endpoint); }
+
+  // Forward each submission so the owner is emailed automatically.
   function forward(record) {
-    if (!CONFIG.endpoint) return;
-    try {
-      fetch(CONFIG.endpoint, {
-        method: 'POST', mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'add', record: record }),
-      });
-    } catch (e) {}
+    // Preferred: Web3Forms — a client-side email relay, no server to deploy.
+    if (CONFIG.web3formsKey) {
+      var loc = [record.city, record.region, record.country].filter(Boolean).join(', ') || '—';
+      var payload = {
+        access_key: CONFIG.web3formsKey,
+        subject: 'NAZAR feedback from ' + (record.name || 'Anonymous'),
+        from_name: 'NAZAR Feedback',
+        Name: record.name || 'Anonymous',
+        Comment: record.comment || '',
+        Contact: record.contact || '—',
+        IP: record.ip || '—',
+        Location: loc,
+        Device: record.device || '—',
+        Browser: record.ua || '—',
+        Page: record.page || '—',
+        Submitted: fmtTime(record.ts),
+      };
+      // Make the email's Reply go straight to the visitor when they left one.
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(record.contact || '').trim())) {
+        payload.replyto = String(record.contact).trim();
+      }
+      try {
+        fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      } catch (e) {}
+      return;
+    }
+    // Alternative: Google Apps Script web app (fire-and-forget; text/plain
+    // avoids a CORS preflight so the simple endpoint accepts it).
+    if (CONFIG.endpoint) {
+      try {
+        fetch(CONFIG.endpoint, {
+          method: 'POST', mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'add', record: record }),
+        });
+      } catch (e) {}
+    }
   }
 
   // ── styles ─────────────────────────────────────────────────────────────
@@ -377,8 +416,8 @@
       refs.submit.disabled = false;
       refs.name.value = ''; refs.comment.value = ''; refs.contact.value = ''; refreshCount();
       refs.status.textContent = '';
-      refs.thanksMsg.textContent = CONFIG.endpoint
-        ? 'Thank you — your comment has reached ' + CONFIG.owner + '.'
+      refs.thanksMsg.textContent = connected()
+        ? 'Thank you — your comment has been sent to ' + CONFIG.owner + '.'
         : 'Thank you — your comment has been recorded on this device.';
       show('thanks');
     });
@@ -405,9 +444,9 @@
     renderList();
   }
   function renderList() {
-    refs.modebar.className = 'fb-modebar ' + (CONFIG.endpoint ? 'remote' : 'local');
-    refs.modebar.innerHTML = CONFIG.endpoint
-      ? '✅ <b>Connected mode.</b> New submissions are also forwarded to your backend. The list below is what was captured on <b>this browser</b>; your backend (e.g. Google Sheet) holds the complete all-visitor record.'
+    refs.modebar.className = 'fb-modebar ' + (connected() ? 'remote' : 'local');
+    refs.modebar.innerHTML = connected()
+      ? '✅ <b>Auto-email is on.</b> Every new comment is emailed to the owner automatically. The list below is only what was captured on <b>this browser</b>; your inbox holds the complete all-visitor record.'
       : '⚠ <b>Local mode.</b> This site has no backend, so the list below is only feedback submitted on <b>this browser / device</b>. To collect from every visitor in one private place, connect a backend (see <code>feedback-backend.gs</code>).';
     var all = load();
     if (!all.length) { refs.list.innerHTML = '<div class="fb-empty">No comments captured on this device yet.</div>'; return; }
