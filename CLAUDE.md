@@ -77,6 +77,12 @@ Each `.html` is paired with a same-name `.js`. All pages share `styles.css` and 
 
 Loaded on every page. Besides the phone drawer, it: (1) injects the small **Takshashila "For more on Space Policy…" credit** (`.logo-credit`) as a `<body>` child so it escapes any header containing-block — a fixed bottom-right chip on dense pages, tucked under the logo on globe pages (see `.logo-credit` rules in `styles.css`); and (2) hosts the top-left **NAZAR dropdown**. The `Indi-Space` nav button lives only in `index.html`'s `.left-nav` (never in the shared dropdown), so that gated section stays off every sub-page. The top-right lighthouse mark is `.top-logo`; most pages also carry a `.top-nazar-btn` back-button.
 
+## Comments & Feedback (`feedback.js`, main page only)
+
+`feedback.js` is a self-contained widget (loaded only on `index.html`) that injects a fixed bottom-left "Comments & Feedback" button, a submission modal (name, comment capped at 500 words, a **required** private email/phone field with reassurance text naming the owner), and a password-gated **"Review comments"** owner panel showing each entry's IP / device / country / city with edit + delete + CSV export. On submit it captures the visitor's device (UA parse) and IP + approximate city/country (client-side call to `ipwho.is` → `get.geojs.io` fallback, 4.5 s timeout).
+
+**Static-site caveat:** there is no backend, so by default each submission is stored in the *visitor's own* `localStorage` (`nazar.feedback.v1`) — the review panel on a given device only shows feedback left on that device. Central collection requires setting `CONFIG.endpoint` in `feedback.js` to a backend URL; when set, every submission is also forwarded there (fire-and-forget `no-cors` POST). `feedback-backend.gs` is a ready Google Apps Script that appends each submission (with IP/geo/device) to a private Google Sheet — the owner's real all-visitor review surface. `CONFIG.adminPassword` gates the in-page review (client-side only — treat as a convenience lock, not real security).
+
 ## Static reference & media assets (hand-built, not auto-refreshed)
 
 Downloaded or authored once and committed under `data/` — distinct from the auto-refreshed TLE/SATCAT snapshots:
