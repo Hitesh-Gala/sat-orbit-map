@@ -48,10 +48,26 @@
   camera.far  = 400000;
   camera.updateProjectionMatrix();
 
+  // The control panel is pinned to the left (14 px margin, 356 px wide), so a
+  // globe centred in the full canvas reads as left-of-centre.  Shift the whole
+  // view right by half the panel's footprint (via the camera's projection
+  // offset, so the star-field still fills the screen edge-to-edge) to centre
+  // the Earth in the space that remains beside the panel.  Desktop only —
+  // on narrow screens the panel sits along the top instead.
+  const PANEL_RIGHT = 14 + 356;   // px, must match .om-shell left + width
+  function applyViewOffset(W, H) {
+    const shift = window.innerWidth >= 721 ? PANEL_RIGHT / 2 : 0;
+    if (shift > 0) camera.setViewOffset(W, H, -shift, 0, W, H);
+    else           camera.clearViewOffset();
+    camera.updateProjectionMatrix();
+  }
   function fitGlobeToContainer() {
     const elm = document.getElementById('globe');
     const r = elm.getBoundingClientRect();
-    if (r.width > 0 && r.height > 0) globe.width(r.width).height(r.height);
+    if (r.width > 0 && r.height > 0) {
+      globe.width(r.width).height(r.height);
+      applyViewOffset(r.width, r.height);
+    }
   }
   fitGlobeToContainer();
   window.addEventListener('resize', fitGlobeToContainer);
