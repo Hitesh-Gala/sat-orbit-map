@@ -275,7 +275,10 @@
       + '        <div id="fb-list"></div>'
       + '        <div class="fb-foot">'
       + '          <button type="button" class="fb-btn ghost" id="fb-back">← Back to form</button>'
-      + '          <button type="button" class="fb-link" id="fb-export">⬇ Export CSV</button>'
+      + '          <span style="display:flex;gap:16px;align-items:center">'
+      + '            <button type="button" class="fb-link" id="fb-export-pdf">⬇ All as PDF</button>'
+      + '            <button type="button" class="fb-link" id="fb-export">⬇ CSV</button>'
+      + '          </span>'
       + '        </div>'
       + '      </div>'
       + '    </div>'
@@ -307,6 +310,7 @@
       list: document.getElementById('fb-list'),
       back: document.getElementById('fb-back'),
       exportBtn: document.getElementById('fb-export'),
+      exportPdf: document.getElementById('fb-export-pdf'),
     };
     wire();
   }
@@ -421,6 +425,7 @@
       + '    <div><span class="k">Device</span> <span class="v">' + (esc(r.device) || '—') + '</span></div>'
       + '  </div>'
       + '  <div class="row-actions">'
+      + '    <button type="button" class="fb-btn ghost" data-act="pdf">⬇ PDF</button>'
       + '    <button type="button" class="fb-btn ghost" data-act="edit">Edit</button>'
       + '    <button type="button" class="fb-btn danger" data-act="del">Delete</button>'
       + '  </div>'
@@ -431,6 +436,14 @@
     if (!btn) return;
     var card = btn.closest('.fb-cmt');
     var id = card.getAttribute('data-id');
+    if (btn.dataset.act === 'pdf') {
+      var rec = load().filter(function (r) { return r.id === id; })[0];
+      if (!rec) return;
+      var lbl = btn.textContent; btn.disabled = true; btn.textContent = '…';
+      commentToPdf(rec).catch(function (err) { alert(err.message); })
+        .then(function () { btn.disabled = false; btn.textContent = lbl; });
+      return;
+    }
     if (btn.dataset.act === 'del') {
       if (!confirm('Delete this comment permanently?')) return;
       save(load().filter(function (r) { return r.id !== id; }));
@@ -475,6 +488,100 @@
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
   }
 
+  // ── PDF export (owner) ──────────────────────────────────────────────────
+  // Lazy-load jsPDF only when the owner first exports, so visitors never pay
+  // for it.  Downloads land in the browser's download folder (set Chrome's
+  // download location to the Desktop, or enable "ask where to save", to keep
+  // them on the desktop).
+  var _jspdf = null;
+  function loadJsPdf() {
+    if (window.jspdf && window.jspdf.jsPDF) return Promise.resolve(window.jspdf.jsPDF);
+    if (_jspdf) return _jspdf;
+    _jspdf = new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+      s.onload = function () { resolve(window.jspdf.jsPDF); };
+      s.onerror = function () { _jspdf = null; reject(new Error('Could not load the PDF library (are you offline?).')); };
+      document.head.appendChild(s);
+    });
+    return _jspdf;
+  }
+  function slug(s) { return (String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30)) || 'anon'; }
+  function stamp(ms) { var d = new Date(ms || Date.now()), p = function (n) { return String(n).padStart(2, '0'); };
+    return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()); }
+
+  function pdfHeader(doc, subtitle) {
+    var pageW = doc.internal.pageSize.getWidth();
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.setTextColor(15, 22, 34);
+    doc.text('NAZAR', 16, 20);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.setTextColor(90, 100, 115);
+    doc.text('· ' + subtitle, 44, 20);
+    doc.setDrawColor(120, 160, 200); doc.setLineWidth(0.4); doc.line(16, 24, pageW - 16, 24); doc.setLineWidth(0.2);
+  }
+  function pdfFooter(doc) {
+    var n = doc.internal.getNumberOfPages();
+    var pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
+    var gen = 'Generated ' + fmtTime(Date.now()) + ' · NAZAR feedback export';
+    for (var i = 1; i <= n; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(140, 150, 165);
+      doc.text(gen, 16, pageH - 10);
+      doc.text('Page ' + i + ' of ' + n, pageW - 16, pageH - 10, { align: 'right' });
+    }
+  }
+  // Lay one comment into the doc from cursor y; returns the new y.
+  function pdfDrawComment(doc, r, y) {
+    var pageH = doc.internal.pageSize.getHeight(), pageW = doc.internal.pageSize.getWidth();
+    var M = 16, valX = M + 30, maxVal = pageW - valX - M;
+    function ensure(h) { if (y + h > pageH - 16) { doc.addPage(); y = 20; } }
+    function field(label, value, size) {
+      var wrapped = doc.splitTextToSize(String(value == null || value === '' ? '—' : value), maxVal);
+      ensure(wrapped.length * 5 + 2);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(120, 130, 145);
+      doc.text(label, M, y);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(size || 10); doc.setTextColor(25, 33, 46);
+      doc.text(wrapped, valX, y);
+      y += wrapped.length * (size ? size * 0.5 : 5) + 2.5;
+    }
+    ensure(10);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(20, 28, 42);
+    doc.text((r.name ? r.name : 'Anonymous') + '   —   ' + fmtTime(r.ts), M, y); y += 2;
+    doc.setDrawColor(210, 218, 228); doc.line(M, y, pageW - M, y); y += 6;
+    field('Comment', r.comment, 11); y += 2;
+    ensure(8);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(150, 95, 20);
+    doc.text('PRIVATE — owner only', M, y); y += 5;
+    field('Contact', r.contact);
+    field('IP address', r.ip);
+    field('Location', [r.city, r.region, r.country].filter(Boolean).join(', '));
+    field('Device', r.device);
+    field('User agent', r.ua, 8);
+    field('Page', r.page);
+    return y;
+  }
+  function commentToPdf(r) {
+    return loadJsPdf().then(function (JsPDF) {
+      var doc = new JsPDF({ unit: 'mm', format: 'a4' });
+      pdfHeader(doc, 'User feedback');
+      pdfDrawComment(doc, r, 34);
+      pdfFooter(doc);
+      doc.save('NAZAR-comment-' + slug(r.name) + '-' + stamp(r.ts) + '.pdf');
+    });
+  }
+  function allToPdf(list) {
+    return loadJsPdf().then(function (JsPDF) {
+      var doc = new JsPDF({ unit: 'mm', format: 'a4' });
+      pdfHeader(doc, 'User feedback — all comments (' + list.length + ')');
+      var y = 34;
+      for (var i = 0; i < list.length; i++) {
+        if (i > 0) { y += 5; if (y > doc.internal.pageSize.getHeight() - 44) { doc.addPage(); y = 20; } }
+        y = pdfDrawComment(doc, list[i], y);
+      }
+      pdfFooter(doc);
+      doc.save('NAZAR-comments-' + stamp(Date.now()) + '.pdf');
+    });
+  }
+
   // ── wiring ─────────────────────────────────────────────────────────────
   function wire() {
     refs.fab.addEventListener('click', open);
@@ -490,6 +597,11 @@
     refs.back.addEventListener('click', function () { show('form'); });
     refs.list.addEventListener('click', onListClick);
     refs.exportBtn.addEventListener('click', exportCsv);
+    refs.exportPdf.addEventListener('click', function () {
+      var all = load();
+      if (!all.length) { alert('No comments to export on this device.'); return; }
+      allToPdf(all).catch(function (err) { alert(err.message); });
+    });
     refreshCount();
   }
 
