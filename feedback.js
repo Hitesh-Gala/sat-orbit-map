@@ -148,7 +148,10 @@
     + 'backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:transform .14s,box-shadow .14s,border-color .14s}'
     + '.fb-fab:hover{transform:translateY(-2px);border-color:#9ad8ff;box-shadow:0 10px 28px rgba(0,0,0,.55),0 0 22px rgba(103,200,255,.45)}'
     + '.fb-fab .ic{font-size:15px}'
-    + '@media(max-width:720px){.fb-fab{bottom:76px;padding:9px 12px;font-size:12px}}'
+    + '.fb-fab-lbl{display:flex;flex-direction:column;line-height:1.14;gap:1px;text-transform:uppercase;text-align:left}'
+    + '.fb-fab-lbl .l1{font-size:12.5px;letter-spacing:.08em}'
+    + '.fb-fab-lbl .l2{font-size:8.5px;letter-spacing:.12em;opacity:.82;color:#bcd0e6}'
+    + '@media(max-width:720px){.fb-fab{bottom:76px;padding:9px 12px}.fb-fab-lbl .l1{font-size:11.5px}.fb-fab-lbl .l2{font-size:8px}}'
     + '.fb-modal{position:fixed;inset:0;z-index:1400;display:flex;align-items:center;justify-content:center;padding:22px;'
     + 'background:rgba(3,7,13,.74);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}'
     + '.fb-modal[hidden]{display:none}'
@@ -205,7 +208,7 @@
     fab.id = 'fb-open';
     fab.className = 'fb-fab';
     fab.setAttribute('aria-haspopup', 'dialog');
-    fab.innerHTML = '<span class="ic">💬</span><span>Connect with me</span>';
+    fab.innerHTML = '<span class="ic">💬</span><span class="fb-fab-lbl"><span class="l1">Connect with me</span><span class="l2">Comments-Feedback</span></span>';
     document.body.appendChild(fab);
 
     var modal = document.createElement('div');

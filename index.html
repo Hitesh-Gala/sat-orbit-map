@@ -117,16 +117,19 @@
        to the RIGHT of the Hinglish tagline (distinct from it, not part of it).
        The topbar is pointer-events:none, so the button re-enables itself. */
     .sub-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 3px; }
+    /* A separate cyan-outlined two-line CTA, positioned to sit level with the
+       "Orbit Visualisation" nav button (just to the right of the nav column). */
     .allsats-cta {
+      position: fixed; top: 118px; left: 280px; z-index: 12;
       pointer-events: auto;
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 5px 13px; border-radius: 6px; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 13px; border-radius: 6px; cursor: pointer;
       background: rgba(103, 200, 255, 0.10);
       border: 1.5px solid var(--accent);
       box-shadow: 0 0 12px rgba(103, 200, 255, 0.28);
       color: var(--accent);
-      font-family: var(--mono); font-size: 11.5px; font-weight: 700;
-      letter-spacing: 0.1em; text-transform: uppercase;
+      font-family: var(--mono); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
       transition: background .15s, box-shadow .15s, transform .15s;
     }
     .allsats-cta:hover {
@@ -135,8 +138,11 @@
       box-shadow: 0 0 20px rgba(103, 200, 255, 0.5);
       transform: translateY(-1px);
     }
-    .allsats-cta .btn-viewmode-label { flex: none; text-align: left; }
-    .allsats-cta .btn-viewmode-icon { font-size: 14px; }
+    .allsats-cta .btn-viewmode-icon { font-size: 15px; }
+    .allsats-cta .avi-label { display: flex; flex-direction: column; line-height: 1.16; text-align: left; }
+    @media (max-width: 720px) {
+      .allsats-cta { position: static; margin-top: 2px; }
+    }
 
     /* Ticker tape — ~50% larger text than the shared styles.css defaults
        (main page only; the inline block loads after styles.css so it wins). */
@@ -272,7 +278,7 @@
       <div class="sub">Kyon ki NAZAR lagni chahiye!</div>
       <button type="button" id="allsats-btn" class="allsats-cta" title="Open a pop-up globe showing every satellite above the horizon over India — the main globe stays unchanged">
         <span class="btn-viewmode-icon">🛰</span>
-        <span class="btn-viewmode-label">View everything over India</span>
+        <span class="avi-label"><span>View everything</span><span>over India</span></span>
       </button>
     </div>
   </header>
@@ -417,9 +423,9 @@
   <script src="news-ticker.js?v=14"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=1"></script>
-  <script src="mobile-menu.js?v=16"></script>
+  <script src="mobile-menu.js?v=17"></script>
   <script src="flash-popup.js?v=5"></script>
-  <script src="feedback.js?v=6"></script>
+  <script src="feedback.js?v=7"></script>
   <script>
     /* Indi-Space password gate — reveals a password field, opens the section on "NAZAR" */
     (function () {

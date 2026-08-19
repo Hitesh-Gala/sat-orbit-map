@@ -49,7 +49,8 @@
     const credit = document.createElement('div');
     credit.className = 'logo-credit';
     credit.innerHTML =
-      'For more on Space Policy,<br>visit - ' +
+      'Hitesh Gala is a Researcher in Space<br>' +
+      'and a Defence Fellow at -<br>' +
       '<a href="https://takshashila.org.in" target="_blank" rel="noopener noreferrer">www.takshashila.org.in</a>';
     if (logo.parentElement === document.body) document.body.appendChild(credit);
     else logo.insertAdjacentElement('afterend', credit);
