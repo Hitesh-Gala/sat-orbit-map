@@ -355,9 +355,9 @@
   <script src="news-core.js?v=2"></script>
   <script src="news-ticker.js?v=14"></script>
   <script src="nazar-bgm.js?v=4"></script>
-  <script src="mobile-menu.js?v=13"></script>
+  <script src="mobile-menu.js?v=14"></script>
   <script src="flash-popup.js?v=5"></script>
-  <script src="feedback.js?v=4"></script>
+  <script src="feedback.js?v=5"></script>
   <script>
     /* Indi-Space password gate — reveals a password field, opens the section on "NAZAR" */
     (function () {
@@ -371,7 +371,7 @@
       function openGate() { gate.hidden = false; gate.setAttribute('aria-hidden', 'false'); err.hidden = true; pw.value = ''; setTimeout(function () { pw.focus(); }, 60); }
       function closeGate() { gate.hidden = true; gate.setAttribute('aria-hidden', 'true'); }
       function submit() {
-        if (pw.value.trim().toUpperCase() === 'NAZAR') {
+        if (pw.value.trim() === 'QWqw!@12') {
           try { sessionStorage.setItem('nazar.indispace', '1'); } catch (e) {}
           location.href = 'indi-space.html';
         } else {

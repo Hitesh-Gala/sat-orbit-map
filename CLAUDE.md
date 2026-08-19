@@ -79,13 +79,11 @@ Loaded on every page. Besides the phone drawer, it: (1) injects the small **Taks
 
 ## Comments & Feedback (`feedback.js`, main page only)
 
-`feedback.js` is a self-contained widget (loaded only on `index.html`) that injects a fixed bottom-left "Comments & Feedback" button, a submission modal (name, comment capped at 500 words, a **required** private email/phone field with reassurance text naming the owner), and a password-gated **"Review comments"** owner panel showing each entry's IP / device / country / city with edit + delete + CSV export. On submit it captures the visitor's device (UA parse) and IP + approximate city/country (client-side call to `ipwho.is` → `get.geojs.io` fallback, 4.5 s timeout).
-
-The owner review panel also exports comments to **PDF** — a per-comment `⬇ PDF` button and an `⬇ All as PDF` export (jsPDF lazy-loaded from CDN only on first export).
+`feedback.js` is a self-contained widget (loaded only on `index.html`) that injects a fixed bottom-left "Comments & Feedback" button and a submission modal (name, comment capped at 500 words, a **required** private email/phone field with reassurance text naming the owner). On submit it captures the visitor's device (UA parse) and IP + approximate city/country (client-side call to `ipwho.is` → `get.geojs.io` fallback, 4.5 s timeout), then emails the lot to the owner (see below). There is deliberately **no on-page review/admin panel** — comments are delivered by email, not stored or shown on the site.
 
 **Auto-email (active):** every submission is emailed to the owner (hdgala@gmail.com) via **Web3Forms** — `CONFIG.web3formsKey` in `feedback.js` holds the client-side access key, and `forward()` POSTs the comment + contact/IP/geo/device to `https://api.web3forms.com/submit` (JSON, CORS). Web3Forms relays the email; nothing to deploy. (Web3Forms blocks *server-side* calls on the free tier — it only accepts browser/client-side requests, so test it from a page, not curl.) `feedback-backend.gs` remains as an alternative that emails from the owner's own Gmail via a Google Apps Script `/exec` URL in `CONFIG.endpoint` (`forward()` prefers `web3formsKey`, then `endpoint`).
 
-**Static-site caveat:** with no backend, the in-page "Review comments" panel only shows submissions stored in the *visitor's own* `localStorage` (`nazar.feedback.v1`) — i.e. per-device; the owner's real all-visitor record is their inbox. `CONFIG.adminPassword` gates the in-page review (client-side only — treat as a convenience lock, not real security).
+The owner's record of all comments is their inbox — the site keeps nothing.
 
 ## Static reference & media assets (hand-built, not auto-refreshed)
 
