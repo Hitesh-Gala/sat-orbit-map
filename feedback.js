@@ -205,7 +205,7 @@
     fab.id = 'fb-open';
     fab.className = 'fb-fab';
     fab.setAttribute('aria-haspopup', 'dialog');
-    fab.innerHTML = '<span class="ic">💬</span><span>Comments &amp; Feedback</span>';
+    fab.innerHTML = '<span class="ic">💬</span><span>Connect with me</span>';
     document.body.appendChild(fab);
 
     var modal = document.createElement('div');
@@ -218,7 +218,7 @@
     modal.innerHTML = ''
       + '<div class="fb-card">'
       + '  <div class="fb-head">'
-      + '    <div><div class="fb-title" id="fb-title">Comments &amp; Feedback</div>'
+      + '    <div><div class="fb-title" id="fb-title">Connect with me</div>'
       + '      <div class="fb-sub" id="fb-headsub">Hi! I am excited to hear your views and feedback about the website. Write to me!</div></div>'
       + '    <button type="button" class="fb-x" id="fb-close" aria-label="Close">×</button>'
       + '  </div>'

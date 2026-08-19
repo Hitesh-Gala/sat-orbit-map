@@ -113,6 +113,42 @@
     }
     @media (prefers-reduced-motion: reduce) { .btn-godmode { animation: none; } }
 
+    /* "View everything over India" — a separate cyan-outlined button sitting
+       to the RIGHT of the Hinglish tagline (distinct from it, not part of it).
+       The topbar is pointer-events:none, so the button re-enables itself. */
+    .sub-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 3px; }
+    .allsats-cta {
+      pointer-events: auto;
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 13px; border-radius: 6px; cursor: pointer;
+      background: rgba(103, 200, 255, 0.10);
+      border: 1.5px solid var(--accent);
+      box-shadow: 0 0 12px rgba(103, 200, 255, 0.28);
+      color: var(--accent);
+      font-family: var(--mono); font-size: 11.5px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      transition: background .15s, box-shadow .15s, transform .15s;
+    }
+    .allsats-cta:hover {
+      background: rgba(103, 200, 255, 0.22);
+      border-color: #9ad8ff;
+      box-shadow: 0 0 20px rgba(103, 200, 255, 0.5);
+      transform: translateY(-1px);
+    }
+    .allsats-cta .btn-viewmode-label { flex: none; text-align: left; }
+    .allsats-cta .btn-viewmode-icon { font-size: 14px; }
+
+    /* Ticker tape — ~50% larger text than the shared styles.css defaults
+       (main page only; the inline block loads after styles.css so it wins). */
+    .news-ticker { height: 48px; }
+    .ticker-label { font-size: 15px; }
+    .ticker-label-go { font-size: 16px; }
+    .ticker-item { font-size: 16.5px; }
+    .ticker-item .num { font-size: 13.5px; }
+    .ticker-item .date { font-size: 15px; }
+    .ticker-item .source { font-size: 13.5px; }
+    .ticker-status { font-size: 16.5px; }
+
     /* Password gate */
     .ispace-gate {
       position: fixed; inset: 0; z-index: 400; display: flex; align-items: center; justify-content: center;
@@ -232,7 +268,13 @@
 
   <header class="topbar">
     <div class="brand"><span class="brand-short">NAZAR</span><span class="brand-long"> — Nonchalantly Assembled Zero-Budget Assessment of Chinese Reconnaissance</span></div>
-    <div class="sub">Kyon ki NAZAR lagni chahiye!</div>
+    <div class="sub-row">
+      <div class="sub">Kyon ki NAZAR lagni chahiye!</div>
+      <button type="button" id="allsats-btn" class="allsats-cta" title="Open a pop-up globe showing every satellite above the horizon over India — the main globe stays unchanged">
+        <span class="btn-viewmode-icon">🛰</span>
+        <span class="btn-viewmode-label">View everything over India</span>
+      </button>
+    </div>
   </header>
 
   <aside class="hud-tr">
@@ -316,12 +358,8 @@
         together). <em>Total SVs Tracked</em> is the whole catalogue, and
         the two <em>Over Horizon</em> counts tally <em>every</em> satellite
         above it — so both run well past the dots drawn when the sky is
-        busy. Open the pop-up below to see every one.</div>
-      <button type="button" id="allsats-btn" class="btn-viewmode"
-              title="Open a pop-up globe showing every satellite above the horizon — the main globe stays unchanged">
-        <span class="btn-viewmode-icon">🛰</span>
-        <span class="btn-viewmode-label">View all on a pop-up globe</span>
-      </button>
+        busy. Use the <strong>“View everything over India”</strong> button at
+        the top to see every one on a pop-up globe.</div>
     </section>
 
   </aside>
@@ -381,7 +419,7 @@
   <script src="site-analytics.js?v=1"></script>
   <script src="mobile-menu.js?v=16"></script>
   <script src="flash-popup.js?v=5"></script>
-  <script src="feedback.js?v=5"></script>
+  <script src="feedback.js?v=6"></script>
   <script>
     /* Indi-Space password gate — reveals a password field, opens the section on "NAZAR" */
     (function () {
