@@ -85,6 +85,10 @@ Loaded on every page. Besides the phone drawer, it: (1) injects the small **Taks
 
 The owner's record of all comments is their inbox — the site keeps nothing.
 
+## Site analytics (`site-analytics.js`, loaded on every page)
+
+`site-analytics.js` is a self-hosted visitor log. **Logger** (every page): once per session it records the visitor's IP + approximate city/country (client `ipwho.is` → `geojs` fallback), browser, OS, page, referrer, language and screen to a central store — *unless* `localStorage['nazar.owner']==='1'` (the owner's own machine) or the store is unconfigured. **Viewer** (About page only, `body.page-about`): injects a top-left "📊 Site Analytics" button → password gate (`CFG.password`, `QWqw!@12`) → a pop-up table of all logged visits (opening it sets the `nazar.owner` flag so this machine stops being logged). Backed by a **jsonbin.io** bin — set `CFG.binId` + `CFG.key` in the file to switch it on; until then it's a **safe no-op** (nothing recorded, viewer shows a "not connected" setup note). ⚠ The store key sits in this public file, so the collected data (visitor IPs) is only lightly protected — hence the honest visit-analytics disclosure in About's "Under the hood" section; a key-private option (Firebase/Apps Script with owner sign-in) would be needed for stronger privacy.
+
 ## Static reference & media assets (hand-built, not auto-refreshed)
 
 Downloaded or authored once and committed under `data/` — distinct from the auto-refreshed TLE/SATCAT snapshots:

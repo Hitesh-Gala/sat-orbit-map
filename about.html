@@ -123,7 +123,9 @@
           <div class="name">3 · TLE Repository</div>
           <div class="desc">The technical corner, inside SAT-STATS: the raw Two-Line
             Elements of every satellite vehicle tracked, plus a layman's decoder that
-            explains what every character of a TLE means. Fun to try and read one.</div>
+            explains what every character of a TLE means. Fun to try and read one. A
+            companion <em>TLE Analytics</em> view logs which elements were refreshed in the
+            most recent catalogue updates and highlights exactly what changed.</div>
         </a>
 
         <a class="page-card" href="2d-views.html">
@@ -159,9 +161,30 @@
             <em>look area</em> on the ground, with the sensor angle fully adjustable.</div>
         </a>
 
+        <a class="page-card" href="orbit-maker.html">
+          <div class="ico">🪐</div>
+          <div class="name">7 · Orbit Maker</div>
+          <div class="desc">Design your own orbit from scratch. Six sliders for the
+            classical <em>Keplerian elements</em> (semi-major axis, eccentricity,
+            inclination, node, argument of perigee and true anomaly) and the resulting
+            orbit is drawn live around a 3-D Earth — perigee, apogee, line of nodes and
+            all — with live read-outs of altitude, period and speed. Presets for the ISS,
+            GEO, Molniya and more, plus an <em>Animate</em> button that flies the satellite
+            round at the correct speed. Become a rocket scientist for an afternoon.</div>
+        </a>
+
+        <a class="page-card" href="overpass.html">
+          <div class="ico">⌖</div>
+          <div class="name">8 · Overpass</div>
+          <div class="desc">Pick any point on Earth and a time window, and Overpass works
+            out every satellite that flies over it — then animates the passes so you can
+            watch them arc across your patch of sky. Handy for figuring out what is
+            actually overhead right now.</div>
+        </a>
+
         <a class="page-card" href="viz3d.html">
           <div class="ico">⬢</div>
-          <div class="name">7 · 3D-Visualiser</div>
+          <div class="name">9 · 3D-Visualiser</div>
           <div class="desc">An instinctive <em>God's-eye view</em> of the entire
             catalogue — all ~16,000 satellites, at true altitude, in real time, all at
             once, colour-coded by orbit class. Hover any dot for its details; click one (or
@@ -172,17 +195,49 @@
 
         <a class="page-card" href="sats-by-ops.html">
           <div class="ico">⊕</div>
-          <div class="name">8 · SATs-by-OPs</div>
+          <div class="name">10 · SATs-by-OPs</div>
           <div class="desc">The God's-eye view, differentiated by <em>operator</em>:
             pick a Maxar, a Capella, an ICEYE — or all of Starlink, or the whole BeiDou
-            constellation — and watch their fleets live. Hover an operator's name and its
+            constellation — and watch their fleets live. ~56 operators are mapped, from the
+            big GNSS systems to new-space SAR startups. Hover an operator's name and its
             satellites pulse on the globe; click the name to open a dossier explaining who
             they are, what they fly and why it matters.</div>
         </a>
 
+        <a class="page-card" href="debris.html">
+          <div class="ico">✷</div>
+          <div class="name">11 · Debris Tracker</div>
+          <div class="desc">The junkyard. The great on-orbit breakup clouds —
+            Fengyun-1C (the 2007 Chinese anti-satellite test), the 2009 Iridium–Cosmos
+            collision and Cosmos 1408 — plotted as thousands of fragments on a globe,
+            colour-coded by event. A right-edge button opens a long-read on the 2007 ASAT
+            test, and a statistics dashboard charts how the debris population has grown
+            over the decades.</div>
+        </a>
+
+        <a class="page-card" href="launch-map.html">
+          <div class="ico">🌐</div>
+          <div class="name">12 · Global Launch Sites</div>
+          <div class="desc">Every spaceport and rocket launch site, space-agency HQ, GNSS
+            ground station, observatory and ICBM range on a spinnable world globe —
+            colour-coded by type, filterable by category, and each marker opens a satellite
+            fly-through of that exact spot. Toggle between a photorealistic and a political
+            globe, and open a companion photo gallery touring the world's great
+            launch sites.</div>
+        </a>
+
+        <a class="page-card" href="indi-space.html">
+          <div class="ico">🔒</div>
+          <div class="name">13 · Indi-Space</div>
+          <div class="desc">A <em>password-gated</em> deep dive into India's private space
+            ecosystem — 36 company profiles (Skyroot, Agnikul, Pixxel, Dhruva Space and
+            more), each with its founders, milestones, origin story and official links.
+            Reached from the 🔒 button on the main page.</div>
+        </a>
+
         <a class="page-card" href="orbits.html">
           <div class="ico">♪</div>
-          <div class="name">9 · Play NAZAR</div>
+          <div class="name">14 · Play NAZAR</div>
           <div class="desc">Saved the quirkiest for last 😄 — early orbit-tracing
             glitches were too beautiful to delete, so they got a soundtrack. Press
             ♪ <em>Play NAZAR</em> and the screen goes full-bleed while the globe gyrates
@@ -204,8 +259,10 @@
         <li>A scheduled robot (GitHub Actions) re-downloads the catalogue every
           <strong>6 hours</strong> and ships it with the site, so everything keeps working
           even when the live feed rate-limits you.</li>
-        <li>Nothing about <em>you</em> is stored anywhere: the only data kept is satellite
-          data, cached in your own browser for speed.</li>
+        <li>Satellite data is cached in your own browser for speed. Basic, anonymous visit
+          information — your approximate location and browser type, derived from your IP —
+          may be recorded for the site owner's own analytics; nothing is ever sold or
+          shared, and there are no advertising trackers.</li>
         <li>Want the full story? The two documents at the bottom of this page contain the
           complete annotated source code and a plain-language explainer.</li>
       </ul>
@@ -247,6 +304,7 @@
   </main>
 
   <script src="nazar-bgm.js?v=4"></script>
+  <script src="site-analytics.js?v=1"></script>
   <script src="mobile-menu.js?v=14"></script>
 </body>
 </html>
