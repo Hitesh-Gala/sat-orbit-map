@@ -306,16 +306,17 @@
     const PAGES = [
       { href: 'index.html',         icon: '◯', label: 'Live Globe (Home)' },
       { href: 'about.html',         icon: 'ℹ', label: 'About / Help' },
-      { href: '2d-views.html',      icon: '⊞', label: '2D View' },
       { href: 'orbits.html',        icon: '↻', label: 'Orbit Visualisation' },
       { href: 'orbit-maker.html',   icon: '🪐', label: 'Orbit Maker' },
       { href: 'game-of-cones.html', icon: '◭', label: 'Game of Cones' },
       { href: 'chinrepo.html',      icon: '★', label: 'China Sat Repo' },
-      { href: 'viz3d.html',         icon: '⬢', label: '3D Visualiser' },
+      { href: 'viz3d.html',         icon: '⬢', label: 'God Mode' },
+      { href: '2d-views.html',      icon: '⊞', label: '2D View' },
       { href: 'sats-by-ops.html',   icon: '⊕', label: 'SATs-by-OPs' },
       { href: 'overpass.html',      icon: '⌖', label: 'Overpass' },
       { href: 'debris.html',        icon: '✷', label: 'Debris Tracker' },
       { href: 'launch-map.html',    icon: '🌐', label: 'Global Launch Sites' },
+      { href: 'indi-space.html',    icon: '🔒', label: 'Indi-Space' },
     ];
 
     // Collect the "go to NAZAR home" controls: the logo + the labelled

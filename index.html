@@ -81,14 +81,10 @@
       .allsats-legend{ display:none; }
       .allsats-card{ height:90vh; }
     }
-    /* Indi-Space nav button (main page only) — locked / premium feel */
-    .btn-indispace {
-      position: relative; cursor: pointer;
-      background: linear-gradient(100deg, rgba(255,153,51,0.16), rgba(19,136,8,0.16));
-      border: 1px solid rgba(255,153,51,0.55);
-    }
-    .btn-indispace:hover { border-color: #ff9933; box-shadow: 0 0 18px rgba(255,153,51,0.35); }
-    .btn-indispace .btn-nav-label { color: #ffd9a8; }
+    /* Indi-Space nav button — same cyan look as every other button.  It's a
+       <button>, so reset the native chrome and let .btn-nav's default cyan
+       styling apply. */
+    .btn-indispace { -webkit-appearance: none; appearance: none; cursor: pointer; }
 
     /* "God Mode" (3D-Visualiser) — the marquee button on the main page. Gold
        gradient + soft pulsing glow so the eye lands on it first. */
@@ -163,10 +159,6 @@
       <span class="btn-nav-icon">ℹ</span>
       <span class="btn-nav-label">About / Help</span>
     </a>
-    <a class="btn-nav" href="2d-views.html" title="Flat-map projections">
-      <span class="btn-nav-icon">⊞</span>
-      <span class="btn-nav-label">2D View</span>
-    </a>
     <a class="btn-nav" href="orbits.html" title="3-D orbital-track visualisation">
       <span class="btn-nav-icon">↻</span>
       <span class="btn-nav-label">Orbit Visualisation</span>
@@ -186,6 +178,10 @@
     <a class="btn-nav btn-viz3d btn-godmode" href="viz3d.html" title="God Mode — every active satellite at its true altitude, live, all at once">
       <span class="btn-nav-icon">⬢</span>
       <span class="btn-nav-label"><span class="gm-main">God Mode</span><span class="gm-sub">all satellites, all over the globe — in real time</span></span>
+    </a>
+    <a class="btn-nav" href="2d-views.html" title="Flat-map projections">
+      <span class="btn-nav-icon">⊞</span>
+      <span class="btn-nav-label">2D View</span>
     </a>
     <a class="btn-nav btn-sbo" href="sats-by-ops.html" title="Live globe with sats colour-coded by operator / GNSS / mission family">
       <span class="btn-nav-icon">⊕</span>
@@ -383,7 +379,7 @@
   <script src="news-ticker.js?v=14"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=1"></script>
-  <script src="mobile-menu.js?v=14"></script>
+  <script src="mobile-menu.js?v=15"></script>
   <script src="flash-popup.js?v=5"></script>
   <script src="feedback.js?v=5"></script>
   <script>
