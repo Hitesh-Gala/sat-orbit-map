@@ -316,7 +316,6 @@
       { href: 'overpass.html',      icon: '⌖', label: 'Overpass' },
       { href: 'debris.html',        icon: '✷', label: 'Debris Tracker' },
       { href: 'launch-map.html',    icon: '🌐', label: 'Global Launch Sites' },
-      { href: 'indi-space.html',    icon: '🔒', label: 'Indi-Space' },
     ];
 
     // Collect the "go to NAZAR home" controls: the logo + the labelled
