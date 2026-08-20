@@ -52,6 +52,13 @@
       'Hitesh Gala is a Researcher in Space<br>' +
       'and a Defence Fellow at -<br>' +
       '<a href="https://takshashila.org.in" target="_blank" rel="noopener noreferrer">www.takshashila.org.in</a>';
+    // Main-page desktop only: a slightly larger, 2-line credit for legibility.
+    if (document.body.classList.contains('page-main') && window.innerWidth > 720) {
+      credit.innerHTML =
+        'Hitesh Gala is a Space Researcher. He is<br>' +
+        'presently a Defence Fellow at <a href="https://takshashila.org.in" target="_blank" rel="noopener noreferrer">www.takshashila.org.in</a>';
+      credit.style.fontSize = '11px';
+    }
     if (logo.parentElement === document.body) document.body.appendChild(credit);
     else logo.insertAdjacentElement('afterend', credit);
   }
