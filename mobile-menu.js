@@ -56,8 +56,8 @@
     // after the full stop with the top line centred over the (longer) bottom line.
     if (document.body.classList.contains('page-main') && window.innerWidth > 720) {
       credit.innerHTML =
-        'Hitesh Gala is a Space Researcher.<br>' +
-        'He is a Defence Fellow at <a href="https://takshashila.org.in" target="_blank" rel="noopener noreferrer">www.takshashila.org.in</a>';
+        'Hitesh Gala is a Space Researcher &amp;<br>' +
+        'A Defence Fellow at <a href="https://takshashila.org.in" target="_blank" rel="noopener noreferrer">www.takshashila.org.in</a>';
       credit.style.fontSize = '11px';
       credit.style.color = '#b6c6d6';
       credit.style.textAlign = 'center';
