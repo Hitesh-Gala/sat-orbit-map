@@ -140,6 +140,49 @@
       color: #0a0e14; background: #ffd27f; padding: 2px 7px; border-radius: 4px;
     }
     #tle-analytics-empty { padding: 26px; text-align: center; color: var(--dim); line-height: 1.7; }
+
+    /* --- Remarks column + compacted NORAD / Status (make room on the right) --- */
+    .stats-table th.col-norad, .stats-table td.col-norad {
+      white-space: nowrap; font-size: 11.5px; letter-spacing: -0.02em;
+    }
+    .stats-table th.col-status, .stats-table td.col-status { white-space: nowrap; }
+    .stats-table th.col-remarks { min-width: 210px; }
+    .stats-table td.col-remarks {
+      white-space: normal; min-width: 210px; max-width: 360px;
+      font-size: 12px; line-height: 1.42; color: var(--dim);
+    }
+    .stats-table td.col-remarks strong { color: var(--text); font-weight: 600; }
+    /* "known but not tracked" injected rows + their status pill */
+    .stats-table tr.row-missing { background: rgba(255, 210, 127, 0.06); }
+    .badge-notle {
+      background: rgba(255, 210, 127, 0.16); color: #ffcf7a;
+      border: 1px solid rgba(255, 210, 127, 0.45);
+    }
+
+    /* --- "The catalogue gap" summary panel --- */
+    #catalogue-gap { display: block; }
+    .gap-panel {
+      margin: 6px 0 4px; padding: 22px 24px;
+      background: linear-gradient(180deg, rgba(255,210,127,.06), rgba(8,16,28,.4));
+      border: 1px solid var(--line); border-radius: 12px;
+    }
+    .gap-panel h2 {
+      margin: 0 0 4px; font-family: 'Orbitron', sans-serif; font-weight: 700;
+      font-size: 17px; letter-spacing: .03em; color: var(--text);
+    }
+    .gap-lede { color: var(--dim); font-size: 13.5px; line-height: 1.6; max-width: 92ch; margin: 0 0 18px; }
+    .gap-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    @media (max-width: 820px){ .gap-cards { grid-template-columns: 1fr; } }
+    .gap-card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 17px;
+    }
+    .gap-card .gc-num { font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 30px; color: #ffcf7a; line-height: 1; }
+    .gap-card .gc-lbl { font-size: 13px; color: var(--text); margin: 8px 0 6px; font-weight: 600; }
+    .gap-card .gc-sub { font-size: 12px; color: var(--dim); line-height: 1.45; }
+    .gap-card .gc-list { font-size: 11.5px; color: var(--dim); margin-top: 8px; font-family: var(--mono); }
+    .gap-card .gc-list b { color: var(--text); font-weight: 600; }
+    .gap-foot { margin-top: 14px; font-size: 12px; color: var(--dim); line-height: 1.55; }
+    .gap-foot b { color: #ffcf7a; }
 </style>
 </head>
 <body class="page-stats">
@@ -204,6 +247,7 @@
                 </select>
               </th>
               <th class="col-status">Status</th>
+              <th class="col-remarks">Remarks</th>
             </tr>
           </thead>
           <tbody id="stats-rows"></tbody>
@@ -211,6 +255,13 @@
       </div>
 
     </section>
+
+    <!-- ============================================================
+         CATALOGUE GAP — a summary of objects known to exist but not
+         (fully) represented in the tracking catalogue.  Sits between
+         the table and the graphs.  Populated by sat-stats.js.
+         ============================================================ -->
+    <section id="catalogue-gap" class="stats-view" hidden></section>
 
     <!-- ============================================================
          GRAPHS VIEW — Chart.js canvases.  All four charts share the
@@ -612,7 +663,7 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
   <script src="tle-loader.js?v=12"></script>
-  <script src="sat-stats.js?v=19"></script>
+  <script src="sat-stats.js?v=20"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=1"></script>
   <script src="mobile-menu.js?v=21"></script>

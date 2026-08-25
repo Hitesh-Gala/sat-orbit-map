@@ -240,6 +240,84 @@ function launchCountryCell(siteCode) {
 }
 
 // =========================================================================
+// "Catalogue gap" curation — objects that exist but are missing from, or
+// mislabelled in, the tracking catalogue.  As launch cadence rises, the
+// public catalogue increasingly lags reality.  These small hand-verified
+// lists drive the Remarks column; the wider counts are computed live in
+// renderCatalogueGap() from the catalogue itself.
+// =========================================================================
+
+// Satellites known to have launched but with NO public TLE catalogued yet.
+// Injected into the table as flagged rows so the gap is visible, not hidden.
+const KNOWN_MISSING = [
+  { name: 'PRSC-EO2', owner: 'PAKI', launchOwner: 'PRC', ld: '2026-02-12',
+    remark: 'Pakistan’s 2nd high-resolution electro-optical satellite. Launched on a Jielong-3 from a South-China-Sea platform — known from launch records, but no public TLE is catalogued yet.' },
+];
+
+// Objects catalogued under a placeholder name or the wrong flag — keyed by
+// NORAD id.  `realOwner` (optional) re-attributes the country for the tally.
+const SAT_CORRECTIONS = {
+  62653: { realOwner: 'PAKI', remark: 'This is <b>PAUSAT-1</b>, a Pakistani SUPARCO satellite — the catalogue files it under Türkiye.' },
+  66054: { remark: 'This is <b>HS-1</b>, Pakistan’s first hyperspectral satellite (launched 19 Oct 2025) — the catalogue lists it only as “Object B”.' },
+};
+
+// A few landmark objects earn a hand-written note.
+const NOTABLE = {
+  25544: 'International Space Station — the largest crewed structure in orbit.',
+  20580: 'Hubble Space Telescope — observing since 1990.',
+  48274: 'Tianhe — core module of China’s Tiangong space station.',
+};
+
+// Name-pattern → one-line "what is this" for the big families/constellations.
+const FAMILIES = [
+  [/^STARLINK/,                          'SpaceX Starlink — broadband mega-constellation.'],
+  [/^ONEWEB/,                            'OneWeb — broadband constellation.'],
+  [/(GUOWANG|HULIANWANG|XINGWANG|GW-)/,  'China Guowang — state broadband mega-constellation.'],
+  [/(QIANFAN|SPACESAIL|G60|^QF)/,        'Qianfan / “Thousand Sails” — Chinese broadband constellation.'],
+  [/^YAOGAN/,                            'Yaogan — Chinese military remote-sensing series.'],
+  [/(BEIDOU|^BDS)/,                      'BeiDou — China’s satellite-navigation system.'],
+  [/(NAVSTAR|^GPS )/,                    'GPS / NAVSTAR — US navigation constellation.'],
+  [/(COSMOS|KOSMOS)/,                    'Cosmos — long-running Soviet/Russian designation.'],
+  [/(GALILEO|GSAT0)/,                    'Galileo — Europe’s navigation constellation.'],
+  [/(FLOCK|SKYSAT|^DOVE|^PLANET)/,       'Planet — commercial Earth-imaging fleet.'],
+  [/^IRIDIUM/,                           'Iridium — voice/data communications constellation.'],
+  [/^GONETS/,                            'Gonets — Russian store-and-forward comms.'],
+];
+
+const UNNAMED_RE = /^(OBJECT\s|TBA\b|UNKNOWN|UNIDENTIFIED|PAYLOAD\b)/i;
+// A "name" that is just the launch designator (e.g. "2025-234B") means the
+// object is tracked but has no assigned name — also effectively un-named.
+const DESIG_RE = /^\d{4}-\d{2,4}[A-Z]{1,3}$/;
+function isUnnamed(name) {
+  const n = (name || '').trim();
+  return UNNAMED_RE.test(n) || DESIG_RE.test(n);
+}
+
+function familyRemark(name) {
+  const n = (name || '').toUpperCase();
+  for (const [re, txt] of FAMILIES) if (re.test(n)) return txt;
+  return '';
+}
+
+// Build the Remarks-cell HTML for one row.  Curated / gap remarks render bold.
+function remarkFor(r) {
+  const nid = parseInt(r.noradId, 10);
+  if (r.missing) return `<strong>${esc(r.remark)}</strong>`;
+  const corr = SAT_CORRECTIONS[nid];
+  if (corr && corr.remark) return `<strong>${corr.remark}</strong>`;      // trusted curated HTML
+  if (NOTABLE[nid]) return esc(NOTABLE[nid]);
+  if (isUnnamed(r.name))
+    return '<strong>Un-named — tracked by radar but not yet publicly identified.</strong>';
+  if (r.owner === 'TBD') return 'Operator / owner not yet attributed.';
+  const fam = familyRemark(r.name);
+  if (fam) return esc(fam);
+  if (r.decayed) return 'Re-entered — no longer on orbit.';
+  const yr = (r.launchDate || '').slice(0, 4);
+  if (yr === '2026' || yr === '2025') return 'Recent launch (' + yr + ').';
+  return '';
+}
+
+// =========================================================================
 // Series → Wikipedia article mapping
 // =========================================================================
 //
@@ -747,6 +825,7 @@ function orbitClass(record) {
 
 let filteredRows = [];   // "current directory" — records in the latest feed
 let absentRows   = [];   // "previously tracked" — in the DB but not the feed
+let feedMatchCount = 0;  // catalogued rows matching the filters (excl. injected gap rows)
 let currentPage = 0;
 
 // A record is "in the latest feed" iff it was stamped by this session's
@@ -801,7 +880,22 @@ function rebuildFiltered(db) {
   gone.sort((a, b) => (b.lastSeen - a.lastSeen) || a.name.localeCompare(b.name));
   absentRows = gone;
   out.sort((a, b) => a.name.localeCompare(b.name));
-  filteredRows = out;
+  feedMatchCount = out.length;
+  // Prepend "known but not catalogued" rows that match the active filters, so
+  // the gap is visible at the top of the relevant country's listing.
+  const miss = [];
+  for (const m of KNOWN_MISSING) {
+    if (ownerFilter && m.owner !== ownerFilter) continue;
+    const mLaunch = m.launchOwner || '';
+    if (launchFilter && mLaunch !== launchFilter) continue;
+    if (q) {
+      const hay = `${m.name} ${m.owner} ${COUNTRY[m.owner]?.name || ''} ${mLaunch} ${COUNTRY[mLaunch]?.name || ''}`.toLowerCase();
+      if (!hay.includes(q)) continue;
+    }
+    miss.push({ name: m.name, noradId: '—', intlId: '', owner: m.owner, launchSite: '',
+      launchOwner: mLaunch, decayed: false, launchDate: m.ld, lastSeen: 0, missing: true, remark: m.remark });
+  }
+  filteredRows = miss.concat(out);
   if (currentPage * PAGE_SIZE >= filteredRows.length) currentPage = 0;
 }
 
@@ -869,26 +963,102 @@ function renderTable(db) {
   const slice = filteredRows.slice(start, start + PAGE_SIZE);
 
   $('stats-shown').textContent      = slice.length;
-  $('stats-filtered').textContent   = total;
+  $('stats-filtered').textContent   = feedMatchCount;
   $('stats-cumulative').textContent = Object.keys(db).length.toLocaleString();
   $('stats-absent').textContent     = absentRows.length.toLocaleString();
   $('page-current').textContent     = currentPage + 1;
   $('page-total').textContent       = pages;
 
-  $('stats-rows').innerHTML = slice.map(r => `
+  $('stats-rows').innerHTML = slice.map(r => {
+    const remark = remarkFor(r);
+    if (r.missing) {
+      const lc = COUNTRY[r.launchOwner];
+      return `
+    <tr class="row-missing">
+      <td class="col-photo"><span class="flag-glyph" title="no imagery yet">🛰️</span></td>
+      <td class="col-name">${esc(r.name)}</td>
+      <td class="muted col-norad">—</td>
+      <td class="muted">—</td>
+      <td class="col-country">${countryCell(r.owner)}</td>
+      <td class="col-country">${lc ? `${flagImg(lc)}<span class="ctry-name">${esc(lc.name)}</span>` : '<span class="flag-glyph" title="unknown">🌐</span>'}</td>
+      <td class="col-status"><span class="badge badge-notle">NO TLE</span></td>
+      <td class="col-remarks">${remark}</td>
+    </tr>`;
+    }
+    return `
     <tr>
       <td class="col-photo" data-norad="${r.noradId}">${photoCellHtml(r)}</td>
       <td class="col-name">${esc(r.name)}</td>
-      <td class="muted">${r.noradId}</td>
+      <td class="muted col-norad">${r.noradId}</td>
       <td class="muted">${esc(r.intlId) || '—'}</td>
       <td class="col-country">${countryCell(r.owner)}</td>
       <td class="col-country">${launchCountryCell(r.launchSite)}</td>
       <td class="col-status">${r.decayed
           ? '<span class="badge badge-decay">DECAYED</span>'
           : '<span class="badge badge-active">ACTIVE</span>'}</td>
-    </tr>`).join('') || '<tr><td colspan="7" class="muted" style="padding:20px;text-align:center">No matching satellites.</td></tr>';
+      <td class="col-remarks">${remark}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="8" class="muted" style="padding:20px;text-align:center">No matching satellites.</td></tr>';
 
-  hydrateThumbs(slice);   // async, no need to await
+  hydrateThumbs(slice.filter(r => !r.missing));   // async, no need to await
+}
+
+// =========================================================================
+// "The catalogue gap" summary — collates objects that exist but aren't
+// (fully) in the tracked list, computed live from the current catalogue.
+// Rendered once after load, between the table and the graphs.
+// =========================================================================
+function renderCatalogueGap(db) {
+  const host = $('catalogue-gap');
+  if (!host) return;
+  let unnamed = 0, tbd = 0;
+  const byOwner = {};
+  for (const id in db) {
+    const r = db[id];
+    if (isUnnamed(r.name)) {
+      unnamed++;
+      const o = r.owner || 'TBD';
+      byOwner[o] = (byOwner[o] || 0) + 1;
+    }
+    if (r.owner === 'TBD') tbd++;
+  }
+  const topOwners = Object.entries(byOwner).sort((a, b) => b[1] - a[1]).slice(0, 5)
+    .map(([o, n]) => `<b>${esc(COUNTRY[o]?.name || o)}</b> ${n}`).join(' · ');
+  const missN = KNOWN_MISSING.length;
+  const missList = KNOWN_MISSING.map(m => `<b>${esc(m.name)}</b> (${esc(COUNTRY[m.owner]?.name || m.owner)})`).join(' · ');
+  const corrN = Object.keys(SAT_CORRECTIONS).length;
+
+  host.innerHTML = `
+    <div class="gap-panel">
+      <h2>The catalogue gap</h2>
+      <p class="gap-lede">Satellites now launch faster than the public catalogue can name and track them, so an object can be
+        real and in orbit yet appear here late, un-named, under the wrong flag — or not at all. Pakistan is a clear case:
+        of its recent satellites one (<b>PRSC-EO2</b>) has no public TLE, one (<b>HS-1</b>) is listed only as “Object B”,
+        and one (<b>PAUSAT-1</b>) is filed under Türkiye. The same three gaps recur worldwide:</p>
+      <div class="gap-cards">
+        <div class="gap-card">
+          <div class="gc-num">${unnamed.toLocaleString()}</div>
+          <div class="gc-lbl">Tracked, but un-named</div>
+          <div class="gc-sub">Catalogued objects still labelled “Object …”, “TBA” or “Unknown” — followed by radar but not yet publicly identified.</div>
+          <div class="gc-list">${topOwners}</div>
+        </div>
+        <div class="gap-card">
+          <div class="gc-num">${missN}</div>
+          <div class="gc-lbl">Known, but no TLE yet</div>
+          <div class="gc-sub">Confirmed launches with no public orbital elements in the catalogue — surfaced here from launch records (bold rows in the table).</div>
+          <div class="gc-list">${missList}</div>
+        </div>
+        <div class="gap-card">
+          <div class="gc-num">${corrN}</div>
+          <div class="gc-lbl">Wrong flag or no name</div>
+          <div class="gc-sub">Objects whose catalogued owner or name doesn’t match reality — corrected in the Remarks column.</div>
+          <div class="gc-list">plus <b>${tbd.toLocaleString()}</b> objects whose owner is still “To be determined”.</div>
+        </div>
+      </div>
+      <p class="gap-foot">Counts are computed live from the catalogue on this page. The takeaway: a country’s real
+        satellite tally is almost always <b>higher</b> than any single catalogue shows — the list is forever catching up.</p>
+    </div>`;
+  host.hidden = false;
 }
 
 // =========================================================================
@@ -1342,6 +1512,7 @@ async function boot() {
     populateOwnerDropdown(db);
     populateLaunchDropdown(db);
     renderTable(db);
+    renderCatalogueGap(db);
     renderCharts(db);
   }
 
@@ -1370,6 +1541,7 @@ async function boot() {
   populateOwnerDropdown(db);
   populateLaunchDropdown(db);
   renderTable(db);
+  renderCatalogueGap(db);
   renderCharts(db);
 
   enablePdfButton();   // page is fully loaded — the PDF export can now run
