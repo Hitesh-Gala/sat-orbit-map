@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>NAZAR · Stuff That We Launched Up</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --paper:#e9eff6; --card:#ffffff; --ink:#15263a; --dim:#5c6b7d; --line:#dbe4ee;
+      --accent:#1466c9; --accent2:#e26a2c; --good:#1e9e6a; --chip:#eef4fb;
+      --leo:#1466c9; --meo:#f0a500; --geo:#e26a2c; --heo:#8e44ad; --gto:#16a085; --other:#9fb3c8;
+      --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+      --disp:'Orbitron',system-ui,sans-serif;
+      --shadow:0 1px 2px rgba(20,45,80,.06), 0 8px 24px rgba(20,45,80,.06);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0}
+    body{
+      background:
+        radial-gradient(1200px 500px at 80% -10%, #dceaf9 0%, rgba(220,234,249,0) 60%),
+        radial-gradient(900px 500px at -10% 10%, #e7edf9 0%, rgba(231,237,249,0) 55%),
+        var(--paper);
+      color:var(--ink);
+      font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      -webkit-font-smoothing:antialiased;
+    }
+    a{color:var(--accent)}
+    .wrap{max-width:1120px; margin:0 auto; padding:0 22px 90px}
+
+    /* ---------- sticky header ---------- */
+    .header{position:sticky; top:0; z-index:50; background:rgba(233,239,246,.9);
+      backdrop-filter:blur(8px); border-bottom:1px solid var(--line)}
+    .header-inner{display:flex; align-items:center; gap:16px; height:56px; max-width:1120px; margin:0 auto; padding:0 22px}
+    .top-logo{display:inline-flex; align-items:center; flex:0 0 auto; padding:4px 9px;
+      background:#0a1018; border:1px solid #1d3147; border-radius:6px; text-decoration:none;
+      transition:border-color .15s, transform .15s}
+    .top-logo:hover{border-color:#4ea8ff; transform:scale(1.04)}
+    .top-logo img{height:32px; width:auto; display:block}
+    .logo-credit{flex:0 0 auto; align-self:center; margin-left:-4px; max-width:210px;
+      font-family:var(--mono); font-size:8.5px; line-height:1.3; letter-spacing:.01em; color:var(--dim)}
+    .logo-credit a{color:var(--accent); text-decoration:none}
+    @media (max-width:760px){ .logo-credit{display:none} }
+    .header-title{font-family:var(--disp); font-weight:600; letter-spacing:.04em; font-size:13.5px; color:var(--ink)}
+    .header-right{margin-left:auto; display:flex; gap:9px; align-items:center}
+    .btn{font-family:var(--mono); font-size:12.5px; text-decoration:none; cursor:pointer;
+      padding:7px 13px; border-radius:7px; border:1px solid var(--line); background:var(--card);
+      color:var(--ink); transition:all .15s; white-space:nowrap}
+    .btn:hover{border-color:var(--accent); color:var(--accent)}
+
+    /* ---------- cover ---------- */
+    .cover{display:grid; grid-template-columns:1.15fr .85fr; gap:26px; align-items:center; padding:30px 0 20px}
+    @media (max-width:820px){ .cover{grid-template-columns:1fr} }
+    .eyebrow{font-family:var(--mono); font-size:11.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent2)}
+    h1{font-family:var(--disp); font-weight:800; font-size:34px; line-height:1.1; margin:10px 0 8px; letter-spacing:.01em}
+    .lede{color:var(--dim); max-width:60ch; margin:6px 0 0; font-size:15.5px}
+    .src-chip{display:inline-flex; align-items:center; gap:8px; margin-top:18px; font-family:var(--mono);
+      font-size:11.5px; background:var(--chip); border:1px solid var(--line); border-radius:999px; padding:6px 13px; color:var(--dim)}
+    .src-chip b{color:var(--ink)}
+    .src-chip .dot{width:7px; height:7px; border-radius:50%; background:var(--good)}
+
+    /* hero illustration */
+    .hero-art{position:relative; aspect-ratio:1/.82; border-radius:16px; overflow:hidden;
+      background:radial-gradient(120% 120% at 50% 20%, #0a1830 0%, #060d1c 70%); box-shadow:var(--shadow)}
+    .hero-art svg{position:absolute; inset:0; width:100%; height:100%}
+
+    /* ---------- section scaffolding ---------- */
+    section{margin-top:40px}
+    .sec-head{display:flex; align-items:baseline; gap:12px; margin-bottom:16px}
+    .sec-head h2{font-family:var(--disp); font-weight:600; font-size:19px; letter-spacing:.02em; margin:0}
+    .sec-head .kicker{font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent)}
+    .sec-sub{color:var(--dim); font-size:14px; margin:-8px 0 18px; max-width:78ch}
+
+    /* ---------- stat tiles ---------- */
+    .tiles{display:grid; grid-template-columns:repeat(4,1fr); gap:14px}
+    @media (max-width:900px){ .tiles{grid-template-columns:repeat(2,1fr)} }
+    .tile{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 16px; box-shadow:var(--shadow); position:relative; overflow:hidden}
+    .tile .ico{font-size:20px; line-height:1}
+    .tile .big{font-family:var(--disp); font-weight:800; font-size:30px; margin:8px 0 2px; letter-spacing:.01em; color:var(--ink)}
+    .tile .lbl{font-size:12.5px; color:var(--dim); line-height:1.35}
+    .tile .accent{height:4px; border-radius:4px; width:44px; margin-top:12px; background:var(--accent)}
+    .tile.t-orange .accent{background:var(--accent2)} .tile.t-green .accent{background:var(--good)}
+    .tile.t-purple .accent{background:var(--heo)} .tile.t-gold .accent{background:var(--meo)}
+
+    /* ---------- funnel ---------- */
+    .funnel{display:grid; gap:12px; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px; box-shadow:var(--shadow)}
+    .fn-row{display:grid; grid-template-columns:190px 1fr; align-items:center; gap:14px}
+    @media (max-width:640px){ .fn-row{grid-template-columns:1fr} }
+    .fn-label{font-size:13.5px; color:var(--ink)} .fn-label b{display:block; font-family:var(--disp); font-size:15px}
+    .fn-bar{height:44px; border-radius:9px; display:flex; align-items:center; justify-content:flex-end; padding:0 14px;
+      color:#fff; font-family:var(--mono); font-weight:600; font-size:14px; box-shadow:inset 0 -14px 24px rgba(0,0,0,.08)}
+
+    /* ---------- charts ---------- */
+    .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+    @media (max-width:820px){ .grid-2{grid-template-columns:1fr} }
+    .card-box{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; box-shadow:var(--shadow)}
+    .card-box h3{margin:0 0 4px; font-family:var(--disp); font-weight:600; font-size:15.5px}
+    .card-box .cap{color:var(--dim); font-size:12.5px; margin:0 0 14px}
+    .chart-holder{position:relative; height:290px}
+
+    /* ---------- debris iceberg ---------- */
+    .berg{display:grid; grid-template-columns:repeat(4,1fr); gap:14px}
+    @media (max-width:900px){ .berg{grid-template-columns:repeat(2,1fr)} }
+    .berg-card{border-radius:14px; padding:18px 16px; color:#fff; position:relative; overflow:hidden; box-shadow:var(--shadow); min-height:150px; display:flex; flex-direction:column; justify-content:flex-end}
+    .berg-card .num{font-family:var(--disp); font-weight:800; font-size:26px}
+    .berg-card .sz{font-family:var(--mono); font-size:12px; opacity:.9; margin-top:2px}
+    .berg-card .dsc{font-size:12px; opacity:.92; margin-top:8px; line-height:1.35}
+    .berg-card .barwrap{position:absolute; left:0; right:0; bottom:0; height:6px; background:rgba(255,255,255,.25)}
+    .berg-card .barwrap i{position:absolute; left:0; top:0; bottom:0; background:#fff}
+
+    /* ---------- classification cards ---------- */
+    .clsgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+    @media (max-width:820px){ .clsgrid{grid-template-columns:repeat(2,1fr)} }
+    @media (max-width:520px){ .clsgrid{grid-template-columns:1fr} }
+    .cls{background:var(--card); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:12px; padding:13px 15px; box-shadow:var(--shadow)}
+    .cls .code{font-family:var(--mono); font-weight:600; font-size:12px; color:var(--accent); letter-spacing:.05em}
+    .cls .nm{font-weight:600; font-size:14px; margin:2px 0 3px}
+    .cls .ex{color:var(--dim); font-size:12.5px; line-height:1.35}
+
+    /* causes chips */
+    .causes{display:flex; flex-wrap:wrap; gap:10px}
+    .cause{display:inline-flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--line);
+      border-radius:999px; padding:8px 15px; font-size:13.5px; box-shadow:var(--shadow)}
+    .cause .d{width:10px; height:10px; border-radius:50%}
+
+    /* orbit band diagram */
+    .bands{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:8px; box-shadow:var(--shadow)}
+    .bands svg{width:100%; height:auto; display:block; border-radius:12px}
+
+    footer{margin-top:54px; padding-top:20px; border-top:1px solid var(--line); color:var(--dim); font-size:12.5px; line-height:1.6}
+    footer a{color:var(--accent)}
+    .callout{background:linear-gradient(180deg,#fff,#f5f9fe); border:1px solid var(--line); border-radius:16px; padding:20px 22px; box-shadow:var(--shadow); color:var(--ink)}
+    .callout b{color:var(--accent2)}
+  </style>
+</head>
+<body class="page-spacelaunched">
+  <header class="header">
+    <div class="header-inner">
+      <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
+        <img src="data/nazar-logo.svg?v=5" alt="NAZAR">
+      </a>
+      <span class="header-title">STUFF THAT WE LAUNCHED UP</span>
+      <span class="header-right">
+        <a class="btn" href="space-stuff.html">← Space Stuff</a>
+        <a class="btn" href="index.html">NAZAR Home</a>
+      </span>
+    </div>
+  </header>
+
+  <div class="wrap">
+
+    <!-- ================= COVER ================= -->
+    <div class="cover">
+      <div>
+        <div class="eyebrow">The stuff in orbit · by the numbers</div>
+        <h1>Stuff That<br>We Launched Up</h1>
+        <p class="lede">Since Sputnik in 1957 humanity has fired thousands of rockets skyward — and most of
+          what went up is still up there. A picture-first tour of everything now circling Earth: the working,
+          the dead, and the millions of shards in between.</p>
+        <span class="src-chip"><span class="dot"></span> Data · <b>ESA DISCOS — Space Environment Statistics</b> · snapshot 31 Jul 2026</span>
+      </div>
+      <div class="hero-art" aria-label="Illustration of Earth ringed by orbital debris">
+        <svg viewBox="0 0 400 330" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <radialGradient id="earth" cx="42%" cy="38%" r="70%">
+              <stop offset="0%" stop-color="#3aa0ff"/><stop offset="55%" stop-color="#1466c9"/><stop offset="100%" stop-color="#0a2a55"/>
+            </radialGradient>
+            <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#4ea8ff" stop-opacity=".5"/><stop offset="100%" stop-color="#4ea8ff" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <g id="stars"></g>
+          <circle cx="200" cy="165" r="120" fill="url(#glow)"/>
+          <!-- debris rings -->
+          <g id="rings" fill="none" stroke-width="1">
+            <ellipse cx="200" cy="165" rx="176" ry="52" stroke="rgba(255,255,255,.10)"/>
+            <ellipse cx="200" cy="165" rx="150" ry="44" stroke="rgba(255,255,255,.10)" transform="rotate(-18 200 165)"/>
+            <ellipse cx="200" cy="165" rx="120" ry="118" stroke="rgba(120,200,255,.14)"/>
+          </g>
+          <circle cx="200" cy="165" r="78" fill="url(#earth)"/>
+          <ellipse cx="176" cy="140" rx="26" ry="15" fill="#2f7d3a" opacity=".55"/>
+          <ellipse cx="222" cy="182" rx="30" ry="17" fill="#2f7d3a" opacity=".45"/>
+          <circle cx="200" cy="165" r="78" fill="none" stroke="rgba(180,225,255,.5)" stroke-width="1.2"/>
+          <g id="debris"></g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ================= HERO STATS ================= -->
+    <section id="tiles">
+      <div class="tiles">
+        <div class="tile"><div class="ico">🚀</div><div class="big">7,320</div><div class="lbl">rocket launches since 1957 (successful)</div><div class="accent"></div></div>
+        <div class="tile t-gold"><div class="ico">🛰️</div><div class="big">27,490</div><div class="lbl">satellites placed into orbit, all-time</div><div class="accent"></div></div>
+        <div class="tile t-green"><div class="ico">📡</div><div class="big">18,840</div><div class="lbl">of them still up there today</div><div class="accent"></div></div>
+        <div class="tile t-orange"><div class="ico">⚡</div><div class="big">~16,000</div><div class="lbl">still alive &amp; functioning</div><div class="accent"></div></div>
+        <div class="tile"><div class="ico">🔭</div><div class="big">46,420</div><div class="lbl">objects tracked &amp; catalogued by radar</div><div class="accent"></div></div>
+        <div class="tile t-orange"><div class="ico">⚖️</div><div class="big">17,000<span style="font-size:16px">+ t</span></div><div class="lbl">total mass now circling Earth</div><div class="accent"></div></div>
+        <div class="tile t-purple"><div class="ico">💥</div><div class="big">660<span style="font-size:16px">+</span></div><div class="lbl">break-ups, explosions &amp; collisions on record</div><div class="accent"></div></div>
+        <div class="tile t-gold"><div class="ico">🌍</div><div class="big">69</div><div class="lbl">years of the Space Age (1957 → 2026)</div><div class="accent"></div></div>
+      </div>
+    </section>
+
+    <!-- ================= FUNNEL ================= -->
+    <section>
+      <div class="sec-head"><span class="kicker">Up &amp; still up</span><h2>What goes up mostly stays up</h2></div>
+      <p class="sec-sub">Of every satellite ever launched, roughly two-thirds are still in orbit — and about six in ten of those are dead. Retirement, for a spacecraft, usually means simply going quiet where it is.</p>
+      <div class="funnel">
+        <div class="fn-row"><div class="fn-label">Launched all-time<b>27,490</b></div><div class="fn-bar" style="width:100%;background:linear-gradient(90deg,#1466c9,#3a90e6)">27,490</div></div>
+        <div class="fn-row"><div class="fn-label">Still in orbit<b>18,840</b></div><div class="fn-bar" style="width:68.5%;background:linear-gradient(90deg,#16a085,#2bc39e)">18,840</div></div>
+        <div class="fn-row"><div class="fn-label">Still functioning<b>~16,000</b></div><div class="fn-bar" style="width:58.2%;background:linear-gradient(90deg,#e26a2c,#f39150)">~16,000</div></div>
+      </div>
+    </section>
+
+    <!-- ================= CHARTS ================= -->
+    <section>
+      <div class="sec-head"><span class="kicker">Where it all sits</span><h2>Orbits &amp; mass</h2></div>
+      <div class="grid-2">
+        <div class="card-box">
+          <h3>Catalogued objects, by orbit region</h3>
+          <p class="cap">Low-Earth orbit is by far the most crowded shell — home to nearly nine in ten tracked objects.</p>
+          <div class="chart-holder"><canvas id="chOrbit"></canvas></div>
+        </div>
+        <div class="card-box">
+          <h3>Mass in orbit, by region (tonnes)</h3>
+          <p class="cap">Over 17,000 t of hardware — heavy rocket stages and big GEO platforms tilt the mass toward higher orbits.</p>
+          <div class="chart-holder"><canvas id="chMass"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= DEBRIS ICEBERG ================= -->
+    <section>
+      <div class="sec-head"><span class="kicker">The part we can't track</span><h2>For every tracked object, thousands we can't see</h2></div>
+      <p class="sec-sub">Radar catalogues the big stuff. But ESA's MASTER-8 model (reference epoch 08/2024) estimates the true swarm of smaller fragments — each one a bullet at orbital speed.</p>
+      <div class="berg">
+        <div class="berg-card" style="background:linear-gradient(160deg,#1466c9,#0c3f80)">
+          <div class="num">~40,500</div><div class="sz">tracked &amp; catalogued</div>
+          <div class="dsc">Objects big enough (&gt; ~10 cm) for radar to follow individually.</div>
+          <div class="barwrap"><i style="width:0.03%"></i></div>
+        </div>
+        <div class="berg-card" style="background:linear-gradient(160deg,#2a86d8,#12559b)">
+          <div class="num">54,000</div><div class="sz">&gt; 10 cm (modelled)</div>
+          <div class="dsc">Total &gt;10 cm including ~9,300 active payloads.</div>
+          <div class="barwrap"><i style="width:0.04%"></i></div>
+        </div>
+        <div class="berg-card" style="background:linear-gradient(160deg,#e0a83a,#c07d18)">
+          <div class="num">1.2 million</div><div class="sz">1 – 10 cm</div>
+          <div class="dsc">Too small to track, too big to shield against. Mission-ending on impact.</div>
+          <div class="barwrap"><i style="width:0.86%"></i></div>
+        </div>
+        <div class="berg-card" style="background:linear-gradient(160deg,#d9534f,#a5302c)">
+          <div class="num">140 million</div><div class="sz">1 mm – 1 cm</div>
+          <div class="dsc">A haze of paint flecks, slag &amp; shards that pits every surface in orbit.</div>
+          <div class="barwrap"><i style="width:100%"></i></div>
+        </div>
+      </div>
+      <p class="sec-sub" style="margin-top:14px">Bar under each card = share of the total estimated population (log-scale reality: the 1 mm–1 cm swarm dwarfs everything else ~3,000&#215;).</p>
+    </section>
+
+    <!-- ================= CLASSIFICATION ================= -->
+    <section>
+      <div class="sec-head"><span class="kicker">A taxonomy of junk</span><h2>How ESA labels every object</h2></div>
+      <p class="sec-sub">DISCOS sorts each catalogued object into one of nine classes — only two of them are things anyone meant to put up there.</p>
+      <div class="clsgrid">
+        <div class="cls" style="border-left-color:#1e9e6a"><div class="code">PL</div><div class="nm">Payload</div><div class="ex">The actual spacecraft — satellites, probes, crewed vehicles.</div></div>
+        <div class="cls" style="border-left-color:#2bc39e"><div class="code">PM</div><div class="nm">Payload mission-related</div><div class="ex">Covers, lens caps, tethers deliberately released during ops.</div></div>
+        <div class="cls" style="border-left-color:#e0a83a"><div class="code">PF</div><div class="nm">Payload fragmentation</div><div class="ex">Pieces from a satellite that broke up or exploded.</div></div>
+        <div class="cls" style="border-left-color:#f0a500"><div class="code">PD</div><div class="nm">Payload debris</div><div class="ex">Shed bits of a payload, cause unknown.</div></div>
+        <div class="cls" style="border-left-color:#1466c9"><div class="code">RB</div><div class="nm">Rocket body</div><div class="ex">Spent upper stages — the heaviest single objects up there.</div></div>
+        <div class="cls" style="border-left-color:#3a90e6"><div class="code">RM</div><div class="nm">Rocket mission-related</div><div class="ex">Adapters, fairings and clamp bands jettisoned by the launcher.</div></div>
+        <div class="cls" style="border-left-color:#e26a2c"><div class="code">RF</div><div class="nm">Rocket fragmentation</div><div class="ex">Debris from a stage that ruptured — often leftover propellant.</div></div>
+        <div class="cls" style="border-left-color:#d9534f"><div class="code">RD</div><div class="nm">Rocket debris</div><div class="ex">Shed rocket-body pieces, cause unknown.</div></div>
+        <div class="cls" style="border-left-color:#9fb3c8"><div class="code">UI</div><div class="nm">Unidentified</div><div class="ex">Tracked, but not yet matched to a known launch or object.</div></div>
+      </div>
+    </section>
+
+    <!-- ================= FRAGMENTATION CAUSES ================= -->
+    <section>
+      <div class="sec-head"><span class="kicker">Why things break up</span><h2>660+ fragmentation events — and their causes</h2></div>
+      <p class="sec-sub">More than six hundred satellites and rocket stages have broken apart in orbit. ESA files each event under one of eight causes:</p>
+      <div class="causes">
+        <span class="cause"><span class="d" style="background:#d9534f"></span> Collision</span>
+        <span class="cause"><span class="d" style="background:#8e44ad"></span> Deliberate (ASAT / test)</span>
+        <span class="cause"><span class="d" style="background:#e26a2c"></span> Propulsion</span>
+        <span class="cause"><span class="d" style="background:#e0a83a"></span> Electrical (battery)</span>
+        <span class="cause"><span class="d" style="background:#1466c9"></span> Accidental</span>
+        <span class="cause"><span class="d" style="background:#16a085"></span> Aerodynamics</span>
+        <span class="cause"><span class="d" style="background:#9fb3c8"></span> Anomalous</span>
+        <span class="cause"><span class="d" style="background:#5c6b7d"></span> Unknown</span>
+      </div>
+      <div class="callout" style="margin-top:18px">
+        Within some heavily-used altitude bands, the density of <b>active satellites is now the same order of magnitude as debris</b> — the traffic and the trash share the same lanes.
+      </div>
+    </section>
+
+    <!-- ================= ORBIT BANDS ================= -->
+    <section>
+      <div class="sec-head"><span class="kicker">The neighbourhoods</span><h2>Where the orbits live</h2></div>
+      <p class="sec-sub">Altitude decides everything — how fast you circle, how long you last, and who your neighbours are.</p>
+      <div class="bands">
+        <svg viewBox="0 0 900 300" role="img" aria-label="Cross-section of orbital regions from LEO to GEO">
+          <defs>
+            <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7fafe"/><stop offset="1" stop-color="#eef4fb"/></linearGradient>
+          </defs>
+          <rect width="900" height="300" fill="url(#bg)"/>
+          <!-- Earth arc -->
+          <circle cx="90" cy="150" r="120" fill="#1466c9" opacity=".14"/>
+          <circle cx="90" cy="150" r="120" fill="none" stroke="#1466c9" stroke-width="2"/>
+          <text x="70" y="155" font-family="Orbitron" font-size="15" fill="#15263a">EARTH</text>
+          <!-- LEO band -->
+          <circle cx="90" cy="150" r="175" fill="none" stroke="#1466c9" stroke-width="18" stroke-opacity=".18"/>
+          <circle cx="90" cy="150" r="255" fill="none" stroke="#f0a500" stroke-width="14" stroke-opacity=".16"/>
+          <circle cx="90" cy="150" r="360" fill="none" stroke="#e26a2c" stroke-width="14" stroke-opacity=".16"/>
+          <!-- labels + dots -->
+          <g font-family="JetBrains Mono" font-size="13" fill="#15263a">
+            <circle cx="265" cy="150" r="5" fill="#1466c9"/>
+            <text x="278" y="146" font-family="Orbitron" font-size="14" fill="#1466c9">LEO</text>
+            <text x="278" y="164" fill="#5c6b7d">160–2,000 km · ~90% of all tracked objects</text>
+
+            <circle cx="345" cy="150" r="5" fill="#f0a500"/>
+            <text x="360" y="146" font-family="Orbitron" font-size="14" fill="#c07d18">MEO</text>
+            <text x="360" y="164" fill="#5c6b7d">2,000–35,786 km · GPS, Galileo, BeiDou</text>
+
+            <circle cx="450" cy="150" r="5" fill="#e26a2c"/>
+            <text x="465" y="146" font-family="Orbitron" font-size="14" fill="#e26a2c">GEO</text>
+            <text x="465" y="164" fill="#5c6b7d">35,786 km · TV, weather &amp; comms — a fixed belt</text>
+          </g>
+          <!-- little satellites -->
+          <g fill="#15263a">
+            <rect x="262" y="70" width="7" height="7" transform="rotate(20 265 73)"/>
+            <rect x="180" y="250" width="7" height="7"/>
+            <rect x="343" y="60" width="6" height="6"/>
+            <rect x="448" y="250" width="6" height="6"/>
+          </g>
+        </svg>
+      </div>
+    </section>
+
+    <footer>
+      <p><b>Source.</b> All figures from the European Space Agency’s <a href="https://sdup.esoc.esa.int/discosweb/statistics/" target="_blank" rel="noopener noreferrer">DISCOS — Space Environment Statistics</a> portal (Space Debris User Portal, ESOC), catalogue snapshot 31 Jul 2026; small-debris estimates from the ESA MASTER-8 model (reference population 08/2024). Numbers are rounded for readability.</p>
+      <p>Illustrations and charts are original to NAZAR. This is an educational summary — for authoritative, live figures visit the ESA portal directly.</p>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+  <script>
+    // ---- decorative hero: scatter stars + debris specks (pure eye-candy) ----
+    (function(){
+      const NS='http://www.w3.org/2000/svg';
+      const stars=document.getElementById('stars');
+      if(stars){ for(let i=0;i<70;i++){ const c=document.createElementNS(NS,'circle');
+        c.setAttribute('cx',Math.random()*400); c.setAttribute('cy',Math.random()*330);
+        c.setAttribute('r',Math.random()*1.1+0.2); c.setAttribute('fill','#cfe4ff');
+        c.setAttribute('opacity',(Math.random()*0.6+0.2).toFixed(2)); stars.appendChild(c);} }
+      const deb=document.getElementById('debris');
+      if(deb){ for(let i=0;i<120;i++){ const a=Math.random()*Math.PI*2, rx=120+Math.random()*58, ry=(52+Math.random()*66);
+        const x=200+Math.cos(a)*rx, y=165+Math.sin(a)*ry*0.5;
+        const c=document.createElementNS(NS,'circle'); c.setAttribute('cx',x.toFixed(1)); c.setAttribute('cy',y.toFixed(1));
+        c.setAttribute('r',(Math.random()*1.3+0.4).toFixed(2));
+        c.setAttribute('fill', Math.random()<0.2?'#ffd27f':'#e9f3ff'); c.setAttribute('opacity',(Math.random()*0.7+0.3).toFixed(2));
+        deb.appendChild(c);} }
+    })();
+
+    // ---- Chart.js dashboards ----
+    (function(){
+      if(!window.Chart) return;
+      Chart.defaults.font.family = "'JetBrains Mono', ui-monospace, monospace";
+      Chart.defaults.font.size = 12;
+      Chart.defaults.color = '#5c6b7d';
+      const grid = 'rgba(21,38,58,0.07)';
+
+      // Objects by orbit region
+      new Chart(document.getElementById('chOrbit'), {
+        type:'bar',
+        data:{ labels:['LEO','MEO / GEO-cross','GEO belt','Highly-elliptical','Transfer (GTO)'],
+          datasets:[{ data:[27590,5406,4851,2103,1294],
+            backgroundColor:['#1466c9','#f0a500','#e26a2c','#8e44ad','#16a085'], borderRadius:7, maxBarThickness:64 }] },
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},
+          tooltip:{callbacks:{label:c=>' '+c.raw.toLocaleString()+' objects'}}},
+          scales:{ x:{grid:{display:false},ticks:{maxRotation:0,minRotation:0,font:{size:10.5}}},
+            y:{grid:{color:grid},ticks:{callback:v=>v>=1000?(v/1000)+'k':v}} } }
+      });
+
+      // Mass by region (doughnut)
+      new Chart(document.getElementById('chMass'), {
+        type:'doughnut',
+        data:{ labels:['LEO — 9,875 t','GEO belt — 2,890 t','Extended-GEO — 1,493 t','Other regions — 2,762 t'],
+          datasets:[{ data:[9874.5,2890.3,1493.2,2762.2],
+            backgroundColor:['#1466c9','#e26a2c','#f0a500','#9fb3c8'], borderColor:'#fff', borderWidth:2 }] },
+        options:{ responsive:true, maintainAspectRatio:false, cutout:'58%',
+          plugins:{ legend:{position:'bottom', labels:{boxWidth:12,padding:12,font:{size:11.5}}},
+            tooltip:{callbacks:{label:c=>' '+c.label.split('—')[0].trim()+': '+c.raw.toLocaleString()+' t'}} } }
+      });
+    })();
+  </script>
+  <script src="site-analytics.js?v=1"></script>
+  <script src="mobile-menu.js?v=21"></script>
+</body>
+</html>
