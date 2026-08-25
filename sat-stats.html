@@ -195,7 +195,14 @@
                   <option value="">Country of Origin · All</option>
                 </select>
               </th>
-              <th>Launch Country</th>
+              <th class="col-country">
+                <!-- Dropdown doubles as column header, mirroring
+                     "Country of Origin".  Populated at runtime from the
+                     launch-site codes present in the cumulative DB. -->
+                <select id="filter-launch" class="col-filter" aria-label="Filter by launch country">
+                  <option value="">Launch Country · All</option>
+                </select>
+              </th>
               <th class="col-status">Status</th>
             </tr>
           </thead>
@@ -605,7 +612,7 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
   <script src="tle-loader.js?v=12"></script>
-  <script src="sat-stats.js?v=18"></script>
+  <script src="sat-stats.js?v=19"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=1"></script>
   <script src="mobile-menu.js?v=21"></script>

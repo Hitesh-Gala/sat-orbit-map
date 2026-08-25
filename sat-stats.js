@@ -759,6 +759,7 @@ function inLatestFeed(r) {
 function rebuildFiltered(db) {
   const q = $('filter').value.trim().toLowerCase();
   const ownerFilter = $('filter-owner').value;
+  const launchFilter = $('filter-launch').value;
   const out = [];
   const gone = [];
   for (const id of Object.keys(db)) {
@@ -787,8 +788,11 @@ function rebuildFiltered(db) {
     }
     // Present rows ("in latest feed") honour the main page search + country.
     if (ownerFilter && r.owner !== ownerFilter) continue;
+    const launchOwner = LAUNCH_SITE[r.launchSite]?.owner || '';
+    if (launchFilter && launchOwner !== launchFilter) continue;
     if (q) {
-      const hay = `${r.name} ${r.norad} ${r.intlId || ''} ${r.owner || ''} ${COUNTRY[r.owner]?.name || ''}`.toLowerCase();
+      const site = LAUNCH_SITE[r.launchSite];
+      const hay = `${r.name} ${r.norad} ${r.intlId || ''} ${r.owner || ''} ${COUNTRY[r.owner]?.name || ''} ${launchOwner} ${COUNTRY[launchOwner]?.name || ''} ${site?.name || ''}`.toLowerCase();
       if (!hay.includes(q)) continue;
     }
     out.push(row);
@@ -828,6 +832,31 @@ function populateOwnerDropdown(db) {
   select.innerHTML = opts.join('');
   // Restore prior selection if the country is still represented in
   // the DB; otherwise fall back to "All".
+  select.value = sorted.includes(currentValue) ? currentValue : '';
+}
+
+// Build the Launch-Country filter dropdown, mirroring the owner one but
+// keyed off each object's launch-site → operating-country mapping.
+function populateLaunchDropdown(db) {
+  const select = $('filter-launch');
+  if (!select) return;
+  const currentValue = select.value;
+  const owners = new Set();
+  for (const id of Object.keys(db)) {
+    const o = LAUNCH_SITE[db[id].launchSite]?.owner;
+    if (o) owners.add(o);
+  }
+  const sorted = [...owners].sort((a, b) => {
+    const na = COUNTRY[a]?.name || a;
+    const nb = COUNTRY[b]?.name || b;
+    return na.localeCompare(nb);
+  });
+  const opts = ['<option value="">Launch Country · All</option>'];
+  for (const o of sorted) {
+    const name = COUNTRY[o]?.name || o;
+    opts.push(`<option value="${esc(o)}">${esc(name)}</option>`);
+  }
+  select.innerHTML = opts.join('');
   select.value = sorted.includes(currentValue) ? currentValue : '';
 }
 
@@ -1311,6 +1340,7 @@ async function boot() {
   // even before the network round-trips complete.
   if (Object.keys(db).length) {
     populateOwnerDropdown(db);
+    populateLaunchDropdown(db);
     renderTable(db);
     renderCharts(db);
   }
@@ -1338,6 +1368,7 @@ async function boot() {
   setStatus(`${tles.length.toLocaleString()} TLEs (${tleTag}) · ${satrec.length.toLocaleString()} SATCAT (${scSource}) · repository ${Object.keys(db).length.toLocaleString()} sats (+${added} new)`);
 
   populateOwnerDropdown(db);
+  populateLaunchDropdown(db);
   renderTable(db);
   renderCharts(db);
 
@@ -1352,6 +1383,7 @@ async function boot() {
 
 $('filter').addEventListener('input', () => { currentPage = 0; renderTable(db); });
 $('filter-owner').addEventListener('change', () => { currentPage = 0; renderTable(db); });
+$('filter-launch').addEventListener('change', () => { currentPage = 0; renderTable(db); });
 $('prev-page').addEventListener('click', () => { if (currentPage > 0) { currentPage--; renderTable(db); } });
 $('next-page').addEventListener('click', () => {
   const pages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
