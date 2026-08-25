@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>NAZAR · Traffic-Conjunctions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --paper:#e9eff6; --card:#ffffff; --ink:#15263a; --dim:#5c6b7d; --line:#dbe4ee;
+      --accent:#1466c9; --accent2:#e26a2c; --good:#1e9e6a; --warn:#e0a83a; --bad:#d9534f;
+      --space:#060d1c; --chip:#eef4fb;
+      --pri:#ff5d5d; --sec:#ffd166; --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+      --disp:'Orbitron',system-ui,sans-serif; --shadow:0 1px 2px rgba(20,45,80,.06),0 8px 24px rgba(20,45,80,.07);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0}
+    body{
+      background:
+        radial-gradient(1100px 480px at 82% -12%, #dcecfb 0%, rgba(220,236,251,0) 60%),
+        radial-gradient(900px 480px at -8% 6%, #e6edf9 0%, rgba(230,237,249,0) 55%), var(--paper);
+      color:var(--ink); font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; -webkit-font-smoothing:antialiased;
+    }
+    a{color:var(--accent)}
+    .wrap{max-width:1240px; margin:0 auto; padding:0 20px 70px}
+
+    .header{position:sticky; top:0; z-index:50; background:rgba(233,239,246,.9); backdrop-filter:blur(8px); border-bottom:1px solid var(--line)}
+    .header-inner{display:flex; align-items:center; gap:16px; height:56px; max-width:1240px; margin:0 auto; padding:0 20px}
+    .top-logo{display:inline-flex; align-items:center; padding:4px 9px; background:#0a1018; border:1px solid #1d3147; border-radius:6px; text-decoration:none; transition:.15s}
+    .top-logo:hover{border-color:#4ea8ff; transform:scale(1.04)}
+    .top-logo img{height:32px; display:block}
+    .logo-credit{align-self:center; margin-left:-4px; max-width:210px; font-family:var(--mono); font-size:8.5px; line-height:1.3; color:var(--dim)}
+    .logo-credit a{color:var(--accent); text-decoration:none}
+    @media (max-width:820px){ .logo-credit{display:none} }
+    .header-title{font-family:var(--disp); font-weight:600; letter-spacing:.04em; font-size:13.5px}
+    .header-right{margin-left:auto; display:flex; gap:9px}
+    .btn{font-family:var(--mono); font-size:12.5px; text-decoration:none; cursor:pointer; padding:7px 13px; border-radius:7px; border:1px solid var(--line); background:var(--card); color:var(--ink); transition:.15s; white-space:nowrap}
+    .btn:hover{border-color:var(--accent); color:var(--accent)}
+
+    .cover{padding:26px 0 14px}
+    .eyebrow{font-family:var(--mono); font-size:11.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent2)}
+    h1{font-family:var(--disp); font-weight:800; font-size:32px; line-height:1.08; margin:9px 0 8px}
+    .lede{color:var(--dim); max-width:80ch; margin:0; font-size:15px}
+    .src-chip{display:inline-flex; align-items:center; gap:8px; margin-top:14px; font-family:var(--mono); font-size:11.5px; background:var(--chip); border:1px solid var(--line); border-radius:999px; padding:6px 13px; color:var(--dim)}
+    .src-chip b{color:var(--ink)} .src-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--good)}
+
+    /* main layout: globe + side panel */
+    .stage{display:grid; grid-template-columns:1.55fr .95fr; gap:18px; margin-top:20px}
+    @media (max-width:900px){ .stage{grid-template-columns:1fr} }
+
+    .globe-panel{position:relative; border-radius:16px; overflow:hidden; background:radial-gradient(120% 120% at 50% 15%, #0b1a33 0%, #050b18 70%); box-shadow:var(--shadow); min-height:520px}
+    @media (max-width:900px){ .globe-panel{min-height:420px} }
+    #globe{position:absolute; inset:0}
+    .globe-legend{position:absolute; left:14px; bottom:12px; z-index:5; display:flex; flex-wrap:wrap; gap:6px 12px; font-family:var(--mono); font-size:10.5px; color:#cfe0f5; background:rgba(6,13,28,.5); border:1px solid rgba(120,180,255,.18); border-radius:9px; padding:8px 11px; backdrop-filter:blur(4px)}
+    .globe-legend .lg{display:inline-flex; align-items:center; gap:6px}
+    .globe-legend .d{width:9px; height:9px; border-radius:50%; box-shadow:0 0 6px currentColor}
+    .anim-status{position:absolute; top:12px; left:14px; right:14px; z-index:5; display:flex; justify-content:space-between; gap:10px; font-family:var(--mono); font-size:11.5px; color:#dbe9fb; pointer-events:none}
+    .anim-status .pill{background:rgba(6,13,28,.6); border:1px solid rgba(120,180,255,.2); border-radius:8px; padding:6px 11px; backdrop-filter:blur(4px)}
+    .anim-status .pill b{color:#fff}
+    .tca-flash{color:#ff8a8a}
+    .globe-loading{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#9fc0e6; font-family:var(--mono); font-size:13px; z-index:4}
+    .globe-loading[hidden]{display:none}
+    .anim-status[hidden]{display:none}
+
+    /* side */
+    .side{display:flex; flex-direction:column; gap:14px; min-height:0}
+    .side-head{display:flex; align-items:baseline; justify-content:space-between}
+    .side-head h2{font-family:var(--disp); font-weight:600; font-size:16px; margin:0}
+    .side-head .cnt{font-family:var(--mono); font-size:11px; color:var(--dim)}
+    .conj-list{display:flex; flex-direction:column; gap:9px; max-height:430px; overflow-y:auto; padding:2px 4px 2px 0}
+    .conj{cursor:pointer; text-align:left; width:100%; background:var(--card); border:1px solid var(--line); border-left:4px solid var(--warn); border-radius:11px; padding:12px 13px; transition:.14s; box-shadow:var(--shadow)}
+    .conj:hover{border-color:#bcd3ee; transform:translateY(-1px)}
+    .conj.sel{border-color:var(--accent); box-shadow:0 0 0 2px rgba(20,102,201,.18), var(--shadow)}
+    .conj .pair{display:flex; align-items:center; gap:8px; font-weight:600; font-size:13.5px}
+    .conj .pair .vs{color:var(--dim); font-weight:400; font-family:var(--mono); font-size:11px}
+    .conj .meta{display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:8px; font-family:var(--mono); font-size:11px; color:var(--dim)}
+    .conj .meta b{color:var(--ink)}
+    .conj .miss{color:var(--bad); font-weight:600}
+    .kd{display:inline-block; font-family:var(--mono); font-size:9px; letter-spacing:.06em; padding:1px 5px; border-radius:4px; vertical-align:middle}
+    .kd-payload{background:#e3f0ff; color:#1462c4} .kd-rocket{background:#fff0e2; color:#c05a12} .kd-debris{background:#fde3e3; color:#b3312c}
+
+    .controls{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; box-shadow:var(--shadow)}
+    .anim-btn{width:100%; font-family:var(--disp); font-weight:600; font-size:14px; letter-spacing:.03em; color:#fff; background:linear-gradient(90deg,#1466c9,#2f8be6); border:0; border-radius:10px; padding:12px; cursor:pointer; transition:.15s}
+    .anim-btn:hover{filter:brightness(1.06)} .anim-btn:disabled{background:#c7d3e0; color:#eef4fb; cursor:not-allowed}
+    .anim-btn.stop{background:linear-gradient(90deg,#c0392b,#e0653a)}
+    .speed-row{margin-top:16px}
+    .speed-row .lab{display:flex; justify-content:space-between; font-family:var(--mono); font-size:12px; color:var(--dim); margin-bottom:7px}
+    .speed-row .lab b{color:var(--accent); font-size:13px}
+    input[type=range]{width:100%; accent-color:var(--accent)}
+    .ticks{display:flex; justify-content:space-between; font-family:var(--mono); font-size:9.5px; color:var(--dim); margin-top:3px}
+    .hintline{margin-top:12px; font-size:11.5px; color:var(--dim); line-height:1.45}
+    .reset-btn{margin-top:10px; width:100%; font-family:var(--mono); font-size:12px; background:var(--card); border:1px solid var(--line); color:var(--dim); border-radius:9px; padding:8px; cursor:pointer}
+    .reset-btn:hover{border-color:var(--accent); color:var(--accent)}
+
+    footer{margin-top:34px; padding-top:18px; border-top:1px solid var(--line); color:var(--dim); font-size:12.5px; line-height:1.6}
+    footer a{color:var(--accent)}
+  </style>
+</head>
+<body class="page-conjunctions">
+  <header class="header">
+    <div class="header-inner">
+      <a class="top-logo" href="index.html" title="NAZAR — back to the live globe"><img src="data/nazar-logo.svg?v=5" alt="NAZAR"></a>
+      <span class="header-title">TRAFFIC-CONJUNCTIONS</span>
+      <span class="header-right">
+        <a class="btn" href="space-stuff.html">← Space Stuff</a>
+        <a class="btn" href="index.html">NAZAR Home</a>
+      </span>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="cover">
+      <div class="eyebrow">Who’s on a collision course?</div>
+      <h1>Traffic-Conjunctions</h1>
+      <p class="lede">Space is getting crowded. Every week, tracking networks flag pairs of objects predicted to pass
+        dangerously close — a <em>conjunction</em>. Pick a pair from the list, hit <b>Animate</b>, and watch their orbits
+        race to the moment of closest approach.</p>
+      <span class="src-chip"><span class="dot"></span> Data · <b>CelesTrak SOCRATES</b> predicted close approaches · orbits propagated with SGP4</span>
+    </div>
+
+    <div class="stage">
+      <div class="globe-panel">
+        <div class="globe-loading" id="globe-loading">Loading globe &amp; orbital elements…</div>
+        <div class="anim-status" id="anim-status" hidden>
+          <span class="pill" id="anim-clock">—</span>
+          <span class="pill" id="anim-tca">—</span>
+        </div>
+        <div id="globe"></div>
+        <div class="globe-legend">
+          <span class="lg"><span class="d" style="color:#ff5d5d;background:#ff5d5d"></span>Primary</span>
+          <span class="lg"><span class="d" style="color:#ffd166;background:#ffd166"></span>Secondary</span>
+          <span class="lg"><span class="d" style="color:#63b3ff;background:#63b3ff"></span>Other tracked</span>
+          <span class="lg"><span class="d" style="color:#ff3b3b;background:#ff3b3b"></span>Closest approach</span>
+        </div>
+      </div>
+
+      <div class="side">
+        <div class="side-head">
+          <h2>Collision-risk pairs</h2>
+          <span class="cnt" id="conj-count">…</span>
+        </div>
+        <div class="conj-list" id="conj-list"></div>
+
+        <div class="controls">
+          <button class="anim-btn" id="animate-btn" disabled>▶ Select a pair to animate</button>
+          <div class="speed-row">
+            <div class="lab"><span>Animation speed</span><b id="speed-val">2,000×</b></div>
+            <input type="range" id="speed" min="2000" max="10000" step="2000" value="2000">
+            <div class="ticks"><span>2k</span><span>4k</span><span>6k</span><span>8k</span><span>10k</span></div>
+          </div>
+          <button class="reset-btn" id="reset-btn">↺ Show all satellites</button>
+          <p class="hintline">The globe shows every object in the list at its live position. During an animation, all but the
+            chosen pair fade out and their orbits play forward to the flagged time of closest approach.</p>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p><b>Source &amp; caveat.</b> Conjunction predictions from CelesTrak’s public
+        <a href="https://celestrak.org/SOCRATES/" target="_blank" rel="noopener noreferrer">SOCRATES</a> screening; orbits are propagated from public two-line elements with SGP4.
+        Real close-approach screening uses higher-precision orbits, so the on-globe convergence is a faithful <em>visual</em> of the encounter, not an operational miss-distance.
+        (The authoritative, login-gated feed lives at <a href="https://www.space-track.org/#conjunctions" target="_blank" rel="noopener noreferrer">Space-Track</a>.)</p>
+    </footer>
+  </div>
+
+  <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+  <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+  <script src="traffic-conjunctions.js?v=1"></script>
+  <script src="site-analytics.js?v=1"></script>
+  <script src="mobile-menu.js?v=21"></script>
+</body>
+</html>
