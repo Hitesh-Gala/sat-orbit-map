@@ -323,18 +323,25 @@
   // -------------------------------------------------------------------------
   (function nazarDropdown() {
     const PAGES = [
-      { href: 'index.html',         icon: '◯', label: 'Live Globe (Home)' },
-      { href: 'about.html',         icon: 'ℹ', label: 'About / Help' },
-      { href: 'orbits.html',        icon: '↻', label: 'Orbit Visualisation' },
-      { href: 'orbit-maker.html',   icon: '🪐', label: 'Orbit Maker' },
-      { href: 'game-of-cones.html', icon: '◭', label: 'Game of Cones' },
-      { href: 'chinrepo.html',      icon: '★', label: 'China Sat Repo' },
-      { href: 'viz3d.html',         icon: '⬢', label: 'God Mode' },
-      { href: '2d-views.html',      icon: '⊞', label: '2D View' },
-      { href: 'sats-by-ops.html',   icon: '⊕', label: 'SATs-by-OPs' },
-      { href: 'overpass.html',      icon: '⌖', label: 'Overpass' },
-      { href: 'debris.html',        icon: '✷', label: 'Debris Tracker' },
-      { href: 'launch-map.html',    icon: '🌐', label: 'Global Launch Sites' },
+      { href: 'index.html',              icon: '◯', label: 'Live Globe (Home)' },
+      { href: 'about.html',              icon: 'ℹ', label: 'About / Help' },
+      { href: 'orbits.html',             icon: '↻', label: 'Orbit Visualisation' },
+      { href: 'viz3d.html',              icon: '⬢', label: 'God Mode' },
+      { href: 'orbit-maker.html',        icon: '🪐', label: 'Orbit Maker' },
+      { href: '2d-views.html',           icon: '⊞', label: '2D View' },
+      { href: 'sats-by-ops.html',        icon: '⊕', label: 'SATs-by-OPs' },
+      { href: 'overpass.html',           icon: '⌖', label: 'Overpass' },
+      { href: 'game-of-cones.html',      icon: '◭', label: 'Game of Cones' },
+      { href: 'sat-stats.html',          icon: '📊', label: 'Sat Stats' },
+      { href: 'chinrepo.html',           icon: '★', label: 'China Sat Repo' },
+      { href: 'debris.html',             icon: '✷', label: 'Debris Tracker' },
+      { href: 'debris-stats.html',       icon: '📈', label: 'Debris Statistics' },
+      { href: 'launch-map.html',         icon: '🌐', label: 'Global Launch Sites' },
+      { href: 'launch-gallery.html',     icon: '🖼', label: 'Launch Gallery' },
+      { href: 'news-archive.html',       icon: '📰', label: 'News Ticker Tape' },
+      { href: 'space-stuff.html',        icon: '🛰', label: 'Space Stuff' },
+      { href: 'space-launched.html',     icon: '🚀', label: 'Launchy-Stuff' },
+      { href: 'traffic-conjunctions.html', icon: '⚠', label: 'Traffic-Conjunctions' },
     ];
 
     // Collect the "go to NAZAR home" controls: the logo + the labelled
@@ -356,6 +363,7 @@
     const style = document.createElement('style');
     style.textContent =
       ".nazar-dropdown{position:fixed;z-index:200;min-width:214px;max-width:calc(100vw - 16px);" +
+      "max-height:calc(100vh - 20px);overflow-y:auto;" +
       "padding:6px;display:flex;flex-direction:column;gap:3px;background:var(--panel,rgba(8,16,28,0.97));" +
       "border:1px solid var(--line,rgba(120,170,220,0.28));border-radius:8px;box-shadow:0 14px 40px rgba(0,0,0,0.55);" +
       "backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:nazar-dd-in .12s ease-out;" +
