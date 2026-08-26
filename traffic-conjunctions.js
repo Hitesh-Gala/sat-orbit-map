@@ -15,8 +15,9 @@
   const $ = id => document.getElementById(id);
 
   let world, conjs = [], sats = new Map();   // norad -> {name,kind,satrec,mesh,periodS,role}
-  let selIdx = -1, animating = false, reachedTCA = false;
-  let simMs = 0, startMs = 0, tcaMs = 0, lastTs = 0, speed = 2000;
+  const SPEEDS = [100, 250, 500, 1000, 2000, 4000, 6000, 8000, 10000];
+  let selIdx = -1, animating = false, reachedTCA = false, tcaShown = false;
+  let simMs = 0, startMs = 0, tcaMs = 0, lastTs = 0, speed = 1000;
   let pairA = null, pairB = null;            // selected sat objects
   let lineA, lineB, tcaMarker;
   const trailA = [], trailB = [];
@@ -28,10 +29,14 @@
     const pv = satellite.propagate(sat.satrec, d);
     if (!pv || !pv.position) return null;
     const gd = satellite.eciToGeodetic(pv.position, satellite.gstime(d));
+    const v = pv.velocity;
+    const altKm = Math.max(gd.height, 0);
     return {
       lat: satellite.degreesLat(gd.latitude),
       lng: satellite.degreesLong(gd.longitude),
-      alt: Math.max(gd.height, 0) / R_EARTH,
+      alt: altKm / R_EARTH,
+      altKm, eci: pv.position,
+      speed: v ? Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z) : 0,
     };
   }
   const fmtUTC = ms => new Date(ms).toISOString().replace('T', ' ').slice(0, 19) + 'Z';
@@ -47,7 +52,7 @@
   async function boot() {
     let data;
     try {
-      data = await (await fetch('data/conjunctions.json?v=1')).json();
+      data = await (await fetch('data/conjunctions.json?v=2')).json();
     } catch (e) {
       $('globe-loading').textContent = 'Could not load conjunction data.';
       return;
@@ -60,13 +65,16 @@
         if (sats.has(o.norad)) continue;
         const satrec = satellite.twoline2satrec(o.tle[0], o.tle[1]);
         const periodS = (2 * Math.PI / satrec.no) * 60;   // no = rad/min
-        sats.set(o.norad, { norad: o.norad, name: o.name, kind: o.kind, satrec, periodS, mesh: null, role: 'other' });
+        sats.set(o.norad, { norad: o.norad, name: o.name, kind: o.kind, owner: o.owner || '—',
+          satrec, periodS, mesh: null, role: 'other', curAlt: null, curSpeed: null });
       }
     }
 
     initGlobe();
     buildDots();
+    setupHover();
     renderList();
+    renderWindow();
     wireControls();
     $('globe-loading').hidden = true;
     lastTs = performance.now();
@@ -96,9 +104,10 @@
     const scene = world.scene();
     for (const s of sats.values()) {
       const mesh = new THREE.Mesh(
-        new THREE.SphereGeometry(1.25, 12, 12),
+        new THREE.SphereGeometry(1.7, 14, 14),
         new THREE.MeshBasicMaterial({ color: OTHER, transparent: true, opacity: 0.95 })
       );
+      mesh.userData.sat = s;
       s.mesh = mesh; scene.add(mesh);
     }
     // orbit path lines + TCA marker (created empty, populated during animation)
@@ -117,6 +126,82 @@
     const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.9 }));
     line.visible = false; line.frustumCulled = false;
     return line;
+  }
+
+  // ---- hover tooltip: raycast the pointer onto the dot meshes --------------
+  function setupHover() {
+    const ray = new THREE.Raycaster();
+    const m = new THREE.Vector2();
+    const canvas = world.renderer().domElement;
+    const tip = $('sat-tip');
+    const panel = $('globe').parentElement;
+    const meshes = [...sats.values()].map(s => s.mesh);
+    canvas.addEventListener('pointermove', e => {
+      const rect = canvas.getBoundingClientRect();
+      m.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      m.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      ray.setFromCamera(m, world.camera());
+      const hit = ray.intersectObjects(meshes, false)[0];
+      if (!hit) { tip.hidden = true; canvas.style.cursor = ''; return; }
+      const s = hit.object.userData.sat;
+      tip.innerHTML = `<div class="nm">${esc(s.name)}</div>
+        <div class="row">Operator · <b>${esc(s.owner)}</b></div>
+        <div class="row">Altitude · <b>${s.curAlt != null ? Math.round(s.curAlt).toLocaleString() + ' km' : '—'}</b></div>
+        <div class="row">Speed · <b>${s.curSpeed != null ? s.curSpeed.toFixed(2) + ' km/s' : '—'}</b></div>`;
+      tip.hidden = false;
+      const pr = panel.getBoundingClientRect();
+      let x = e.clientX - pr.left + 14, y = e.clientY - pr.top + 12;
+      if (x + tip.offsetWidth > pr.width - 6) x = e.clientX - pr.left - tip.offsetWidth - 14;
+      if (y + tip.offsetHeight > pr.height - 6) y = pr.height - tip.offsetHeight - 6;
+      tip.style.left = Math.max(4, x) + 'px';
+      tip.style.top = Math.max(4, y) + 'px';
+      canvas.style.cursor = 'pointer';
+    });
+    canvas.addEventListener('pointerleave', () => { tip.hidden = true; });
+  }
+
+  // ---- validity window shown above the list -------------------------------
+  function renderWindow() {
+    const t = conjs.map(c => new Date(c.tca).getTime());
+    const f = ms => new Date(ms).toUTCString().slice(5, 16);   // "25 Aug 2026"
+    $('valid-window').innerHTML =
+      `Predicted close approaches valid <b>${f(Math.min(...t))} → ${f(Math.max(...t))}</b> (UTC)`;
+  }
+
+  // ---- closest-approach details card --------------------------------------
+  const fmtGMT = ms => new Date(ms).toUTCString().slice(5);    // "25 Aug 2026 19:05:45 GMT"
+  function showTCACard() {
+    const c = conjs[selIdx];
+    const A = propAt(pairA, tcaMs), B = propAt(pairB, tcaMs);
+    let altSep = null, latSep = null, encAlt = null;
+    if (A && B) {
+      // Direction of the miss from SGP4, scaled to the authoritative SOCRATES
+      // miss distance so the altitude/lateral split is self-consistent with it.
+      const sx = B.eci.x - A.eci.x, sy = B.eci.y - A.eci.y, sz = B.eci.z - A.eci.z;
+      const mx = (A.eci.x + B.eci.x) / 2, my = (A.eci.y + B.eci.y) / 2, mz = (A.eci.z + B.eci.z) / 2;
+      const rmag = Math.hypot(mx, my, mz) || 1;
+      const smag = Math.hypot(sx, sy, sz) || 1;
+      const radial = Math.abs((sx * mx + sy * my + sz * mz) / rmag);
+      const lateral = Math.sqrt(Math.max(0, smag * smag - radial * radial));
+      altSep = c.missM * (radial / smag);
+      latSep = c.missM * (lateral / smag);
+      encAlt = (A.altKm + B.altKm) / 2;
+    }
+    const mtr = x => x == null ? '—' : (x < 1 ? '<1' : Math.round(x).toLocaleString()) + ' m';
+    $('tca-when').textContent = '· ' + pairA.name + ' / ' + pairB.name;
+    $('tca-alt').innerHTML = mtr(altSep) + ' <small>≈</small>';
+    $('tca-lat').innerHTML = mtr(latSep) + ' <small>≈</small>';
+    $('tca-miss').textContent = c.missM.toLocaleString() + ' m';
+    $('tca-encalt').innerHTML = encAlt != null ? Math.round(encAlt).toLocaleString() + ' <small>km</small>' : '—';
+    $('tca-vel').innerHTML = c.relVel.toFixed(1) + ' <small>km/s</small>';
+    $('tca-date').textContent = fmtGMT(tcaMs);
+    $('tca-card').hidden = false;
+    $('anim-status').hidden = true;
+    const lg = document.querySelector('.globe-legend'); if (lg) lg.style.display = 'none';
+  }
+  function hideTCACard() {
+    $('tca-card').hidden = true;
+    const lg = document.querySelector('.globe-legend'); if (lg) lg.style.display = '';
   }
 
   // ---- conjunction list ---------------------------------------------------
@@ -156,7 +241,8 @@
     // recolour dots: the pair stands out, others normal
     for (const s of sats.values()) s.role = 'other';
     pairA.role = 'pri'; pairB.role = 'sec';
-    resetTrails(); tcaMarker.visible = false; reachedTCA = false;
+    resetTrails(); tcaMarker.visible = false; reachedTCA = false; tcaShown = false;
+    hideTCACard();
     applyRoles(1);
   }
   function applyRoles(otherOpacity) {
@@ -180,8 +266,8 @@
     // Play from the present up to TCA.  If the TCA is already past (aged data),
     // fall back to the final approach window so it still shows the encounter.
     startMs = now < tcaMs ? now : tcaMs - 3 * 3600 * 1000;
-    simMs = startMs; reachedTCA = false;
-    resetTrails();
+    simMs = startMs; reachedTCA = false; tcaShown = false;
+    resetTrails(); hideTCACard();
     lineA.visible = lineB.visible = true;
     tcaMarker.visible = false;
     animating = true;
@@ -190,8 +276,9 @@
     applyRoles(0.09);           // fade the rest right down
   }
   function stopAnim(keepMarker) {
-    animating = false;
+    animating = false; tcaShown = false;
     $('anim-status').hidden = true;
+    hideTCACard();
     const btn = $('animate-btn');
     btn.classList.remove('stop');
     btn.textContent = selIdx >= 0 ? '▶ Animate approach' : '▶ Select a pair to animate';
@@ -223,6 +310,7 @@
     const p = propAt(sat, ms); if (!p) return null;
     const v = world.getCoords(p.lat, p.lng, p.alt);
     sat.mesh.position.set(v.x, v.y, v.z);
+    sat.curAlt = p.altKm; sat.curSpeed = p.speed;
     return p;
   }
 
@@ -255,8 +343,9 @@
         tcaMarker.scale.setScalar(1 + 0.25 * Math.sin(ts / 140));
         $('animate-btn').textContent = '↺ Replay';
         $('animate-btn').classList.remove('stop');
+        if (!tcaShown) { showTCACard(); tcaShown = true; }
       }
-      updateStatus();
+      if (!reachedTCA) updateStatus();
     }
     requestAnimationFrame(tick);
   }
@@ -281,7 +370,7 @@
       else startAnim();                       // also handles Replay after TCA
     });
     $('speed').addEventListener('input', e => {
-      speed = +e.target.value;
+      speed = SPEEDS[+e.target.value] || 1000;
       $('speed-val').textContent = speed.toLocaleString() + '×';
     });
     $('reset-btn').addEventListener('click', () => {
