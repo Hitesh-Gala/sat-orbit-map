@@ -96,8 +96,12 @@
       .width(w).height(h);
     const c = world.controls();
     c.autoRotate = true; c.autoRotateSpeed = 0.4; c.enableDamping = true;
-    world.pointOfView({ altitude: 3.1 });
-    window.addEventListener('resize', () => { const s = sizeOf(); world.width(s.w).height(s.h); });
+    world.pointOfView({ altitude: 2.5 });
+    const onResize = () => { const s = sizeOf(); world.width(s.w).height(s.h); };
+    window.addEventListener('resize', onResize);
+    // Keep the globe filling (and centred in) its panel even when the panel
+    // resizes for reasons other than a window resize (font reflow, layout).
+    try { new ResizeObserver(onResize).observe($('globe').parentElement); } catch (e) { /* older browsers */ }
   }
 
   function buildDots() {
