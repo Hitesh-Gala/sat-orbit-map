@@ -48,7 +48,7 @@
     .src-chip b{color:var(--ink)} .src-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--good)}
 
     /* main layout: globe + side panel */
-    .stage{--stageH:clamp(440px, calc(100vh - 340px), 860px); display:grid; grid-template-columns:1.62fr 1fr; gap:22px; margin-top:20px; align-items:stretch}
+    .stage{--stageH:clamp(560px, calc(100vh - 292px), 900px); display:grid; grid-template-columns:1.62fr 1fr; gap:22px; margin-top:20px; align-items:stretch}
     @media (max-width:900px){ .stage{grid-template-columns:1fr} .globe-panel,.side{height:auto} .conj-list{max-height:420px; flex:0 0 auto} }
 
     .globe-panel{position:relative; border-radius:16px; overflow:hidden; background:radial-gradient(120% 120% at 50% 15%, #0b1a33 0%, #050b18 70%); box-shadow:var(--shadow); height:var(--stageH); min-height:440px}
@@ -66,33 +66,33 @@
     .anim-status[hidden]{display:none}
 
     /* side */
-    .side{display:flex; flex-direction:column; gap:14px; min-height:0; height:var(--stageH)}
+    .side{display:flex; flex-direction:column; gap:10px; min-height:0; height:var(--stageH)}
     .side-head{display:flex; align-items:baseline; justify-content:space-between}
     .side-head h2{font-family:var(--disp); font-weight:600; font-size:20.8px; margin:0}
     .side-head .cnt{font-family:var(--mono); font-size:14.3px; color:var(--dim)}
     .conj-list{display:flex; flex-direction:column; gap:9px; flex:1 1 auto; min-height:120px; overflow-y:auto; padding:2px 4px 2px 0}
-    .conj{cursor:pointer; text-align:left; width:100%; background:var(--card); border:1px solid var(--line); border-left:4px solid var(--warn); border-radius:11px; padding:12px 13px; transition:.14s; box-shadow:var(--shadow)}
+    .conj{cursor:pointer; text-align:left; width:100%; background:var(--card); border:1px solid var(--line); border-left:4px solid var(--warn); border-radius:11px; padding:9px 12px; transition:.14s; box-shadow:var(--shadow)}
     .conj:hover{border-color:#bcd3ee; transform:translateY(-1px)}
     .conj.sel{border-color:var(--accent); box-shadow:0 0 0 2px rgba(20,102,201,.18), var(--shadow)}
     .conj .pair{display:flex; align-items:center; gap:8px; font-weight:600; font-size:17.6px}
     .conj .pair .vs{color:var(--dim); font-weight:400; font-family:var(--mono); font-size:14.3px}
-    .conj .meta{display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:8px; font-family:var(--mono); font-size:14.3px; color:var(--dim)}
+    .conj .meta{display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:5px; font-family:var(--mono); font-size:14.3px; color:var(--dim)}
     .conj .meta b{color:var(--ink)}
     .conj .miss{color:var(--bad); font-weight:600}
     .kd{display:inline-block; font-family:var(--mono); font-size:11.7px; letter-spacing:.06em; padding:1px 5px; border-radius:4px; vertical-align:middle}
     .kd-payload{background:#e3f0ff; color:#1462c4} .kd-rocket{background:#fff0e2; color:#c05a12} .kd-debris{background:#fde3e3; color:#b3312c}
 
-    .controls{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; box-shadow:var(--shadow)}
-    .anim-btn{width:100%; font-family:var(--disp); font-weight:600; font-size:18.2px; letter-spacing:.03em; color:#fff; background:linear-gradient(90deg,#1466c9,#2f8be6); border:0; border-radius:10px; padding:12px; cursor:pointer; transition:.15s}
+    .controls{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; box-shadow:var(--shadow)}
+    .anim-btn{width:100%; font-family:var(--disp); font-weight:600; font-size:18.2px; letter-spacing:.03em; color:#fff; background:linear-gradient(90deg,#1466c9,#2f8be6); border:0; border-radius:10px; padding:11px; cursor:pointer; transition:.15s}
     .anim-btn:hover{filter:brightness(1.06)} .anim-btn:disabled{background:#c7d3e0; color:#eef4fb; cursor:not-allowed}
     .anim-btn.stop{background:linear-gradient(90deg,#c0392b,#e0653a)}
-    .speed-row{margin-top:16px}
-    .speed-row .lab{display:flex; justify-content:space-between; font-family:var(--mono); font-size:15.6px; color:var(--dim); margin-bottom:7px}
+    .speed-row{margin-top:8px}
+    .speed-row .lab{display:flex; justify-content:space-between; font-family:var(--mono); font-size:15.6px; color:var(--dim); margin-bottom:4px}
     .speed-row .lab b{color:var(--accent); font-size:16.9px}
     input[type=range]{width:100%; accent-color:var(--accent)}
-    .ticks{display:flex; justify-content:space-between; font-family:var(--mono); font-size:12.3px; color:var(--dim); margin-top:3px}
-    .hintline{margin-top:12px; font-size:15.0px; color:var(--dim); line-height:1.45}
-    .reset-btn{margin-top:10px; width:100%; font-family:var(--mono); font-size:15.6px; background:var(--card); border:1px solid var(--line); color:var(--dim); border-radius:9px; padding:8px; cursor:pointer}
+    .ticks{display:flex; justify-content:space-between; font-family:var(--mono); font-size:12.3px; color:var(--dim); margin-top:2px}
+    .hintline{margin-top:8px; font-size:13px; color:var(--dim); line-height:1.4}
+    .reset-btn{margin-top:8px; width:100%; font-family:var(--mono); font-size:15.6px; background:var(--card); border:1px solid var(--line); color:var(--dim); border-radius:9px; padding:7px; cursor:pointer}
     .reset-btn:hover{border-color:var(--accent); color:var(--accent)}
 
     /* hover tooltip on globe objects */
@@ -109,8 +109,10 @@
     .tca-card .k{color:#9fc0e6; font-size:13.7px; letter-spacing:.03em} .tca-card .v{color:#fff; font-weight:600; font-size:18.2px; margin-top:2px}
     .tca-card .v small{color:#9fc0e6; font-weight:400; font-size:13.7px}
 
-    footer{margin-top:34px; padding-top:18px; border-top:1px solid var(--line); color:var(--dim); font-size:16.2px; line-height:1.6}
+    footer{margin-top:26px; padding-top:16px; border-top:1px solid var(--line); color:var(--dim); font-size:13px; line-height:1.55}
     footer a{color:var(--accent)}
+    footer .src-line{display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12.5px; color:var(--dim); margin:0 0 9px}
+    footer .src-line b{color:var(--ink)} footer .src-line .dot{width:8px; height:8px; border-radius:50%; background:var(--good); flex:0 0 auto}
   </style>
 </head>
 <body class="page-conjunctions">
@@ -132,7 +134,6 @@
       <p class="lede">Space is getting crowded. Every week, tracking networks flag pairs of objects predicted to pass
         dangerously close — a <em>conjunction</em>. Pick a pair from the list, hit <b>Animate</b>, and watch their orbits
         race to the moment of closest approach.</p>
-      <span class="src-chip"><span class="dot"></span> Data · <b>CelesTrak SOCRATES</b> predicted close approaches · orbits propagated with SGP4</span>
     </div>
 
     <div class="stage">
@@ -168,7 +169,7 @@
           <h2>Collision-risk pairs</h2>
           <span class="cnt" id="conj-count">…</span>
         </div>
-        <div id="valid-window" style="font-family:var(--mono); font-size:14.3px; color:var(--dim); margin:-4px 0 2px; line-height:1.4">…</div>
+        <div id="valid-window" style="font-family:var(--mono); font-size:12px; color:var(--dim); margin:-2px 0 0; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">…</div>
         <div class="conj-list" id="conj-list"></div>
 
         <div class="controls">
@@ -179,13 +180,12 @@
             <div class="ticks"><span>slow · 100×</span><span>1k</span><span>4k</span><span>fast · 10k</span></div>
           </div>
           <button class="reset-btn" id="reset-btn">↺ Show all satellites</button>
-          <p class="hintline">The globe shows every object in the list at its live position. During an animation, all but the
-            chosen pair fade out and their orbits play forward to the flagged time of closest approach.</p>
         </div>
       </div>
     </div>
 
     <footer>
+      <p class="src-line"><span class="dot"></span> Data · <b>CelesTrak SOCRATES</b> predicted close approaches · orbits propagated with SGP4</p>
       <p><b>Source &amp; caveat.</b> Conjunction predictions from CelesTrak’s public
         <a href="https://celestrak.org/SOCRATES/" target="_blank" rel="noopener noreferrer">SOCRATES</a> screening; orbits are propagated from public two-line elements with SGP4.
         Real close-approach screening uses higher-precision orbits, so the on-globe convergence is a faithful <em>visual</em> of the encounter, not an operational miss-distance.
