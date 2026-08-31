@@ -1,9 +1,9 @@
 {
  "source": "CelesTrak SOCRATES (Satellite Orbital Conjunction Reports Assessing Threatening Encounters in Space)",
- "generated": "2026-08-31T15:30:22Z",
+ "generated": "2026-08-31T15:35:57Z",
  "note": "Public predicted close approaches. Orbits are SGP4-propagated public elements, so the on-globe convergence is a visual approximation of the real screening.",
  "window": {
-  "from": "2026-08-30T22:19:42Z",
+  "from": "2026-08-30T22:56:36Z",
   "to": "2026-09-06T10:31:12Z"
  },
  "conjunctions": [
@@ -15,7 +15,7 @@
    "relVel": 14.35,
    "a": {
     "norad": 58133,
-    "name": "STARLINK-30758 [+]",
+    "name": "STARLINK-30758",
     "kind": "payload",
     "owner": "United States",
     "ownerCode": "US",
@@ -26,7 +26,7 @@
    },
    "b": {
     "norad": 64558,
-    "name": "QUICK3 [+]",
+    "name": "QUICK3",
     "kind": "payload",
     "owner": "Germany",
     "ownerCode": "GER",
@@ -44,7 +44,7 @@
    "relVel": 0.0,
    "a": {
     "norad": 62902,
-    "name": "COSMOS 2581 [+]",
+    "name": "COSMOS 2581",
     "kind": "payload",
     "owner": "Russia",
     "ownerCode": "CIS",
@@ -55,42 +55,13 @@
    },
    "b": {
     "norad": 62903,
-    "name": "COSMOS 2582 [+]",
+    "name": "COSMOS 2582",
     "kind": "payload",
     "owner": "Russia",
     "ownerCode": "CIS",
     "tle": [
      "1 62903U 25026B   26242.71211257  .00001117  00000+0  99515-4 0  9999",
      "2 62903  81.9987 358.4396 0010546 162.1858 197.9734 14.95146420 85345"
-    ]
-   }
-  },
-  {
-   "id": "67689-69673",
-   "tca": "2026-08-30T22:19:42Z",
-   "missM": 6,
-   "maxProb": 0.1024,
-   "relVel": 0.0,
-   "a": {
-    "norad": 67689,
-    "name": "PRC TEST SPACECRAFT 4 [+]",
-    "kind": "payload",
-    "owner": "China",
-    "ownerCode": "PRC",
-    "tle": [
-     "1 67689U 26024A   26242.58553861 -.00000184  00000+0  59903-5 0  9991",
-     "2 67689  49.9932 286.4604 0006107 321.9121  38.1388 14.92143465 30549"
-    ]
-   },
-   "b": {
-    "norad": 69673,
-    "name": "CZ-2F DEB [-]",
-    "kind": "debris",
-    "owner": "China",
-    "ownerCode": "PRC",
-    "tle": [
-     "1 69673U 26024H   26242.58553862 -.00000184  00000+0  59903-5 0  9997",
-     "2 69673  49.9932 286.4604 0006107 321.9121  38.1388 14.92143465 31578"
     ]
    }
   },
@@ -102,7 +73,7 @@
    "relVel": 11.534,
    "a": {
     "norad": 64305,
-    "name": "STARLINK-34383 [+]",
+    "name": "STARLINK-34383",
     "kind": "payload",
     "owner": "United States",
     "ownerCode": "US",
@@ -113,7 +84,7 @@
    },
    "b": {
     "norad": 68291,
-    "name": "STRIX-6 [+]",
+    "name": "STRIX-6",
     "kind": "payload",
     "owner": "Japan",
     "ownerCode": "JPN",
@@ -131,7 +102,7 @@
    "relVel": 7.86,
    "a": {
     "norad": 58359,
-    "name": "STARLINK-30878 [P]",
+    "name": "STARLINK-30878",
     "kind": "payload",
     "owner": "United States",
     "ownerCode": "US",
@@ -142,7 +113,7 @@
    },
    "b": {
     "norad": 59194,
-    "name": "STARLINK-31542 [+]",
+    "name": "STARLINK-31542",
     "kind": "payload",
     "owner": "United States",
     "ownerCode": "US",
@@ -160,7 +131,7 @@
    "relVel": 1.318,
    "a": {
     "norad": 55334,
-    "name": "STARLINK-5652 [+]",
+    "name": "STARLINK-5652",
     "kind": "payload",
     "owner": "United States",
     "ownerCode": "US",
@@ -171,7 +142,7 @@
    },
    "b": {
     "norad": 57908,
-    "name": "STARLINK-30464 [P]",
+    "name": "STARLINK-30464",
     "kind": "payload",
     "owner": "United States",
     "ownerCode": "US",
@@ -189,7 +160,7 @@
    "relVel": 11.086,
    "a": {
     "norad": 41603,
-    "name": "LAPAN-A3 [+]",
+    "name": "LAPAN-A3",
     "kind": "payload",
     "owner": "INDO",
     "ownerCode": "INDO",
@@ -200,7 +171,7 @@
    },
    "b": {
     "norad": 64447,
-    "name": "STARLINK-34450 [+]",
+    "name": "STARLINK-34450",
     "kind": "payload",
     "owner": "United States",
     "ownerCode": "US",
@@ -218,7 +189,7 @@
    "relVel": 7.811,
    "a": {
     "norad": 56192,
-    "name": "ION SCV-010 [+]",
+    "name": "ION SCV-010",
     "kind": "payload",
     "owner": "Italy",
     "ownerCode": "IT",
@@ -229,7 +200,7 @@
    },
    "b": {
     "norad": 56887,
-    "name": "STARLINK-6180 [+]",
+    "name": "STARLINK-6180",
     "kind": "payload",
     "owner": "United States",
     "ownerCode": "US",
@@ -247,7 +218,7 @@
    "relVel": 2.993,
    "a": {
     "norad": 49390,
-    "name": "YAOGAN-35 01A [+]",
+    "name": "YAOGAN-35 01A",
     "kind": "payload",
     "owner": "China",
     "ownerCode": "PRC",
@@ -258,7 +229,7 @@
    },
    "b": {
     "norad": 63324,
-    "name": "STARLINK-33619 [+]",
+    "name": "STARLINK-33619",
     "kind": "payload",
     "owner": "United States",
     "ownerCode": "US",
@@ -276,7 +247,7 @@
    "relVel": 12.42,
    "a": {
     "norad": 62120,
-    "name": "STARLINK-32548 [+]",
+    "name": "STARLINK-32548",
     "kind": "payload",
     "owner": "United States",
     "ownerCode": "US",
@@ -287,13 +258,42 @@
    },
    "b": {
     "norad": 62640,
-    "name": "NUSAT-45 (UZMASAT-1) [+]",
+    "name": "NUSAT-45 (UZMASAT-1)",
     "kind": "payload",
     "owner": "ARGN",
     "ownerCode": "ARGN",
     "tle": [
      "1 62640U 25009AH  26242.74508833  .00007643  00000+0  26793-3 0  9997",
      "2 62640  97.3556 323.2382 0003611  83.5017 276.6635 15.29732624 90323"
+    ]
+   }
+  },
+  {
+   "id": "56191-62123",
+   "tca": "2026-09-06T06:55:39Z",
+   "missM": 43,
+   "maxProb": 0.05443,
+   "relVel": 9.487,
+   "a": {
+    "norad": 56191,
+    "name": "HAWK-7A",
+    "kind": "payload",
+    "owner": "United States",
+    "ownerCode": "US",
+    "tle": [
+     "1 56191U 23054P   26242.64903132  .00005503  00000+0  20378-3 0  9995",
+     "2 56191  97.2575 128.0824 0004490 114.7811 245.3897 15.28045444188398"
+    ]
+   },
+   "b": {
+    "norad": 62123,
+    "name": "STARLINK-32626",
+    "kind": "payload",
+    "owner": "United States",
+    "ownerCode": "US",
+    "tle": [
+     "1 62123U 24222K   26242.01031609  .00015412  00000+0  56819-3 0  9996",
+     "2 62123  42.9978 237.5696 0000745 247.9955 112.0818 15.27591423 99255"
     ]
    }
   }
