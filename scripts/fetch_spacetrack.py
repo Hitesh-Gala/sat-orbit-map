@@ -99,6 +99,8 @@ try:
     if not cdm:                                   # fallback: newest by creation
         cdm = query('/basicspacedata/query/class/cdm_public'
                     '/orderby/CREATION_DATE%20desc/limit/500/format/json')
+    if cdm:
+        print('cdm_public fields:', ','.join(sorted(cdm[0].keys())), file=sys.stderr)
     # Space-Track emits each encounter twice (A-vs-B and B-vs-A) — collapse to
     # one row per pair+TCA.  MIN_RNG is in KILOMETRES.
     sample, seen = [], set()
