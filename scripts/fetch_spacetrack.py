@@ -99,10 +99,9 @@ try:
     if not cdm:                                   # fallback: newest by creation
         cdm = query('/basicspacedata/query/class/cdm_public'
                     '/orderby/CREATION_DATE%20desc/limit/500/format/json')
-    if cdm:
-        print('cdm_public fields:', ','.join(sorted(cdm[0].keys())), file=sys.stderr)
     # Space-Track emits each encounter twice (A-vs-B and B-vs-A) — collapse to
-    # one row per pair+TCA.  MIN_RNG is in KILOMETRES.
+    # one row per pair+TCA.  cdm_public exposes MIN_RNG (m), PC, TCA, object
+    # types and RCS — there is no relative-speed field in this feed.
     sample, seen = [], set()
     for c in cdm:
         if len(sample) >= 12:
@@ -121,7 +120,8 @@ try:
                 # plausible; 366 km would not be) — use it as-is.
                 'missM': round(float(c.get('MIN_RNG', 0) or 0)),
                 'prob': float(c.get('PC', 0) or 0),
-                'relVel': round(float(c.get('RELATIVE_SPEED', 0) or 0), 3),
+                'type1': c.get('SAT1_OBJECT_TYPE'), 'type2': c.get('SAT2_OBJECT_TYPE'),
+                'emergency': str(c.get('EMERGENCY_REPORTABLE', '')).upper().startswith('Y'),
             })
         except Exception:
             continue

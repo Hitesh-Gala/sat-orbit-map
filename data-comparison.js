@@ -79,14 +79,13 @@
     const rows = (st && st.conjunctions && st.conjunctions.sample) || [];
     if (!rows.length) return false;
     $('cdm-tbl').innerHTML =
-      `<thead><tr><th>Primary</th><th>Secondary</th><th>TCA (GMT)</th><th>Miss</th><th>P<sub>c</sub></th><th>Rel. speed</th></tr></thead>
+      `<thead><tr><th>Primary</th><th>Secondary</th><th>TCA (GMT)</th><th>Miss</th><th>P<sub>c</sub></th></tr></thead>
        <tbody>${rows.map(r => `<tr>
-         <td>${esc(r.sat1 || r.id1 || '—')}</td>
-         <td>${esc(r.sat2 || r.id2 || '—')}</td>
+         <td>${esc(r.sat1 || r.id1 || '—')}${r.type1 ? ` <span style="color:#8b9bad">${esc(String(r.type1).toLowerCase())}</span>` : ''}</td>
+         <td>${esc(r.sat2 || r.id2 || '—')}${r.type2 ? ` <span style="color:#8b9bad">${esc(String(r.type2).toLowerCase())}</span>` : ''}</td>
          <td>${esc(fmtWhen(r.tca) || '—')}</td>
          <td>${r.missM ? fmtN(r.missM) + ' m' : '—'}</td>
          <td>${r.prob ? Number(r.prob).toExponential(1) : '—'}</td>
-         <td>${r.relVel ? r.relVel + ' km/s' : '—'}</td>
        </tr>`).join('')}</tbody>`;
     $('cdm-sec').hidden = false;
     return true;
