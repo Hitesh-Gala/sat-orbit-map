@@ -34,7 +34,7 @@ jobs:
         run: |
           set -euo pipefail
           curl -fsS --retry 4 --retry-delay 6 \
-            "https://celestrak.org/socrates/table-socrates.php?NAME=,&ORDER=MAXPROB&MAX=120" \
+            "https://celestrak.org/SOCRATES/sort-maxProb.csv" \
             -o /tmp/socrates.csv
           echo "SOCRATES CSV: $(wc -c < /tmp/socrates.csv) bytes, $(wc -l < /tmp/socrates.csv) lines"
           echo '---- first rows ----'
