@@ -198,7 +198,9 @@ for p in pairs:
     ta, tb = fetch_tle(p['id1']), fetch_tle(p['id2'])
     if not ta or not tb:
         log(f"  skip {p['id1']}-{p['id2']}: missing TLE"); continue
-    nm1, nm2 = p['nm1'] or ta[0], p['nm2'] or tb[0]
+    # SOCRATES appends an operational-status flag to names ("NAME [+]") — strip it.
+    clean = lambda s: re.sub(r'\s*\[[^\]]*\]\s*$', '', (s or '').strip())
+    nm1, nm2 = clean(p['nm1']) or ta[0], clean(p['nm2']) or tb[0]
     oa, ob = country(p['id1'], nm1), country(p['id2'], nm2)
     out.append({
         'id': f"{p['id1']}-{p['id2']}", 'tca': p['tca'], 'missM': p['missM'],
