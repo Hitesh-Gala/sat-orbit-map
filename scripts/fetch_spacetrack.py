@@ -91,9 +91,14 @@ try:
     }
 
     # ---- 2) CDMs (conjunction data messages) ----------------------------
-    # The public CDM feed: latest screening results for the operator community.
-    cdm = query('/basicspacedata/query/class/cdm_public/orderby/TCA%20asc'
-                '/limit/200/format/json')
+    # The public CDM feed.  Ask for UPCOMING encounters (TCA in the future),
+    # soonest first — an ascending sort over the whole table returns months-old
+    # rows instead.  Count the live backlog separately from the sample.
+    cdm = query('/basicspacedata/query/class/cdm_public/TCA/%3Enow'
+                '/orderby/TCA%20asc/limit/500/format/json')
+    if not cdm:                                   # fallback: newest by creation
+        cdm = query('/basicspacedata/query/class/cdm_public'
+                    '/orderby/CREATION_DATE%20desc/limit/500/format/json')
     sample = []
     for c in cdm[:12]:
         try:
@@ -107,13 +112,14 @@ try:
             })
         except Exception:
             continue
-    tcas = sorted(x['tca'] for x in sample if x.get('tca'))
+    tcas = sorted(c.get('TCA') for c in cdm if c.get('TCA'))
     out['conjunctions'] = {
         'label': 'Public CDMs (conjunction messages)',
         'count': len(cdm),
+        'capped': len(cdm) >= 500,        # more exist than we asked for
         'window': {'from': tcas[0], 'to': tcas[-1]} if tcas else None,
         'sample': sample,
-        'note': 'cdm_public: operator-grade conjunction data messages.',
+        'note': 'cdm_public: operator-grade conjunction data messages, upcoming encounters.',
     }
 finally:
     logout()

@@ -45,8 +45,10 @@
     const bar = (v, cls, srcLabel) => {
       const has = typeof v === 'number' && v > 0;
       const pct = has && max ? Math.max(12, (v / max) * 100) : 100;
+      const src = cls === 'st' ? st : ct;
+      const cap = has && src && src.capped ? '+' : '';
       return `<div class="bl"><span class="dot" style="background:${cls === 'st' ? '#6a3fb5' : '#1466c9'}"></span>${srcLabel}</div>
-        <div class="bwrap"><div class="bfill ${has ? cls : 'na'}" style="width:${has ? pct : 100}%">${has ? fmtN(v) : 'not connected'}</div></div>`;
+        <div class="bwrap"><div class="bfill ${has ? cls : 'na'}" style="width:${has ? pct : 100}%">${has ? fmtN(v) + cap : 'not connected'}</div></div>`;
     };
     let delta = '';
     if (vals.length === 2) {
