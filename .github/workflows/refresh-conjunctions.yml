@@ -10,9 +10,9 @@
 name: Refresh conjunction predictions
 
 on:
-  # Every other day, staggered off the top of the hour.
+  # Daily, staggered off the top of the hour (matches the Space-Track pull).
   schedule:
-    - cron: '41 5 */2 * *'
+    - cron: '41 5 * * *'
   workflow_dispatch:
 
 permissions:
