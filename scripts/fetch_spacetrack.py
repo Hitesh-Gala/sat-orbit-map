@@ -99,23 +99,40 @@ try:
     if not cdm:                                   # fallback: newest by creation
         cdm = query('/basicspacedata/query/class/cdm_public'
                     '/orderby/CREATION_DATE%20desc/limit/500/format/json')
-    sample = []
-    for c in cdm[:12]:
+    # Space-Track emits each encounter twice (A-vs-B and B-vs-A) — collapse to
+    # one row per pair+TCA.  MIN_RNG is in KILOMETRES.
+    sample, seen = [], set()
+    for c in cdm:
+        if len(sample) >= 12:
+            break
         try:
+            i1, i2 = str(c.get('SAT_1_ID')), str(c.get('SAT_2_ID'))
+            key = (frozenset((i1, i2)), str(c.get('TCA'))[:19])
+            if key in seen:
+                continue
+            seen.add(key)
             sample.append({
-                'sat1': c.get('SAT_1_NAME'), 'id1': c.get('SAT_1_ID'),
-                'sat2': c.get('SAT_2_NAME'), 'id2': c.get('SAT_2_ID'),
+                'sat1': c.get('SAT_1_NAME'), 'id1': i1,
+                'sat2': c.get('SAT_2_NAME'), 'id2': i2,
                 'tca': c.get('TCA'),
-                'missM': round(float(c.get('MIN_RNG', 0) or 0) * 1000),
+                # MIN_RNG comes through in metres (a 366 m miss at Pc~8e-4 is
+                # plausible; 366 km would not be) — use it as-is.
+                'missM': round(float(c.get('MIN_RNG', 0) or 0)),
                 'prob': float(c.get('PC', 0) or 0),
                 'relVel': round(float(c.get('RELATIVE_SPEED', 0) or 0), 3),
             })
         except Exception:
             continue
+    # Distinct encounters across the whole pull (not just the sample).
+    uniq = set()
+    for c in cdm:
+        uniq.add((frozenset((str(c.get('SAT_1_ID')), str(c.get('SAT_2_ID')))),
+                  str(c.get('TCA'))[:19]))
     tcas = sorted(c.get('TCA') for c in cdm if c.get('TCA'))
     out['conjunctions'] = {
         'label': 'Public CDMs (conjunction messages)',
-        'count': len(cdm),
+        'count': len(uniq),               # distinct encounters (mirrors merged)
+        'messages': len(cdm),             # raw message count, incl. both directions
         'capped': len(cdm) >= 500,        # more exist than we asked for
         'window': {'from': tcas[0], 'to': tcas[-1]} if tcas else None,
         'sample': sample,
