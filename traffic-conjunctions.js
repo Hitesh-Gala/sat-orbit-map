@@ -18,6 +18,7 @@
   const SPEEDS = [100, 250, 500, 1000, 2000, 4000, 6000, 8000, 10000];
   let selIdx = -1, animating = false, reachedTCA = false, tcaShown = false;
   let simMs = 0, startMs = 0, tcaMs = 0, lastTs = 0, speed = 1000;
+  let officialTcaMs = 0, sgp4SepKm = null;   // published TCA vs what our orbits show
   let pairA = null, pairB = null;            // selected sat objects
   let lineA, lineB, tcaMarker;
   const trailA = [], trailB = [];
@@ -39,6 +40,34 @@
       speed: v ? Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z) : 0,
     };
   }
+  // ECI separation (km) between the two selected objects at a given instant.
+  function sepKmAt(ms) {
+    const d = new Date(ms);
+    const pa = satellite.propagate(pairA.satrec, d), pb = satellite.propagate(pairB.satrec, d);
+    if (!pa || !pa.position || !pb || !pb.position) return Infinity;
+    return Math.hypot(pa.position.x - pb.position.x,
+                      pa.position.y - pb.position.y,
+                      pa.position.z - pb.position.z);
+  }
+
+  // The published TCA is computed from elements newer than the ones we hold, so
+  // propagating our TLEs to that exact instant can leave the pair far apart.
+  // Search around it for the moment these orbits actually come closest, and
+  // animate to THAT — so the encounter always reads as a real convergence.
+  function refineTCA(tcaMs) {
+    let best = tcaMs, bestSep = sepKmAt(tcaMs);
+    // Widen to a few orbits: phase drift on an older element set can push the
+    // real crossing well away from the published instant.  Coarse -> fine.
+    for (const [span, step] of [[3 * 3600e3, 30e3], [60e3, 2e3], [4e3, 250]]) {
+      const centre = best;
+      for (let t = centre - span; t <= centre + span; t += step) {
+        const s = sepKmAt(t);
+        if (s < bestSep) { bestSep = s; best = t; }
+      }
+    }
+    return { ms: best, sepKm: bestSep };
+  }
+
   const fmtUTC = ms => new Date(ms).toISOString().replace('T', ' ').slice(0, 19) + 'Z';
   const fmtDur = s => {
     s = Math.max(0, Math.round(s));
@@ -197,17 +226,21 @@
     $('tca-when').textContent = '· ' + pairA.name + ' / ' + pairB.name;
     $('tca-alt').innerHTML = mtr(altSep) + ' <small>≈</small>';
     $('tca-lat').innerHTML = mtr(latSep) + ' <small>≈</small>';
-    $('tca-miss').textContent = c.missM.toLocaleString() + ' m';
+    $('tca-miss').innerHTML = c.missM.toLocaleString() + ' m'
+      + (sgp4SepKm != null && sgp4SepKm > 2
+          ? ` <small>(this view ≈${sgp4SepKm < 10 ? sgp4SepKm.toFixed(1) : Math.round(sgp4SepKm)} km apart)</small>`
+          : '');
     $('tca-encalt').innerHTML = encAlt != null ? Math.round(encAlt).toLocaleString() + ' <small>km</small>' : '—';
     $('tca-vel').innerHTML = c.relVel.toFixed(1) + ' <small>km/s</small>';
-    $('tca-date').textContent = fmtGMT(tcaMs);
+    $('tca-date').innerHTML = fmtGMT(officialTcaMs || tcaMs)
+      + (Math.abs(tcaMs - (officialTcaMs || tcaMs)) > 60e3
+          ? ` <small>(shown at ${fmtGMT(tcaMs).slice(-12)})</small>` : '');
     $('tca-card').hidden = false;
-    $('anim-status').hidden = true;
-    const lg = document.querySelector('.globe-legend'); if (lg) lg.style.display = 'none';
+    const ph = $('tca-placeholder'); if (ph) ph.hidden = true;
   }
   function hideTCACard() {
     $('tca-card').hidden = true;
-    const lg = document.querySelector('.globe-legend'); if (lg) lg.style.display = '';
+    const ph = $('tca-placeholder'); if (ph) ph.hidden = false;
   }
 
   // ---- conjunction list ---------------------------------------------------
@@ -240,7 +273,9 @@
     selIdx = i;
     const c = conjs[i];
     pairA = sats.get(c.a.norad); pairB = sats.get(c.b.norad);
-    tcaMs = new Date(c.tca).getTime();
+    officialTcaMs = new Date(c.tca).getTime();
+    const ref = refineTCA(officialTcaMs);
+    tcaMs = ref.ms; sgp4SepKm = ref.sepKm;
     $('conj-list').querySelectorAll('.conj').forEach(b => b.classList.toggle('sel', +b.dataset.i === i));
     const btn = $('animate-btn');
     btn.disabled = false; btn.classList.remove('stop'); btn.textContent = '▶ Animate approach';
@@ -340,16 +375,26 @@
       placeDotAt(pairA, simMs); placeDotAt(pairB, simMs);
 
       if (reachedTCA) {
-        // park the closest-approach marker at the primary's TCA position
-        const p = propAt(pairA, tcaMs);
-        if (p) { const v = world.getCoords(p.lat, p.lng, p.alt); tcaMarker.position.set(v.x, v.y, v.z); }
+        // park the marker midway between the two objects at closest approach
+        const pa = propAt(pairA, tcaMs), pb = propAt(pairB, tcaMs);
+        if (pa && pb) {
+          const va = world.getCoords(pa.lat, pa.lng, pa.alt);
+          const vb = world.getCoords(pb.lat, pb.lng, pb.alt);
+          tcaMarker.position.set((va.x + vb.x) / 2, (va.y + vb.y) / 2, (va.z + vb.z) / 2);
+        } else if (pa) {
+          const v = world.getCoords(pa.lat, pa.lng, pa.alt); tcaMarker.position.set(v.x, v.y, v.z);
+        }
         tcaMarker.visible = true;
         const flash = 0.55 + 0.45 * Math.sin(ts / 140);
         tcaMarker.material.opacity = flash;
         tcaMarker.scale.setScalar(1 + 0.25 * Math.sin(ts / 140));
         $('animate-btn').textContent = '↺ Replay';
         $('animate-btn').classList.remove('stop');
-        if (!tcaShown) { showTCACard(); tcaShown = true; }
+        if (!tcaShown) {
+          showTCACard(); tcaShown = true;
+          const pm = propAt(pairA, tcaMs);          // bring the encounter into view
+          if (pm) world.pointOfView({ lat: pm.lat, lng: pm.lng, altitude: 1.9 }, 900);
+        }
       }
       if (!reachedTCA) updateStatus();
     }

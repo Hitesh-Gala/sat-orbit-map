@@ -140,9 +140,15 @@ except FileNotFoundError:
 
 
 def fetch_tle(nid):
+    """Prefer a FRESH element set from gp.php over the bundled snapshot.
+
+    SOCRATES screens with current elements; data/active.tle can be days older.
+    Propagating a stale TLE to the predicted TCA accumulates along-track error
+    (observed up to ~13 000 km — half an orbit of phase drift), which makes the
+    two objects miss each other entirely on the globe.  So hit gp.php first and
+    only fall back to the bundle if that fails.
+    """
     nid = str(nid)
-    if nid in tle:
-        return tle[nid]
     url = f'https://celestrak.org/NORAD/elements/gp.php?CATNR={nid}&FORMAT=TLE'
     for attempt in range(3):
         try:
@@ -155,7 +161,7 @@ def fetch_tle(nid):
         except Exception as e:
             log(f'  gp.php {nid} attempt {attempt + 1}: {e}')
         time.sleep(3)
-    return None
+    return tle.get(nid)          # fall back to the bundled snapshot
 
 
 # ---- owners --------------------------------------------------------------
