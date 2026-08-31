@@ -14,12 +14,17 @@ bad fetch never clobbers a good bundle.
 Usage: gen_conjunctions.py <socrates.csv> [out.json]
 """
 import csv, io, json, re, sys, time, urllib.request, datetime
+try:
+    from sgp4.api import Satrec, jday          # verification only
+except ImportError:
+    Satrec = None
 
 CSV = sys.argv[1] if len(sys.argv) > 1 else '/tmp/socrates.csv'
 OUT = sys.argv[2] if len(sys.argv) > 2 else 'data/conjunctions.json'
 ACTIVE_TLE = 'data/active.tle'
 SATCAT = 'data/satcat-active.json'
 WANT = 10          # target number of conjunctions in the output
+VERIFY_KM = 5.0    # a pair must actually come this close in OUR elements
 MIN_OK = 4         # abort (keep old file) if fewer than this survive
 
 OWNER_NAME = {'US': 'United States', 'PRC': 'China', 'CIS': 'Russia', 'JPN': 'Japan',
@@ -196,6 +201,43 @@ def kind(name):
     return 'payload'
 
 
+# ---- verification --------------------------------------------------------
+def closest_approach(t1, t2, tca_iso):
+    """Closest approach (km, and when) of two TLEs near the published TCA.
+
+    SOCRATES screens with elements newer than any we can fetch, so propagating
+    ours to the published instant can leave the pair far apart.  Search a few
+    orbits either side for the real minimum; if even that stays large, these
+    elements cannot reproduce the encounter and the pair is dropped rather than
+    drawn as a "close approach" that visibly never happens.
+    """
+    if Satrec is None:
+        return 0.0, tca_iso                      # can't verify -> don't filter
+    try:
+        sa = Satrec.twoline2rv(t1[1], t1[2]); sb = Satrec.twoline2rv(t2[1], t2[2])
+        base = datetime.datetime.strptime(tca_iso[:19], '%Y-%m-%dT%H:%M:%S')
+    except Exception:
+        return 0.0, tca_iso
+    def sep(dt):
+        d = base + datetime.timedelta(seconds=dt)
+        jd, fr = jday(d.year, d.month, d.day, d.hour, d.minute, d.second + d.microsecond / 1e6)
+        e1, r1, _ = sa.sgp4(jd, fr); e2, r2, _ = sb.sgp4(jd, fr)
+        if e1 or e2:
+            return float('inf')
+        return sum((r1[i] - r2[i]) ** 2 for i in range(3)) ** 0.5
+    best, bs = 0.0, sep(0.0)
+    for span, step in ((3 * 3600, 30), (60, 2), (4, 0.25)):
+        c = best
+        t = c - span
+        while t <= c + span:
+            v = sep(t)
+            if v < bs:
+                bs, best = v, t
+            t += step
+    when = (base + datetime.timedelta(seconds=best)).strftime('%Y-%m-%dT%H:%M:%SZ')
+    return bs, when
+
+
 # ---- assemble ------------------------------------------------------------
 out = []
 for p in pairs:
@@ -207,10 +249,16 @@ for p in pairs:
     # SOCRATES appends an operational-status flag to names ("NAME [+]") — strip it.
     clean = lambda s: re.sub(r'\s*\[[^\]]*\]\s*$', '', (s or '').strip())
     nm1, nm2 = clean(p['nm1']) or ta[0], clean(p['nm2']) or tb[0]
+    sep_km, when = closest_approach(ta, tb, p['tca'])
+    if sep_km > VERIFY_KM:
+        log(f"  skip {nm1} vs {nm2}: our elements only reach {sep_km:.1f} km "
+            f"(> {VERIFY_KM} km) — cannot depict this encounter")
+        continue
     oa, ob = country(p['id1'], nm1), country(p['id2'], nm2)
     out.append({
         'id': f"{p['id1']}-{p['id2']}", 'tca': p['tca'], 'missM': p['missM'],
         'maxProb': p['prob'], 'relVel': p['vel'],
+        'verifiedTca': when, 'verifiedSepKm': round(sep_km, 3),
         'a': {'norad': p['id1'], 'name': nm1, 'kind': kind(nm1), 'owner': oa[0], 'ownerCode': oa[1], 'tle': [ta[1], ta[2]]},
         'b': {'norad': p['id2'], 'name': nm2, 'kind': kind(nm2), 'owner': ob[0], 'ownerCode': ob[1], 'tle': [tb[1], tb[2]]},
     })

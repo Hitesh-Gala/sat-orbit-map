@@ -30,6 +30,9 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Install SGP4 (for verifying each pair actually converges)
+        run: pip install --quiet sgp4
+
       - name: Fetch SOCRATES conjunctions (CSV)
         run: |
           set -euo pipefail
