@@ -52,7 +52,9 @@
   async function boot() {
     let data;
     try {
-      data = await (await fetch('data/conjunctions.json?v=2')).json();
+      // Revalidate against the server so the ~2-day auto-refresh reaches
+      // returning visitors instead of a stale cached copy.
+      data = await (await fetch('data/conjunctions.json', { cache: 'no-cache' })).json();
     } catch (e) {
       $('globe-loading').textContent = 'Could not load conjunction data.';
       return;

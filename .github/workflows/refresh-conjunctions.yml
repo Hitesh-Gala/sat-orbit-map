@@ -1,0 +1,56 @@
+# Refresh the bundled satellite-conjunction predictions the Traffic-Conjunctions
+# page (traffic-conjunctions.html) ships with.
+#
+# SOCRATES conjunction predictions are valid for ~1 week, so a 2-day cadence
+# keeps them comfortably fresh.  A GitHub runner isn't subject to the per-IP
+# rate-limit that throttles dev machines, so it can pull SOCRATES + the handful
+# of extra TLEs reliably.  scripts/gen_conjunctions.py aborts without writing if
+# too few usable pairs come back, so a bad fetch never clobbers a good bundle.
+
+name: Refresh conjunction predictions
+
+on:
+  # Every other day, staggered off the top of the hour.
+  schedule:
+    - cron: '41 5 */2 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Fetch SOCRATES conjunctions (CSV)
+        run: |
+          set -euo pipefail
+          curl -fsS --retry 4 --retry-delay 6 \
+            "https://celestrak.org/SOCRATES/table-socrates.php?NAME=,&ORDER=MAXPROB&MAX=80&FORMAT=CSV" \
+            -o /tmp/socrates.csv
+          echo "SOCRATES CSV: $(wc -c < /tmp/socrates.csv) bytes, $(wc -l < /tmp/socrates.csv) lines"
+          echo '---- first rows ----'
+          head -4 /tmp/socrates.csv
+
+      - name: Regenerate data/conjunctions.json
+        run: python3 scripts/gen_conjunctions.py /tmp/socrates.csv data/conjunctions.json
+
+      - name: Commit + push if changed
+        run: |
+          if [ -z "$(git status --porcelain data/conjunctions.json)" ]; then
+              echo "No change in conjunctions.json — nothing to commit"
+              exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/conjunctions.json
+          git commit -m "Auto-refresh conjunction predictions ($(date -u +'%Y-%m-%d %H:%M UTC'))"
+          git push
