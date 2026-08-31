@@ -69,18 +69,17 @@ headers = rows[hi]
 data = rows[hi + 1:]
 log('SOCRATES header:', headers)
 
-c_id1 = find_col(headers, ['NORAD', '1'], ['SAT1'], ['SAT_1'], ['CAT', '1'])
-c_id2 = find_col(headers, ['NORAD', '2'], ['SAT2'], ['SAT_2'], ['CAT', '2'])
-c_nm1 = find_col(headers, ['NAME', '1'], ['OBJECT', '1'])
-c_nm2 = find_col(headers, ['NAME', '2'], ['OBJECT', '2'])
-c_tca = -1
-for i, h in enumerate(headers):
-    hu = h.upper()
-    if 'TCA' in hu and not any(k in hu for k in ('START', 'STOP', 'RANGE', 'SPEED', 'VEL')):
-        c_tca = i; break
-c_rng = find_col(headers, ['MIN', 'RNG'], ['MIN', 'RANGE'], ['RANGE'])
-c_prob = find_col(headers, ['MAX', 'PROB'], ['PROB'])
-c_vel = find_col(headers, ['REL', 'SPEED'], ['REL', 'VEL'], ['SPEED'], ['VEL'])
+# Documented SOCRATES columns:
+# NORAD_CAT_ID_1, OBJECT_NAME_1, DSE_1, NORAD_CAT_ID_2, OBJECT_NAME_2, DSE_2,
+# TCA, TCA_RANGE (km), TCA_RELATIVE_SPEED (km/s), MAX_PROB, DILUTION
+c_id1 = find_col(headers, ['NORAD_CAT_ID_1'], ['NORAD', '1'], ['SAT1'])
+c_id2 = find_col(headers, ['NORAD_CAT_ID_2'], ['NORAD', '2'], ['SAT2'])
+c_nm1 = find_col(headers, ['OBJECT_NAME_1'], ['NAME', '1'])
+c_nm2 = find_col(headers, ['OBJECT_NAME_2'], ['NAME', '2'])
+c_tca = next((i for i, h in enumerate(headers) if h.upper().strip() == 'TCA'), find_col(headers, ['TCA']))
+c_rng = find_col(headers, ['TCA_RANGE'], ['MIN', 'RANGE'], ['RANGE'])
+c_prob = find_col(headers, ['MAX_PROB'], ['PROB'])
+c_vel = find_col(headers, ['TCA_RELATIVE_SPEED'], ['RELSPEED'], ['SPEED'])
 
 need = {'id1': c_id1, 'id2': c_id2, 'tca': c_tca, 'rng': c_rng, 'prob': c_prob, 'vel': c_vel}
 log('column map:', need)
