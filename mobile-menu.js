@@ -342,6 +342,7 @@
       { href: 'space-stuff.html',        icon: '🛰', label: 'Space Stuff' },
       { href: 'space-launched.html',     icon: '🚀', label: 'Launchy-Stuff' },
       { href: 'traffic-conjunctions.html', icon: '⚠', label: 'Traffic-Conjunctions' },
+      { href: 'data-comparison.html',    icon: '⚖', label: 'Data Comparison' },
     ];
 
     // Collect the "go to NAZAR home" controls: the logo + the labelled

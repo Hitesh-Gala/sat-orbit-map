@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>NAZAR · Data Comparison</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --paper:#e9eff6; --card:#ffffff; --ink:#15263a; --dim:#5c6b7d; --line:#dbe4ee;
+      --accent:#1466c9; --accent2:#e26a2c; --good:#1e9e6a; --warn:#e0a83a; --chip:#eef4fb;
+      --st:#6a3fb5;      /* Space-Track brand-ish purple */
+      --ct:#1466c9;      /* CelesTrak blue */
+      --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+      --disp:'Orbitron',system-ui,sans-serif;
+      --shadow:0 1px 2px rgba(20,45,80,.06),0 8px 24px rgba(20,45,80,.07);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0}
+    body{
+      background:
+        radial-gradient(1100px 480px at 82% -12%, #dcecfb 0%, rgba(220,236,251,0) 60%),
+        radial-gradient(900px 480px at -8% 6%, #e6edf9 0%, rgba(230,237,249,0) 55%), var(--paper);
+      color:var(--ink); font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; -webkit-font-smoothing:antialiased;
+    }
+    a{color:var(--accent)}
+    .wrap{max-width:1180px; margin:0 auto; padding:0 22px 80px}
+
+    .header{position:sticky; top:0; z-index:50; background:rgba(233,239,246,.9); backdrop-filter:blur(8px); border-bottom:1px solid var(--line)}
+    .header-inner{position:relative; display:flex; align-items:center; gap:16px; height:62px; max-width:1180px; margin:0 auto; padding:0 22px}
+    .top-logo{display:inline-flex; align-items:center; padding:4px 9px; background:#0a1018; border:1px solid #1d3147; border-radius:6px; text-decoration:none; transition:.15s}
+    .top-logo:hover{border-color:#4ea8ff; transform:scale(1.04)}
+    .top-logo img{height:38px; display:block}
+    .logo-credit{align-self:center; margin-left:-2px; max-width:320px; text-align:center; font-family:var(--mono); font-size:11.7px; line-height:1.35; color:var(--dim)}
+    .logo-credit a{color:var(--accent); text-decoration:none}
+    @media (max-width:900px){ .logo-credit{display:none} }
+    .header-title{position:absolute; left:50%; transform:translateX(-50%); font-family:var(--disp); font-weight:600; letter-spacing:.04em; font-size:15px; white-space:nowrap}
+    .header-right{margin-left:auto; display:flex; gap:9px}
+    .btn{font-family:var(--mono); font-size:13.5px; text-decoration:none; cursor:pointer; padding:7px 13px; border-radius:7px; border:1px solid var(--line); background:var(--card); color:var(--ink); transition:.15s; white-space:nowrap}
+    .btn:hover{border-color:var(--accent); color:var(--accent)}
+
+    .cover{padding:26px 0 6px}
+    .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent2)}
+    h1{font-family:var(--disp); font-weight:800; font-size:30px; line-height:1.08; margin:8px 0 8px}
+    .lede{color:var(--dim); max-width:82ch; margin:0; font-size:15px}
+
+    /* freshness strip */
+    .stamps{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:22px}
+    @media (max-width:760px){ .stamps{grid-template-columns:1fr} }
+    .stamp{background:var(--card); border:1px solid var(--line); border-left:5px solid var(--ct); border-radius:13px; padding:14px 16px; box-shadow:var(--shadow)}
+    .stamp.st{border-left-color:var(--st)}
+    .stamp .src{font-family:var(--disp); font-weight:600; font-size:15px}
+    .stamp .as{font-family:var(--mono); font-size:12.5px; color:var(--dim); margin-top:5px}
+    .stamp .as b{color:var(--ink)}
+    .badge{display:inline-block; font-family:var(--mono); font-size:10px; letter-spacing:.1em; padding:2px 8px; border-radius:999px; margin-left:8px; vertical-align:middle}
+    .b-live{background:#dff3e8; color:#0f6b45; border:1px solid #b6e2c9}
+    .b-wait{background:#fdf1dc; color:#8a6212; border:1px solid #f0dcae}
+
+    section{margin-top:34px}
+    .sec-head{display:flex; align-items:baseline; gap:12px; margin-bottom:6px}
+    .sec-head h2{font-family:var(--disp); font-weight:600; font-size:18px; margin:0}
+    .sec-head .kicker{font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent)}
+    .sec-sub{color:var(--dim); font-size:13.5px; margin:0 0 16px; max-width:86ch}
+
+    /* comparison rows */
+    .cmp{display:flex; flex-direction:column; gap:14px}
+    .row{background:var(--card); border:1px solid var(--line); border-radius:15px; padding:16px 18px; box-shadow:var(--shadow)}
+    .row .rh{display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap}
+    .row .rt{font-family:var(--disp); font-weight:600; font-size:15.5px}
+    .row .rn{font-family:var(--mono); font-size:12px; color:var(--dim)}
+    .bars{display:grid; grid-template-columns:118px 1fr; gap:9px 14px; align-items:center; margin-top:13px; font-family:var(--mono)}
+    .bl{font-size:12.5px; color:var(--dim); display:flex; align-items:center; gap:7px}
+    .bl .dot{width:9px;height:9px;border-radius:50%}
+    .bwrap{position:relative; height:32px; background:#f2f6fb; border-radius:8px; overflow:hidden}
+    .bfill{position:absolute; inset:0 auto 0 0; border-radius:8px; display:flex; align-items:center; justify-content:flex-end; padding:0 11px; color:#fff; font-size:13.5px; font-weight:600; min-width:64px; transition:width .5s ease}
+    .bfill.ct{background:linear-gradient(90deg,#1466c9,#3a90e6)}
+    .bfill.st{background:linear-gradient(90deg,#6a3fb5,#8b63d6)}
+    .bfill.na{background:#c9d4e0; color:#5c6b7d}
+    .delta{margin-top:11px; font-family:var(--mono); font-size:12.5px; color:var(--dim)}
+    .delta b{color:var(--accent2)}
+
+    .why{background:linear-gradient(180deg,#fff,#f5f9fe); border:1px solid var(--line); border-radius:15px; padding:18px 20px; box-shadow:var(--shadow); font-size:14px}
+    .why h3{font-family:var(--disp); font-size:15px; margin:0 0 8px}
+    .why ul{margin:8px 0 0; padding-left:20px; color:var(--dim); line-height:1.65}
+    .why b{color:var(--ink)}
+
+    .setup{background:#fffdf4; border:1px solid #f0e2b8; border-radius:15px; padding:18px 20px; font-size:13.5px; color:#6b5a24; box-shadow:var(--shadow)}
+    .setup h3{font-family:var(--disp); font-size:14.5px; margin:0 0 8px; color:#8a6212}
+    .setup code{background:#f6efd8; padding:1px 6px; border-radius:4px; font-family:var(--mono); font-size:12.5px}
+    .setup ol{margin:8px 0 0; padding-left:20px; line-height:1.75}
+
+    /* CDM sample table */
+    .tbl{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12.5px; margin-top:6px}
+    .tbl th{text-align:left; color:var(--dim); font-weight:600; padding:7px 9px; border-bottom:2px solid var(--line); white-space:nowrap}
+    .tbl td{padding:7px 9px; border-bottom:1px solid #eef2f7}
+    .tbl tr:last-child td{border-bottom:0}
+    .scroller{overflow-x:auto}
+
+    footer{margin-top:40px; padding-top:18px; border-top:1px solid var(--line); color:var(--dim); font-size:12px; line-height:1.6}
+  </style>
+</head>
+<body class="page-datacompare">
+  <header class="header">
+    <div class="header-inner">
+      <a class="top-logo" href="index.html" title="NAZAR — back to the live globe"><img src="data/nazar-logo.svg?v=5" alt="NAZAR"></a>
+      <span class="header-title">DATA COMPARISON</span>
+      <span class="header-right">
+        <a class="btn" href="space-stuff.html">← Space Stuff</a>
+        <a class="btn" href="index.html">NAZAR Home</a>
+      </span>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="cover">
+      <div class="eyebrow">Two catalogues, one sky</div>
+      <h1>Data Comparison</h1>
+      <p class="lede">Everything NAZAR shows comes from a space-object catalogue — and there is more than one.
+        <b>Space-Track</b> is the US Space Force's official source (login required); <b>CelesTrak</b> is the long-running
+        public mirror and analysis service. They rarely agree exactly. Here's how they line up right now.</p>
+    </div>
+
+    <!-- freshness -->
+    <div class="stamps">
+      <div class="stamp st">
+        <div class="src">Space-Track.org <span class="badge b-wait" id="st-badge">…</span></div>
+        <div class="as" id="st-as">Data as of · <b>—</b></div>
+      </div>
+      <div class="stamp">
+        <div class="src">CelesTrak.org <span class="badge b-live" id="ct-badge">…</span></div>
+        <div class="as" id="ct-as">Data as of · <b>—</b></div>
+      </div>
+    </div>
+
+    <!-- comparisons -->
+    <section>
+      <div class="sec-head"><span class="kicker">Side by side</span><h2>What each source says</h2></div>
+      <p class="sec-sub">Same three questions asked of both catalogues. Differences are expected — they count
+        slightly different things and update on different schedules.</p>
+      <div class="cmp" id="cmp"></div>
+    </section>
+
+    <!-- CDM sample -->
+    <section id="cdm-sec" hidden>
+      <div class="sec-head"><span class="kicker">Operator-grade</span><h2>Latest conjunction messages (CDMs)</h2></div>
+      <p class="sec-sub">Space-Track's public CDM feed — the screening results operators actually act on.</p>
+      <div class="scroller"><table class="tbl" id="cdm-tbl"></table></div>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="kicker">Why they differ</span><h2>Reading the gap</h2></div>
+      <div class="why">
+        <h3>The numbers won't match — and that's normal</h3>
+        <ul>
+          <li><b>Different populations.</b> Space-Track counts every catalogued object still on orbit (payloads, rocket
+            bodies and debris); NAZAR's CelesTrak bundle is trimmed to <b>active payloads</b>, so it reads much lower.</li>
+          <li><b>Different clocks.</b> Space-Track publishes continuously; NAZAR's CelesTrak snapshots refresh on a
+            schedule, so one can lag the other by hours.</li>
+          <li><b>Different screening.</b> Space-Track CDMs use high-precision orbits not released publicly;
+            CelesTrak SOCRATES screens the public TLEs — same physics, coarser inputs.</li>
+          <li><b>Naming and attribution lag.</b> New launches can sit un-named or mis-flagged in either catalogue for
+            days (see the catalogue-gap panel on Sat-Stats).</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="setup-sec" hidden>
+      <div class="setup">
+        <h3>⚙ Space-Track feed not connected yet</h3>
+        <p style="margin:0">The daily Space-Track pull runs in GitHub Actions and needs your login stored as encrypted
+          repository secrets — it is never placed in the website's code.</p>
+        <ol>
+          <li>Open the repo → <b>Settings → Secrets and variables → Actions</b></li>
+          <li>Add <code>SPACETRACK_USER</code> (your Space-Track email) and <code>SPACETRACK_PASSWORD</code></li>
+          <li>Run the <b>“Refresh Space-Track + CelesTrak summaries”</b> workflow once (Actions tab → Run workflow)</li>
+        </ol>
+        <p style="margin:10px 0 0">It then refreshes automatically every day, and this page fills in.</p>
+      </div>
+    </section>
+
+    <footer>
+      <p>Sources: <a href="https://www.space-track.org/" target="_blank" rel="noopener noreferrer">Space-Track.org</a>
+        (US Space Force / 18th SDS, account required) and
+        <a href="https://celestrak.org/" target="_blank" rel="noopener noreferrer">CelesTrak</a>.
+        Space-Track data is fetched server-side on a daily schedule and republished here only as aggregate counts;
+        credentials live in encrypted repository secrets, never in this page.</p>
+    </footer>
+  </div>
+
+  <script src="data-comparison.js?v=1"></script>
+  <script src="site-analytics.js?v=1"></script>
+  <script src="mobile-menu.js?v=23"></script>
+  <script>
+    (function setCredit(){
+      var c=document.querySelector('.logo-credit');
+      if(!c){ return setTimeout(setCredit,50); }
+      c.innerHTML='Hitesh Gala is a Space Researcher &amp;<br>A Defence Fellow at '
+        +'<a href="https://takshashila.org.in" target="_blank" rel="noopener noreferrer">www.takshashila.org.in</a>';
+    })();
+  </script>
+</body>
+</html>

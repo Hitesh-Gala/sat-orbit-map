@@ -215,7 +215,7 @@ if len(out) < MIN_OK:
 tcas = sorted(c['tca'] for c in out)
 doc = {
     'source': 'CelesTrak SOCRATES (Satellite Orbital Conjunction Reports Assessing Threatening Encounters in Space)',
-    'generated': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+    'generated': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
     'note': 'Public predicted close approaches. Orbits are SGP4-propagated public elements, so the on-globe convergence is a visual approximation of the real screening.',
     'window': {'from': tcas[0], 'to': tcas[-1]},
     'conjunctions': out,

@@ -1,0 +1,69 @@
+# Daily Space-Track.org pull + CelesTrak summary for the Data-Comparison page.
+#
+# WHY A WORKFLOW (and not the browser):
+#   Space-Track requires a login and blocks cross-origin browser requests, and
+#   its credentials must never ship inside a public static site.  So the fetch
+#   happens here, server-side, using encrypted repository secrets; only the
+#   resulting summary JSON is committed and served to visitors.
+#
+# SETUP (one time, by the repo owner):
+#   Settings -> Secrets and variables -> Actions -> New repository secret
+#     SPACETRACK_USER      = your Space-Track login (email)
+#     SPACETRACK_PASSWORD  = your Space-Track password
+#   Nobody (including this workflow's logs) can read a secret back out.
+#
+# The Space-Track step is best-effort: if the API is down or throttled we keep
+# the previous summary rather than committing a regression.
+
+name: Refresh Space-Track + CelesTrak summaries
+
+on:
+  schedule:
+    - cron: '27 6 * * *'      # daily, staggered off the hour
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      # ---- Space-Track (needs secrets; best-effort) ---------------------
+      - name: Fetch Space-Track summaries
+        continue-on-error: true
+        env:
+          SPACETRACK_USER: ${{ secrets.SPACETRACK_USER }}
+          SPACETRACK_PASSWORD: ${{ secrets.SPACETRACK_PASSWORD }}
+        run: |
+          if [ -z "${SPACETRACK_USER:-}" ]; then
+            echo "SPACETRACK_USER secret not set — skipping Space-Track pull."
+            echo "Add the secrets under Settings > Secrets and variables > Actions."
+            exit 0
+          fi
+          python3 scripts/fetch_spacetrack.py data/spacetrack-summary.json
+
+      # ---- CelesTrak side (local files, no network) ---------------------
+      - name: Summarize bundled CelesTrak data
+        run: python3 scripts/gen_datacompare.py data/celestrak-summary.json
+
+      - name: Commit + push if changed
+        run: |
+          if [ -z "$(git status --porcelain data/)" ]; then
+              echo "No changes — nothing to commit"
+              exit 0
+          fi
+          git status --short data/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git commit -m "Auto-refresh Space-Track + CelesTrak summaries ($(date -u +'%Y-%m-%d %H:%M UTC'))"
+          git push
