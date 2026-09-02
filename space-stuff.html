@@ -81,7 +81,21 @@
     .stuff.soon .go{color:#9aa7b6}
 
     .foot-note{margin-top:34px; text-align:center; color:var(--dim); font-size:13px}
-  </style>
+  
+    /* Background-score button: this page is light-themed, so override the
+       shared dark styling from nazar-bgm.js for legibility. */
+    #nazar-bgm-toggle{
+      background:rgba(255,255,255,.94) !important;
+      border:1px solid var(--line) !important;
+      color:var(--accent) !important;
+      box-shadow:0 4px 16px rgba(20,45,80,.18) !important;
+    }
+    #nazar-bgm-toggle:hover{ border-color:var(--accent) !important; color:#0d4d96 !important; }
+    #nazar-bgm-toggle.on{
+      color:#b8860b !important; border-color:#e0a83a !important;
+      box-shadow:0 0 15px rgba(224,168,58,.5),0 4px 16px rgba(20,45,80,.18) !important;
+    }
+</style>
 </head>
 <body class="page-spacestuff">
   <header class="header">
@@ -150,6 +164,7 @@
     <p class="foot-note">More shelves are on the way — this repository grows over time.</p>
   </div>
 
+  <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=1"></script>
   <script src="mobile-menu.js?v=23"></script>
 </body>

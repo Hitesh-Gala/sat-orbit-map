@@ -99,7 +99,21 @@
     .scroller{overflow-x:auto}
 
     footer{margin-top:40px; padding-top:18px; border-top:1px solid var(--line); color:var(--dim); font-size:12px; line-height:1.6}
-  </style>
+  
+    /* Background-score button: this page is light-themed, so override the
+       shared dark styling from nazar-bgm.js for legibility. */
+    #nazar-bgm-toggle{
+      background:rgba(255,255,255,.94) !important;
+      border:1px solid var(--line) !important;
+      color:var(--accent) !important;
+      box-shadow:0 4px 16px rgba(20,45,80,.18) !important;
+    }
+    #nazar-bgm-toggle:hover{ border-color:var(--accent) !important; color:#0d4d96 !important; }
+    #nazar-bgm-toggle.on{
+      color:#b8860b !important; border-color:#e0a83a !important;
+      box-shadow:0 0 15px rgba(224,168,58,.5),0 4px 16px rgba(20,45,80,.18) !important;
+    }
+</style>
 </head>
 <body class="page-datacompare">
   <header class="header">
@@ -187,6 +201,7 @@
   </div>
 
   <script src="data-comparison.js?v=3"></script>
+  <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=1"></script>
   <script src="mobile-menu.js?v=23"></script>
   <script>

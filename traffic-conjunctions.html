@@ -122,7 +122,21 @@
     footer a{color:var(--accent)}
     footer .src-line{display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12.5px; color:var(--dim); margin:0 0 9px}
     footer .src-line b{color:var(--ink)} footer .src-line .dot{width:8px; height:8px; border-radius:50%; background:var(--good); flex:0 0 auto}
-  </style>
+  
+    /* Background-score button: this page is light-themed, so override the
+       shared dark styling from nazar-bgm.js for legibility. */
+    #nazar-bgm-toggle{
+      background:rgba(255,255,255,.94) !important;
+      border:1px solid var(--line) !important;
+      color:var(--accent) !important;
+      box-shadow:0 4px 16px rgba(20,45,80,.18) !important;
+    }
+    #nazar-bgm-toggle:hover{ border-color:var(--accent) !important; color:#0d4d96 !important; }
+    #nazar-bgm-toggle.on{
+      color:#b8860b !important; border-color:#e0a83a !important;
+      box-shadow:0 0 15px rgba(224,168,58,.5),0 4px 16px rgba(20,45,80,.18) !important;
+    }
+</style>
 </head>
 <body class="page-conjunctions">
   <header class="header">
@@ -210,6 +224,7 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="traffic-conjunctions.js?v=5"></script>
+  <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=1"></script>
   <script src="mobile-menu.js?v=23"></script>
   <script>

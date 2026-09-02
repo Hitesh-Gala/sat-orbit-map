@@ -235,7 +235,16 @@
       .mg-back { left: 14px; top: 88px; }
       .mg-search-wrap { width: calc(100vw - 24px); bottom: 14px; }
     }
-  </style>
+  
+    /* Background-score button: lift it clear of the centred search bar. On
+       narrow screens the panels go full-width along the bottom, so move it up
+       to the free band under the logo instead. */
+    #nazar-bgm-toggle{ bottom: 76px !important; }
+    @media (max-width: 900px) {
+      #nazar-bgm-toggle{ top: 74px !important; bottom: auto !important;
+        left: auto !important; right: 16px !important; }
+    }
+</style>
 </head>
 <body class="page-mirror">
   <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
@@ -337,6 +346,7 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="mirror-globe.js?v=6"></script>
+  <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=1"></script>
   <script src="mobile-menu.js?v=22"></script>
   <script>
