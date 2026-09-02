@@ -196,6 +196,7 @@ try:
             'o': (g.get('COUNTRY_CODE') or '').strip(),
             'ld': (g.get('LAUNCH_DATE') or '')[:10],
             'ap': alt_km(g, 1), 'pe': alt_km(g, -1), 'inc': g.get('INCLINATION'),
+            'ls': (g.get('SITE') or '').strip(),
             's': status.get(nid, ''),
             't': [l1.rstrip(), l2.rstrip()],
         })
