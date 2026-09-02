@@ -114,7 +114,7 @@
       .showAtmosphere(true).atmosphereColor('#6cc0ff').atmosphereAltitude(0.16)
       .width(window.innerWidth).height(window.innerHeight);
     const c = world.controls();
-    c.autoRotate = true; c.autoRotateSpeed = 0.32; c.enableDamping = true;
+    c.autoRotate = true; c.autoRotateSpeed = 0.12; c.enableDamping = true;  // slow enough to hover a dot
     world.pointOfView({ altitude: 3.2 });
     window.addEventListener('resize', () =>
       world.width(window.innerWidth).height(window.innerHeight));
