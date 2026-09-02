@@ -1,6 +1,6 @@
 {
  "source": "Space-Track.org",
- "retrieved": "2026-09-02T11:30:29Z",
+ "retrieved": "2026-09-02T15:15:22Z",
  "tle": {
   "label": "On-orbit objects (GP catalogue)",
   "count": 35009,
@@ -14,26 +14,14 @@
  },
  "conjunctions": {
   "label": "Public CDMs (conjunction messages)",
-  "count": 24,
-  "messages": 94,
+  "count": 28,
+  "messages": 124,
   "capped": false,
   "window": {
-   "from": "2026-09-02T11:55:12.281000",
-   "to": "2026-09-05T02:23:03.326000"
+   "from": "2026-09-02T17:00:23.717000",
+   "to": "2026-09-05T10:02:54.593000"
   },
   "sample": [
-   {
-    "sat1": "SL-12 DEB",
-    "id1": "18764",
-    "sat2": "CZ-6A DEB",
-    "id2": "55218",
-    "tca": "2026-09-02T11:55:12.281000",
-    "missM": 257,
-    "prob": 0.0001957044,
-    "type1": "DEBRIS",
-    "type2": "DEBRIS",
-    "emergency": true
-   },
    {
     "sat1": "NOAA 6",
     "id1": "11416",
@@ -59,15 +47,15 @@
     "emergency": true
    },
    {
-    "sat1": "DUMSAT",
-    "id1": "26086",
-    "sat2": "CZ-6A DEB",
-    "id2": "54282",
-    "tca": "2026-09-02T22:12:50.364000",
-    "missM": 256,
-    "prob": 0.0004522234,
-    "type1": "PAYLOAD",
-    "type2": "DEBRIS",
+    "sat1": "CZ-6A DEB",
+    "id1": "54282",
+    "sat2": "DUMSAT",
+    "id2": "26086",
+    "tca": "2026-09-02T22:12:50.282000",
+    "missM": 340,
+    "prob": 0.0005370361,
+    "type1": "DEBRIS",
+    "type2": "PAYLOAD",
     "emergency": true
    },
    {
@@ -111,8 +99,8 @@
     "id1": "15246",
     "sat2": "BREEZE-M DEB (TANK)",
     "id2": "38344",
-    "tca": "2026-09-03T17:21:16.877000",
-    "missM": 2485,
+    "tca": "2026-09-03T17:21:16.869000",
+    "missM": 2550,
     "prob": 0.0,
     "type1": "ROCKET BODY",
     "type2": "DEBRIS",
@@ -155,6 +143,18 @@
     "emergency": true
    },
    {
+    "sat1": "NOAA 16 DEB",
+    "id1": "42378",
+    "sat2": "CZ-4 DEB",
+    "id2": "35329",
+    "tca": "2026-09-03T22:51:15.213000",
+    "missM": 752,
+    "prob": 0.0001084862,
+    "type1": "DEBRIS",
+    "type2": "DEBRIS",
+    "emergency": true
+   },
+   {
     "sat1": "COSMOS 249 DEB",
     "id1": "3755",
     "sat2": "ADEOS",
@@ -168,5 +168,8 @@
    }
   ],
   "note": "cdm_public: operator-grade conjunction data messages, upcoming encounters."
+ },
+ "gpBundle": {
+  "count": 18838
  }
 }
