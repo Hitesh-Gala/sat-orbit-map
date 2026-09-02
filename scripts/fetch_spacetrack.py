@@ -148,16 +148,41 @@ try:
     if gp_all:
         print('gp fields:', ','.join(sorted(gp_all[0].keys())), file=sys.stderr)
 
-    # SATCAT carries the operational-status flag that GP lacks; index it by
-    # NORAD id so each payload can be marked active vs defunct.
-    sc = query('/basicspacedata/query/class/satcat/DECAY/null-val/CURRENT/Y'
-               '/OBJECT_TYPE/PAYLOAD/format/json')
-    if sc:
-        print('satcat fields:', ','.join(sorted(sc[0].keys())), file=sys.stderr)
+    # Operational status: Space-Track's public API does NOT expose an ops-status
+    # field (its satcat class returns none), so take OPS_STATUS_CODE from
+    # CelesTrak's static satcat.csv and label it as such in the UI.  Everything
+    # else on this page is Space-Track's own data.
     status = {}
-    for r in sc:
-        nid = str(r.get('NORAD_CAT_ID'))
-        status[nid] = r.get('OPS_STATUS_CODE') or r.get('OPS_STATUS') or ''
+    try:
+        import csv as _csv, io as _io
+        with urllib.request.urlopen('https://celestrak.org/pub/satcat.csv', timeout=120) as r:
+            txt = r.read().decode('utf-8', 'replace')
+        for row in _csv.DictReader(_io.StringIO(txt)):
+            status[str(row.get('NORAD_CAT_ID'))] = (row.get('OPS_STATUS_CODE') or '').strip()
+        print(f'ops-status codes loaded for {len(status):,} objects', file=sys.stderr)
+    except Exception as e:
+        print('warning: ops-status lookup failed:', e, file=sys.stderr)
+
+    RE_KM = 6378.137
+    def alt_km(g, sign):
+        """Apogee (sign=+1) / perigee (sign=-1) ALTITUDE in km.
+
+        GP exposes APOAPSIS/PERIAPSIS, but derive from the orbital elements so
+        the value is unambiguous regardless of whether the feed reports radii
+        or altitudes."""
+        try:
+            a = float(g.get('SEMIMAJOR_AXIS') or 0)
+            e = float(g.get('ECCENTRICITY') or 0)
+            if a > 0:
+                return round(a * (1 + sign * e) - RE_KM, 1)
+        except (TypeError, ValueError):
+            pass
+        v = g.get('APOAPSIS' if sign > 0 else 'PERIAPSIS')
+        try:
+            v = float(v)
+            return round(v - RE_KM if v > RE_KM else v, 1)
+        except (TypeError, ValueError):
+            return None
 
     sats = []
     for g in gp_all:
@@ -170,7 +195,7 @@ try:
             'n': (g.get('OBJECT_NAME') or '').strip(),
             'o': (g.get('COUNTRY_CODE') or '').strip(),
             'ld': (g.get('LAUNCH_DATE') or '')[:10],
-            'ap': g.get('APOGEE'), 'pe': g.get('PERIGEE'), 'inc': g.get('INCLINATION'),
+            'ap': alt_km(g, 1), 'pe': alt_km(g, -1), 'inc': g.get('INCLINATION'),
             's': status.get(nid, ''),
             't': [l1.rstrip(), l2.rstrip()],
         })

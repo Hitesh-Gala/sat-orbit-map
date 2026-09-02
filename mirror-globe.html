@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>NAZAR · Mirror Globe (Space-Track)</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=45">
+  <style>
+    /* ===================================================================
+       Mirror Globe — the NAZAR home globe rebuilt on Space-Track data.
+       Dark theme (mirrors the main page), three panels: orbit/country
+       filters at left, status + source comparison at right, search below.
+       =================================================================== */
+    body.page-mirror { overflow: hidden; }
+    #globe { position: fixed; inset: 0; z-index: 1; }
+
+    .mg-panel {
+      position: fixed; z-index: 20;
+      background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      font-family: var(--mono); color: var(--text);
+      box-shadow: 0 14px 40px rgba(0,0,0,.45);
+    }
+    .mg-panel h3 {
+      margin: 0 0 9px; font-family: 'Orbitron', sans-serif; font-weight: 700;
+      font-size: 12px; letter-spacing: .08em; color: var(--accent); text-transform: uppercase;
+    }
+    .mg-sub { font-size: 10.5px; color: var(--dim); margin: -5px 0 9px; line-height: 1.4; }
+
+    /* left: filters */
+    .mg-left { left: 14px; top: 96px; width: 232px; max-height: calc(100vh - 190px);
+      overflow-y: auto; padding: 14px 14px 12px; }
+    .mg-sec + .mg-sec { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .mg-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; font-size: 12px; user-select: none; }
+    .mg-row:hover { color: var(--accent); }
+    .mg-row input { accent-color: var(--accent); cursor: pointer; flex: 0 0 auto; }
+    .mg-row .sw { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; box-shadow: 0 0 7px currentColor; }
+    .mg-row .lbl { flex: 1; }
+    .mg-row .n { color: var(--dim); font-size: 10.5px; font-variant-numeric: tabular-nums; }
+    .mg-mini { display: flex; gap: 6px; margin-bottom: 8px; }
+    .mg-mini button {
+      flex: 1; font-family: var(--mono); font-size: 10px; letter-spacing: .05em;
+      padding: 4px 0; border-radius: 5px; cursor: pointer;
+      background: rgba(103,200,255,.08); border: 1px solid var(--line); color: var(--dim);
+    }
+    .mg-mini button:hover { border-color: var(--accent); color: var(--accent); }
+    #ctry-list { max-height: 232px; overflow-y: auto; }
+
+    /* right: status + comparison */
+    .mg-right { right: 14px; top: 96px; width: 244px; padding: 14px; }
+    .mg-cmp { margin-top: 4px; }
+    .mg-cmp .cmp-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 6px 0; }
+    .mg-cmp .cmp-row + .cmp-row { border-top: 1px dashed var(--line); }
+    .mg-cmp .src { font-size: 11px; color: var(--dim); }
+    .mg-cmp .src b { display: block; color: var(--text); font-size: 11.5px; }
+    .mg-cmp .val { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 17px; color: var(--accent); }
+    .mg-cmp .val.st { color: #b58cff; }
+    .mg-delta { margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--line); font-size: 10.5px; color: var(--dim); line-height: 1.5; }
+    .mg-delta b { color: #ffd27f; }
+    .mg-stamp { margin-top: 8px; font-size: 9.5px; color: var(--dim); line-height: 1.45; }
+
+    /* bottom search */
+    .mg-search-wrap { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); width: 400px; max-width: calc(100vw - 32px); z-index: 25; }
+    #mg-search {
+      width: 100%; box-sizing: border-box; padding: 10px 14px;
+      background: rgba(6,14,24,.94); border: 1px solid var(--line); border-radius: 8px;
+      color: var(--text); font-family: var(--mono); font-size: 13px; outline: none;
+      box-shadow: 0 8px 30px rgba(0,0,0,.5); backdrop-filter: blur(6px);
+    }
+    #mg-search:focus { border-color: var(--accent); box-shadow: 0 8px 30px rgba(0,0,0,.5), 0 0 0 2px rgba(103,200,255,.18); }
+    #mg-search::placeholder { color: var(--dim); }
+    .mg-results {
+      position: absolute; left: 0; right: 0; bottom: calc(100% + 6px);
+      max-height: 262px; overflow-y: auto; background: #08121e;
+      border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 12px 34px rgba(0,0,0,.6);
+    }
+    .mg-results[hidden] { display: none; }
+    .mg-opt { display: flex; justify-content: space-between; gap: 8px; padding: 8px 12px; cursor: pointer;
+      font-family: var(--mono); font-size: 12.5px; color: var(--text); border-bottom: 1px solid rgba(255,255,255,.04); }
+    .mg-opt:last-child { border-bottom: 0; }
+    .mg-opt:hover, .mg-opt.active { background: rgba(103,200,255,.16); }
+    .mg-opt .nid { color: var(--dim); font-size: 11px; }
+
+    /* hover tooltip */
+    .mg-tip {
+      position: fixed; z-index: 40; pointer-events: none;
+      background: rgba(6,13,28,.95); border: 1px solid rgba(120,180,255,.4); border-radius: 9px;
+      padding: 9px 12px; font-family: var(--mono); font-size: 11.5px; color: #e6f0fb;
+      box-shadow: 0 8px 24px rgba(0,0,0,.55); max-width: 260px; line-height: 1.55;
+    }
+    .mg-tip[hidden] { display: none; }
+    .mg-tip .nm { font-weight: 600; color: #fff; font-size: 12.5px; margin-bottom: 4px; }
+    .mg-tip .r { color: #9fc0e6; } .mg-tip .r b { color: #eef6ff; font-weight: 600; }
+
+    /* selected-satellite readout */
+    .mg-sel {
+      position: fixed; left: 50%; transform: translateX(-50%); bottom: 78px; z-index: 25;
+      background: rgba(6,13,28,.94); border: 1px solid var(--accent); border-radius: 9px;
+      padding: 9px 15px; font-family: var(--mono); font-size: 12px; color: var(--text);
+      box-shadow: 0 10px 30px rgba(0,0,0,.5); display: flex; align-items: center; gap: 14px;
+    }
+    .mg-sel[hidden] { display: none; }
+    .mg-sel .nm { font-weight: 600; color: #ffd27f; }
+    .mg-sel .x { cursor: pointer; color: var(--dim); }
+    .mg-sel .x:hover { color: var(--accent2); }
+
+    .mg-loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+      z-index: 30; color: var(--accent); font-family: var(--mono); font-size: 14px; }
+    .mg-loading[hidden] { display: none; }
+
+    @media (max-width: 900px) {
+      .mg-left, .mg-right { position: fixed; width: auto; left: 10px; right: 10px; max-height: 34vh; }
+      .mg-left { top: 92px; } .mg-right { top: auto; bottom: 92px; }
+      .mg-search-wrap { width: calc(100vw - 24px); bottom: 14px; }
+    }
+  </style>
+</head>
+<body class="page-mirror">
+  <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
+    <img src="data/nazar-logo.svg?v=5" alt="NAZAR">
+  </a>
+
+  <a class="top-nazar-btn" href="index.html" title="Back to the NAZAR main view">
+    <span class="ico">◯</span><span class="lbl">NAZAR</span>
+  </a>
+
+  <header class="topbar">
+    <div class="brand"><span class="brand-short">NAZAR</span><span class="brand-long"> · Mirror Globe</span></div>
+    <div class="sub">The same sky, counted by Space-Track instead of CelesTrak.</div>
+  </header>
+
+  <div id="globe"></div>
+  <div class="mg-loading" id="mg-loading">Loading Space-Track catalogue…</div>
+
+  <!-- LEFT: orbit class + operator country -->
+  <aside class="mg-panel mg-left" aria-label="Filters">
+    <div class="mg-sec">
+      <h3>Orbit class</h3>
+      <div class="mg-mini"><button type="button" id="orb-all">All</button><button type="button" id="orb-none">None</button></div>
+      <div id="orbit-list"></div>
+    </div>
+    <div class="mg-sec">
+      <h3>Operator country</h3>
+      <div class="mg-sub">Top operators by count — pick any to isolate their fleet.</div>
+      <div class="mg-mini"><button type="button" id="ctry-all">All</button><button type="button" id="ctry-none">None</button></div>
+      <div id="ctry-list"></div>
+    </div>
+  </aside>
+
+  <!-- RIGHT: status + source comparison -->
+  <aside class="mg-panel mg-right" aria-label="Status and source comparison">
+    <div class="mg-sec">
+      <h3>Status</h3>
+      <div id="status-list"></div>
+    </div>
+    <div class="mg-sec">
+      <h3>Source comparison</h3>
+      <div class="mg-cmp">
+        <div class="cmp-row">
+          <span class="src"><b>This page</b>Space-Track</span>
+          <span class="val st" id="cmp-st">…</span>
+        </div>
+        <div class="cmp-row">
+          <span class="src"><b>Main page</b>CelesTrak</span>
+          <span class="val" id="cmp-ct">…</span>
+        </div>
+      </div>
+      <div class="mg-delta" id="cmp-delta">…</div>
+      <div class="mg-stamp" id="cmp-stamp"></div>
+    </div>
+  </aside>
+
+  <div class="mg-tip" id="mg-tip" hidden></div>
+
+  <div class="mg-sel" id="mg-sel" hidden>
+    <span class="nm" id="sel-name"></span>
+    <span id="sel-meta"></span>
+    <span class="x" id="sel-clear" title="Clear selection">✕</span>
+  </div>
+
+  <div class="mg-search-wrap">
+    <div id="mg-results" class="mg-results" role="listbox" hidden></div>
+    <input id="mg-search" type="text" placeholder="🔍 Search a satellite by name or NORAD id…"
+           autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false">
+  </div>
+
+  <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+  <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+  <script src="mirror-globe.js?v=1"></script>
+  <script src="site-analytics.js?v=1"></script>
+  <script src="mobile-menu.js?v=22"></script>
+</body>
+</html>
