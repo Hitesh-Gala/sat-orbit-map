@@ -142,14 +142,24 @@
 
     /* Country satellite table — a floating, minimisable pop-up listing every
        satellite of the selected operator(s). */
+    /* Free-floating window: drag by the title bar, resize from the corner. */
     .mg-tbl {
       position: fixed; left: 50%; transform: translateX(-50%); bottom: 96px; z-index: 35;
-      width: min(1020px, calc(100vw - 640px)); min-width: 520px;
+      width: min(1020px, calc(100vw - 640px)); min-width: 460px; max-width: calc(100vw - 28px);
+      height: 46vh; min-height: 132px; max-height: calc(100vh - 150px);
       background: rgba(7, 15, 27, .97); border: 1px solid var(--line); border-radius: 11px;
       box-shadow: 0 18px 50px rgba(0,0,0,.6); backdrop-filter: blur(8px);
       font-family: var(--mono); color: var(--text); display: flex; flex-direction: column;
-      max-height: 46vh;
+      resize: both; overflow: hidden;
     }
+    /* Once dragged the window is positioned by left/top instead of the centring
+       transform, so it stays exactly where it is dropped. */
+    .mg-tbl.free { transform: none; bottom: auto; }
+    .mg-tbl.min { height: auto !important; min-height: 0; resize: none; }
+    .mg-tbl-head { cursor: move; }
+    .mg-tbl-head button { cursor: pointer; }
+    /* Make the native resize gripper legible against the dark panel. */
+    .mg-tbl::-webkit-resizer { background: var(--line); border-radius: 2px; }
     .mg-tbl[hidden] { display: none; }
     .mg-tbl-head {
       display: flex; align-items: center; gap: 12px; padding: 10px 14px;
@@ -326,7 +336,7 @@
   <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
-  <script src="mirror-globe.js?v=5"></script>
+  <script src="mirror-globe.js?v=6"></script>
   <script src="site-analytics.js?v=1"></script>
   <script src="mobile-menu.js?v=22"></script>
   <script>

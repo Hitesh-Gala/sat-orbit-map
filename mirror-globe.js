@@ -344,9 +344,48 @@
     box.hidden = false;
     box.classList.remove('min');
     $('tbl-min').textContent = '–';
+    if (box.classList.contains('free')) box.style.height = box.style.height || '46vh';
+  }
+
+  // Drag the window by its title bar.  The first drag swaps the centring
+  // transform for explicit left/top so the window stays where it is dropped,
+  // and every move is clamped to keep the title bar reachable on screen.
+  function makeDraggable(box, handle) {
+    let dx = 0, dy = 0, dragging = false;
+    handle.addEventListener('pointerdown', e => {
+      if (e.target.closest('button')) return;      // let the min/close buttons work
+      const r = box.getBoundingClientRect();
+      if (!box.classList.contains('free')) {
+        box.classList.add('free');
+        box.style.left = r.left + 'px';
+        box.style.top = r.top + 'px';
+        box.style.width = r.width + 'px';
+        box.style.height = r.height + 'px';
+      }
+      dx = e.clientX - r.left; dy = e.clientY - r.top;
+      dragging = true;
+      handle.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    handle.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      const w = box.offsetWidth, h = box.offsetHeight;
+      const x = Math.min(Math.max(e.clientX - dx, 8 - w + 90), window.innerWidth - 90);
+      const y = Math.min(Math.max(e.clientY - dy, 4), window.innerHeight - 40);
+      box.style.left = x + 'px';
+      box.style.top = y + 'px';
+    });
+    const stop = e => {
+      if (!dragging) return;
+      dragging = false;
+      try { handle.releasePointerCapture(e.pointerId); } catch (err) { /* already released */ }
+    };
+    handle.addEventListener('pointerup', stop);
+    handle.addEventListener('pointercancel', stop);
   }
 
   function wireTable() {
+    makeDraggable($('mg-tbl'), $('mg-tbl').querySelector('.mg-tbl-head'));
     $('tbl-close').addEventListener('click', () => { $('mg-tbl').hidden = true; });
     $('tbl-min').addEventListener('click', () => {
       const b = $('mg-tbl');
