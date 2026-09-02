@@ -50,9 +50,9 @@
     /* Takshashila credit: two right-aligned lines level with the lighthouse
        logo (which occupies the top-right corner), not stacked beneath it. */
     body.page-mirror .logo-credit {
-      top: 18px; right: 100px; width: 268px; max-width: 268px;
+      top: 20px; right: 100px; width: 330px; max-width: 330px;
       text-align: right; text-align-last: right; white-space: normal;
-      font-size: 10.5px; line-height: 1.45;
+      font-size: 10.5px; line-height: 1.5;
     }
 
     .mg-panel {
@@ -71,13 +71,16 @@
     /* left column: filter panel with the two scale sliders stacked beneath it.
        Flex column keeps them apart no matter how tall the filter list gets. */
     .mg-left-col {
-      position: fixed; left: 14px; top: 112px; bottom: 96px; z-index: 20; width: 288px;
+      position: fixed; left: 14px; top: 112px; bottom: 96px; z-index: 20; width: 302px;
       display: flex; flex-direction: column; justify-content: center; gap: 10px;
       pointer-events: none;                 /* the gap between panels stays click-through */
     }
     .mg-left-col > * { pointer-events: auto; }
     .mg-left { position: static; transform: none; width: auto; flex: 0 1 auto;
       min-height: 0; overflow-y: auto; padding: 15px 15px 13px; }
+    /* Scroll still works; just no visible scrollbar furniture. */
+    .mg-left, #ctry-list { scrollbar-width: none; -ms-overflow-style: none; }
+    .mg-left::-webkit-scrollbar, #ctry-list::-webkit-scrollbar { width: 0; height: 0; }
     .mg-sliders { position: static; transform: none; width: auto; flex: 0 0 auto; padding: 13px 15px; }
     .mg-slider + .mg-slider { margin-top: 12px; }
     .mg-slider .lab { display: flex; justify-content: space-between; align-items: baseline;
@@ -136,6 +139,56 @@
     .mg-opt:last-child { border-bottom: 0; }
     .mg-opt:hover, .mg-opt.active { background: rgba(103,200,255,.16); }
     .mg-opt .nid { color: var(--dim); font-size: 12.1px; }
+
+    /* Country satellite table — a floating, minimisable pop-up listing every
+       satellite of the selected operator(s). */
+    .mg-tbl {
+      position: fixed; left: 50%; transform: translateX(-50%); bottom: 96px; z-index: 35;
+      width: min(1020px, calc(100vw - 640px)); min-width: 520px;
+      background: rgba(7, 15, 27, .97); border: 1px solid var(--line); border-radius: 11px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.6); backdrop-filter: blur(8px);
+      font-family: var(--mono); color: var(--text); display: flex; flex-direction: column;
+      max-height: 46vh;
+    }
+    .mg-tbl[hidden] { display: none; }
+    .mg-tbl-head {
+      display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+      border-bottom: 1px solid var(--line); flex: 0 0 auto;
+    }
+    .mg-tbl-head h4 {
+      margin: 0; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 13.2px;
+      letter-spacing: .06em; color: var(--accent);
+    }
+    .mg-tbl-head .cnt { font-size: 11.6px; color: var(--dim); }
+    .mg-tbl-head .sp { margin-left: auto; display: flex; gap: 7px; }
+    .mg-tbl-head button {
+      font-family: var(--mono); font-size: 13px; line-height: 1; cursor: pointer;
+      width: 26px; height: 24px; border-radius: 5px; color: var(--dim);
+      background: rgba(103,200,255,.08); border: 1px solid var(--line);
+    }
+    .mg-tbl-head button:hover { border-color: var(--accent); color: var(--accent); }
+    .mg-tbl-body { overflow: auto; flex: 1 1 auto; scrollbar-width: none; }
+    .mg-tbl-body::-webkit-scrollbar { width: 0; height: 0; }
+    .mg-tbl.min .mg-tbl-body { display: none; }
+    .mg-tbl table { width: 100%; border-collapse: collapse; font-size: 11.8px; }
+    .mg-tbl th {
+      position: sticky; top: 0; z-index: 1; text-align: left; white-space: nowrap;
+      padding: 8px 10px; background: #0c1726; border-bottom: 1px solid var(--line);
+      color: var(--dim); font-weight: 600; letter-spacing: .04em;
+    }
+    .mg-tbl th.sortable { cursor: pointer; user-select: none; }
+    .mg-tbl th.sortable:hover { color: var(--accent); }
+    .mg-tbl th .ar { color: var(--accent); font-size: 10px; }
+    .mg-tbl td { padding: 7px 10px; border-bottom: 1px solid rgba(255,255,255,.045); white-space: nowrap; }
+    .mg-tbl tbody tr:hover { background: rgba(103,200,255,.10); cursor: pointer; }
+    .mg-tbl td.nm { color: var(--text); font-weight: 600; }
+    .mg-tbl td.dim { color: var(--dim); }
+    .mg-tbl .ob { padding: 1px 7px; border-radius: 4px; font-size: 10.4px; font-weight: 600; }
+    .mg-tbl .ob-LEO { background: rgba(103,232,164,.16); color: #67e8a4; }
+    .mg-tbl .ob-MEO { background: rgba(249,210,76,.16); color: #f9d24c; }
+    .mg-tbl .ob-GEO { background: rgba(255,153,102,.16); color: #ff9966; }
+    .mg-tbl .ob-HEO { background: rgba(215,126,255,.16); color: #d77eff; }
+    @media (max-width: 1200px) { .mg-tbl { width: calc(100vw - 40px); min-width: 0; } }
 
     /* hover tooltip */
     .mg-tip {
@@ -244,6 +297,18 @@
     </div>
   </aside>
 
+  <div class="mg-tbl" id="mg-tbl" hidden>
+    <div class="mg-tbl-head">
+      <h4 id="tbl-title">Satellites</h4>
+      <span class="cnt" id="tbl-count"></span>
+      <span class="sp">
+        <button type="button" id="tbl-min" title="Minimise / restore">–</button>
+        <button type="button" id="tbl-close" title="Close">&times;</button>
+      </span>
+    </div>
+    <div class="mg-tbl-body" id="tbl-body"></div>
+  </div>
+
   <div class="mg-tip" id="mg-tip" hidden></div>
 
   <div class="mg-sel" id="mg-sel" hidden>
@@ -261,7 +326,7 @@
   <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
-  <script src="mirror-globe.js?v=4"></script>
+  <script src="mirror-globe.js?v=5"></script>
   <script src="site-analytics.js?v=1"></script>
   <script src="mobile-menu.js?v=22"></script>
   <script>

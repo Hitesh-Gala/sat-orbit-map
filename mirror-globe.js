@@ -44,6 +44,50 @@
   };
   const cname = c => COUNTRY[c] || c || 'Unknown';
 
+  // Launch-site codes -> readable place (Space-Track SITE field).
+  const SITE = {
+    AFETR: 'Cape Canaveral, USA', AFWTR: 'Vandenberg, USA', WLPIS: 'Wallops Is., USA',
+    KSCUT: 'Uchinoura, Japan', TANSC: 'Tanegashima, Japan', TNSTA: 'Tanegashima, Japan',
+    JSC: 'Jiuquan, China', TSC: 'Taiyuan, China', XSC: 'Xichang, China', WSC: 'Wenchang, China',
+    TYMSC: 'Baikonur, Kazakhstan', PKMTR: 'Plesetsk, Russia', PLMSC: 'Plesetsk, Russia',
+    KYMTR: 'Kapustin Yar, Russia', VOST: 'Vostochny, Russia', SVOB: 'Svobodny, Russia',
+    SADOL: 'Yasny, Russia', FRGUI: 'Kourou, French Guiana', SRILR: 'Sriharikota, India',
+    SEAL: 'Sea Launch (ocean)', ERAS: 'Eastern Range (sea)', WRAS: 'Western Range (sea)',
+    KWAJ: 'Kwajalein Atoll', RLLC: 'Mahia, New Zealand', YAVNE: 'Palmachim, Israel',
+    SEMLS: 'Semnan, Iran', SNMLP: 'Semnan, Iran', YUN: 'Sohae, North Korea',
+    NSC: 'Naro, South Korea', WOMRA: 'Woomera, Australia', CAS: 'Canary Is., Spain',
+    HGSTR: 'Hammaguir, Algeria', SUBL: 'Submarine (sea)', SHIYANG: 'Sea launch, China',
+    DLS: 'Dombarovsky, Russia', TTMTR: 'Baikonur, Kazakhstan', VOSTO: 'Vostochny, Russia',
+    SRI: 'Sriharikota, India', YSLA: 'Yellow Sea (sea launch)', OREN: 'Yasny, Russia',
+  };
+  const siteName = c => SITE[c] || (c ? c : '—');
+
+  // Mission type, inferred from the catalogue name.  Public catalogues carry no
+  // purpose field, so this reads well-known naming conventions and shows an
+  // em-dash when nothing matches rather than guessing.
+  const TYPES = [
+    [/STARLINK|ONEWEB|IRIDIUM|GLOBALSTAR|INTELSAT|EUTELSAT|ASTRA|INMARSAT|THURAYA|VIASAT|ECHOSTAR|GUOWANG|QIANFAN|CHINASAT|ZHONGXING|YAMAL|EXPRESS-|TIANTONG|KUIPER|ORBCOMM|GONETS|MOLNIYA|RADUGA|GORIZONT|TDRS|SICRAL|SKYNET|MILSTAR/, 'Communications'],
+    [/NAVSTAR|GLONASS|GALILEO|GSAT0|BEIDOU|QZS-|IRNSS|NAVIC/, 'Navigation'],
+    [/METEOR-|NOAA |GOES |METOP|HIMAWARI|FENGYUN|INSAT|ELEKTRO|DMSP|SUOMI|JPSS|METEOSAT|MTG-/, 'Meteorology'],
+    [/YAOGAN|LACROSSE|ONYX|OFEQ|HELIOS|SAR-LUPE|CSO-|EROS|NROL|MENTOR|TRUMPET|COSMOS/, 'ISR / military'],
+    [/LANDSAT|SENTINEL|SPOT-|PLEIADES|WORLDVIEW|GEOEYE|QUICKBIRD|IKONOS|SKYSAT|FLOCK|DOVE|RESOURCESAT|CARTOSAT|KOMPSAT|ICEYE|CAPELLA|TERRASAR|RADARSAT|ALOS|JILIN|SUPERVIEW|BLACKSKY|GAOFEN|TERRA|AQUA|PRISMA/, 'Earth observation'],
+    [/HUBBLE|CHANDRA|SPITZER|KEPLER|TESS|JWST|SWIFT|FERMI|XMM|INTEGRAL|GAIA|CHEOPS|EUCLID|IXPE|NUSTAR|SOHO|SDO |IRIS |THEMIS|MMS |ICON /, 'Science / astronomy'],
+    [/ISS |ZARYA|TIANHE|TIANGONG|PROGRESS|SOYUZ|DRAGON|CYGNUS|SHENZHOU|TIANZHOU|CREW/, 'Crewed / logistics'],
+    [/CUBESAT|TECHSAT|PATHFINDER|TECHNOSAT|PROBA|DEMO|TEST/, 'Technology demo'],
+    [/AMSAT|OSCAR/, 'Amateur radio'],
+  ];
+  function satType(name) {
+    const n = (name || '').toUpperCase();
+    for (const [re, t] of TYPES) if (re.test(n)) return t;
+    return '—';
+  }
+  function daysInOrbit(ld) {
+    if (!ld) return null;
+    const t = Date.parse(ld + 'T00:00:00Z');
+    if (!Number.isFinite(t)) return null;
+    return Math.max(0, Math.floor((Date.now() - t) / 86400000));
+  }
+
   let world, sats = [], mesh = null, dummy, colorAttr;
   let selected = null, hovered = null;
   let dotScale = 1.0;   // satellite sphere size multiplier (slider)
@@ -87,7 +131,7 @@
       try { satrec = satellite.twoline2satrec(s.t[0], s.t[1]); } catch (e) { continue; }
       if (!satrec || satrec.error) continue;
       sats.push({
-        norad: s.c, name: s.n || ('NORAD ' + s.c), country: s.o, launch: s.ld,
+        norad: s.c, name: s.n || ('NORAD ' + s.c), country: s.o, launch: s.ld, site: s.ls || '',
         orbit: orbitClass(s), status: statusOf(s), satrec,
         lat: 0, lng: 0, altKm: 0, speed: 0, ok: false,
       });
@@ -99,6 +143,7 @@
     buildFilters();
     wireSearch();
     wireSliders();
+    wireTable();
     wireHover();
     loadComparison(doc);
     startTick();
@@ -114,7 +159,7 @@
       .showAtmosphere(true).atmosphereColor('#6cc0ff').atmosphereAltitude(0.16)
       .width(window.innerWidth).height(window.innerHeight);
     const c = world.controls();
-    c.autoRotate = true; c.autoRotateSpeed = 0.12; c.enableDamping = true;  // slow enough to hover a dot
+    c.autoRotate = true; c.autoRotateSpeed = 0.04; c.enableDamping = true;  // slow enough to hover a dot
     world.pointOfView({ altitude: 3.2 });
     window.addEventListener('resize', () =>
       world.width(window.innerWidth).height(window.innerHeight));
@@ -239,7 +284,7 @@
     $('orb-all').onclick = () => setAll('[data-orbit]', true);
     $('orb-none').onclick = () => setAll('[data-orbit]', false);
     // No country ticked === no country filter === every operator shown.
-    $('ctry-all').onclick = () => setAll('[data-ctry]', false);
+    $('ctry-all').onclick = () => { setAll('[data-ctry]', false); renderCountryTable(); };
     $('ctry-top').onclick = () => {
       setAll('[data-ctry]', false);
       top.slice(0, 5).forEach(([c]) => {
@@ -248,7 +293,81 @@
       });
     };
   }
-  function toggle(set, key, on) { on ? set.add(key) : set.delete(key); startTick(); }
+  function toggle(set, key, on) {
+    on ? set.add(key) : set.delete(key);
+    startTick();
+    if (set === countryOn) renderCountryTable();
+  }
+
+  // ---- country satellite table -------------------------------------------
+  let sortKey = 'launch', sortDir = -1;      // default: newest launches first
+  const ORBIT_ORDER = ['LEO', 'MEO', 'GEO', 'HEO'];
+
+  function renderCountryTable() {
+    const box = $('mg-tbl');
+    if (!countryOn.size) { box.hidden = true; return; }
+    const rows = sats.filter(s => countryOn.has(s.country)
+      && orbitOn.has(s.orbit) && statusOn.has(s.status));
+    $('tbl-title').textContent = [...countryOn].map(cname).join(', ');
+    $('tbl-count').textContent = rows.length.toLocaleString() + ' satellites';
+
+    const cmp = {
+      launch: (a, b) => String(a.launch || '').localeCompare(String(b.launch || '')),
+      orbit: (a, b) => ORBIT_ORDER.indexOf(a.orbit) - ORBIT_ORDER.indexOf(b.orbit),
+      days: (a, b) => (daysInOrbit(a.launch) || 0) - (daysInOrbit(b.launch) || 0),
+      name: (a, b) => a.name.localeCompare(b.name),
+    }[sortKey] || (() => 0);
+    rows.sort((a, b) => cmp(a, b) * sortDir || a.name.localeCompare(b.name));
+
+    const ar = k => sortKey === k ? '<span class="ar">' + (sortDir > 0 ? '▲' : '▼') + '</span>' : '';
+    $('tbl-body').innerHTML = '<table><thead><tr>'
+      + '<th class="sortable" data-sort="name">Satellite ' + ar('name') + '</th>'
+      + '<th>NORAD</th>'
+      + '<th class="sortable" data-sort="launch">Launched ' + ar('launch') + '</th>'
+      + '<th class="sortable" data-sort="orbit">Orbit ' + ar('orbit') + '</th>'
+      + '<th>Type</th><th>Launch site</th>'
+      + '<th class="sortable" data-sort="days">Days in orbit ' + ar('days') + '</th>'
+      + '</tr></thead><tbody>'
+      + rows.map(function (s) {
+          const d = daysInOrbit(s.launch);
+          return '<tr data-norad="' + s.norad + '">'
+            + '<td class="nm">' + esc(s.name) + '</td>'
+            + '<td class="dim">' + s.norad + '</td>'
+            + '<td>' + esc(s.launch || '—') + '</td>'
+            + '<td><span class="ob ob-' + s.orbit + '">' + s.orbit + '</span></td>'
+            + '<td class="dim">' + esc(satType(s.name)) + '</td>'
+            + '<td class="dim">' + esc(siteName(s.site)) + '</td>'
+            + '<td>' + (d == null ? '—' : d.toLocaleString()) + '</td>'
+            + '</tr>';
+        }).join('')
+      + '</tbody></table>';
+    box.hidden = false;
+    box.classList.remove('min');
+    $('tbl-min').textContent = '–';
+  }
+
+  function wireTable() {
+    $('tbl-close').addEventListener('click', () => { $('mg-tbl').hidden = true; });
+    $('tbl-min').addEventListener('click', () => {
+      const b = $('mg-tbl');
+      b.classList.toggle('min');
+      $('tbl-min').textContent = b.classList.contains('min') ? '▢' : '–';
+    });
+    $('tbl-body').addEventListener('click', e => {
+      const th = e.target.closest('th.sortable');
+      if (th) {
+        const k = th.dataset.sort;
+        if (sortKey === k) sortDir = -sortDir;
+        else { sortKey = k; sortDir = (k === 'name') ? 1 : -1; }
+        return renderCountryTable();
+      }
+      const tr = e.target.closest('tr[data-norad]');
+      if (tr) {
+        const s = sats.find(x => String(x.norad) === tr.dataset.norad);
+        if (s) select(s);
+      }
+    });
+  }
 
   // ---- hover -------------------------------------------------------------
   function wireHover() {
