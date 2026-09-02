@@ -98,7 +98,8 @@
     wireSearch();
     wireHover();
     loadComparison(doc);
-    tick();
+    startTick();
+    setInterval(startTick, REFRESH_MS);
   }
 
   // ---- globe -------------------------------------------------------------
@@ -121,56 +122,81 @@
     });
   }
 
+  // Plain MeshBasicMaterial: three.js r157 auto-detects instanceColor (allocated
+  // by the first setColorAt) and routes it through USE_INSTANCING_COLOR.  Setting
+  // vertexColors here instead makes it look for a geometry colour attribute that
+  // does not exist — which renders every instance black.
   function buildInstances() {
     dummy = new THREE.Object3D();
-    const geo = new THREE.SphereGeometry(0.85, 6, 6);
-    const mat = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.95 });
+    const geo = new THREE.SphereGeometry(0.9, 6, 6);
+    const mat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.95 });
     mesh = new THREE.InstancedMesh(geo, mat, sats.length);
     mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    colorAttr = new THREE.InstancedBufferAttribute(new Float32Array(sats.length * 3), 3);
-    mesh.instanceColor = colorAttr;
     mesh.frustumCulled = false;
+    // Seed every instance's colour once so the buffer exists up-front.
+    sats.forEach((s, i) => mesh.setColorAt(i, colFor(s)));
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     world.scene().add(mesh);
   }
 
-  const colFor = s => new THREE.Color(
-    (ORBITS.find(o => o.k === s.orbit) || ORBITS[0]).col);
+  const ORBIT_COLOR = {};
+  ORBITS.forEach(o => { ORBIT_COLOR[o.k] = new THREE.Color(o.col); });
+  const colFor = s => ORBIT_COLOR[s.orbit] || ORBIT_COLOR.LEO;
 
-  // ---- per-frame ---------------------------------------------------------
-  function tick() {
-    const now = new Date();
-    const gmst = satellite.gstime(now);
-    let n = 0;
-    for (const s of sats) {
-      if (!orbitOn.has(s.orbit) || !statusOn.has(s.status)) { s.ok = false; continue; }
-      if (countryOn.size && !countryOn.has(s.country)) { s.ok = false; continue; }
-      const pv = satellite.propagate(s.satrec, now);
-      if (!pv || !pv.position) { s.ok = false; continue; }
+  // ---- propagation ---------------------------------------------------------
+  // 18 k SGP4 solves per frame is far too much work; mirror the God-Mode
+  // engine instead — re-propagate the catalogue every REFRESH_MS, sliced into
+  // CHUNK_SIZE-sized pieces across successive frames so the globe keeps
+  // spinning smoothly while the maths happens.
+  const REFRESH_MS = 3000, CHUNK_SIZE = 1200;
+  const HIDE = new THREE.Matrix4().makeScale(0, 0, 0);
+  let chunkIdx = 0, propNow = new Date(), propagating = false;
+
+  let dirty = false;
+  function startTick() {
+    // A filter toggled mid-pass would otherwise be dropped; remember it and
+    // re-run as soon as the current sweep finishes.
+    if (propagating) { dirty = true; return; }
+    propagating = true; propNow = new Date(); chunkIdx = 0;
+    propagateChunk();
+  }
+  function propagateChunk() {
+    const end = Math.min(chunkIdx + CHUNK_SIZE, sats.length);
+    const gmst = satellite.gstime(propNow);
+    for (let i = chunkIdx; i < end; i++) {
+      const s = sats[i];
+      const shown = orbitOn.has(s.orbit) && statusOn.has(s.status)
+        && (!countryOn.size || countryOn.has(s.country));
+      if (!shown) { mesh.setMatrixAt(i, HIDE); s.ok = false; continue; }
+      const pv = satellite.propagate(s.satrec, propNow);
+      if (!pv || !pv.position) { mesh.setMatrixAt(i, HIDE); s.ok = false; continue; }
       const gd = satellite.eciToGeodetic(pv.position, gmst);
+      const altKm = gd.height;
+      if (!Number.isFinite(altKm) || altKm < 0) { mesh.setMatrixAt(i, HIDE); s.ok = false; continue; }
       s.lat = satellite.degreesLat(gd.latitude);
       s.lng = satellite.degreesLong(gd.longitude);
-      s.altKm = Math.max(gd.height, 0);
+      s.altKm = altKm;
       const v = pv.velocity;
       s.speed = v ? Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z) : 0;
-      s.ok = true;
-
-      const p = world.getCoords(s.lat, s.lng, s.altKm / R_EARTH);
+      const p = world.getCoords(s.lat, s.lng, altKm / R_EARTH);
+      s.x = p.x; s.y = p.y; s.z = p.z; s.ok = true;
       dummy.position.set(p.x, p.y, p.z);
-      const big = (selected === s);
-      dummy.scale.setScalar(big ? 3.4 : 1);
+      dummy.scale.setScalar(selected === s ? 3.6 : 1);
       dummy.updateMatrix();
-      mesh.setMatrixAt(n, dummy.matrix);
-      const c = big ? SEL_COL : colFor(s);
-      colorAttr.setXYZ(n, c.r, c.g, c.b);
-      s.idx = n;
-      visible[n] = s;
-      n++;
+      mesh.setMatrixAt(i, dummy.matrix);
+      mesh.setColorAt(i, selected === s ? SEL_COL : colFor(s));
     }
-    mesh.count = n;
+    chunkIdx = end;
+    if (chunkIdx < sats.length) {
+      if (document.hidden) setTimeout(propagateChunk, 0);
+      else requestAnimationFrame(propagateChunk);
+      return;
+    }
     mesh.instanceMatrix.needsUpdate = true;
-    colorAttr.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    propagating = false;
     if (selected) updateSelReadout();
-    requestAnimationFrame(tick);
+    if (dirty) { dirty = false; startTick(); }
   }
 
   // ---- filters -----------------------------------------------------------
@@ -209,10 +235,17 @@
     });
     $('orb-all').onclick = () => setAll('[data-orbit]', true);
     $('orb-none').onclick = () => setAll('[data-orbit]', false);
-    $('ctry-all').onclick = () => setAll('[data-ctry]', false);   // none checked === all shown
-    $('ctry-none').onclick = () => setAll('[data-ctry]', false);
+    // No country ticked === no country filter === every operator shown.
+    $('ctry-all').onclick = () => setAll('[data-ctry]', false);
+    $('ctry-top').onclick = () => {
+      setAll('[data-ctry]', false);
+      top.slice(0, 5).forEach(([c]) => {
+        const cb = document.querySelector(`[data-ctry="${c}"]`);
+        if (cb) { cb.checked = true; cb.dispatchEvent(new Event('change', { bubbles: true })); }
+      });
+    };
   }
-  function toggle(set, key, on) { on ? set.add(key) : set.delete(key); }
+  function toggle(set, key, on) { on ? set.add(key) : set.delete(key); startTick(); }
 
   // ---- hover -------------------------------------------------------------
   function wireHover() {
@@ -228,8 +261,8 @@
       ray.setFromCamera(m, world.camera());
       const hit = ray.intersectObject(mesh, false)[0];
       if (!hit || hit.instanceId == null) { hovered = null; tip.hidden = true; canvas.style.cursor = ''; return; }
-      const s = visible[hit.instanceId];
-      if (!s) { hovered = null; tip.hidden = true; return; }
+      const s = sats[hit.instanceId];
+      if (!s || !s.ok) { hovered = null; tip.hidden = true; return; }
       hovered = s;
       tip.innerHTML = `<div class="nm">${esc(s.name)}</div>
         <div class="r">Operator · <b>${esc(cname(s.country))}</b></div>
@@ -254,6 +287,7 @@
     if (s.ok) world.pointOfView({ lat: s.lat, lng: s.lng, altitude: 1.6 }, 900);
     updateSelReadout();
     $('mg-sel').hidden = false;
+    startTick();
   }
   function updateSelReadout() {
     const s = selected; if (!s) return;
@@ -267,6 +301,7 @@
     selected = null;
     $('mg-sel').hidden = true;
     world.controls().autoRotate = true;
+    startTick();
   }
 
   function wireSearch() {
