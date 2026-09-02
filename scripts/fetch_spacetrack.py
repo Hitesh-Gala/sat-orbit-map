@@ -140,6 +140,54 @@ try:
         'sample': sample,
         'note': 'cdm_public: operator-grade conjunction data messages, upcoming encounters.',
     }
+    # ---- 3) Full GP catalogue for the mirror globe -----------------------
+    # Every on-orbit PAYLOAD with its element set + metadata, written to a
+    # separate bundle the mirror page loads.  One query, ~19 k rows.
+    gp_all = query('/basicspacedata/query/class/gp/decay_date/null-val'
+                   '/OBJECT_TYPE/PAYLOAD/orderby/NORAD_CAT_ID/format/json')
+    if gp_all:
+        print('gp fields:', ','.join(sorted(gp_all[0].keys())), file=sys.stderr)
+
+    # SATCAT carries the operational-status flag that GP lacks; index it by
+    # NORAD id so each payload can be marked active vs defunct.
+    sc = query('/basicspacedata/query/class/satcat/DECAY/null-val/CURRENT/Y'
+               '/OBJECT_TYPE/PAYLOAD/format/json')
+    if sc:
+        print('satcat fields:', ','.join(sorted(sc[0].keys())), file=sys.stderr)
+    status = {}
+    for r in sc:
+        nid = str(r.get('NORAD_CAT_ID'))
+        status[nid] = r.get('OPS_STATUS_CODE') or r.get('OPS_STATUS') or ''
+
+    sats = []
+    for g in gp_all:
+        l1, l2 = g.get('TLE_LINE1'), g.get('TLE_LINE2')
+        if not l1 or not l2:
+            continue
+        nid = str(g.get('NORAD_CAT_ID'))
+        sats.append({
+            'c': int(nid),
+            'n': (g.get('OBJECT_NAME') or '').strip(),
+            'o': (g.get('COUNTRY_CODE') or '').strip(),
+            'ld': (g.get('LAUNCH_DATE') or '')[:10],
+            'ap': g.get('APOGEE'), 'pe': g.get('PERIGEE'), 'inc': g.get('INCLINATION'),
+            's': status.get(nid, ''),
+            't': [l1.rstrip(), l2.rstrip()],
+        })
+    if len(sats) < 5000:
+        print(f'FATAL: only {len(sats)} GP payloads — refusing to write a regressed bundle',
+              file=sys.stderr)
+        sys.exit(1)
+    gp_doc = {
+        'source': 'Space-Track.org (GP class, on-orbit payloads)',
+        'retrieved': out['retrieved'],
+        'count': len(sats),
+        'sats': sats,
+    }
+    with open('data/spacetrack-gp.json', 'w', encoding='utf-8') as f:
+        json.dump(gp_doc, f, separators=(',', ':'))
+    print(f'wrote data/spacetrack-gp.json — {len(sats):,} payloads')
+    out['gpBundle'] = {'count': len(sats)}
 finally:
     logout()
 
