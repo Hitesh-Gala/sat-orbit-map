@@ -46,6 +46,8 @@
 
   let world, sats = [], mesh = null, dummy, colorAttr;
   let selected = null, hovered = null;
+  let dotScale = 1.0;   // satellite sphere size multiplier (slider)
+  let altScale = 1.0;   // exaggerate/compress altitudes radially (slider)
   const orbitOn = new Set(ORBITS.map(o => o.k));
   const statusOn = new Set(STATUSES.map(s => s.k));
   let countryOn = new Set();            // empty === show all
@@ -96,6 +98,7 @@
     buildInstances();
     buildFilters();
     wireSearch();
+    wireSliders();
     wireHover();
     loadComparison(doc);
     startTick();
@@ -178,10 +181,10 @@
       s.altKm = altKm;
       const v = pv.velocity;
       s.speed = v ? Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z) : 0;
-      const p = world.getCoords(s.lat, s.lng, altKm / R_EARTH);
+      const p = world.getCoords(s.lat, s.lng, (altKm / R_EARTH) * altScale);
       s.x = p.x; s.y = p.y; s.z = p.z; s.ok = true;
       dummy.position.set(p.x, p.y, p.z);
-      dummy.scale.setScalar(selected === s ? 3.6 : 1);
+      dummy.scale.setScalar(dotScale * (selected === s ? 3.6 : 1));
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
       mesh.setColorAt(i, selected === s ? SEL_COL : colFor(s));
@@ -302,6 +305,20 @@
     $('mg-sel').hidden = true;
     world.controls().autoRotate = true;
     startTick();
+  }
+
+  function wireSliders() {
+    const dot = $('dot-size'), alt = $('alt-scale');
+    if (dot) dot.addEventListener('input', e => {
+      dotScale = parseFloat(e.target.value) || 1;
+      $('dot-size-val').textContent = dotScale.toFixed(1);
+      startTick();
+    });
+    if (alt) alt.addEventListener('input', e => {
+      altScale = parseFloat(e.target.value) || 1;
+      $('alt-scale-val').textContent = altScale.toFixed(1);
+      startTick();
+    });
   }
 
   function wireSearch() {
