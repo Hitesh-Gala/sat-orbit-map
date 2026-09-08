@@ -1,6 +1,6 @@
 {
  "source": "CelesTrak",
- "retrieved": "2026-09-07T12:48:02Z",
+ "retrieved": "2026-09-08T11:30:39Z",
  "satcat": {
   "label": "Active payloads",
   "count": 20025,
@@ -39,10 +39,10 @@
   "label": "SOCRATES close approaches",
   "count": 10,
   "window": {
-   "from": "2026-09-06T16:08:53Z",
-   "to": "2026-09-12T12:16:17Z"
+   "from": "2026-09-07T23:21:24Z",
+   "to": "2026-09-13T03:34:43Z"
   },
-  "generated": "2026-09-07T10:47:35Z",
+  "generated": "2026-09-08T10:07:52Z",
   "note": "Top pairs by max collision probability (SOCRATES)."
  }
 }
