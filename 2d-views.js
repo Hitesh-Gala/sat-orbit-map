@@ -1057,6 +1057,19 @@ function wireControls() {
   });
 }
 
+// Daily Space-Track payload bundle (written by scripts/fetch_spacetrack.py).
+// CelesTrak's active group lags fresh launches (e.g. EOS-5), so this fills
+// the gaps.  A missing/broken file just means CelesTrak-only, as before.
+async function fetchSpaceTrackTLEs() {
+  try {
+    const r = await fetch('data/spacetrack-gp.json', { cache: 'no-cache' });
+    if (!r.ok) return [];
+    const { sats = [] } = await r.json();
+    return sats.filter(s => s.t && s.t.length === 2)
+               .map(s => ({ name: s.n, l1: s.t[0], l2: s.t[1], noradId: s.c }));
+  } catch { return []; }
+}
+
 // ---------------------------------------------------------------------------
 // Boot
 // ---------------------------------------------------------------------------
@@ -1084,13 +1097,17 @@ function wireControls() {
     });
 
     setStatus('Loading TLE catalog…');
-    const tleResult = await fetchTLEs();
-    satrecs = makeSatrecs(tleResult.tles).sort((a, b) => a.name.localeCompare(b.name));
+    const [tleResult, stTles] = await Promise.all([fetchTLEs(), fetchSpaceTrackTLEs()]);
+    // CelesTrak stays primary; Space-Track only fills the objects it lacks.
+    const have = new Set(tleResult.tles.map(t => t.noradId));
+    const stAdd = stTles.filter(t => !have.has(t.noradId));
+    satrecs = makeSatrecs(tleResult.tles.concat(stAdd)).sort((a, b) => a.name.localeCompare(b.name));
     buildIndex();
 
     const tag = tleResult.source === 'celestrak' ? 'live'
               : tleResult.source === 'cache' ? 'cached' : 'bundled';
-    setStatus(`${satrecs.length.toLocaleString()} satellites (${tag}) · search one`);
+    const stTag = stAdd.length ? ` + ${stAdd.length.toLocaleString()} Space-Track` : '';
+    setStatus(`${satrecs.length.toLocaleString()} satellites (${tag}${stTag}) · search one`);
 
     const seed = satrecs.find(s => /ISS \(ZARYA\)/i.test(s.name))
               || satrecs.find(s => /ZARYA|ISS/i.test(s.name));
