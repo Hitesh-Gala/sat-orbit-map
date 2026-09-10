@@ -1,6 +1,6 @@
 {
  "source": "Space-Track.org",
- "retrieved": "2026-09-10T11:32:44Z",
+ "retrieved": "2026-09-10T15:56:28Z",
  "tle": {
   "label": "On-orbit objects (GP catalogue)",
   "count": 35047,
@@ -15,49 +15,13 @@
  "conjunctions": {
   "label": "Public CDMs (conjunction messages)",
   "count": 32,
-  "messages": 135,
+  "messages": 160,
   "capped": false,
   "window": {
-   "from": "2026-09-10T13:00:19.876000",
-   "to": "2026-09-13T01:47:13.124000"
+   "from": "2026-09-10T17:08:58.500000",
+   "to": "2026-09-13T09:34:33.169000"
   },
   "sample": [
-   {
-    "sat1": "SL-14 R/B",
-    "id1": "16327",
-    "sat2": "CZ-4 DEB",
-    "id2": "20900",
-    "tca": "2026-09-10T13:00:19.876000",
-    "missM": 359,
-    "prob": 0.000248264,
-    "type1": "ROCKET BODY",
-    "type2": "DEBRIS",
-    "emergency": true
-   },
-   {
-    "sat1": "IRIDIUM 69",
-    "id1": "25319",
-    "sat2": "FENGYUN 1C DEB",
-    "id2": "31898",
-    "tca": "2026-09-10T15:08:24.129000",
-    "missM": 575,
-    "prob": 0.000104809,
-    "type1": "PAYLOAD",
-    "type2": "DEBRIS",
-    "emergency": true
-   },
-   {
-    "sat1": "FENGYUN 1C DEB",
-    "id1": "30283",
-    "sat2": "FENGYUN 1C DEB",
-    "id2": "31561",
-    "tca": "2026-09-10T15:33:57.680000",
-    "missM": 479,
-    "prob": 0.0001794569,
-    "type1": "DEBRIS",
-    "type2": "DEBRIS",
-    "emergency": true
-   },
    {
     "sat1": "COSMOS 2251 DEB",
     "id1": "33842",
@@ -164,6 +128,42 @@
     "prob": 0.0,
     "type1": "PAYLOAD",
     "type2": "PAYLOAD",
+    "emergency": true
+   },
+   {
+    "sat1": "SL-14 DEB",
+    "id1": "19134",
+    "sat2": "COSMOS 2161",
+    "id2": "21732",
+    "tca": "2026-09-11T09:25:02.006000",
+    "missM": 513,
+    "prob": 0.0001132979,
+    "type1": "DEBRIS",
+    "type2": "PAYLOAD",
+    "emergency": true
+   },
+   {
+    "sat1": "THOR BURNER 2 R/B",
+    "id1": "2741",
+    "sat2": "CZ-6A DEB",
+    "id2": "60799",
+    "tca": "2026-09-11T11:17:35.332000",
+    "missM": 690,
+    "prob": 0.0003824409,
+    "type1": "ROCKET BODY",
+    "type2": "DEBRIS",
+    "emergency": true
+   },
+   {
+    "sat1": "COSMOS 2256",
+    "id1": "22691",
+    "sat2": "SL-12 R/B(AUX MOTOR)",
+    "id2": "23402",
+    "tca": "2026-09-11T14:30:28.412000",
+    "missM": 43,
+    "prob": 0.03146531,
+    "type1": "PAYLOAD",
+    "type2": "ROCKET BODY",
     "emergency": true
    }
   ],
