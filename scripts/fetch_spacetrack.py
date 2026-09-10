@@ -214,6 +214,41 @@ try:
         json.dump(gp_doc, f, separators=(',', ':'))
     print(f'wrote data/spacetrack-gp.json — {len(sats):,} payloads')
     out['gpBundle'] = {'count': len(sats)}
+
+    # ---- 4) TLE history for the 2D View's "ENABLE HISTORY" timeline ------
+    # gp_history is Space-Track's heaviest class, so only a short list of
+    # objects, bounded by launch date.  A failure here must not cost the rest.
+    HISTORY_IDS = [100607]                        # EOS-5 (orbit raising)
+    try:
+        launch = {str(g.get('NORAD_CAT_ID')): (g.get('LAUNCH_DATE') or '')[:10] for g in gp_all}
+        hist = {}
+        for nid in HISTORY_IDS:
+            ld = launch.get(str(nid)) or '1957-10-04'
+            rows = query(f'/basicspacedata/query/class/gp_history/NORAD_CAT_ID/{nid}'
+                         f'/EPOCH/%3E{ld}/orderby/EPOCH%20asc/format/json')
+            # Re-issued element sets share an epoch — keep the newest GP_ID.
+            by_epoch = {}
+            for g in rows:
+                if not g.get('TLE_LINE1') or not g.get('TLE_LINE2'):
+                    continue
+                prev = by_epoch.get(g.get('EPOCH'))
+                if prev and int(prev.get('GP_ID') or 0) > int(g.get('GP_ID') or 0):
+                    continue
+                by_epoch[g.get('EPOCH')] = g
+            tles = [{'ep': ep, 'ap': alt_km(g, 1), 'pe': alt_km(g, -1), 'inc': g.get('INCLINATION'),
+                     't': [g['TLE_LINE1'].rstrip(), g['TLE_LINE2'].rstrip()]}
+                    for ep, g in sorted(by_epoch.items())]
+            print(f'gp_history {nid}: {len(tles)} element sets')
+            if tles:
+                hist[str(nid)] = {'name': (rows[-1].get('OBJECT_NAME') or '').strip(),
+                                  'launch': launch.get(str(nid), ''), 'tles': tles}
+        if hist:
+            with open('data/tle-history.json', 'w', encoding='utf-8') as f:
+                json.dump({'source': 'Space-Track.org (gp_history)', 'retrieved': out['retrieved'],
+                           'sats': hist}, f, separators=(',', ':'))
+            print('wrote data/tle-history.json')
+    except Exception as e:
+        print('warning: TLE history fetch failed:', e, file=sys.stderr)
 finally:
     logout()
 
