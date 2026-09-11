@@ -94,6 +94,7 @@
     .chip{display:inline-block; font-family:var(--mono); font-size:11px; padding:2px 8px; border-radius:999px; border:1px solid; white-space:nowrap}
     .chip.ct{color:var(--ct); background:#eaf2fd; border-color:#bcd5f5}
     .chip.st{color:var(--st); background:#f1ebfb; border-color:#d6c7f0}
+    .chip.none{color:#5c6b7d; background:#eceff3; border-color:#d5dce5}
     .chip.alpha{color:#9a5b00; background:#fff4e0; border-color:#f3d7a4}
     .chip.old{color:var(--dim); background:#f2f5f9; border-color:var(--line)}
     .chip.t-P{color:#0f6b45; background:#e6f6ee; border-color:#bfe5d0}
@@ -104,6 +105,7 @@
     .b-active{background:#dff3e8; color:#0f6b45}
     .b-inactive{background:#eceff3; color:#5c6b7d}
     .b-unknown{background:#fdf1dc; color:#8a6212}
+    .b-dropped{background:#fdeceb; color:#a1352a}
     .ep{font-family:var(--mono); font-size:12px}
     .ep.fresh{color:#1e7a50} .ep.aging{color:#9a6a00} .ep.stale{color:#b3412e}
     .legend{margin:10px 2px 0; font-size:12.5px; color:var(--dim)}
@@ -115,6 +117,8 @@
     .tt-head{display:flex; align-items:center; gap:10px; font-size:13.5px}
     .tle-tip .chip.ct{background:rgba(20,102,201,.22); color:#9cc8ff; border-color:#2f5f96}
     .tle-tip .chip.st{background:rgba(106,63,181,.25); color:#cdb6ff; border-color:#5a3f8f}
+    .tle-tip .chip.none{background:rgba(160,175,190,.2); color:#c7d3df; border-color:#4a5d72}
+    .tt-gone{margin-top:3px; color:#f3b3a8}
     .tle-tip pre{margin:7px 0 6px; font:12.5px/1.5 var(--mono); color:#bfe3ff; white-space:pre; overflow:hidden}
     .tt-meta{font-family:var(--mono); font-size:11.5px; color:#9fb6c9}
 
@@ -156,7 +160,7 @@
     <div class="toolbar">
       <input type="search" id="q" placeholder="Filter by name, NORAD, Int'l ID, country, launch site…" autocomplete="off">
       <span class="pill" title="Unique objects after merging both catalogues">Objects <b id="n-all">…</b></span>
-      <span class="pill" title="TLEs read from each catalogue, and how many objects appeared in both"><i class="dot ct"></i>CelesTrak <b id="n-ct">…</b> · <i class="dot st"></i>Space-Track <b id="n-st">…</b> · duplicates removed <b id="n-dup">…</b></span>
+      <span class="pill" title="TLEs read from each catalogue, how many objects appeared in both, and how many are kept after dropping out of both"><i class="dot ct"></i>CelesTrak <b id="n-ct">…</b> · <i class="dot st"></i>Space-Track <b id="n-st">…</b> · duplicates removed <b id="n-dup">…</b> · no longer listed <b id="n-none">…</b></span>
       <span class="pill">Matching <b id="n-match">…</b> <span class="muted">(<span id="n-range">…</span>)</span></span>
       <span class="pill pager">
         <button class="page-btn" id="pg-first" type="button" aria-label="First page">«</button>
@@ -201,6 +205,7 @@
                 <option value="">TLE Source · All</option>
                 <option value="CT">CelesTrak</option>
                 <option value="ST">Space-Track</option>
+                <option value="NONE">None</option>
               </select>
             </th>
             <th class="sortable" data-sort="epoch">TLE date (UTC)</th>
@@ -218,7 +223,8 @@
     </div>
     <p class="legend">TLE date: <span class="ep fresh">≤ 3 days old</span> · <span class="ep aging">≤ 30 days</span> ·
       <span class="ep stale">older</span>. Where both catalogues carry an object, the fresher TLE is kept (a tie goes to
-      CelesTrak). Hover a name to read its TLE.</p>
+      CelesTrak). Objects that later drop out of both catalogues stay listed with their last TLE and source
+      “None”. Hover a name to read its TLE.</p>
 
     <footer>
       <p>Sources: <a href="https://www.space-track.org/" target="_blank" rel="noopener noreferrer">Space-Track.org</a>
@@ -231,7 +237,7 @@
   <div id="tle-tip" class="tle-tip" hidden></div>
 
   <script src="tle-loader.js?v=11"></script>
-  <script src="sat-steroids.js?v=3"></script>
+  <script src="sat-steroids.js?v=4"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=1"></script>
   <script src="mobile-menu.js?v=23"></script>

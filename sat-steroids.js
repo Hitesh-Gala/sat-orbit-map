@@ -11,13 +11,17 @@
 // CelesTrak) and the other copy is dropped.  Descriptive fields (type,
 // country, launch site/date, ops status) come from Space-Track whichever
 // TLE wins.  Hovering (or tapping) a name shows that row's TLE.
+// Objects that later drop out of BOTH catalogues are never lost:
+// data/tle-archive.json (scripts/update_tle_archive.py) keeps their last TLE,
+// shown with TLE source "None".
 
 const { fetchTLEs } = window.Argos;
 
 const PAGE_SIZE = 50;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const TYPES  = { P: 'Payload', R: 'Rocket body', D: 'Debris', U: 'Unknown' };
-const SRC    = { CT: 'CelesTrak', ST: 'Space-Track' };
+const SRC    = { CT: 'CelesTrak', ST: 'Space-Track', NONE: 'None' };
+const SRC_CLASS = { CT: 'ct', ST: 'st', NONE: 'none' };
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
@@ -296,6 +300,9 @@ function ageText(ms) {
 // Ops status (payloads only): CelesTrak's OPS_STATUS_CODE, carried in the
 // Space-Track payload bundle; CelesTrak-only rows come from its active set.
 function statusCell(r) {
+  if (r.src === 'NONE') {
+    return `<span class="badge b-dropped" title="Not listed by CelesTrak or Space-Track since ${fmtLaunch(r.gone)}">DROPPED</span>`;
+  }
   if (r.type !== 'P') return '<span class="muted">—</span>';
   if (r.ops && '+PBSX'.includes(r.ops)) return '<span class="badge b-active">ACTIVE</span>';
   if (r.ops === '-') return '<span class="badge b-inactive">INACTIVE</span>';
@@ -323,16 +330,23 @@ function stRow(s, type) {
 }
 
 async function load() {
-  const [ct, pay, rest] = await Promise.all([
+  const [ct, pay, rest, arch] = await Promise.all([
     fetchTLEs().catch(() => ({ tles: [], source: 'unavailable' })),
     fetchJSON('data/spacetrack-gp.json'),
     fetchJSON('data/spacetrack-other.json'),
+    fetchJSON('data/tle-archive.json'),
   ]);
 
   const byId = new Map();
   for (const s of pay?.sats || []) if (s.t?.length === 2) byId.set(s.c, stRow(s, 'P'));
   for (const s of rest?.sats || []) if (s.t?.length === 2 && !byId.has(s.c)) byId.set(s.c, stRow(s, s.y || 'U'));
   const nST = byId.size;
+
+  // Dropped from both catalogues since an earlier refresh: keep the last TLE.
+  for (const a of arch?.sats || []) {
+    if (a.t?.length !== 2 || byId.has(a.c)) continue;
+    byId.set(a.c, Object.assign(stRow(a, a.y || 'U'), { src: 'NONE', gone: a.gone || '', was: a.was || '' }));
+  }
 
   // One row per object: where Space-Track has it too, keep the fresher TLE.
   const seenCT = new Set();
@@ -345,6 +359,10 @@ async function load() {
       // CelesTrak's active group = operating payloads.
       byId.set(t.noradId, { norad: t.noradId, name: t.name, l1: t.l1, l2: t.l2, epoch, src: 'CT',
                             type: 'P', owner: '', site: '', ld: '', ops: '+' });
+      continue;
+    }
+    if (cur.src === 'NONE') {                 // back in CelesTrak's feed after all
+      Object.assign(cur, { name: t.name, l1: t.l1, l2: t.l2, epoch, src: 'CT' });
       continue;
     }
     dup++;
@@ -360,7 +378,7 @@ async function load() {
     r.hay = (`${r.name} ${r.norad} ${r.intl} ${r.l1.slice(2, 7)} ${r.owner} ${COUNTRY[r.owner]?.name || ''} ` +
              `${COUNTRY[r.launchOwner]?.name || ''} ${site?.name || r.site} ${TYPES[r.type]}`).toLowerCase();
   }
-  return { ct, pay, rest, nST, nCT: seenCT.size, dup };
+  return { ct, pay, rest, nST, nCT: seenCT.size, dup, nNone: ALL.filter(r => r.src === 'NONE').length };
 }
 
 // =========================================================================
@@ -405,7 +423,7 @@ function render() {
       <td class="col-country">${launchCountryCell(r.site)}</td>
       <td class="muted nowrap">${fmtLaunch(r.ld)}</td>
       <td>${statusCell(r)}</td>
-      <td><span class="chip ${r.src === 'CT' ? 'ct' : 'st'}">${SRC[r.src]}</span></td>
+      <td><span class="chip ${SRC_CLASS[r.src]}">${SRC[r.src]}</span></td>
       <td class="nowrap ep ${ageClass(r.epoch)}" title="${ageText(r.epoch)}">${fmtEpoch(r.epoch)}</td>
       <td><span class="chip ${r.alpha ? 'alpha' : 'old'}">${r.alpha ? 'Alpha-5' : 'Old 5-digit'}</span></td>
     </tr>`).join('') || '<tr><td colspan="11" class="empty">No matching objects.</td></tr>';
@@ -449,10 +467,12 @@ function wireTip() {
     cur = td;
     const ep = Number.isFinite(r.epoch) ? new Date(r.epoch).toISOString().replace('T', ' ').slice(0, 19) + ' UTC' : '—';
     tip.innerHTML = `
-      <div class="tt-head"><b>${esc(r.name)}</b><span class="chip ${r.src === 'CT' ? 'ct' : 'st'}">${SRC[r.src]}</span></div>
+      <div class="tt-head"><b>${esc(r.name)}</b><span class="chip ${SRC_CLASS[r.src]}">${SRC[r.src]}</span></div>
       <pre>${esc(r.name)}\n${esc(r.l1)}\n${esc(r.l2)}</pre>
       <div class="tt-meta">Epoch ${ep} · ${ageText(r.epoch)} · ${r.alpha
-        ? `Alpha-5: “${esc(r.l1.slice(2, 7))}” = catalogue #${r.norad}` : 'Old 5-digit catalogue number'}</div>`;
+        ? `Alpha-5: “${esc(r.l1.slice(2, 7))}” = catalogue #${r.norad}` : 'Old 5-digit catalogue number'}</div>${r.src === 'NONE'
+        ? `<div class="tt-meta tt-gone">Last TLE obtained from ${SRC[r.was] || 'an earlier refresh'} · ` +
+          `dropped from both catalogues on ${fmtLaunch(r.gone)}</div>` : ''}`;
     tip.hidden = false;
     place(x, y);
   }
@@ -517,6 +537,7 @@ function fmtStamp(iso) {
     $('n-ct').textContent  = info.nCT.toLocaleString();
     $('n-st').textContent  = info.nST.toLocaleString();
     $('n-dup').textContent = info.dup.toLocaleString();
+    $('n-none').textContent = info.nNone.toLocaleString();
     const ctTag = { celestrak: 'live', cache: 'cached (≤ 6 h)', bundled: 'bundled snapshot' }[info.ct.source] || 'unavailable';
     $('stamps').innerHTML =
       `<span><i class="dot st"></i>Space-Track · data as of <b>${fmtStamp(info.pay?.retrieved)}</b>` +

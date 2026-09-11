@@ -149,6 +149,13 @@ jobs:
             echo "debris refresh incomplete ($count fragments) — keeping existing snapshot"
           fi
 
+      # ---- Keep dropped objects (Sat-Stats on Steroids) ---------------
+      # Anything that just left BOTH catalogues keeps its last TLE in
+      # data/tle-archive.json (see the script's docstring).  Non-fatal.
+      - name: Archive objects that left both catalogues
+        continue-on-error: true
+        run: python3 scripts/update_tle_archive.py
+
       # ---- Commit + push ----------------------------------------------
       # Only commit if at least one of the snapshots actually changed.
       # Use git status --porcelain rather than git diff so we catch new
