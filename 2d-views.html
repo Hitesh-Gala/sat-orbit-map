@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://celestrak.org">
   <link rel="preconnect" href="https://cdn.amcharts.com">
   <link rel="preconnect" href="https://unpkg.com">
-  <link rel="stylesheet" href="styles.css?v=43">
+  <link rel="stylesheet" href="styles.css?v=46">
 </head>
 <body class="page-2d">
   <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
@@ -95,6 +95,11 @@
               <span><i class="lg-line gold"></i>traced path (≤ 3 revolutions)</span>
               <span><i class="lg-now"></i>satellite · flying at slider speed</span>
             </div>
+            <div class="track-legend" id="legend-hist" style="display:none">
+              <span><i class="lg-line gold"></i>traced path · last orbit</span>
+              <span><i class="lg-now"></i>satellite at the replay time</span>
+              <span><i class="lg-line ghost"></i>archived orbits (3-D view)</span>
+            </div>
 
             <!-- Rev-based speed control — snapped to the bottom of the panel,
                  same width; only shown in revolution mode. -->
@@ -115,6 +120,10 @@
                 <div><span>IST</span><b id="rev-ist">--:--:--</b><em id="rev-ist-date">----</em></div>
               </div>
             </div>
+
+            <!-- TLE-history replay (Space-Track gp_history; EOS-5 only for now) -->
+            <button id="hist-btn" class="hist-btn" type="button" aria-pressed="false" disabled
+                    title="TLE history is available for EOS-5 only, for now">ENABLE HISTORY</button>
           </div>
         </div>
       </div>
@@ -133,6 +142,31 @@
     </main>
   </div>
 
+  <!-- TLE-history replay HUD (bottom centre) — shown while ENABLE HISTORY is on -->
+  <div class="hist-hud" id="hist-hud" hidden>
+    <div class="hh-head"><span class="hh-tag">TLE history</span><span id="hh-name"></span></div>
+    <div class="hh-utc" id="hh-utc">--</div>
+    <div class="hh-ist" id="hh-ist">--</div>
+    <div class="hh-tle" id="hh-tle"></div>
+    <div class="hh-track">
+      <div class="hh-ticks" id="hh-ticks"></div>
+      <input id="hh-slider" class="hh-slider" type="range" min="0" max="1" step="1" value="0" aria-label="Replay date">
+    </div>
+    <div class="hh-foot">
+      <span id="hh-from"></span>
+      <span class="hh-ctl">
+        <button id="hh-play" class="hh-play" type="button" title="Pause">❚❚</button>
+        <select id="hh-speed" aria-label="Replay speed">
+          <option value="0">1 min / s</option>
+          <option value="1">10 min / s</option>
+          <option value="2" selected>1 h / s</option>
+          <option value="3">6 h / s</option>
+        </select>
+      </span>
+      <span id="hh-to"></span>
+    </div>
+  </div>
+
   <!-- Country outlines (data only) for reverse-geocoding the ground track. -->
   <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
   <script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
@@ -145,7 +179,7 @@
   <!-- Satellite math + shared data layer -->
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=11"></script>
-  <script src="2d-views.js?v=35"></script>
+  <script src="2d-views.js?v=36"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=1"></script>
   <script src="mobile-menu.js?v=23"></script>

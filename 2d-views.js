@@ -542,18 +542,21 @@ function globe2BlinkTick(ts) {
 // Earth, and positioned at the Earth's on-screen centre.  Arcs that fall behind
 // the planet are dashed and the marker goes hollow — the same cues as globe.gl.
 let orbitSvg = null, oFront = null, oBehind = null, oMarker = null, oMarkerRing = null, oNadir = null;
+let oGhostPast = null, oGhostNext = null, ghostKey = '';   // history replay: archived orbits
 function ensureOrbitSvg() {
   if (orbitSvg) { orbitSvg.style.display = 'block'; return; }
   const NS = 'http://www.w3.org/2000/svg';
   orbitSvg = document.createElementNS(NS, 'svg');
   orbitSvg.setAttribute('class', 'globe2-orbit-svg');
   orbitSvg.setAttribute('aria-hidden', 'true');
+  oGhostPast = document.createElementNS(NS, 'path'); oGhostPast.setAttribute('class', 'g2o-ghost past');
+  oGhostNext = document.createElementNS(NS, 'path'); oGhostNext.setAttribute('class', 'g2o-ghost next');
   oNadir  = document.createElementNS(NS, 'line'); oNadir.setAttribute('class', 'g2o-nadir');
   oBehind = document.createElementNS(NS, 'path'); oBehind.setAttribute('class', 'g2o-behind');
   oFront  = document.createElementNS(NS, 'path'); oFront.setAttribute('class', 'g2o-front');
   oMarkerRing = document.createElementNS(NS, 'circle'); oMarkerRing.setAttribute('class', 'g2o-mk-ring');
   oMarker = document.createElementNS(NS, 'circle'); oMarker.setAttribute('class', 'g2o-mk');
-  orbitSvg.append(oNadir, oBehind, oFront, oMarkerRing, oMarker);
+  orbitSvg.append(oGhostPast, oGhostNext, oNadir, oBehind, oFront, oMarkerRing, oMarker);
   document.body.appendChild(orbitSvg);
 }
 function hideOrbitSvg() { if (orbitSvg) orbitSvg.style.display = 'none'; }
@@ -629,6 +632,27 @@ function updateOverlayRing(ts) {
     oNadir.setAttribute('x1', mk.sx.toFixed(1)); oNadir.setAttribute('y1', mk.sy.toFixed(1));
     oNadir.setAttribute('x2', subX.toFixed(1));  oNadir.setAttribute('y2', subY.toFixed(1));
     oNadir.setAttribute('opacity', occ ? '0' : '0.45');
+  }
+
+  // History replay: every archived orbit, faint — gold for element sets the
+  // replay clock has already passed, dashed blue for those still ahead.  Only
+  // re-projected when the view actually changes (so not while paused).
+  if (hist && hist.ghosts && hist.cur) {
+    const key = `${overlayGmst.toFixed(5)}|${S.toFixed(5)}|${C.x | 0}|${C.y | 0}|${hist.cur.ms}`;
+    if (key !== ghostKey) {
+      ghostKey = key;
+      let past = '', next = '';
+      for (const g of hist.ghosts) {
+        let d = '';
+        for (let i = 0; i <= g.pts.length; i++) {
+          const q = proj(g.pts[i % g.pts.length]);
+          d += (i ? 'L' : 'M') + q.sx.toFixed(1) + ',' + q.sy.toFixed(1);
+        }
+        if (g.ms <= hist.cur.ms) past += d; else next += d;
+      }
+      oGhostPast.setAttribute('d', past);
+      oGhostNext.setAttribute('d', next);
+    }
   }
 }
 
@@ -906,10 +930,223 @@ function applyMode(m) {
 }
 
 // ---------------------------------------------------------------------------
+// History replay ("ENABLE HISTORY").  Replays a satellite's archived element
+// sets — data/tle-history.json, Space-Track gp_history, refreshed daily by
+// scripts/fetch_spacetrack.py (EOS-5 only for now).  A replay clock runs from
+// the first TLE to now; at every instant the orbit comes from the element set
+// in force then (latest epoch <= t), so orbit-raising burns show up as the
+// ellipse changing shape.  Globe 2 is held in the true-scale overlay at ONE
+// scale for the whole timeline, with every archived orbit drawn faintly.
+// ---------------------------------------------------------------------------
+
+const HIST_SPEEDS    = [60, 600, 3600, 21600];   // replay-clock multipliers (#hh-speed)
+const HIST_GHOST_MAX = 40;                       // cap on faint archived orbits in globe 2
+const IST_MS = 5.5 * 3600000;
+let historyData = {};   // noradId -> { name, launch, tles: [{ ep, ap, pe, inc, t: [l1, l2] }] }
+let hist = null;        // the running replay session, or null
+
+async function fetchHistory() {
+  try {
+    const r = await fetch('data/tle-history.json', { cache: 'no-cache' });
+    return r.ok ? ((await r.json()).sats || {}) : {};
+  } catch { return {}; }
+}
+
+// TLE epoch (line 1, cols 19-32: YYDDD.DDDDDDDD) -> ms.
+function tleEpochMs(l1) {
+  const yy = +l1.slice(18, 20), doy = parseFloat(l1.slice(20, 32));
+  return Date.UTC(yy < 57 ? 2000 + yy : 1900 + yy, 0, 1) + (doy - 1) * 86400000;
+}
+
+function periodMsOf(rec) {
+  const p = orbitFacts(rec).periodMin;
+  return (Number.isFinite(p) && p > 0 ? p : 92) * 60000;
+}
+
+// Perigee / apogee altitude (km) from the mean elements — fallback when the
+// history file carries none.
+function apsidesKm(rec) {
+  const a = Math.cbrt(398600.4418 / (rec.no / 60) ** 2);
+  return { pe: a * (1 - rec.ecco) - 6378.137, ap: a * (1 + rec.ecco) - 6378.137 };
+}
+
+function updateHistBtn() {
+  const btn = $('hist-btn'), ok = !!(selected && historyData[selected.noradId]);
+  btn.disabled = !ok;
+  btn.title = ok ? "Replay the archived orbits from Space-Track's TLE history"
+                 : 'TLE history is available for EOS-5 only, for now';
+}
+
+// Element set in force at ms: the latest epoch <= ms (before the first, the first).
+function histSetAt(ms) {
+  const s = hist.sets;
+  let lo = 0, hi = s.length - 1;
+  while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (s[mid].ms <= ms) lo = mid; else hi = mid - 1; }
+  return s[lo];
+}
+
+// One archived orbit as true-scale ECI points — the same frame buildRing2 hands
+// the overlay, so the ghosts and the live ring line up.
+function histGhostPts(set) {
+  const THREE = window.THREE, Y = new THREE.Vector3(0, 1, 0), per = periodMsOf(set.rec), pts = [];
+  for (let i = 0; i < 96; i++) {
+    const t = new Date(set.ms + per * i / 96);
+    const r = propagate(set.rec, t);
+    if (!r || !Number.isFinite(r.lat)) continue;
+    const p = globe2.getCoords(r.lat, r.lon, globe2AltFrac(r.alt));
+    pts.push(new THREE.Vector3(p.x, p.y, p.z).applyAxisAngle(Y, gmstOf(t)));
+  }
+  return pts;
+}
+
+function setHistPlaying(on) {
+  hist.playing = on;
+  const b = $('hh-play');
+  b.textContent = on ? '❚❚' : '▶';
+  b.title = on ? 'Pause' : 'Play';
+}
+
+function resetHistTrail() {
+  hist.trail = [];
+  hist.nextTrailMs = Math.max(hist.minMs, hist.simMs - periodMsOf(histSetAt(hist.simMs).rec));
+  hist.dirty = true;
+}
+
+function startHistory() {
+  const h = selected && historyData[selected.noradId];
+  if (!h || hist || !globe2 || !window.THREE) return;
+  const sets = [];
+  for (const x of h.tles || []) {
+    try {
+      const rec = satellite.twoline2satrec(x.t[0], x.t[1]), ax = apsidesKm(rec);
+      sets.push({ ms: tleEpochMs(x.t[0]), rec, pe: x.pe ?? ax.pe, ap: x.ap ?? ax.ap });
+    } catch { /* skip malformed */ }
+  }
+  if (!sets.length) return;
+  sets.sort((a, b) => a.ms - b.ms);
+
+  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  const launchMs = Date.parse(`${h.launch}T00:00:00Z`);
+  const minMs = Number.isFinite(launchMs) ? Math.min(launchMs, sets[0].ms) : sets[0].ms;
+  const maxMs = Math.max(Date.now(), sets[sets.length - 1].ms);
+  hist = { sets, prevMode: mode, baseRec: selected.rec, minMs, maxMs, simMs: sets[0].ms,
+           speed: HIST_SPEEDS[+$('hh-speed').value] || 3600, playing: true, cur: null, tleTxt: '',
+           trail: [], nextTrailMs: 0, lastTs: null, lastInfoTs: 0, dragging: false, dirty: true, raf: null };
+  mode = 'hist';
+
+  // Globe 2: true-scale overlay at one fixed scale — the lowest perigee in the
+  // whole history clears the Earth, so every orbit is drawn to the same scale.
+  globe2Overlay = true;
+  orbit2Scale = 1;
+  overlayPeriR = Math.max(1.02, Math.min(...sets.map(s => 1 + s.pe / EARTH_R_KM)));
+  const step = Math.ceil(sets.length / HIST_GHOST_MAX);
+  hist.ghosts = sets.filter((s, i) => i % step === 0 || i === sets.length - 1)
+                    .map(s => ({ ms: s.ms, pts: histGhostPts(s) }))
+                    .filter(g => g.pts.length >= 8);
+  ghostKey = '';
+
+  const btn = $('hist-btn');
+  btn.classList.add('on');
+  btn.setAttribute('aria-pressed', 'true');
+  $('mode-btn').disabled = true;
+  setTimeVisibility(false);                    // dotted ±24 h lines off, trail on
+  $('legend-rev').style.display = 'none';
+  $('legend-hist').style.display = '';
+  $('rev-section').hidden = true;
+
+  const span = Math.max(60000, maxMs - minMs);
+  $('hh-slider').max = Math.round(span / 60000);
+  $('hh-from').textContent = `${fmtDate(new Date(minMs))} · ${Number.isFinite(launchMs) ? 'launch' : 'first TLE'}`;
+  $('hh-to').textContent = `${fmtDate(new Date(maxMs))} · now`;
+  $('hh-ticks').innerHTML = sets.map(s =>
+    `<i style="left:${((s.ms - minMs) / span * 100).toFixed(2)}%"></i>`).join('');
+  $('hh-name').textContent = `${selected.name} · ${sets.length} element sets`;
+  $('hist-hud').hidden = false;
+
+  resetHistTrail();
+  setHistPlaying(true);
+  hist.raf = requestAnimationFrame(animHist);
+}
+
+function stopHistory() {
+  if (!hist) return;
+  cancelAnimationFrame(hist.raf);
+  const prev = hist.prevMode;
+  selected.rec = hist.baseRec;
+  hist = null;
+  const btn = $('hist-btn');
+  btn.classList.remove('on');
+  btn.setAttribute('aria-pressed', 'false');
+  $('mode-btn').disabled = false;
+  $('hist-hud').hidden = true;
+  $('legend-hist').style.display = 'none';
+  if (oGhostPast) { oGhostPast.setAttribute('d', ''); oGhostNext.setAttribute('d', ''); }
+  $('rev-line').setAttribute('d', '');
+  lastRing1Build = 0;
+  computeOrbit2Scale(selected.rec);            // back to the live orbit's own regime
+  buildRing2(selected.rec, new Date());
+  applyMode(prev);
+}
+
+function animHist(ts) {
+  if (!hist) return;
+  const dt = hist.lastTs == null ? 0 : Math.min(0.25, (ts - hist.lastTs) / 1000);   // clamp tab-switch gaps
+  hist.lastTs = ts;
+  if (hist.playing) {
+    hist.simMs += hist.speed * dt * 1000;
+    if (hist.simMs >= hist.maxMs) { hist.simMs = hist.maxMs; setHistPlaying(false); }
+    hist.dirty = true;
+  }
+  if (hist.dirty) { hist.dirty = false; renderHist(ts); }
+  hist.raf = requestAnimationFrame(animHist);
+}
+
+function renderHist(ts) {
+  const ms = hist.simMs, t = new Date(ms), set = histSetAt(ms);
+  const idx = hist.sets.indexOf(set), ep = new Date(set.ms);
+  if (set !== hist.cur) {
+    hist.cur = set;
+    selected.rec = set.rec;           // globe-1 ring + info panel follow the set in force
+    lastRing1Build = 0;
+    buildRing2(set.rec, t);           // globe 2: this set's ellipse (true-scale overlay)
+    [...$('hh-ticks').children].forEach((el, i) => el.classList.toggle('on', i === idx));
+  }
+  const stamp = `${fmtDate(ep)} ${ep.toISOString().slice(11, 16)} UTC`;
+  const tleTxt = (ms < hist.sets[0].ms
+      ? `Before the first TLE · extrapolated back from ${stamp}`
+      : `TLE <b>${idx + 1}</b> of ${hist.sets.length} · epoch ${stamp}`) +
+    ` · perigee <b>${Math.round(set.pe).toLocaleString()} km</b> · apogee <b>${Math.round(set.ap).toLocaleString()} km</b>`;
+  if (tleTxt !== hist.tleTxt) { hist.tleTxt = tleTxt; $('hh-tle').innerHTML = tleTxt; }
+
+  // Ground-track trail: the last orbit, each point from the set in force at its time.
+  const per = periodMsOf(set.rec), step = Math.max(20000, per / 240);
+  while (hist.nextTrailMs <= ms) {
+    const g = propagate(histSetAt(hist.nextTrailMs).rec, new Date(hist.nextTrailMs));
+    if (g && Number.isFinite(g.lat)) hist.trail.push({ ms: hist.nextTrailMs, lat: g.lat, lon: g.lon });
+    hist.nextTrailMs += step;
+  }
+  while (hist.trail.length && hist.trail[0].ms < ms - per) hist.trail.shift();
+
+  const r = propagate(set.rec, t);
+  if (r && Number.isFinite(r.lat)) {
+    setNowMarker(r.lat, r.lon, r.alt, t);
+    $('rev-line').setAttribute('d', segmentPath(hist.trail.concat([{ lat: r.lat, lon: r.lon }])));
+    if (ts - hist.lastInfoTs > 200) {
+      hist.lastInfoTs = ts;
+      renderInfo(r, 'History replay · orbit from the TLE in force at the time shown below');
+    }
+  }
+  $('hh-utc').textContent = `${fmtDate(t)} · ${fmtClock(t)} UTC`;
+  $('hh-ist').textContent = `${fmtDate(new Date(ms + IST_MS))} · ${fmtClock(t, IST_MS)} IST`;
+  if (!hist.dragging) $('hh-slider').value = Math.round((ms - hist.minMs) / 60000);
+}
+
+// ---------------------------------------------------------------------------
 // Selection
 // ---------------------------------------------------------------------------
 
 function selectSat(entry) {
+  if (hist) stopHistory();               // restore the previous sat's live orbit first
   selected = entry;
   $('sat-search').value = entry.name;
   hideResults();
@@ -919,6 +1156,7 @@ function selectSat(entry) {
   buildRing2(entry.rec, new Date());     // globe-2 ellipse: globe.gl ring, or hand off to the overlay
   if (mode === 'rev') startRev();
   else { drawTrack(); refreshCurrent(); }
+  updateHistBtn();
 }
 
 // ---------------------------------------------------------------------------
@@ -1055,6 +1293,23 @@ function wireControls() {
     collapseBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
     collapseBtn.title = collapsed ? 'Expand panel' : 'Collapse panel';
   });
+
+  // History replay
+  $('hist-btn').addEventListener('click', () => (hist ? stopHistory() : startHistory()));
+  $('hh-play').addEventListener('click', () => {
+    if (!hist) return;
+    if (!hist.playing && hist.simMs >= hist.maxMs) { hist.simMs = hist.sets[0].ms; resetHistTrail(); }
+    setHistPlaying(!hist.playing);
+  });
+  $('hh-speed').addEventListener('change', () => { if (hist) hist.speed = HIST_SPEEDS[+$('hh-speed').value]; });
+  const hs = $('hh-slider');
+  hs.addEventListener('pointerdown', () => { if (hist) hist.dragging = true; });
+  for (const ev of ['pointerup', 'change']) hs.addEventListener(ev, () => { if (hist) hist.dragging = false; });
+  hs.addEventListener('input', () => {
+    if (!hist) return;
+    hist.simMs = Math.min(hist.maxMs, hist.minMs + hs.value * 60000);
+    resetHistTrail();
+  });
 }
 
 // Daily Space-Track payload bundle (written by scripts/fetch_spacetrack.py).
@@ -1097,7 +1352,9 @@ async function fetchSpaceTrackTLEs() {
     });
 
     setStatus('Loading TLE catalog…');
-    const [tleResult, stTles] = await Promise.all([fetchTLEs(), fetchSpaceTrackTLEs()]);
+    const [tleResult, stTles, histData] =
+      await Promise.all([fetchTLEs(), fetchSpaceTrackTLEs(), fetchHistory()]);
+    historyData = histData;
     // CelesTrak stays primary; Space-Track only fills the objects it lacks.
     const have = new Set(tleResult.tles.map(t => t.noradId));
     const stAdd = stTles.filter(t => !have.has(t.noradId));
