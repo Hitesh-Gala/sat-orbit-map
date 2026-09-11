@@ -215,6 +215,34 @@ try:
     print(f'wrote data/spacetrack-gp.json — {len(sats):,} payloads')
     out['gpBundle'] = {'count': len(sats)}
 
+    # ---- 3b) Everything else on orbit, for Sat-Stats on Steroids ---------
+    # Rocket bodies, debris and unknowns: with the payloads above they make up
+    # Space-Track's whole on-orbit catalogue (~35 k).  Trimmed to the fields
+    # that table shows.  A failure here keeps the previous file.
+    TYPE_CODE = {'ROCKET BODY': 'R', 'DEBRIS': 'D'}
+    try:
+        other = query('/basicspacedata/query/class/gp/decay_date/null-val/OBJECT_TYPE/%3C%3EPAYLOAD'
+                      '/orderby/NORAD_CAT_ID/predicates/NORAD_CAT_ID,OBJECT_NAME,OBJECT_TYPE,'
+                      'COUNTRY_CODE,LAUNCH_DATE,SITE,TLE_LINE1,TLE_LINE2/format/json')
+        rest = [{'c': int(g['NORAD_CAT_ID']), 'n': (g.get('OBJECT_NAME') or '').strip(),
+                 'y': TYPE_CODE.get(g.get('OBJECT_TYPE'), 'U'),
+                 'o': (g.get('COUNTRY_CODE') or '').strip(), 'ld': (g.get('LAUNCH_DATE') or '')[:10],
+                 'ls': (g.get('SITE') or '').strip(),
+                 't': [g['TLE_LINE1'].rstrip(), g['TLE_LINE2'].rstrip()]}
+                for g in other if g.get('TLE_LINE1') and g.get('TLE_LINE2')]
+        if len(rest) >= 5000:
+            with open('data/spacetrack-other.json', 'w', encoding='utf-8') as f:
+                json.dump({'source': 'Space-Track.org (GP class, on-orbit non-payloads)',
+                           'retrieved': out['retrieved'], 'count': len(rest), 'sats': rest},
+                          f, separators=(',', ':'))
+            print(f'wrote data/spacetrack-other.json — {len(rest):,} rocket bodies / debris / unknown')
+            out['otherBundle'] = {'count': len(rest)}
+        else:
+            print(f'warning: only {len(rest)} non-payload objects — keeping the previous file',
+                  file=sys.stderr)
+    except Exception as e:
+        print('warning: non-payload GP fetch failed:', e, file=sys.stderr)
+
     # ---- 4) TLE history for the 2D View's "ENABLE HISTORY" timeline ------
     # gp_history is Space-Track's heaviest class, so only a short list of
     # objects, bounded by launch date.  A failure here must not cost the rest.
