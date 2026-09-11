@@ -2886,7 +2886,6 @@ body.page-2d .map-cell .map-sub {
 .hist-btn:hover:not(:disabled) { background: rgba(255, 210, 63, 0.18); }
 .hist-btn.on { background: #ffd23f; color: #10151c; box-shadow: 0 0 14px rgba(255, 210, 63, 0.45); }
 .hist-btn:disabled { color: #5f7286; background: transparent; border-color: rgba(120, 170, 220, 0.22); cursor: not-allowed; }
-.switch:disabled { opacity: 0.4; cursor: not-allowed; }
 .track-legend .lg-line.ghost { border-top-style: solid; color: rgba(255, 210, 63, 0.55); }
 
 .hist-hud {

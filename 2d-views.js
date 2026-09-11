@@ -813,14 +813,14 @@ function setTimeVisibility(on) {
 }
 
 function drawTrack() {
-  if (mode !== 'time' || !selected) return;
+  if (mode !== 'time' || !selected || hist) return;
   anchor = new Date();
   drawTrackLines(selected.rec, anchor);
   drawMarks(selected.rec, anchor);
 }
 
 function refreshCurrent() {
-  if (mode !== 'time' || !selected) return;
+  if (mode !== 'time' || !selected || hist) return;
   const now = new Date();
   const r = propagate(selected.rec, now);
   if (!r || !Number.isFinite(r.lat)) return;
@@ -870,7 +870,7 @@ function updateRevTimes(t) {
 }
 
 function animRev(ts) {
-  if (mode !== 'rev' || !selected) { rafId = null; return; }
+  if (mode !== 'rev' || !selected || hist) { rafId = null; return; }
   if (lastTs == null) lastTs = ts;
   const dt = (ts - lastTs) / 1000;   // real seconds
   lastTs = ts;
@@ -902,7 +902,7 @@ function animRev(ts) {
 }
 
 function startRev() {
-  if (!selected) return;
+  if (!selected || hist) return;
   resetRevAnim();
   lastTs = null;
   lastInfoTs = 0;
@@ -917,8 +917,14 @@ function applyMode(m) {
   btn.classList.toggle('on', rev);
   $('mode-state').textContent = rev ? 'Revolution-based' : 'Time-based';
   setTimeVisibility(!rev);
-  $('rev-section').hidden = !rev;
+  $('rev-section').hidden = !rev || !!hist;       // a replay's speed lives in the HUD
 
+  if (hist) {                                      // the replay clock drives both modes
+    $('rev-line').setAttribute('d', '');
+    hist.anchorMs = NaN;                           // time mode: redraw the ±24 h track
+    resetHistTrail();                              // rev mode: restart the traced path
+    return;
+  }
   if (rev) {
     startRev();
   } else {
@@ -942,6 +948,7 @@ function applyMode(m) {
 const HIST_SPEEDS    = [60, 600, 3600, 21600];   // replay-clock multipliers (#hh-speed)
 const HIST_GHOST_MAX = 40;                       // cap on faint archived orbits in globe 2
 const IST_MS = 5.5 * 3600000;
+const HIST_TRACK_REDRAW = 30 * 60000;           // time mode: redraw the ±24 h track (~36 ms) every 30 replay-min
 let historyData = {};   // noradId -> { name, launch, tles: [{ ep, ap, pe, inc, t: [l1, l2] }] }
 let hist = null;        // the running replay session, or null
 
@@ -1006,9 +1013,11 @@ function setHistPlaying(on) {
   b.title = on ? 'Pause' : 'Play';
 }
 
+// Rev mode: the traced path restarts at the replay position (as live rev mode
+// restarts from the present).
 function resetHistTrail() {
   hist.trail = [];
-  hist.nextTrailMs = Math.max(hist.minMs, hist.simMs - periodMsOf(histSetAt(hist.simMs).rec));
+  hist.trailStart = hist.nextTrailMs = hist.simMs;
   hist.dirty = true;
 }
 
@@ -1029,10 +1038,10 @@ function startHistory() {
   const launchMs = Date.parse(`${h.launch}T00:00:00Z`);
   const minMs = Number.isFinite(launchMs) ? Math.min(launchMs, sets[0].ms) : sets[0].ms;
   const maxMs = Math.max(Date.now(), sets[sets.length - 1].ms);
-  hist = { sets, prevMode: mode, baseRec: selected.rec, minMs, maxMs, simMs: sets[0].ms,
+  hist = { sets, baseRec: selected.rec, minMs, maxMs, simMs: sets[0].ms,
            speed: HIST_SPEEDS[+$('hh-speed').value] || 3600, playing: true, cur: null, tleTxt: '',
-           trail: [], nextTrailMs: 0, lastTs: null, lastInfoTs: 0, dragging: false, dirty: true, raf: null };
-  mode = 'hist';
+           trail: [], nextTrailMs: 0, trailStart: 0, anchorMs: NaN, trackSet: null, lastTrackTs: 0,
+           lastTs: null, lastInfoTs: 0, dragging: false, dirty: true, raf: null };
 
   // Globe 2: true-scale overlay at one fixed scale — the lowest perigee in the
   // whole history clears the Earth, so every orbit is drawn to the same scale.
@@ -1048,11 +1057,9 @@ function startHistory() {
   const btn = $('hist-btn');
   btn.classList.add('on');
   btn.setAttribute('aria-pressed', 'true');
-  $('mode-btn').disabled = true;
-  setTimeVisibility(false);                    // dotted ±24 h lines off, trail on
-  $('legend-rev').style.display = 'none';
   $('legend-hist').style.display = '';
-  $('rev-section').hidden = true;
+  $('rev-section').hidden = true;              // the replay's speed lives in the HUD
+  $('rev-line').setAttribute('d', '');
 
   const span = Math.max(60000, maxMs - minMs);
   $('hh-slider').max = Math.round(span / 60000);
@@ -1071,13 +1078,11 @@ function startHistory() {
 function stopHistory() {
   if (!hist) return;
   cancelAnimationFrame(hist.raf);
-  const prev = hist.prevMode;
   selected.rec = hist.baseRec;
   hist = null;
   const btn = $('hist-btn');
   btn.classList.remove('on');
   btn.setAttribute('aria-pressed', 'false');
-  $('mode-btn').disabled = false;
   $('hist-hud').hidden = true;
   $('legend-hist').style.display = 'none';
   if (oGhostPast) { oGhostPast.setAttribute('d', ''); oGhostNext.setAttribute('d', ''); }
@@ -1085,7 +1090,7 @@ function stopHistory() {
   lastRing1Build = 0;
   computeOrbit2Scale(selected.rec);            // back to the live orbit's own regime
   buildRing2(selected.rec, new Date());
-  applyMode(prev);
+  applyMode(mode);                             // resume the live view in the current mode
 }
 
 function animHist(ts) {
@@ -1118,19 +1123,35 @@ function renderHist(ts) {
     ` · perigee <b>${Math.round(set.pe).toLocaleString()} km</b> · apogee <b>${Math.round(set.ap).toLocaleString()} km</b>`;
   if (tleTxt !== hist.tleTxt) { hist.tleTxt = tleTxt; $('hh-tle').innerHTML = tleTxt; }
 
-  // Ground-track trail: the last orbit, each point from the set in force at its time.
-  const per = periodMsOf(set.rec), step = Math.max(20000, per / 240);
-  while (hist.nextTrailMs <= ms) {
-    const g = propagate(histSetAt(hist.nextTrailMs).rec, new Date(hist.nextTrailMs));
-    if (g && Number.isFinite(g.lat)) hist.trail.push({ ms: hist.nextTrailMs, lat: g.lat, lon: g.lon });
-    hist.nextTrailMs += step;
+  if (mode === 'rev') {
+    // Rev-based: golden path traced by the replay clock, each point from the set
+    // in force at its time; restarts after 3 revolutions, like live rev mode.
+    const per = periodMsOf(set.rec), step = Math.max(20000, per / 240);
+    if (ms < hist.trailStart || ms - hist.trailStart >= MAX_REVS * per) resetHistTrail();
+    while (hist.nextTrailMs <= ms) {
+      const g = propagate(histSetAt(hist.nextTrailMs).rec, new Date(hist.nextTrailMs));
+      if (g && Number.isFinite(g.lat)) hist.trail.push({ lat: g.lat, lon: g.lon });
+      hist.nextTrailMs += step;
+    }
+  } else if (set !== hist.trackSet || !(Math.abs(ms - hist.anchorMs) < HIST_TRACK_REDRAW)) {
+    // Time-based: the ±24 h dotted track around the replay time, redrawn as the
+    // clock moves (throttled — each redraw is ~3 k SGP4 steps).
+    if (ts - hist.lastTrackTs > 250) {
+      hist.lastTrackTs = ts;
+      hist.anchorMs = ms;
+      hist.trackSet = set;
+      anchor = new Date(ms);
+      drawTrackLines(set.rec, anchor);
+      drawMarks(set.rec, anchor);
+    } else {
+      hist.dirty = true;                      // retry next frame (matters while paused)
+    }
   }
-  while (hist.trail.length && hist.trail[0].ms < ms - per) hist.trail.shift();
 
   const r = propagate(set.rec, t);
   if (r && Number.isFinite(r.lat)) {
     setNowMarker(r.lat, r.lon, r.alt, t);
-    $('rev-line').setAttribute('d', segmentPath(hist.trail.concat([{ lat: r.lat, lon: r.lon }])));
+    if (mode === 'rev') $('rev-line').setAttribute('d', segmentPath(hist.trail.concat([{ lat: r.lat, lon: r.lon }])));
     if (ts - hist.lastInfoTs > 200) {
       hist.lastInfoTs = ts;
       renderInfo(r, 'History replay · orbit from the TLE in force at the time shown below');
