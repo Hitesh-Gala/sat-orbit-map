@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>NAZAR · Sat-Stats on Steroids</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --paper:#e9eff6; --card:#ffffff; --ink:#15263a; --dim:#5c6b7d; --line:#dbe4ee;
+      --accent:#1466c9; --accent2:#e26a2c; --good:#1e9e6a; --warn:#e0a83a;
+      --st:#6a3fb5;      /* Space-Track purple */
+      --ct:#1466c9;      /* CelesTrak blue */
+      --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+      --disp:'Orbitron',system-ui,sans-serif;
+      --shadow:0 1px 2px rgba(20,45,80,.06),0 8px 24px rgba(20,45,80,.07);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0}
+    body{
+      background:
+        radial-gradient(1100px 480px at 82% -12%, #dcecfb 0%, rgba(220,236,251,0) 60%),
+        radial-gradient(900px 480px at -8% 6%, #e6edf9 0%, rgba(230,237,249,0) 55%), var(--paper);
+      color:var(--ink); font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; -webkit-font-smoothing:antialiased;
+    }
+    a{color:var(--accent)}
+    .wrap{max-width:1440px; margin:0 auto; padding:0 22px 70px}
+
+    /* chrome — same as the other Space Stuff pages */
+    .header{position:sticky; top:0; z-index:50; background:rgba(233,239,246,.9); backdrop-filter:blur(8px); border-bottom:1px solid var(--line)}
+    .header-inner{position:relative; display:flex; align-items:center; gap:16px; height:62px; max-width:1440px; margin:0 auto; padding:0 22px}
+    .top-logo{display:inline-flex; align-items:center; padding:4px 9px; background:#0a1018; border:1px solid #1d3147; border-radius:6px; text-decoration:none; transition:.15s}
+    .top-logo:hover{border-color:#4ea8ff; transform:scale(1.04)}
+    .top-logo img{height:38px; display:block}
+    .logo-credit{align-self:center; margin-left:-2px; max-width:320px; text-align:center; font-family:var(--mono); font-size:11.7px; line-height:1.35; color:var(--dim)}
+    .logo-credit a{color:var(--accent); text-decoration:none}
+    @media (max-width:900px){ .logo-credit{display:none} }
+    .header-title{position:absolute; left:50%; transform:translateX(-50%); font-family:var(--disp); font-weight:600; letter-spacing:.04em; font-size:15px; white-space:nowrap}
+    .header-right{margin-left:auto; display:flex; gap:9px}
+    .btn{font-family:var(--mono); font-size:13.5px; text-decoration:none; cursor:pointer; padding:7px 13px; border-radius:7px; border:1px solid var(--line); background:var(--card); color:var(--ink); transition:.15s; white-space:nowrap}
+    .btn:hover{border-color:var(--accent); color:var(--accent)}
+    @media (max-width:760px){ .header-title{display:none} }
+
+    .cover{padding:22px 0 4px}
+    .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent2)}
+    h1{font-family:var(--disp); font-weight:800; font-size:30px; line-height:1.08; margin:8px 0 10px}
+    .stamps{display:flex; flex-wrap:wrap; gap:8px 22px; font-family:var(--mono); font-size:12.5px; color:var(--dim)}
+    .stamps b{color:var(--ink)}
+    .stamps em{font-style:normal; color:#8a6212}
+    .dot{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; vertical-align:0}
+    .dot.ct{background:var(--ct)} .dot.st{background:var(--st)}
+
+    /* toolbar — Sat-Stats' layout: search, counters, pager */
+    .toolbar{display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin:18px 0 12px}
+    #q{flex:1 1 300px; min-width:220px; padding:9px 13px; font:13.5px var(--mono); color:var(--ink); background:var(--card);
+       border:1px solid var(--line); border-radius:9px; box-shadow:var(--shadow)}
+    #q:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(20,102,201,.15)}
+    .pill{font-family:var(--mono); font-size:12.5px; padding:6px 11px; border-radius:999px; background:var(--card); border:1px solid var(--line); color:var(--dim); white-space:nowrap}
+    .pill b{color:var(--ink)}
+    @media (max-width:760px){ .pill{white-space:normal} }
+    .pager{display:inline-flex; align-items:center; gap:5px}
+    .page-btn{font:600 13px var(--mono); width:26px; height:24px; padding:0; border-radius:6px; border:1px solid var(--line); background:#f5f8fc; color:var(--ink); cursor:pointer}
+    .page-btn:hover{border-color:var(--accent); color:var(--accent)}
+    .status{font-family:var(--mono); font-size:12.5px; color:var(--accent)}
+    .status.err{color:#b3412e}
+
+    /* table — Sat-Stats' columns, light palette */
+    .tbl-wrap{background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); overflow:auto; max-height:calc(100vh - 250px); min-height:320px}
+    .sx-table{width:100%; min-width:1240px; border-collapse:separate; border-spacing:0; font-size:13px}
+    .sx-table thead th{position:sticky; top:0; z-index:2; background:#f3f7fc; text-align:left; font-family:var(--mono); font-size:11.5px;
+      font-weight:600; letter-spacing:.03em; color:var(--dim); padding:9px 10px; border-bottom:2px solid var(--line); white-space:nowrap}
+    .sx-table th.sortable{cursor:pointer; user-select:none}
+    .sx-table th.sortable:hover{color:var(--accent)}
+    .sx-table th.sortable::after{content:" ↕"; opacity:.35}
+    .sx-table th[data-dir="asc"]::after{content:" ▲"; opacity:1; color:var(--accent)}
+    .sx-table th[data-dir="desc"]::after{content:" ▼"; opacity:1; color:var(--accent)}
+    .col-filter{max-width:190px; font:600 11.5px var(--mono); color:var(--ink); background:#fff; border:1px solid var(--line); border-radius:6px; padding:3px 5px; cursor:pointer}
+    .sx-table tbody td{padding:7px 10px; border-bottom:1px solid #eef2f7; vertical-align:middle}
+    .sx-table tbody tr:nth-child(even){background:#fafcfe}
+    .sx-table tbody tr:hover{background:#eef5fd}
+    .col-name{font-weight:600; cursor:help; text-decoration:underline dotted #b3c4d8; text-underline-offset:3px; min-width:170px}
+    .col-name:hover{color:var(--accent)}
+    .muted{color:var(--dim)}
+    .num{font-variant-numeric:tabular-nums}
+    .nowrap{white-space:nowrap}
+    .empty{padding:26px; text-align:center; color:var(--dim)}
+    .flag{width:20px; height:15px; margin-right:7px; vertical-align:middle; border-radius:2px; box-shadow:0 0 0 1px rgba(0,0,0,.08)}
+    .flag-glyph{margin-right:7px; vertical-align:middle}
+    .ctry-name{display:inline-block; vertical-align:middle}
+    .ctry-main{display:block}
+    .site-name{display:block; font-size:11px; color:var(--dim)}
+    .chip{display:inline-block; font-family:var(--mono); font-size:11px; padding:2px 8px; border-radius:999px; border:1px solid; white-space:nowrap}
+    .chip.ct{color:var(--ct); background:#eaf2fd; border-color:#bcd5f5}
+    .chip.st{color:var(--st); background:#f1ebfb; border-color:#d6c7f0}
+    .chip.alpha{color:#9a5b00; background:#fff4e0; border-color:#f3d7a4}
+    .chip.old{color:var(--dim); background:#f2f5f9; border-color:var(--line)}
+    .chip.t-P{color:#0f6b45; background:#e6f6ee; border-color:#bfe5d0}
+    .chip.t-R{color:#9a4d12; background:#fdf0e4; border-color:#f2d3b4}
+    .chip.t-D{color:#a1352a; background:#fdeceb; border-color:#f3c6c1}
+    .chip.t-U{color:var(--dim); background:#f2f5f9; border-color:var(--line)}
+    .badge{display:inline-block; font:600 10.5px var(--mono); letter-spacing:.06em; padding:2px 7px; border-radius:5px}
+    .b-active{background:#dff3e8; color:#0f6b45}
+    .b-inactive{background:#eceff3; color:#5c6b7d}
+    .b-unknown{background:#fdf1dc; color:#8a6212}
+    .ep{font-family:var(--mono); font-size:12px}
+    .ep.fresh{color:#1e7a50} .ep.aging{color:#9a6a00} .ep.stale{color:#b3412e}
+    .legend{margin:10px 2px 0; font-size:12.5px; color:var(--dim)}
+
+    /* floating TLE window */
+    .tle-tip{position:fixed; z-index:200; max-width:calc(100vw - 16px); background:#0e1a28; color:#e6f0fa; border:1px solid #2b4460;
+      border-radius:10px; padding:10px 13px; box-shadow:0 14px 34px rgba(10,20,40,.38); pointer-events:none}
+    .tle-tip[hidden]{display:none}
+    .tt-head{display:flex; align-items:center; gap:10px; font-size:13.5px}
+    .tle-tip .chip.ct{background:rgba(20,102,201,.22); color:#9cc8ff; border-color:#2f5f96}
+    .tle-tip .chip.st{background:rgba(106,63,181,.25); color:#cdb6ff; border-color:#5a3f8f}
+    .tle-tip pre{margin:7px 0 6px; font:12.5px/1.5 var(--mono); color:#bfe3ff; white-space:pre; overflow:hidden}
+    .tt-meta{font-family:var(--mono); font-size:11.5px; color:#9fb6c9}
+
+    footer{margin-top:34px; padding-top:16px; border-top:1px solid var(--line); color:var(--dim); font-size:12px; line-height:1.6}
+
+    /* Background-score button: light page, so override nazar-bgm.js' dark styling. */
+    #nazar-bgm-toggle{
+      background:rgba(255,255,255,.94) !important;
+      border:1px solid var(--line) !important;
+      color:var(--accent) !important;
+      box-shadow:0 4px 16px rgba(20,45,80,.18) !important;
+    }
+    #nazar-bgm-toggle:hover{ border-color:var(--accent) !important; color:#0d4d96 !important; }
+    #nazar-bgm-toggle.on{
+      color:#b8860b !important; border-color:#e0a83a !important;
+      box-shadow:0 0 15px rgba(224,168,58,.5),0 4px 16px rgba(20,45,80,.18) !important;
+    }
+  </style>
+</head>
+<body class="page-steroids">
+  <header class="header">
+    <div class="header-inner">
+      <a class="top-logo" href="index.html" title="NAZAR — back to the live globe"><img src="data/nazar-logo.svg?v=5" alt="NAZAR"></a>
+      <span class="header-title">SAT-STATS ON STEROIDS</span>
+      <span class="header-right">
+        <a class="btn" href="space-stuff.html">← Space Stuff</a>
+        <a class="btn" href="index.html">NAZAR Home</a>
+      </span>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="cover">
+      <div class="eyebrow">Two catalogues, one table</div>
+      <h1>Sat-Stats on Steroids</h1>
+      <div class="stamps" id="stamps">…</div>
+    </div>
+
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="Filter by name, NORAD, Int'l ID, country, launch site…" autocomplete="off">
+      <span class="pill" title="Unique objects after merging both catalogues">Objects <b id="n-all">…</b></span>
+      <span class="pill" title="TLEs read from each catalogue, and how many objects appeared in both"><i class="dot ct"></i>CelesTrak <b id="n-ct">…</b> · <i class="dot st"></i>Space-Track <b id="n-st">…</b> · duplicates removed <b id="n-dup">…</b></span>
+      <span class="pill">Matching <b id="n-match">…</b> <span class="muted">(<span id="n-range">…</span>)</span></span>
+      <span class="pill pager">
+        <button class="page-btn" id="pg-first" type="button" aria-label="First page">«</button>
+        <button class="page-btn" id="pg-prev" type="button" aria-label="Previous page">‹</button>
+        Page <b id="page-cur">1</b>/<b id="page-tot">1</b>
+        <button class="page-btn" id="pg-next" type="button" aria-label="Next page">›</button>
+        <button class="page-btn" id="pg-last" type="button" aria-label="Last page">»</button>
+      </span>
+      <span class="status" id="status"></span>
+    </div>
+
+    <div class="tbl-wrap" id="tbl-wrap">
+      <table class="sx-table">
+        <thead>
+          <tr>
+            <th class="sortable" data-sort="name">Name</th>
+            <th class="sortable" data-sort="norad">NORAD</th>
+            <th class="sortable" data-sort="intl">Int'l ID</th>
+            <th>
+              <select id="f-type" class="col-filter" aria-label="Filter by object type">
+                <option value="">Type · All</option>
+                <option value="P">Payload</option>
+                <option value="R">Rocket body</option>
+                <option value="D">Debris</option>
+                <option value="U">Unknown</option>
+              </select>
+            </th>
+            <th>
+              <select id="f-owner" class="col-filter" aria-label="Filter by country of origin">
+                <option value="">Country of Origin · All</option>
+              </select>
+            </th>
+            <th>
+              <select id="f-launch" class="col-filter" aria-label="Filter by launch country">
+                <option value="">Launch Country · All</option>
+              </select>
+            </th>
+            <th class="sortable" data-sort="ld">Launch date</th>
+            <th>Status</th>
+            <th>
+              <select id="f-src" class="col-filter" aria-label="Filter by TLE source">
+                <option value="">TLE Source · All</option>
+                <option value="CT">CelesTrak</option>
+                <option value="ST">Space-Track</option>
+              </select>
+            </th>
+            <th class="sortable" data-sort="epoch">TLE date (UTC)</th>
+            <th>
+              <select id="f-fmt" class="col-filter" aria-label="Filter by TLE format">
+                <option value="">TLE Format · All</option>
+                <option value="O">Old 5-digit</option>
+                <option value="A">Alpha-5</option>
+              </select>
+            </th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="legend">TLE date: <span class="ep fresh">≤ 3 days old</span> · <span class="ep aging">≤ 30 days</span> ·
+      <span class="ep stale">older</span>. Where both catalogues carry an object, the fresher TLE is kept (a tie goes to
+      CelesTrak). Hover a name to read its TLE.</p>
+
+    <footer>
+      <p>Sources: <a href="https://www.space-track.org/" target="_blank" rel="noopener noreferrer">Space-Track.org</a>
+        (US Space Force / 18th SDS — every on-orbit object, fetched server-side once a day; credentials live in encrypted
+        repository secrets, never in this page) and
+        <a href="https://celestrak.org/" target="_blank" rel="noopener noreferrer">CelesTrak</a> (active payloads).</p>
+    </footer>
+  </div>
+
+  <div id="tle-tip" class="tle-tip" hidden></div>
+
+  <script src="tle-loader.js?v=11"></script>
+  <script src="sat-steroids.js?v=3"></script>
+  <script src="nazar-bgm.js?v=4"></script>
+  <script src="site-analytics.js?v=1"></script>
+  <script src="mobile-menu.js?v=23"></script>
+  <script>
+    (function setCredit(){
+      var c=document.querySelector('.logo-credit');
+      if(!c){ return setTimeout(setCredit,50); }
+      c.innerHTML='Hitesh Gala is a Space Researcher &amp;<br>A Defence Fellow at '
+        +'<a href="https://takshashila.org.in" target="_blank" rel="noopener noreferrer">www.takshashila.org.in</a>';
+    })();
+  </script>
+</body>
+</html>
