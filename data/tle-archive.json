@@ -1,1 +1,1 @@
-{"source":"Objects dropped from both CelesTrak and Space-Track (last TLE kept)","updated":"2026-09-11","count":0,"sats":[]}
+{"source":"Objects dropped from both CelesTrak and Space-Track (last TLE kept)","updated":"2026-09-12","count":1,"sats":[{"c":60051,"n":"STARLINK-31811","y":"P","o":"","ld":"","ls":"","s":"+","t":["1 60051U 24112P   26253.36259381  .09088332  11746-4  38920-2 0  9997","2 60051  53.1513 291.3360 0008887 174.8651 185.2482 16.21937946126994"],"was":"CT","gone":"2026-09-12"}]}
