@@ -32,6 +32,7 @@ const GRAB_PX          = 12;                       // pointer distance (px) that
 const CLOCK_PLOT_R     = 44;                       // clock-face radius that stands for a 90° tilt
 const ORBIT_ARC_DEG    = 5;                        // red orbital path: this much arc either side of the sat…
 const ORBIT_ARC_STEPS  = 20;                       // …sampled with this many points per side
+const ARROW_SCREEN     = 0.03;                     // orbit arrowheads: length ∝ camera distance (≈ constant on screen)
 
 const $ = id => document.getElementById(id);
 
@@ -325,12 +326,31 @@ function satFootprint(pf, axis, halfAngleDeg, numPoints = 96) {
   return area > 0 ? ring.reverse() : ring;
 }
 
+// A small red arrowhead on the orbit line, pointing along `dir`.  The front one
+// has its tip on the line's end and the rear one its base, so both stay on the
+// line.  A constant size on screen, but never longer than 30 % of the line.
+function orbitArrow(at, dir, tipOnPoint, lineLen) {
+  const geo = new THREE.ConeGeometry(0.35, 1, 16);
+  geo.translate(0, tipOnPoint ? -0.5 : 0.5, 0);
+  const arrow = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xff3b3b }));
+  arrow.position.copy(at);
+  arrow.quaternion.setFromUnitVectors(Y_AXIS, dir.clone().normalize());
+  arrow.renderOrder = 4;
+  const worldPos = new THREE.Vector3();
+  arrow.onBeforeRender = (renderer, scene, cam) => {
+    arrow.getWorldPosition(worldPos);
+    arrow.scale.setScalar(Math.min(cam.position.distanceTo(worldPos) * ARROW_SCREEN, lineLen * 0.3));
+    arrow.updateMatrixWorld();
+  };
+  return arrow;
+}
+
 // Sat cone: tip at the satellite, opening along the boresight; tip bright and
 // base faint (shader fade).  It runs to the plane through Earth's centre, so
 // the visible part ends at the surface as on Game of Cones.  The boresight is
 // marked by a dotted white line down to the ground — depth-tested, so the globe
 // hides anything past the surface — plus a thin red stretch of the orbit either
-// side of the satellite.  Returns the distance to the ground along the
+// side of the satellite, with arrowheads showing the direction of travel.  Returns the distance to the ground along the
 // boresight (null if it misses the Earth).
 function drawSatCone(pf, axis, halfAngleDeg) {
   clearCone();
@@ -379,6 +399,12 @@ function drawSatCone(pf, axis, halfAngleDeg) {
 
   const group = new THREE.Group();
   group.add(pointed, orbit);
+  const arc = pf.arc, n = arc.length;
+  if (n >= 2) {   // arrowheads at both ends, both pointing the way the satellite travels
+    const lineLen = arc[n - 1].distanceTo(pf.S);
+    group.add(orbitArrow(arc[0], arc[1].clone().sub(arc[0]), false, lineLen),
+              orbitArrow(arc[n - 1], arc[n - 1].clone().sub(arc[n - 2]), true, lineLen));
+  }
   globe.scene().add(group);
   coneGroup = group;
   return hit;
