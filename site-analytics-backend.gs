@@ -33,6 +33,10 @@
  *  Changing the password: put the new password's SHA-256 in PASSWORD_SHA256
  *  below AND in site-analytics.js (passwordSha256).
  * ════════════════════════════════════════════════════════════════════════
+ *
+ * The tag below makes Google ask for access to THIS spreadsheet only, not
+ * to all of your Sheets.
+ * @OnlyCurrentDoc
  */
 
 var PASSWORD_SHA256 = '06566c03087e9156bc49a006dc116d4a129c7ae7d0101f100219d644dc04a89a';
