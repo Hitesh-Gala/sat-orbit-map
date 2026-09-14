@@ -30,6 +30,8 @@ const AXIS_OVERSHOOT   = 1.15;                     // the dotted axis runs 15 % 
 const MIN_AXIS_UNITS   = 14;                       // …and never shorter, so small cones stay grabbable
 const GRAB_PX          = 12;                       // pointer distance (px) that counts as "on the axis"
 const CLOCK_PLOT_R     = 44;                       // clock-face radius that stands for a 90° tilt
+const ORBIT_ARC_DEG    = 5;                        // red orbital path: this much arc either side of the sat…
+const ORBIT_ARC_STEPS  = 20;                       // …sampled with this many points per side
 
 const $ = id => document.getElementById(id);
 
@@ -148,7 +150,7 @@ window.addEventListener('resize', () => {
 // --- Cone objects --------------------------------------------------------
 
 const Y_AXIS = new THREE.Vector3(0, 1, 0);
-let coneGroup = null;   // land: cone + axis line + handle; sat: cone + boresight line
+let coneGroup = null;   // land: cone + axis line + handle; sat: cone + boresight line + orbit arc
 let axisGrab = null;    // land cone only: { frame, apex, len, axis } in scene space
 
 function clearCone() {
@@ -240,7 +242,9 @@ const geoOf = v => globe.toGeoCoords({ x: v.x, y: v.y, z: v.z });
 // orbital path and `right` of it.  `fwd` comes from the orbit itself — two
 // instants 10 s apart with the Earth held still — so it is the orbital
 // direction, well defined even for a geostationary satellite.  `right` is
-// taken geographically (heading + 90°), so it can't come out mirrored.
+// taken geographically (heading + 90°), so it can't come out mirrored.  `arc`
+// is a short stretch of the orbit either side, in the same frame, so the red
+// path and "forward" always agree.
 function satPointingFrame(rec, date) {
   const gmst = satellite.gstime(date);
   const p0 = satellite.propagate(rec, date);
@@ -258,7 +262,14 @@ function satPointingFrame(rec, date) {
   const f = sceneFrame(here.lat, here.lon);
   const tn = fwd.dot(f.n), te = fwd.dot(f.e);
   const right = f.e.clone().multiplyScalar(tn).addScaledVector(f.n, -te).normalize();
-  return { S, up, fwd, right, heading: (Math.atan2(te, tn) / DEG + 360) % 360 };
+
+  const span = (2 * Math.PI / rec.no) * 60000 * ORBIT_ARC_DEG / 360;   // ms of orbit per side
+  const arc = [];
+  for (let i = -ORBIT_ARC_STEPS; i <= ORBIT_ARC_STEPS; i++) {
+    const pv = satellite.propagate(rec, new Date(date.getTime() + span * i / ORBIT_ARC_STEPS));
+    if (pv && pv.position) arc.push(scene(geo(pv.position)));
+  }
+  return { S, up, fwd, right, arc, heading: (Math.atan2(te, tn) / DEG + 360) % 360 };
 }
 
 function satBoresight(pf, alongDeg, crossDeg) {
@@ -318,8 +329,9 @@ function satFootprint(pf, axis, halfAngleDeg, numPoints = 96) {
 // base faint (shader fade).  It runs to the plane through Earth's centre, so
 // the visible part ends at the surface as on Game of Cones.  The boresight is
 // marked by a dotted white line down to the ground — depth-tested, so the globe
-// hides anything past the surface.  Returns the distance to the ground along
-// the boresight (null if it misses the Earth).
+// hides anything past the surface — plus a thin red stretch of the orbit either
+// side of the satellite.  Returns the distance to the ground along the
+// boresight (null if it misses the Earth).
 function drawSatCone(pf, axis, halfAngleDeg) {
   clearCone();
   const height3D = pf.S.length() * Math.cos(axis.angleTo(pf.up.clone().negate()));
@@ -356,10 +368,17 @@ function drawSatCone(pf, axis, halfAngleDeg) {
   line.computeLineDistances();
   line.renderOrder = 5;
 
+  const pointed = new THREE.Group();
+  pointed.add(cone, line);
+  pointed.position.copy(pf.S);
+  pointed.quaternion.setFromUnitVectors(Y_AXIS, axis.clone().negate());   // local −Y = boresight
+
+  const orbit = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pf.arc),
+    new THREE.LineBasicMaterial({ color: 0xff3b3b, transparent: true, opacity: 0.9 }));
+  orbit.renderOrder = 4;
+
   const group = new THREE.Group();
-  group.add(cone, line);
-  group.position.copy(pf.S);
-  group.quaternion.setFromUnitVectors(Y_AXIS, axis.clone().negate());   // local −Y = boresight
+  group.add(pointed, orbit);
   globe.scene().add(group);
   coneGroup = group;
   return hit;
