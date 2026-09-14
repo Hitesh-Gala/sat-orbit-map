@@ -141,12 +141,20 @@
     return withTimeout(p, 4500);
   }
 
+  // Cookie-free keepalive fetch first: sendBeacon always sends cookies, and a
+  // visitor signed in to Google (especially to several accounts) can be diverted
+  // to an account page so the script never runs.  sendBeacon is the fallback for
+  // browsers without keepalive fetch.
   function beacon(msg) {
     var body = JSON.stringify(msg);
     try {
-      if (navigator.sendBeacon && navigator.sendBeacon(CFG.endpoint, new Blob([body], { type: 'text/plain;charset=UTF-8' }))) return;
-    } catch (e) { /* fall through */ }
-    try { fetch(CFG.endpoint, { method: 'POST', mode: 'no-cors', keepalive: true, body: body }); } catch (e) { /* offline */ }
+      fetch(CFG.endpoint, { method: 'POST', mode: 'no-cors', keepalive: true, credentials: 'omit', body: body })
+        .catch(function () { /* offline */ });
+      return;
+    } catch (e) { /* no keepalive fetch — fall back */ }
+    try {
+      if (navigator.sendBeacon) navigator.sendBeacon(CFG.endpoint, new Blob([body], { type: 'text/plain;charset=UTF-8' }));
+    } catch (e) { /* nothing more to try */ }
   }
 
   // ── logger ─────────────────────────────────────────────────────────────

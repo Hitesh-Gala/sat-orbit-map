@@ -14,7 +14,7 @@
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-  let visits = [], shown = [], page = 0;
+  let visits = [], shown = [], page = 0, lastPw = null;
 
   function show(id) {
     for (const s of ['va-setup', 'va-gate', 'va-dash']) $(s).hidden = s !== id;
@@ -53,14 +53,44 @@
   }
 
   // ── data ───────────────────────────────────────────────────────────────
+  // Google's script service is sometimes slow to wake: the request then hangs
+  // ~20–30 s and ends in an HTML 404 instead of JSON, while the very next try is
+  // usually fast.  So each attempt is capped and retried, with progress shown.
+  // Cookies are omitted so a browser signed in to Google can't be diverted to an
+  // account page.
+  const READ_TRIES = 4, READ_TIMEOUT_MS = 20000;
+
+  async function readLog(pw) {
+    let lastErr = null;
+    for (let attempt = 1; attempt <= READ_TRIES; attempt++) {
+      if (attempt > 1) setState(`Google's script is waking up — retrying (${attempt} of ${READ_TRIES})…`);
+      const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), READ_TIMEOUT_MS);
+      try {
+        const r = await fetch(NA.CFG.endpoint, { method: 'POST', credentials: 'omit', signal: ctl.signal,
+                                                 body: JSON.stringify({ type: 'read', pw }) });
+        const text = await r.text();
+        try { return JSON.parse(text); }
+        catch { lastErr = new Error(`Google answered with an error page (HTTP ${r.status})`); }
+      } catch (e) {
+        lastErr = e.name === 'AbortError' ? new Error('Google took too long to answer') : e;
+      } finally {
+        clearTimeout(timer);
+      }
+      if (attempt < READ_TRIES) await new Promise(res => setTimeout(res, 1000));
+    }
+    throw lastErr;
+  }
+
   async function load(pw) {
+    lastPw = pw;
+    $('va-retry').hidden = true;
     setState('Loading the visitor log…');
     let res;
     try {
-      const r = await fetch(NA.CFG.endpoint, { method: 'POST', body: JSON.stringify({ type: 'read', pw }) });
-      res = await r.json();
+      res = await readLog(pw);
     } catch (e) {
-      return setState(`Could not reach the analytics backend (${e.message}).`, true);
+      $('va-retry').hidden = false;
+      return setState(`Could not reach the analytics backend — ${e.message}.`, true);
     }
     if (!res.ok) {
       if (res.error === 'auth') { forgetPw(); return gate('Incorrect password.'); }
@@ -168,6 +198,7 @@
     $('va-next').addEventListener('click', () => { page++; render(); });
     $('va-refresh').addEventListener('click', () => { const pw = savedPw(); if (pw) load(pw); else gate(); });
     $('va-lock').addEventListener('click', () => { forgetPw(); visits = []; shown = []; gate(); });
+    $('va-retry').addEventListener('click', () => { if (lastPw) load(lastPw); else gate(); });
 
     if (!NA) return setState('site-analytics.js did not load.', true);
     if (!NA.CFG.endpoint) return show('va-setup');
