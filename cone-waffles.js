@@ -6,7 +6,10 @@
 //     left panel shows the lean on a clock face (12 = North) plus the tilt in
 //     degrees from vertical, and lists every satellite inside the cone that is
 //     also above the local horizon, with range, elevation and off-axis angle.
-//   Sat Cone: as on Game of Cones — a satellite's sensor cone and its footprint.
+//   Sat Cone: a satellite's sensor cone and its ground footprint.  The sensor
+//     can be pointed off nadir in two restricted ways, each up to ±45°: forward /
+//     back along the orbital path, and left / right of it.  A dotted white line
+//     marks the boresight (display only — not draggable).
 //
 // Tilt convention: tilt = angle between the axis and local vertical (0° =
 // straight up, 90° = along the horizon); direction = compass bearing of the
@@ -91,36 +94,6 @@ function coneHit(frame, apex, axis, sat, halfAngleDeg, maxHeightKm) {
   return { range, elevation: Math.asin(Math.min(1, up / range)) / DEG, offAxis };
 }
 
-// Half-angular radius of the footprint a sensor cone of half-angle θ draws on
-// the surface from altitude h:  ρ = arcsin((R + h) / R · sin θ) − θ.  NaN if the
-// cone overshoots the horizon.
-function footprintAngularRadius(altitudeKm, halfAngleDeg) {
-  const theta = halfAngleDeg * DEG;
-  const ratio = (EARTH_R_KM + altitudeKm) / EARTH_R_KM * Math.sin(theta);
-  if (ratio > 1) return NaN;
-  return Math.asin(ratio) - theta;
-}
-
-// Great-circle destination: from (lat, lng) travel angular distance δ on bearing β.
-function destinationPoint(latDeg, lngDeg, delta, bearingDeg) {
-  const lat = latDeg * DEG, lng = lngDeg * DEG, brg = bearingDeg * DEG;
-  const sinLat2 = Math.sin(lat) * Math.cos(delta) + Math.cos(lat) * Math.sin(delta) * Math.cos(brg);
-  const lat2 = Math.asin(sinLat2);
-  const y = Math.sin(brg) * Math.sin(delta) * Math.cos(lat);
-  const x = Math.cos(delta) - Math.sin(lat) * sinLat2;
-  const lng2Deg = (((lng + Math.atan2(y, x)) / DEG + 540) % 360) - 180;
-  return [lat2 / DEG, lng2Deg];
-}
-
-function coneFootprintPolygon(subSatLat, subSatLng, angularRadius, numPoints = 72) {
-  const ring = [];
-  for (let i = 0; i <= numPoints; i++) {
-    const [lat, lng] = destinationPoint(subSatLat, subSatLng, angularRadius, (i / numPoints) * 360);
-    ring.push([lng, lat]);   // GeoJSON order
-  }
-  return ring;
-}
-
 // --- Direction labels ----------------------------------------------------
 
 const COMPASS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
@@ -175,7 +148,7 @@ window.addEventListener('resize', () => {
 // --- Cone objects --------------------------------------------------------
 
 const Y_AXIS = new THREE.Vector3(0, 1, 0);
-let coneGroup = null;   // land: cone + axis line + handle; sat: the cone mesh
+let coneGroup = null;   // land: cone + axis line + handle; sat: cone + boresight line
 let axisGrab = null;    // land cone only: { frame, apex, len, axis } in scene space
 
 function clearCone() {
@@ -253,13 +226,103 @@ function orientLandCone() {
   coneGroup.quaternion.setFromUnitVectors(Y_AXIS, axisGrab.axis);
 }
 
-// Sat cone: apex at the satellite, axis toward Earth's centre, tip bright and
-// base faint (shader fade), as on Game of Cones.
-function drawSatCone(satLat, satLng, satAltKm, halfAngleDeg) {
+// Where a ray (scene units) first meets the globe's sphere; null if it misses.
+function raySphere(origin, dir, radius = GLOBE_RADIUS) {
+  const b = origin.dot(dir), disc = b * b - (origin.lengthSq() - radius * radius);
+  if (disc < 0) return null;
+  const t = -b - Math.sqrt(disc);
+  return t > 0 ? t : null;
+}
+
+const geoOf = v => globe.toGeoCoords({ x: v.x, y: v.y, z: v.z });
+
+// Pointing frame at a satellite, in scene space: `up` (radial), `fwd` along the
+// orbital path and `right` of it.  `fwd` comes from the orbit itself — two
+// instants 10 s apart with the Earth held still — so it is the orbital
+// direction, well defined even for a geostationary satellite.  `right` is
+// taken geographically (heading + 90°), so it can't come out mirrored.
+function satPointingFrame(rec, date) {
+  const gmst = satellite.gstime(date);
+  const p0 = satellite.propagate(rec, date);
+  const p1 = satellite.propagate(rec, new Date(date.getTime() + 10000));
+  if (!p0 || !p0.position || !p1 || !p1.position) return null;
+  const geo = eci => {
+    const g = satellite.eciToGeodetic(eci, gmst);
+    return { lat: satellite.degreesLat(g.latitude), lon: satellite.degreesLong(g.longitude), alt: g.height };
+  };
+  const scene = g => { const c = globe.getCoords(g.lat, g.lon, g.alt / EARTH_R_KM); return new THREE.Vector3(c.x, c.y, c.z); };
+  const here = geo(p0.position);
+  const S = scene(here), up = S.clone().normalize();
+  const fwd = scene(geo(p1.position)).sub(S);
+  fwd.addScaledVector(up, -fwd.dot(up)).normalize();
+  const f = sceneFrame(here.lat, here.lon);
+  const tn = fwd.dot(f.n), te = fwd.dot(f.e);
+  const right = f.e.clone().multiplyScalar(tn).addScaledVector(f.n, -te).normalize();
+  return { S, up, fwd, right, heading: (Math.atan2(te, tn) / DEG + 360) % 360 };
+}
+
+function satBoresight(pf, alongDeg, crossDeg) {
+  return pf.up.clone().negate()
+    .addScaledVector(pf.fwd, Math.tan(alongDeg * DEG))
+    .addScaledVector(pf.right, Math.tan(crossDeg * DEG))
+    .normalize();
+}
+
+// Ground footprint of a (possibly off-nadir) sensor cone: cast rays round the
+// cone's edge onto the globe.  Edge rays that miss are walked back toward nadir
+// until they just graze the Earth, i.e. clipped at the visible horizon.  Null
+// when the cone doesn't touch the Earth at all.
+function satFootprint(pf, axis, halfAngleDeg, numPoints = 96) {
+  const nadir = pf.up.clone().negate();
+  const ref = Math.abs(axis.dot(pf.fwd)) < 0.9 ? pf.fwd : pf.right;
+  const b1 = ref.clone().addScaledVector(axis, -ref.dot(axis)).normalize();
+  const b2 = new THREE.Vector3().crossVectors(axis, b1);
+  const spread = Math.tan(halfAngleDeg * DEG);
+  const blend = (d, t) => nadir.clone().multiplyScalar(1 - t).addScaledVector(d, t).normalize();
+  let anyHit = axis.angleTo(nadir) <= halfAngleDeg * DEG;     // nadir inside the cone
+  const ring = [];
+  for (let i = 0; i <= numPoints; i++) {
+    const phi = (i / numPoints) * 2 * Math.PI;
+    let dir = axis.clone().addScaledVector(b1, spread * Math.cos(phi)).addScaledVector(b2, spread * Math.sin(phi)).normalize();
+    let t = raySphere(pf.S, dir);
+    if (t !== null) {
+      anyHit = true;
+    } else {
+      let lo = 0, hi = 1;
+      for (let k = 0; k < 16; k++) {
+        const mid = (lo + hi) / 2;
+        if (raySphere(pf.S, blend(dir, mid)) !== null) lo = mid; else hi = mid;
+      }
+      dir = blend(dir, lo);
+      t = raySphere(pf.S, dir);
+    }
+    const g = geoOf(pf.S.clone().addScaledVector(dir, t));
+    ring.push([g.lng, g.lat]);
+  }
+  if (!anyHit) return null;
+  // Wind it like a clockwise compass sweep, as Game of Cones fed globe.gl.
+  let acc = 0, prev = ring[0][0], area = 0;
+  const flat = ring.map(([lng, lat]) => {
+    let d = lng - prev;
+    if (d > 180) d -= 360;
+    if (d < -180) d += 360;
+    acc += d;
+    prev = lng;
+    return [ring[0][0] + acc, lat];
+  });
+  for (let i = 0; i < flat.length - 1; i++) area += flat[i][0] * flat[i + 1][1] - flat[i + 1][0] * flat[i][1];
+  return area > 0 ? ring.reverse() : ring;
+}
+
+// Sat cone: tip at the satellite, opening along the boresight; tip bright and
+// base faint (shader fade).  It runs to the plane through Earth's centre, so
+// the visible part ends at the surface as on Game of Cones.  The boresight is
+// marked by a dotted white line down to the ground — depth-tested, so the globe
+// hides anything past the surface.  Returns the distance to the ground along
+// the boresight (null if it misses the Earth).
+function drawSatCone(pf, axis, halfAngleDeg) {
   clearCone();
-  const s = globe.getCoords(satLat, satLng, satAltKm / EARTH_R_KM);
-  const sat = new THREE.Vector3(s.x, s.y, s.z);
-  const height3D = sat.length();
+  const height3D = pf.S.length() * Math.cos(axis.angleTo(pf.up.clone().negate()));
   const baseRadius = height3D * Math.tan(halfAngleDeg * DEG);
   const geo = new THREE.ConeGeometry(baseRadius, height3D, 96, 1, true);
   const mat = new THREE.ShaderMaterial({
@@ -282,11 +345,24 @@ function drawSatCone(satLat, satLng, satAltKm, halfAngleDeg) {
       }
     `,
   });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.copy(sat).multiplyScalar(0.5);
-  mesh.quaternion.setFromUnitVectors(Y_AXIS, sat.clone().normalize());
-  globe.scene().add(mesh);
-  coneGroup = mesh;
+  const cone = new THREE.Mesh(geo, mat);
+  cone.position.set(0, -height3D / 2, 0);   // tip (local +Y·h/2) on the group origin = the satellite
+
+  const hit = raySphere(pf.S, axis);
+  const len = hit !== null ? hit * 1.03 : height3D;
+  const line = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, -len, 0)]),
+    new THREE.LineDashedMaterial({ color: 0xffffff, dashSize: len / 40, gapSize: len / 60, transparent: true }));
+  line.computeLineDistances();
+  line.renderOrder = 5;
+
+  const group = new THREE.Group();
+  group.add(cone, line);
+  group.position.copy(pf.S);
+  group.quaternion.setFromUnitVectors(Y_AXIS, axis.clone().negate());   // local −Y = boresight
+  globe.scene().add(group);
+  coneGroup = group;
+  return hit;
 }
 
 // --- Dragging the axis ---------------------------------------------------
@@ -396,8 +472,6 @@ window.addEventListener('pointercancel', endDrag);
 
 const tilt = { angle: 0, dir: 0 };   // degrees from vertical; compass bearing of the lean
 
-const tiltRange = $('tilt-range');
-const dirRange  = $('dir-range');
 const clock     = $('clock');
 const clockHand = $('clock-hand');
 const clockTip  = $('clock-tip');
@@ -422,10 +496,6 @@ function renderTiltPanel() {
   clockHand.style.display = vertical ? 'none' : '';
   clockTip.setAttribute('cx', x.toFixed(2));
   clockTip.setAttribute('cy', y.toFixed(2));
-  tiltRange.value = angle;
-  dirRange.value = dir;
-  $('tilt-range-val').textContent = angle.toFixed(1);
-  $('dir-range-val').textContent = Math.round(dir) % 360;
 }
 
 (function buildClockTicks() {
@@ -464,8 +534,6 @@ clock.addEventListener('pointermove', e => { if (clockDown) clockPick(e); });
 clock.addEventListener('pointerup', () => { clockDown = false; });
 clock.addEventListener('pointercancel', () => { clockDown = false; });
 
-tiltRange.addEventListener('input', () => setTilt(+tiltRange.value, tilt.dir));
-dirRange.addEventListener('input', () => setTilt(tilt.angle, +dirRange.value));
 $('tilt-reset').addEventListener('click', () => setTilt(0, tilt.dir));
 
 // --- TLE catalogue -------------------------------------------------------
@@ -473,6 +541,7 @@ $('tilt-reset').addEventListener('click', () => setTilt(0, tilt.dir));
 let allSats = [];              // [{ name, noradId, rec }]
 const latestProp = new Map();  // noradId → { lat, lon, alt }
 let propTimer = null;
+let propTime = new Date();     // instant of the latest propagation
 let currentMode = 'land';
 
 async function loadCatalogue() {
@@ -491,6 +560,7 @@ async function loadCatalogue() {
 
 function propagateAll() {
   const now = new Date();
+  propTime = now;
   latestProp.clear();
   for (const t of allSats) {
     const r = window.Argos.propagate(t.rec, now);
@@ -617,7 +687,12 @@ const satSearchEl = $('sat-search');
 const satHitsEl   = $('sat-hits');
 const satAngleEl  = $('sat-angle');
 const satStatusEl = $('sat-status');
+const satAlongEl  = $('sat-along');
+const satCrossEl  = $('sat-cross');
 let selectedSat = null;
+
+// "12.5° forward", "8.0° left" … or '' when (near) zero.
+const lean = (v, pos, neg) => (Math.abs(v) < 0.05 ? '' : `${Math.abs(v).toFixed(1)}° ${v > 0 ? pos : neg}`);
 
 function renderSatHits(query) {
   const q = query.trim().toLowerCase();
@@ -651,30 +726,52 @@ function solveSatCone() {
   if (currentMode !== 'sat') return;
   if (!selectedSat) { satStatusEl.textContent = 'No satellite selected.'; return; }
   const p = latestProp.get(selectedSat.noradId);
-  if (!p) { satStatusEl.textContent = `${selectedSat.name} — propagation unavailable.`; return; }
-  const halfAngle = parseFloat(satAngleEl.value);
+  const pf = p && satPointingFrame(selectedSat.rec, propTime);
+  if (!pf) { satStatusEl.textContent = `${selectedSat.name} — propagation unavailable.`; return; }
+  const along = +satAlongEl.value, cross = +satCrossEl.value, halfAngle = +satAngleEl.value;
 
-  drawSatCone(p.lat, p.lon, p.alt, halfAngle);
+  const axis = satBoresight(pf, along, cross);
+  const hit = drawSatCone(pf, axis, halfAngle);
+  const ring = satFootprint(pf, axis, halfAngle);
+  globe.polygonsData(ring ? [{ geometry: { type: 'Polygon', coordinates: [ring] } }] : []);
 
-  const rho = footprintAngularRadius(p.alt, halfAngle);
-  if (!Number.isFinite(rho)) {
-    globe.polygonsData([]);
-    satStatusEl.innerHTML = `<strong>${escHtml(selectedSat.name)}</strong><br>
-      Alt ${p.alt.toFixed(0)} km · ${p.lat.toFixed(2)}°, ${p.lon.toFixed(2)}°<br>
-      Cone overshoots the horizon — no surface footprint.`;
-  } else {
-    globe.polygonsData([{ geometry: { type: 'Polygon', coordinates: [coneFootprintPolygon(p.lat, p.lon, rho, 96)] } }]);
-    satStatusEl.innerHTML = `<strong>${escHtml(selectedSat.name)}</strong><br>
-      Alt ${p.alt.toFixed(0)} km · ${p.lat.toFixed(2)}°, ${p.lon.toFixed(2)}°<br>
-      Footprint radius ${(rho * EARTH_R_KM).toFixed(0)} km on the surface.`;
+  const marks = [{ name: selectedSat.name, lat: p.lat, lon: p.lon, alt: p.alt, color: '#ffb070', big: true }];
+  let boresight = 'The boresight misses the Earth.';
+  if (hit !== null) {
+    const ground = pf.S.clone().addScaledVector(axis, hit), g = geoOf(ground);
+    marks.push({ name: 'Boresight on the ground', lat: g.lat, lon: g.lng, alt: 5, color: '#ffffff' });
+    boresight = `Boresight on the ground at ${g.lat.toFixed(2)}°, ${g.lng.toFixed(2)}° — ` +
+                `${(ground.angleTo(pf.S) * EARTH_R_KM).toFixed(0)} km from the point below the satellite.`;
   }
-  globe.objectsData([{ name: selectedSat.name, lat: p.lat, lon: p.lon, alt: p.alt, color: '#ffb070', big: true }]);
+  globe.objectsData(marks);
+
+  const offNadir = axis.angleTo(pf.up.clone().negate()) / DEG;
+  const pointing = [lean(along, 'forward', 'back'), lean(cross, 'right', 'left')].filter(Boolean).join(' · ');
+  satStatusEl.innerHTML = `<strong>${escHtml(selectedSat.name)}</strong><br>
+    Alt ${p.alt.toFixed(0)} km · ${p.lat.toFixed(2)}°, ${p.lon.toFixed(2)}° · heading ${compassPoint(pf.heading)} (${Math.round(pf.heading) % 360}°)<br>
+    Pointing ${pointing ? `${pointing} — ${offNadir.toFixed(1)}° off nadir` : 'straight down (nadir)'}<br>
+    ${boresight}<br>
+    ${ring ? 'Footprint shown in orange.' : 'The cone misses the Earth — no footprint.'}`;
 }
+
+function syncSatPointing() {
+  $('sat-along-val').textContent = lean(+satAlongEl.value, 'forward', 'back') || '0° (nadir)';
+  $('sat-cross-val').textContent = lean(+satCrossEl.value, 'right', 'left') || '0° (nadir)';
+  solveSatCone();
+}
+satAlongEl.addEventListener('input', syncSatPointing);
+satCrossEl.addEventListener('input', syncSatPointing);
+$('sat-point-reset').addEventListener('click', () => {
+  satAlongEl.value = 0;
+  satCrossEl.value = 0;
+  syncSatPointing();
+});
 
 bindSlider('sat-angle', 'sat-angle-val', solveSatCone);
 
 // --- Boot ----------------------------------------------------------------
 
 renderTiltPanel();
+syncSatPointing();
 activateMode('land');
 loadCatalogue();

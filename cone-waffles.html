@@ -113,6 +113,7 @@
       color: var(--accent); background: rgba(103, 200, 255, .08); border: 1px solid var(--line); border-radius: 3px;
     }
     .cw-reset:hover { border-color: var(--accent); background: rgba(103, 200, 255, .18); }
+    .cw-scale { display: flex; justify-content: space-between; font-size: 10.5px; letter-spacing: .04em; text-transform: none; color: var(--dim); }
   </style>
 </head>
 <body class="page-goc page-conewaffles">
@@ -178,20 +179,6 @@
       </div>
       <div class="cw-note">12 = North · centre = vertical · dotted rings 30° / 60° · outer ring = horizon. Click or drag on the clock to set it.</div>
 
-      <div class="goc-slider">
-        <div class="slider-row">
-          <span>Tilt</span>
-          <span class="slider-value"><span id="tilt-range-val">0.0</span>°</span>
-        </div>
-        <input type="range" id="tilt-range" min="0" max="90" step="0.1" value="0">
-      </div>
-      <div class="goc-slider">
-        <div class="slider-row">
-          <span>Direction (bearing)</span>
-          <span class="slider-value"><span id="dir-range-val">0</span>°</span>
-        </div>
-        <input type="range" id="dir-range" min="0" max="359.9" step="0.1" value="0">
-      </div>
       <button type="button" class="cw-reset" id="tilt-reset">Reset to vertical</button>
 
       <div class="cw-title">Cone</div>
@@ -215,9 +202,9 @@
       <div id="land-list" class="list" role="listbox"></div>
     </section>
 
-    <!-- Sat Cone: as on Game of Cones. -->
+    <!-- Sat Cone: sensor cone + footprint, pointable along / across the orbital path. -->
     <section class="panel" id="mode-sat" hidden>
-      <div class="hint">Pick a satellite, set the sensor half-angle, see the cone projected onto Earth's surface as a polygon.</div>
+      <div class="hint">Pick a satellite, set the sensor half-angle, and point the sensor forward / back along its orbital path or left / right of it. The dotted white line marks where it points; the footprint is shown in orange.</div>
       <input type="search" id="sat-search" class="goc-search" placeholder="Search satellite (e.g. ISS, BEIDOU)…" autocomplete="off">
       <div id="sat-hits" class="goc-hits" hidden></div>
       <div class="goc-slider">
@@ -227,6 +214,26 @@
         </div>
         <input type="range" id="sat-angle" min="1" max="70" value="20">
       </div>
+
+      <div class="cw-title">Sensor pointing</div>
+      <div class="goc-slider">
+        <div class="slider-row">
+          <span>Along track</span>
+          <span class="slider-value" id="sat-along-val">0° (nadir)</span>
+        </div>
+        <input type="range" id="sat-along" min="-45" max="45" step="0.5" value="0" aria-label="Tilt back or forward along the orbital path">
+        <div class="cw-scale"><span>45° back</span><span>nadir</span><span>45° forward</span></div>
+      </div>
+      <div class="goc-slider">
+        <div class="slider-row">
+          <span>Cross track</span>
+          <span class="slider-value" id="sat-cross-val">0° (nadir)</span>
+        </div>
+        <input type="range" id="sat-cross" min="-45" max="45" step="0.5" value="0" aria-label="Tilt left or right of the orbital path">
+        <div class="cw-scale"><span>45° left</span><span>nadir</span><span>45° right</span></div>
+      </div>
+      <button type="button" class="cw-reset" id="sat-point-reset">Point straight down</button>
+
       <div class="goc-status" id="sat-status">No satellite selected.</div>
     </section>
   </aside>
@@ -235,7 +242,7 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=11"></script>
-  <script src="cone-waffles.js?v=1"></script>
+  <script src="cone-waffles.js?v=2"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=3"></script>
   <script src="mobile-menu.js?v=23"></script>
