@@ -16,7 +16,7 @@
   'use strict';
 
   var CFG = {
-    endpoint: '',   // Apps Script web-app URL (…/exec) — see site-analytics-backend.gs
+    endpoint: 'https://script.google.com/macros/s/AKfycbx_7QyB6jTTTlDeR7s1EkAUdLdhPndCrI3LuHQvXDnhACQVWnffyX06TlZo0ZJQmAKemA/exec',   // Apps Script web app — see site-analytics-backend.gs
     passwordSha256: '06566c03087e9156bc49a006dc116d4a129c7ae7d0101f100219d644dc04a89a',
     heartbeatMs: 5 * 60 * 1000,   // safety-net update in case a tab dies without a pagehide
   };
