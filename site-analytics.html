@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>NAZAR · Site Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=43">
+  <style>
+    .va-page { max-width: 1560px; margin: 0 auto; padding: 78px 22px 70px; }
+    .va-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+    .va-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: #ffd166; }
+    .va-top h1 { margin: 4px 0 0; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 26px; letter-spacing: .06em; color: #fff; }
+    .va-link { font-family: var(--mono); font-size: 13px; color: var(--accent); text-decoration: none; white-space: nowrap;
+      border: 1px solid var(--line); border-radius: 7px; padding: 7px 13px; background: rgba(2, 6, 13, .6); }
+    .va-link:hover { border-color: var(--accent); }
+
+    .va-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 24px 22px; }
+    .va-gate { max-width: 440px; margin: 40px auto; text-align: center; }
+    .va-gate label { display: block; font-family: var(--mono); font-size: 13px; color: var(--text); margin-bottom: 12px; }
+    .va-gate input { font: 14px var(--mono); color: var(--text); background: rgba(103, 200, 255, .06); border: 1px solid var(--line);
+      border-radius: 7px; padding: 9px 12px; width: min(260px, 85%); }
+    .va-gate input:focus, .va-toolbar input[type=search]:focus { outline: none; border-color: var(--accent); }
+    .va-err { color: #ff6b6b; font-family: var(--mono); font-size: 12px; min-height: 16px; margin-top: 10px; }
+    .va-btn { font-family: var(--mono); font-size: 13px; font-weight: 700; border-radius: 8px; padding: 8px 16px; cursor: pointer;
+      border: 1px solid var(--accent); background: rgba(103, 200, 255, .14); color: #eaf6ff; }
+    .va-btn:hover { background: rgba(103, 200, 255, .26); }
+    .va-btn.ghost { border-color: var(--line); background: transparent; color: var(--text); }
+    .va-gate .va-btn { margin-top: 12px; }
+    .va-setup { max-width: 760px; margin: 30px auto; font-family: var(--mono); font-size: 13px; line-height: 1.75; color: var(--text); }
+    .va-setup h2 { font-family: 'Orbitron', sans-serif; font-size: 16px; color: #fff; margin: 0 0 8px; }
+    .va-setup code { color: #ffd166; }
+
+    .va-stats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+    @media (max-width: 1000px) { .va-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 560px)  { .va-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .va-stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+    .va-stat b { display: block; font-family: 'Orbitron', sans-serif; font-size: 22px; color: #eaf6ff; }
+    .va-stat span { display: block; margin-top: 4px; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+    .va-stat.big { border-color: rgba(255, 209, 102, .45); }
+    .va-stat.big b { font-size: 30px; color: #ffd166; }
+
+    .va-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 10px; font-family: var(--mono); font-size: 12.5px; color: var(--dim); }
+    .va-toolbar input[type=search] { flex: 1 1 260px; min-width: 180px; font: 13px var(--mono); color: var(--text);
+      background: rgba(103, 200, 255, .05); border: 1px solid var(--line); border-radius: 7px; padding: 8px 11px; }
+    .va-toolbar b { color: var(--text); }
+    .va-chk { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+    .va-pager { display: inline-flex; align-items: center; gap: 6px; }
+    .va-pager button { width: 26px; height: 26px; border-radius: 6px; cursor: pointer; border: 1px solid var(--line); background: transparent; color: var(--text); }
+    .va-pager button:hover { border-color: var(--accent); color: var(--accent); }
+
+    .va-tablewrap { overflow: auto; max-height: calc(100vh - 300px); min-height: 240px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+    .va-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; color: var(--text); }
+    .va-table thead th { position: sticky; top: 0; z-index: 1; background: rgba(2, 6, 13, .97); border-bottom: 1px solid var(--line); color: var(--dim);
+      font-weight: normal; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; text-align: left; padding: 9px 10px; white-space: nowrap; }
+    .va-table tbody td { padding: 7px 10px; border-bottom: 1px solid rgba(110, 200, 255, .07); vertical-align: top; }
+    .va-table tbody tr:hover td { background: rgba(103, 200, 255, .06); }
+    .va-table tr.today td:first-child { box-shadow: inset 3px 0 0 #ffd166; }
+    .va-table .ip { color: #ffd166; white-space: nowrap; }
+    .va-table .dur { color: #8bff9e; }
+    .va-table .dim { color: var(--dim); }
+    .va-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .va-table .nowrap { white-space: nowrap; }
+    .va-table .empty { padding: 28px; text-align: center; color: var(--dim); }
+    .va-state { margin: 10px 2px 0; font-family: var(--mono); font-size: 12px; color: var(--dim); }
+    .va-state.err { color: #ff6b6b; }
+  </style>
+</head>
+<body class="page-analytics">
+  <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
+    <img src="data/nazar-logo.svg?v=5" alt="NAZAR">
+  </a>
+
+  <main class="va-page">
+    <header class="va-top">
+      <div>
+        <div class="va-eyebrow">Owner only</div>
+        <h1>Site Analytics</h1>
+      </div>
+      <a class="va-link" href="about.html">← About</a>
+    </header>
+
+    <!-- shown until the Apps Script endpoint is configured -->
+    <section id="va-setup" class="va-card va-setup" hidden>
+      <h2>The visitor log isn’t connected yet</h2>
+      It needs a Google Sheet with a small Apps Script in the owner’s Google account. Follow the steps at the
+      top of <code>site-analytics-backend.gs</code>, then put the web-app URL into <code>site-analytics.js</code>
+      (<code>endpoint</code>) and push. Visits are recorded from then on.
+    </section>
+
+    <section id="va-gate" class="va-card va-gate" hidden>
+      <label for="va-pw">Enter the owner password to view visitor analytics</label>
+      <input id="va-pw" type="password" autocomplete="off" placeholder="••••••••">
+      <div class="va-err" id="va-err"></div>
+      <button type="button" class="va-btn" id="va-unlock">Unlock</button>
+    </section>
+
+    <section id="va-dash" hidden>
+      <div class="va-stats">
+        <div class="va-stat big"><b id="st-users">–</b><span>Total users to date</span></div>
+        <div class="va-stat big"><b id="st-today">–</b><span>Visitors today</span></div>
+        <div class="va-stat"><b id="st-visits">–</b><span>Visits to date</span></div>
+        <div class="va-stat"><b id="st-vtoday">–</b><span>Visits today</span></div>
+        <div class="va-stat"><b id="st-avg">–</b><span>Avg. time on site</span></div>
+        <div class="va-stat"><b id="st-countries">–</b><span>Countries</span></div>
+      </div>
+
+      <div class="va-toolbar">
+        <input type="search" id="va-q" placeholder="Filter by IP, place, device, OS, browser, page…" autocomplete="off">
+        <label class="va-chk"><input type="checkbox" id="va-todayonly"> Today only</label>
+        <span><b id="va-count">0</b> visits</span>
+        <span class="va-pager">
+          <button type="button" id="va-prev" aria-label="Previous page">‹</button>
+          <span id="va-page">1 / 1</span>
+          <button type="button" id="va-next" aria-label="Next page">›</button>
+        </span>
+        <button type="button" class="va-btn ghost" id="va-refresh">↻ Refresh</button>
+        <button type="button" class="va-btn ghost" id="va-lock">Lock</button>
+      </div>
+
+      <div class="va-tablewrap">
+        <table class="va-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Time of access</th>
+              <th>Time spent</th>
+              <th>User IP</th>
+              <th>Device name</th>
+              <th>Device type</th>
+              <th>OS</th>
+              <th>Browser</th>
+              <th>Country</th>
+              <th>State / region</th>
+              <th>City</th>
+              <th>Pages</th>
+              <th>Landing → last page</th>
+              <th>Referrer</th>
+              <th>ISP / network</th>
+              <th>Screen</th>
+              <th>Language</th>
+              <th>Time zone</th>
+              <th>Visitor</th>
+            </tr>
+          </thead>
+          <tbody id="va-rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="va-state" id="va-state"></p>
+  </main>
+
+  <script src="site-analytics.js?v=2"></script>
+  <script src="site-analytics-view.js?v=1"></script>
+  <script src="nazar-bgm.js?v=4"></script>
+  <script src="mobile-menu.js?v=23"></script>
+</body>
+</html>
