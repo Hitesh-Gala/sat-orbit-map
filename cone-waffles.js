@@ -11,12 +11,15 @@
 //     back along the orbital path, and left / right of it.  A dotted white line
 //     marks the boresight (display only — not draggable).
 //
+// Date & time (right-hand panel): live by default; any moment from now up to
+// MAX_AHEAD_DAYS ahead can be picked instead, and everything is recomputed for it.
+//
 // Tilt convention: tilt = angle between the axis and local vertical (0° =
 // straight up, 90° = along the horizon); direction = compass bearing of the
 // lean, clockwise from North (0° = 12 o'clock, 90° = 3 o'clock).
 //
-// Shares TLE loading and SGP4 propagation with the rest of the site via
-// window.Argos (tle-loader.js).
+// Shares TLE loading with the rest of the site via window.Argos (tle-loader.js);
+// positions are propagated here with satellite.js directly (see satGeo).
 
 // --- Constants -----------------------------------------------------------
 
@@ -33,6 +36,8 @@ const CLOCK_PLOT_R     = 44;                       // clock-face radius that sta
 const ORBIT_ARC_DEG    = 5;                        // red orbital path: this much arc either side of the sat…
 const ORBIT_ARC_STEPS  = 20;                       // …sampled with this many points per side
 const ARROW_SCREEN     = 0.03;                     // orbit arrowheads: length ∝ camera distance (≈ constant on screen)
+const MAX_AHEAD_DAYS   = 15;                       // time panel: the furthest moment that can be picked
+const IST_OFFSET_MS    = 5.5 * 3600000;            // IST = UTC + 5:30
 
 const $ = id => document.getElementById(id);
 
@@ -581,12 +586,117 @@ clock.addEventListener('pointercancel', () => { clockDown = false; });
 
 $('tilt-reset').addEventListener('click', () => setTilt(0, tilt.dir));
 
+// --- Date & time (right-hand panel) --------------------------------------
+//
+// Live by default: positions follow the real clock.  Picking a moment (the
+// slider, or a date + time in UTC or IST) freezes the scene at that instant.
+// It must lie between now and MAX_AHEAD_DAYS ahead; if a frozen moment slips
+// into the past while the page is open, the panel snaps back to live.
+
+const timeState = { live: true, fixed: 0 };     // fixed: epoch ms while not live
+const simNow = () => (timeState.live ? new Date() : new Date(timeState.fixed));
+const AHEAD_LIMIT_MS = MAX_AHEAD_DAYS * 86400000;
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const tMode = $('t-mode'), tModeText = $('t-mode-text');
+const tAhead = $('t-ahead'), tDate = $('t-date'), tTime = $('t-time'), tZone = $('t-zone');
+const tNote = $('t-note'), tNow = $('t-now');
+
+const zoneOffset = () => (tZone.value === 'IST' ? IST_OFFSET_MS : 0);
+
+function fmtStamp(ms, offsetMs) {
+  const d = new Date(ms + offsetMs);
+  return `${String(d.getUTCDate()).padStart(2, '0')} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()} · ${d.toISOString().slice(11, 19)}`;
+}
+
+function fmtAhead(ms) {
+  const mins = Math.round(ms / 60000);
+  if (mins <= 0) return 'now';
+  const d = Math.floor(mins / 1440), h = Math.floor(mins / 60) % 24, m = mins % 60;
+  return `+${d ? `${d} d ` : ''}${String(h).padStart(2, '0')} h ${String(m).padStart(2, '0')} m`;
+}
+
+function renderTimePanel() {
+  const ms = simNow().getTime(), now = Date.now(), ahead = timeState.live ? 0 : ms - now;
+  $('t-utc').textContent = `${fmtStamp(ms, 0)} UTC`;
+  $('t-ist').textContent = `${fmtStamp(ms, IST_OFFSET_MS)} IST`;
+  tMode.classList.toggle('live', timeState.live);
+  tModeText.textContent = timeState.live ? 'Live · current date & time' : 'Chosen date & time';
+  tAhead.value = Math.round(ahead / 60000);
+  $('t-ahead-val').textContent = fmtAhead(ahead);
+  if (document.activeElement !== tDate && document.activeElement !== tTime) {   // don't fight typing
+    const z = new Date(ms + zoneOffset()).toISOString();
+    tDate.value = z.slice(0, 10);
+    tTime.value = z.slice(11, 16);
+  }
+  tDate.min = new Date(now + zoneOffset()).toISOString().slice(0, 10);
+  tDate.max = new Date(now + AHEAD_LIMIT_MS + zoneOffset()).toISOString().slice(0, 10);
+  tNow.disabled = timeState.live;
+}
+
+// Recompute everything for the new moment — throttled, since each pass
+// propagates the whole catalogue and a slider drag fires many inputs.
+let propQueued = false, lastPropAt = 0;
+function schedulePropagate() {
+  if (!allSats.length || propQueued) return;
+  propQueued = true;
+  requestAnimationFrame(function run(ts) {
+    if (ts - lastPropAt < 150) { requestAnimationFrame(run); return; }
+    propQueued = false;
+    lastPropAt = ts;
+    propagateAll();
+  });
+}
+
+function goLive(note = '') {
+  timeState.live = true;
+  tNote.textContent = note;
+  renderTimePanel();
+  schedulePropagate();
+}
+
+function setSimTime(ms) {
+  const now = Date.now();
+  const clamped = Math.min(Math.max(ms, now), now + AHEAD_LIMIT_MS);
+  let note = '';
+  if (ms < now - 60000) note = 'The past isn’t available — showing the current moment.';
+  else if (ms > now + AHEAD_LIMIT_MS) note = `That is more than ${MAX_AHEAD_DAYS} days ahead — showing the furthest moment allowed.`;
+  if (clamped - now < 30000) { goLive(note); return; }   // within half a minute of now: just go live
+  timeState.live = false;
+  timeState.fixed = clamped;
+  tNote.textContent = note;
+  renderTimePanel();
+  schedulePropagate();
+}
+
+function timeFromInputs() {
+  if (!tDate.value || !tTime.value) return;
+  const [y, mo, d] = tDate.value.split('-').map(Number);
+  const [h, mi] = tTime.value.split(':').map(Number);
+  setSimTime(Date.UTC(y, mo - 1, d, h, mi) - zoneOffset());
+}
+
+tAhead.addEventListener('input', () => {
+  const mins = +tAhead.value;
+  if (mins === 0) goLive(); else setSimTime(Date.now() + mins * 60000);
+});
+tDate.addEventListener('change', timeFromInputs);
+tTime.addEventListener('change', timeFromInputs);
+tZone.addEventListener('change', renderTimePanel);   // same moment, shown in the other zone
+tNow.addEventListener('click', () => goLive());
+
+setInterval(() => {   // every second: tick the clocks; a chosen moment that has passed snaps back to live
+  if (!timeState.live && timeState.fixed < Date.now()) goLive('The chosen moment has passed — back to the current time.');
+  else renderTimePanel();
+}, 1000);
+
 // --- TLE catalogue -------------------------------------------------------
 
 let allSats = [];              // [{ name, noradId, rec }]
-const latestProp = new Map();  // noradId → { lat, lon, alt }
+const latestProp = new Map();  // Land Cone: noradId → { eci, ecf } positions (km) at propTime
 let propTimer = null;
 let propTime = new Date();     // instant of the latest propagation
+let propGmst = 0;              // Greenwich sidereal angle at propTime
 let currentMode = 'land';
 
 async function loadCatalogue() {
@@ -597,23 +707,38 @@ async function loadCatalogue() {
     setStatus(`Catalogue: ${allSats.length.toLocaleString()} sats (${source})`);
     propagateAll();
     if (propTimer) clearInterval(propTimer);
-    propTimer = setInterval(propagateAll, PROP_INTERVAL_MS);
+    propTimer = setInterval(() => { if (timeState.live) propagateAll(); }, PROP_INTERVAL_MS);
   } catch (e) {
     setStatus('TLE fetch failed: ' + e.message, true);
   }
 }
 
+// Lat/lon/alt of one satellite at `date` — SGP4 + geodetic, as tle-loader's
+// propagate() but without its observer look-angles.
+function satGeo(rec, date, gmst = satellite.gstime(date)) {
+  const pv = satellite.propagate(rec, date);
+  if (!pv || !pv.position) return null;
+  const g = satellite.eciToGeodetic(pv.position, gmst);
+  const lat = satellite.degreesLat(g.latitude), lon = satellite.degreesLong(g.longitude), alt = g.height;
+  return Number.isFinite(lat) && Number.isFinite(lon) && Number.isFinite(alt) ? { lat, lon, alt } : null;
+}
+
+// Recompute for the current (or chosen) moment.  Sat Cone needs only its own
+// satellite.  Land Cone runs SGP4 for the whole catalogue but keeps the raw
+// positions (inertial + Earth-fixed): the geodetic conversion is several times
+// dearer than SGP4 itself, so updateLandHits does it only near the cone.
 function propagateAll() {
-  const now = new Date();
+  const now = simNow();
   propTime = now;
+  if (currentMode === 'sat') { solveSatCone(); return; }
+  propGmst = satellite.gstime(now);
   latestProp.clear();
   for (const t of allSats) {
-    const r = window.Argos.propagate(t.rec, now);
-    if (!r || !Number.isFinite(r.lat) || !Number.isFinite(r.lon) || !Number.isFinite(r.alt)) continue;
-    latestProp.set(t.noradId, { lat: r.lat, lon: r.lon, alt: r.alt });
+    const pv = satellite.propagate(t.rec, now);
+    if (!pv || !pv.position || !Number.isFinite(pv.position.x)) continue;
+    latestProp.set(t.noradId, { eci: pv.position, ecf: satellite.eciToEcf(pv.position, propGmst) });
   }
-  if (currentMode === 'land') updateLandHits();
-  else                        solveSatCone();
+  updateLandHits();
 }
 
 // --- Mode tabs -----------------------------------------------------------
@@ -635,7 +760,7 @@ function activateMode(mode) {
   clearCone();
   globe.polygonsData([]);
   globe.objectsData([]);
-  if (isLand) solveLandCone();
+  if (isLand) { solveLandCone(); propagateAll(); }   // catalogue may be stale after Sat Cone
   else        solveSatCone();
 }
 tabLand.addEventListener('click', () => activateMode('land'));
@@ -681,6 +806,12 @@ function solveLandCone() {
   updateLandHits();
 }
 
+// Margin (km) for the quick Earth-fixed pre-check.  A satellite's true
+// (ellipsoid) position differs from the spherical placement this page draws —
+// and tests — by at most ~30 km, so nothing further outside the cone than
+// this can pass the exact test below.
+const COARSE_KM = 60;
+
 function updateLandHits() {
   if (currentMode !== 'land' || !allSats.length) return;
   const inp = landInputs();
@@ -692,10 +823,16 @@ function updateLandHits() {
   for (const t of allSats) {
     const p = latestProp.get(t.noradId);
     if (!p) continue;
-    const h = coneHit(frame, apex, axis, geodeticToECEF(p.lat, p.lon, p.alt), inp.angle, inp.height);
+    const v = sub(p.ecf, apex), range = mag(v), axial = dot(v, axis);
+    if (dot(v, frame.u) < -COARSE_KM || axial < -COARSE_KM || axial > inp.height + COARSE_KM) continue;
+    if (range > COARSE_KM &&
+        Math.acos(Math.max(-1, Math.min(1, axial / range))) / DEG > inp.angle + 1 + Math.atan2(COARSE_KM, range) / DEG) continue;
+    const g = satellite.eciToGeodetic(p.eci, propGmst);
+    const lat = satellite.degreesLat(g.latitude), lon = satellite.degreesLong(g.longitude), alt = g.height;
+    const h = coneHit(frame, apex, axis, geodeticToECEF(lat, lon, alt), inp.angle, inp.height);
     if (!h) continue;
-    const cls = orbitClass(p.alt);
-    hits.push({ name: t.name, lat: p.lat, lon: p.lon, alt: p.alt, cls, color: ORBIT_COLOR[cls], big: true, ...h });
+    const cls = orbitClass(alt);
+    hits.push({ name: t.name, lat, lon, alt, cls, color: ORBIT_COLOR[cls], big: true, ...h });
   }
   hits.sort((a, b) => a.offAxis - b.offAxis);   // nearest the axis first
   landCountEl.textContent = hits.length;
@@ -770,7 +907,7 @@ satHitsEl.addEventListener('click', e => {
 function solveSatCone() {
   if (currentMode !== 'sat') return;
   if (!selectedSat) { satStatusEl.textContent = 'No satellite selected.'; return; }
-  const p = latestProp.get(selectedSat.noradId);
+  const p = satGeo(selectedSat.rec, propTime);
   const pf = p && satPointingFrame(selectedSat.rec, propTime);
   if (!pf) { satStatusEl.textContent = `${selectedSat.name} — propagation unavailable.`; return; }
   const along = +satAlongEl.value, cross = +satCrossEl.value, halfAngle = +satAngleEl.value;
@@ -817,6 +954,7 @@ bindSlider('sat-angle', 'sat-angle-val', solveSatCone);
 // --- Boot ----------------------------------------------------------------
 
 renderTiltPanel();
+renderTimePanel();
 syncSatPointing();
 activateMode('land');
 loadCatalogue();
