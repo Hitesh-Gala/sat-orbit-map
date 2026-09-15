@@ -13,6 +13,9 @@
 //
 // Date & time (right-hand panel): live by default; any moment from now up to
 // MAX_AHEAD_DAYS ahead can be picked instead, and everything is recomputed for it.
+// Its "1 hour lead" button opens a pop-up: a polar map, centred on the Land
+// cone's site, of every satellite that enters the cone in the hour after that
+// moment, plotted where each one is at the start, with a table of them.
 //
 // Tilt convention: tilt = angle between the axis and local vertical (0° =
 // straight up, 90° = along the horizon); direction = compass bearing of the
@@ -950,6 +953,435 @@ $('sat-point-reset').addEventListener('click', () => {
 });
 
 bindSlider('sat-angle', 'sat-angle-val', solveSatCone);
+
+// --- 1 hour lead (pop-up) -------------------------------------------------
+//
+// From the chosen moment T, find every satellite that is inside the Land cone
+// at some instant in [T, T + 1 h] and plot where it is at T.  The plot is an
+// azimuthal-equidistant map centred on the site: true bearings, North up, and
+// distance along the ground — square-root scaled, so the cone stays readable
+// next to satellites half a world away.
+//
+// Each orbit is sampled once a minute in Earth-fixed coordinates.  Between two
+// samples a satellite stays within half their separation of the midpoint, so
+// a minute whose midpoint isn't that close to the cone can't hold a pass; the
+// few minutes that are get checked second by second with the exact cone test.
+
+const LEAD_MIN       = 60;
+const LEAD_STEP_MS   = 60000;
+const LEAD_TRACK_MIN = 75;                 // hover track: at most this far past T
+const LEAD_R         = 260;                // plot radius in SVG units (viewBox ±300)
+const WORLD_MAP_URL  = 'data/countries-110m.geojson';
+
+// Purpose from the name: tle-loader's (China-focused) table first, then these.
+const PURPOSE_TYPES = [
+  [/STARLINK|ONEWEB|IRIDIUM|GLOBALSTAR|INTELSAT|EUTELSAT|ASTRA|INMARSAT|THURAYA|VIASAT|ECHOSTAR|GUOWANG|QIANFAN|CHINASAT|ZHONGXING|YAMAL|EXPRESS-|TIANTONG|KUIPER|ORBCOMM|GONETS|MOLNIYA|RADUGA|GORIZONT|TDRS|SICRAL|SKYNET|MILSTAR/, 'Communications'],
+  [/NAVSTAR|GLONASS|GALILEO|GSAT0|BEIDOU|QZS-|IRNSS|NAVIC/, 'Navigation'],
+  [/METEOR-|NOAA |GOES |METOP|HIMAWARI|FENGYUN|INSAT|ELEKTRO|DMSP|SUOMI|JPSS|METEOSAT|MTG-/, 'Meteorology'],
+  [/YAOGAN|LACROSSE|ONYX|OFEQ|HELIOS|SAR-LUPE|CSO-|EROS|NROL|MENTOR|TRUMPET|COSMOS/, 'ISR / military'],
+  [/LANDSAT|SENTINEL|SPOT-|PLEIADES|WORLDVIEW|GEOEYE|QUICKBIRD|IKONOS|SKYSAT|FLOCK|DOVE|RESOURCESAT|CARTOSAT|KOMPSAT|ICEYE|CAPELLA|TERRASAR|RADARSAT|ALOS|JILIN|SUPERVIEW|BLACKSKY|GAOFEN|TERRA|AQUA|PRISMA/, 'Earth observation'],
+  [/HUBBLE|CHANDRA|SPITZER|KEPLER|TESS|JWST|SWIFT|FERMI|XMM|INTEGRAL|GAIA|CHEOPS|EUCLID|IXPE|NUSTAR|SOHO|SDO |IRIS |THEMIS|MMS |ICON /, 'Science / astronomy'],
+  [/ISS |ZARYA|TIANHE|TIANGONG|PROGRESS|SOYUZ|DRAGON|CYGNUS|SHENZHOU|TIANZHOU|CREW/, 'Crewed / logistics'],
+  [/CUBESAT|TECHSAT|PATHFINDER|TECHNOSAT|PROBA|DEMO|TEST/, 'Technology demo'],
+  [/AMSAT|OSCAR/, 'Amateur radio'],
+];
+function purposeOf(name) {
+  const p = window.Argos.inferPurpose(name);
+  if (p !== 'Not publicly stated') return p;
+  const n = name.toUpperCase();
+  for (const [re, t] of PURPOSE_TYPES) if (re.test(n)) return t;
+  return 'Not publicly stated';
+}
+
+const leadEl = $('lead'), leadSvg = $('lead-svg'), leadRows = $('lead-rows'), leadInfo = $('lead-info');
+const leadProg = $('lead-progress');
+const LEAD_INFO_HINT = '<div class="hint">Hover a satellite on the plot (or a row of the table) to see its ground track over the hour and its details.</div>';
+let leadToken = 0;       // bumped on every open / close, so a stale scan stops
+let leadCtx = null;      // { c, T, sats, dmax, cone }
+let leadHover = -1;
+
+const fmtKm   = km => Math.round(km).toLocaleString('en-US');
+const fmtLead = ms => { const sec = Math.round(ms / 1000); return `${Math.floor(sec / 60)} m ${String(sec % 60).padStart(2, '0')} s`; };
+const clockAt = ms => `${new Date(ms + zoneOffset()).toISOString().slice(11, 19)} ${tZone.value}`;
+
+function coneCtx(inp) {
+  const frame = enuFrame(inp.lat, inp.lng);
+  return { inp, frame, apex: geodeticToECEF(inp.lat, inp.lng, 0), axis: axisFrom(frame, tilt.angle, tilt.dir),
+           ca: Math.cos(inp.angle * DEG), sa: Math.sin(inp.angle * DEG) };
+}
+
+// Could an Earth-fixed point (km) lie within m km of the cone?  The distance to
+// the cone's side line never exceeds the true distance, so nothing that close
+// is ever rejected.
+function nearCone(c, p, m) {
+  const v = sub(p, c.apex), a = dot(v, c.axis);
+  if (dot(v, c.frame.u) < -m || a < -m || a > c.inp.height + m) return false;
+  return Math.sqrt(Math.max(0, dot(v, v) - a * a)) * c.ca - a * c.sa <= m;
+}
+
+// The exact Land-cone test (as updateLandHits) at one instant.
+function inConeAt(c, rec, ms) {
+  const date = new Date(ms), pv = satellite.propagate(rec, date);
+  if (!pv || !pv.position || !Number.isFinite(pv.position.x)) return false;
+  const gmst = satellite.gstime(date);
+  if (!nearCone(c, satellite.eciToEcf(pv.position, gmst), COARSE_KM)) return false;
+  const g = satellite.eciToGeodetic(pv.position, gmst);
+  return !!coneHit(c.frame, c.apex, c.axis,
+    geodeticToECEF(satellite.degreesLat(g.latitude), satellite.degreesLong(g.longitude), g.height), c.inp.angle, c.inp.height);
+}
+
+// Milliseconds after T at which the satellite first enters the cone (0 = inside
+// already), or -1 if it doesn't within the hour.
+function leadEntry(c, rec, t0, gmsts, maxRange) {
+  if (rec.a * (1 - rec.ecco) * 6378.135 - EARTH_R_KM - COARSE_KM > maxRange) return -1;   // perigee out of reach
+  let prev = null;
+  for (let i = 0; i < gmsts.length; i++) {
+    const ms = t0 + i * LEAD_STEP_MS;
+    const pv = satellite.propagate(rec, new Date(ms));
+    if (!pv || !pv.position || !Number.isFinite(pv.position.x)) { prev = null; continue; }
+    const cur = satellite.eciToEcf(pv.position, gmsts[i]);
+    if (nearCone(c, cur, COARSE_KM) && inConeAt(c, rec, ms)) {
+      if (i === 0) return 0;
+      let lo = ms - LEAD_STEP_MS, hi = ms;               // outside at lo, inside at hi
+      while (hi - lo > 1000) {
+        const mid = (lo + hi) / 2;
+        if (inConeAt(c, rec, mid)) hi = mid; else lo = mid;
+      }
+      return hi - t0;
+    }
+    if (prev) {
+      const mid = { x: (prev.x + cur.x) / 2, y: (prev.y + cur.y) / 2, z: (prev.z + cur.z) / 2 };
+      if (nearCone(c, mid, mag(sub(cur, prev)) / 2 + COARSE_KM)) {   // a pass could hide inside this minute
+        for (let t = ms - LEAD_STEP_MS + 1000; t < ms; t += 1000) if (inConeAt(c, rec, t)) return t - t0;
+      }
+    }
+    prev = cur;
+  }
+  return -1;
+}
+
+// Ground distance (km) and bearing from the site, and the plot position.
+function leadProject(lat, lon) {
+  const L = leadCtx, p1 = L.c.inp.lat * DEG, p2 = lat * DEG, dl = (lon - L.c.inp.lng) * DEG;
+  const cosC = Math.sin(p1) * Math.sin(p2) + Math.cos(p1) * Math.cos(p2) * Math.cos(dl);
+  const d = Math.acos(Math.max(-1, Math.min(1, cosC))) * EARTH_R_KM;
+  const az = Math.atan2(Math.sin(dl) * Math.cos(p2), Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dl));
+  const r = d > L.dmax ? LEAD_R * 1.02 : LEAD_R * Math.sqrt(d / L.dmax);
+  return { x: r * Math.sin(az), y: -r * Math.cos(az), d, az };
+}
+
+// The cone's reach over the ground: the points below rings of the cone at
+// several heights up to the cap (their outline is drawn as the inner shape).
+function coneRim(c) {
+  const { inp, axis, frame, apex } = c, pts = [];
+  const ref = Math.abs(dot(frame.n, axis)) < 0.9 ? frame.n : frame.e, k = dot(ref, axis);
+  let b1 = { x: ref.x - k * axis.x, y: ref.y - k * axis.y, z: ref.z - k * axis.z };
+  const n1 = mag(b1);
+  b1 = { x: b1.x / n1, y: b1.y / n1, z: b1.z / n1 };
+  const b2 = { x: axis.y * b1.z - axis.z * b1.y, y: axis.z * b1.x - axis.x * b1.z, z: axis.x * b1.y - axis.y * b1.x };
+  const spread = Math.tan(Math.min(inp.angle, 89) * DEG);
+  for (let j = 1; j <= 12; j++) {
+    const h = inp.height * j / 12;
+    for (let q = 0; q < 48; q++) {
+      const u = Math.cos(q / 48 * 2 * Math.PI) * spread * h, w = Math.sin(q / 48 * 2 * Math.PI) * spread * h;
+      const P = { x: apex.x + axis.x * h + b1.x * u + b2.x * w, y: apex.y + axis.y * h + b1.y * u + b2.y * w, z: apex.z + axis.z * h + b1.z * u + b2.z * w };
+      pts.push({ lat: Math.asin(P.z / mag(P)) / DEG, lon: Math.atan2(P.y, P.x) / DEG });
+    }
+  }
+  return pts;
+}
+
+function convexHull(pts) {
+  pts = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lower = [], upper = [];
+  for (const p of pts) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop();
+    lower.push(p);
+  }
+  for (let i = pts.length - 1; i >= 0; i--) {
+    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], pts[i]) <= 0) upper.pop();
+    upper.push(pts[i]);
+  }
+  return lower.slice(0, -1).concat(upper.slice(0, -1));
+}
+
+// The "1-hour" boundary: round the plot in 5° sectors, just outside the
+// farthest satellite still to enter.  Not a circle — faster orbits reach
+// the cone from farther away.
+function hourBoundary(sats) {
+  const N = 72, bins = new Array(N).fill(-1);
+  let filled = 0;
+  for (const s of sats) {
+    if (!s.entry) continue;
+    const k = Math.floor(((s.az / DEG + 360) % 360) / 5) % N, r = Math.hypot(s.x, s.y);
+    if (bins[k] < 0) filled++;
+    bins[k] = Math.max(bins[k], r);
+  }
+  if (filled < 8) return '';
+  const out = bins.map((r, k) => {                  // empty sectors: interpolate round the circle
+    if (r >= 0) return r;
+    let a = 1, b = 1;
+    while (bins[(k - a + N) % N] < 0) a++;
+    while (bins[(k + b) % N] < 0) b++;
+    const ra = bins[(k - a + N) % N], rb = bins[(k + b) % N];
+    return ra + (rb - ra) * a / (a + b);
+  });
+  let d = '';
+  for (let k = 0; k < N; k++) {   // vertex on each sector edge, clear of both neighbours
+    const r = Math.min(LEAD_R + 2, Math.max(out[k], out[(k + N - 1) % N]) + 7), a = k * 5 * DEG;
+    d += `${k ? 'L' : 'M'}${(r * Math.sin(a)).toFixed(1)} ${(-r * Math.cos(a)).toFixed(1)}`;
+  }
+  return d + 'Z';
+}
+
+function leadColor(ms) {   // green (entering now) → amber → red (in an hour)
+  const stops = [[103, 232, 164], [249, 210, 76], [255, 107, 107]];
+  const t = Math.min(1, ms / (LEAD_MIN * 60000)) * 2, i = Math.min(1, Math.floor(t)), f = t - i;
+  const [a, b] = [stops[i], stops[i + 1]];
+  return `rgb(${a.map((v, j) => Math.round(v + (b[j] - v) * f)).join(',')})`;
+}
+
+let worldMap = null, worldMapPromise = null;
+function loadWorldMap() {
+  return worldMapPromise || (worldMapPromise = fetch(WORLD_MAP_URL)
+    .then(r => (r.ok ? r.json() : null)).then(j => (worldMap = j)).catch(() => null));
+}
+const polysOf = g => (!g ? [] : g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : []);
+
+function countryAt(lat, lng) {
+  if (!worldMap) return '';
+  const inRing = ring => {
+    let inside = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i], [xj, yj] = ring[j];
+      if ((yi > lat) !== (yj > lat) && lng < (xj - xi) * (lat - yi) / (yj - yi) + xi) inside = !inside;
+    }
+    return inside;
+  };
+  for (const f of worldMap.features) {
+    if (polysOf(f.geometry).some(poly => inRing(poly[0]) && !poly.slice(1).some(inRing))) return f.properties.NAME || '';
+  }
+  return '';
+}
+
+// Country outlines on the polar map.  Rings that jump across the plot (round
+// the antipode) are only stroked; the rest are filled.
+function leadMapPaths() {
+  let fill = '', line = '';
+  for (const f of worldMap.features) {
+    for (const poly of polysOf(f.geometry)) {
+      for (const ring of poly) {
+        let d = '', broken = false, px = null, py = null;
+        for (const [lon, lat] of ring) {
+          const q = leadProject(lat, lon);
+          const jump = px !== null && Math.hypot(q.x - px, q.y - py) > LEAD_R * 0.5;
+          if (jump) broken = true;
+          d += `${px === null || jump ? 'M' : 'L'}${q.x.toFixed(1)} ${q.y.toFixed(1)}`;
+          px = q.x; py = q.y;
+        }
+        if (broken) line += d; else fill += d + 'Z';
+      }
+    }
+  }
+  return `<path class="lm-land" d="${fill}"/><path class="lm-coast" d="${line}"/>`;
+}
+
+function leadSubtitle(c, T, country) {
+  const { inp } = c, off = zoneOffset();
+  const ns = `${Math.abs(inp.lat).toFixed(2)}° ${inp.lat >= 0 ? 'N' : 'S'}`, ew = `${Math.abs(inp.lng).toFixed(2)}° ${inp.lng >= 0 ? 'E' : 'W'}`;
+  const axis = tilt.angle < 0.05 ? 'axis vertical' : `axis tilted ${tilt.angle.toFixed(1)}° toward ${compassPoint(tilt.dir)}`;
+  return `<b>${ns}, ${ew}${country ? ` · ${escHtml(country)}` : ''}</b> · half-angle ${inp.angle}° · up to ${fmtKm(inp.height)} km along the axis · ${axis}<br>
+    Satellites entering the cone between <b>${fmtStamp(T, off)} ${tZone.value}</b> and <b>${clockAt(T + LEAD_MIN * 60000)}</b> — plotted where they are at the start`;
+}
+
+function renderLead(country) {
+  const L = leadCtx, R = LEAD_R, out = [];
+  out.push(`<defs><clipPath id="lead-clip"><circle r="${R}"/></clipPath></defs><circle class="lm-disc" r="${R}"/>`);
+  if (worldMap) out.push(`<g clip-path="url(#lead-clip)">${leadMapPaths()}</g>`);
+  for (let a = 0; a < 360; a += 45) {
+    out.push(`<line class="lm-spoke" x1="0" y1="0" x2="${(R * Math.sin(a * DEG)).toFixed(1)}" y2="${(-R * Math.cos(a * DEG)).toFixed(1)}"/>`);
+  }
+  let lastR = 0;
+  for (const km of [100, 250, 500, 1000, 2000, 5000, 10000, 15000]) {
+    const r = R * Math.sqrt(km / L.dmax);
+    if (km > L.dmax * 0.92 || r - lastR < 30 || R - r < 22) continue;
+    lastR = r;
+    out.push(`<circle class="lm-ring" r="${r.toFixed(1)}"/><text class="lm-rtext" x="${(r * 0.5 + 3).toFixed(1)}" y="${(r * 0.866).toFixed(1)}">${fmtKm(km)} km</text>`);
+  }
+  out.push(`<text class="lm-rtext" x="${(R * 0.5 + 6).toFixed(1)}" y="${(R * 0.866 + 12).toFixed(1)}">${fmtKm(L.dmax)} km</text>`);
+  if (L.cone.length > 2) out.push(`<path class="lm-cone" d="M${L.cone.map(q => `${q[0].toFixed(1)} ${q[1].toFixed(1)}`).join('L')}Z"/>`);
+  const hour = hourBoundary(L.sats);
+  if (hour) out.push(`<path class="lm-hour" d="${hour}"/>`);
+  for (const [t, a] of [['N', 0], ['E', 90], ['S', 180], ['W', 270]]) {
+    out.push(`<text class="lm-compass" x="${((R + 16) * Math.sin(a * DEG)).toFixed(1)}" y="${(-(R + 16) * Math.cos(a * DEG)).toFixed(1)}">${t}</text>`);
+  }
+  out.push('<g id="lead-track" clip-path="url(#lead-clip)"></g>');
+  for (let i = L.sats.length - 1; i >= 0; i--) {   // soonest on top
+    const s = L.sats[i];
+    out.push(`<circle class="lm-dot" cx="${s.x.toFixed(1)}" cy="${s.y.toFixed(1)}" r="3.4" fill="${s.color}"/>`);
+  }
+  out.push(`<path class="lm-site" d="M-7 0H7M0 -7V7"/><text class="lm-sitetext" x="0" y="-13">${escHtml(country || 'Site')}</text>`);
+  out.push('<g id="lead-hl"></g>');
+  leadSvg.innerHTML = out.join('');
+
+  const inside = L.sats.filter(s => !s.entry).length;
+  $('lead-count').innerHTML = `<b>${L.sats.length.toLocaleString('en-US')}</b> satellites in the cone within the hour` +
+    (inside ? ` · ${inside} already inside at the start` : '');
+  leadRows.innerHTML = L.sats.map((s, i) => `<tr data-i="${i}">
+    <td class="num">${i + 1}</td><td><i class="sw" style="background:${s.color}"></i>${escHtml(s.name)}</td>
+    <td class="num">${s.noradId}</td><td class="num">${fmtKm(s.alt)}</td><td class="num">${s.speed.toFixed(2)}</td>
+    <td class="num">${s.period.toFixed(1)}</td><td class="num">${s.entry ? fmtLead(s.entry) : 'inside now'}</td>
+    <td>${escHtml(s.purpose)}</td></tr>`).join('') ||
+    '<tr><td colspan="8" class="empty">No satellite enters the cone in this hour.</td></tr>';
+}
+
+// The satellite's ground track from T (to a little past its entry), faint,
+// with the stretch inside the cone picked out.
+function leadTrack(s) {
+  const { c, T } = leadCtx, endMs = Math.min(LEAD_TRACK_MIN, Math.max(LEAD_MIN, s.entry / 60000 + 10)) * 60000;
+  let all = '', inside = '', prev = null, prevIn = false;
+  for (let t = 0; t <= endMs; t += 20000) {
+    const date = new Date(T + t), pv = satellite.propagate(s.rec, date);
+    if (!pv || !pv.position) { prev = null; continue; }
+    const g = satellite.eciToGeodetic(pv.position, satellite.gstime(date));
+    const lat = satellite.degreesLat(g.latitude), lon = satellite.degreesLong(g.longitude);
+    const q = leadProject(lat, lon), pt = `${q.x.toFixed(1)} ${q.y.toFixed(1)}`;
+    const isIn = !!coneHit(c.frame, c.apex, c.axis, geodeticToECEF(lat, lon, g.height), c.inp.angle, c.inp.height);
+    const joined = prev && Math.hypot(q.x - prev.x, q.y - prev.y) < LEAD_R * 0.5;
+    all += `${joined ? 'L' : 'M'}${pt}`;
+    if (isIn) inside += joined && prevIn ? `L${pt}` : `M${pt}L${pt}`;
+    prev = q;
+    prevIn = isIn;
+  }
+  const e = s.entry ? satGeo(s.rec, new Date(T + s.entry)) : null;
+  return { all, inside, entry: e && leadProject(e.lat, e.lon) };
+}
+
+function setLeadHover(i, fromPlot) {
+  if (!leadCtx || i === leadHover) return;
+  leadHover = i;
+  const trackG = $('lead-track'), hlG = $('lead-hl');
+  leadRows.querySelectorAll('tr.on').forEach(r => r.classList.remove('on'));
+  if (i < 0) { trackG.innerHTML = ''; hlG.innerHTML = ''; leadInfo.innerHTML = LEAD_INFO_HINT; return; }
+  const s = leadCtx.sats[i], tr = leadTrack(s);
+  trackG.innerHTML = `<path class="lm-track" d="${tr.all}"/><path class="lm-track-in" d="${tr.inside}"/>`;
+  hlG.innerHTML = (tr.entry ? `<circle class="lm-entry" cx="${tr.entry.x.toFixed(1)}" cy="${tr.entry.y.toFixed(1)}" r="4.5"/>` : '') +
+    `<circle class="lm-hl" cx="${s.x.toFixed(1)}" cy="${s.y.toFixed(1)}" r="7.5"/>`;
+  leadInfo.innerHTML = `<div class="nm" style="color:${s.color}">${escHtml(s.name)}</div>
+    <dl>
+      <dt>NORAD ID</dt><dd>${s.noradId}</dd>
+      <dt>Altitude</dt><dd>${fmtKm(s.alt)} km</dd>
+      <dt>Speed</dt><dd>${s.speed.toFixed(2)} km/s</dd>
+      <dt>Period</dt><dd>${s.period.toFixed(1)} min</dd>
+      <dt>Purpose</dt><dd>${escHtml(s.purpose)}</dd>
+      <dt>Enters cone</dt><dd>${s.entry ? `in ${fmtLead(s.entry)} · at ${clockAt(leadCtx.T + s.entry)}` : 'already inside at the start'}</dd>
+      <dt>At the start</dt><dd>${fmtKm(s.d)} km ${compassPoint((s.az / DEG + 360) % 360)} of the site · ${s.lat.toFixed(2)}°, ${s.lon.toFixed(2)}°</dd>
+    </dl>`;
+  const row = leadRows.querySelector(`tr[data-i="${i}"]`);
+  if (row) {
+    row.classList.add('on');
+    if (fromPlot) row.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+function leadProgress(msg, frac) {
+  leadProg.hidden = false;
+  $('lead-progress-text').textContent = msg;
+  const bar = $('lead-progress-bar');
+  bar.parentElement.hidden = frac == null;
+  bar.style.width = `${Math.round((frac || 0) * 100)}%`;
+}
+
+async function openLead() {
+  const token = ++leadToken;
+  leadEl.hidden = false;
+  leadCtx = null;
+  leadHover = -1;
+  leadSvg.innerHTML = '';
+  leadRows.innerHTML = '';
+  leadInfo.innerHTML = LEAD_INFO_HINT;
+  $('lead-count').textContent = '';
+  $('lead-sub').textContent = '';
+  const inp = landInputs();
+  if (!inp) { leadProgress('Enter a valid latitude and longitude for the Land cone first.'); return; }
+  const T = simNow().getTime(), c = coneCtx(inp);
+  $('lead-sub').innerHTML = leadSubtitle(c, T, '');
+  if (!allSats.length) { leadProgress('The satellite catalogue is still loading — close this and try again in a moment.'); return; }
+  const mapReady = loadWorldMap();
+
+  const gmsts = Array.from({ length: LEAD_MIN + 1 }, (_, i) => satellite.gstime(new Date(T + i * LEAD_STEP_MS)));
+  const maxRange = c.ca > 1e-3 ? inp.height / c.ca : Infinity;
+  const found = [], total = allSats.length;
+  let tick = performance.now();
+  leadProgress(`Scanning ${total.toLocaleString('en-US')} satellites over the hour ahead…`, 0);
+  for (let k = 0; k < total; k++) {
+    const e = leadEntry(c, allSats[k].rec, T, gmsts, maxRange);
+    if (e >= 0) found.push({ t: allSats[k], entry: e });
+    if (performance.now() - tick > 30) {
+      leadProgress(`Scanning ${total.toLocaleString('en-US')} satellites over the hour ahead… ${Math.round(k / total * 100)} %`, k / total);
+      await new Promise(r => setTimeout(r, 0));
+      if (token !== leadToken) return;
+      tick = performance.now();
+    }
+  }
+  await mapReady;
+  if (token !== leadToken) return;
+
+  const sats = [];
+  for (const f of found) {
+    const pv = satellite.propagate(f.t.rec, new Date(T));
+    if (!pv || !pv.position) continue;
+    const g = satellite.eciToGeodetic(pv.position, gmsts[0]), v = pv.velocity;
+    sats.push({ name: f.t.name, noradId: f.t.noradId, rec: f.t.rec, entry: f.entry,
+      lat: satellite.degreesLat(g.latitude), lon: satellite.degreesLong(g.longitude), alt: g.height,
+      speed: Math.hypot(v.x, v.y, v.z), period: 2 * Math.PI / f.t.rec.no, purpose: purposeOf(f.t.name), color: leadColor(f.entry) });
+  }
+  sats.sort((a, b) => a.entry - b.entry || a.name.localeCompare(b.name));
+  leadCtx = { c, T, sats, dmax: 1, cone: [] };
+  const rim = coneRim(c);
+  let far = 0;
+  for (const s of sats) far = Math.max(far, (s.d = leadProject(s.lat, s.lon).d));
+  for (const q of rim) far = Math.max(far, leadProject(q.lat, q.lon).d);
+  leadCtx.dmax = Math.min(Math.PI * EARTH_R_KM, Math.max(500, far * 1.06));
+  for (const s of sats) Object.assign(s, (({ x, y, az }) => ({ x, y, az }))(leadProject(s.lat, s.lon)));
+  leadCtx.cone = convexHull([[0, 0], ...rim.map(q => { const r = leadProject(q.lat, q.lon); return [r.x, r.y]; })]);
+
+  const country = countryAt(inp.lat, inp.lng);
+  $('lead-sub').innerHTML = leadSubtitle(c, T, country);
+  renderLead(country);
+  leadProg.hidden = true;
+}
+
+function closeLead() {
+  leadToken++;
+  leadEl.hidden = true;
+}
+
+function leadPointer(e) {
+  if (!leadCtx || !leadCtx.sats.length) return;
+  const ctm = leadSvg.getScreenCTM();
+  if (!ctm) return;
+  const pt = leadSvg.createSVGPoint();
+  pt.x = e.clientX;
+  pt.y = e.clientY;
+  const q = pt.matrixTransform(ctm.inverse());
+  let best = -1, bd = (14 / ctm.a) ** 2;   // within ~14 px
+  leadCtx.sats.forEach((s, i) => {
+    const d = (s.x - q.x) ** 2 + (s.y - q.y) ** 2;
+    if (d < bd) { bd = d; best = i; }
+  });
+  if (best >= 0 || e.pointerType === 'mouse') setLeadHover(best, true);
+}
+
+$('t-lead').addEventListener('click', openLead);
+$('lead-close').addEventListener('click', closeLead);
+leadEl.addEventListener('click', e => { if (e.target === leadEl) closeLead(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !leadEl.hidden) closeLead(); });
+leadSvg.addEventListener('pointermove', leadPointer);
+leadSvg.addEventListener('pointerdown', leadPointer);
+leadRows.addEventListener('mouseover', e => { const tr = e.target.closest('tr[data-i]'); if (tr) setLeadHover(+tr.dataset.i, false); });
+leadRows.addEventListener('click', e => { const tr = e.target.closest('tr[data-i]'); if (tr) setLeadHover(+tr.dataset.i, false); });
 
 // --- Boot ----------------------------------------------------------------
 
