@@ -17,7 +17,7 @@
 
   var CFG = {
     endpoint: 'https://script.google.com/macros/s/AKfycbx_7QyB6jTTTlDeR7s1EkAUdLdhPndCrI3LuHQvXDnhACQVWnffyX06TlZo0ZJQmAKemA/exec',   // Apps Script web app — see site-analytics-backend.gs
-    passwordSha256: '06566c03087e9156bc49a006dc116d4a129c7ae7d0101f100219d644dc04a89a',
+    passwordSha256: '073c5d092744e265c7726e0ab4c911c0295a91f022eb8d98fa8391b64769dbd1',   // same owner password as nazar-gate.js
     heartbeatMs: 5 * 60 * 1000,   // safety-net update in case a tab dies without a pagehide
   };
 

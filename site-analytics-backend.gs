@@ -31,7 +31,9 @@
  *  Editing this script later: Deploy → Manage deployments → ✏ → Version:
  *  "New version" → Deploy (keeps the same /exec URL).
  *  Changing the password: put the new password's SHA-256 in PASSWORD_SHA256
- *  below AND in site-analytics.js (passwordSha256).
+ *  below (then deploy a new version as above) AND in site-analytics.js
+ *  (passwordSha256) and nazar-gate.js (SHA256) — one owner password for
+ *  analytics, Indi-Space and Space Stuff.
  * ════════════════════════════════════════════════════════════════════════
  *
  * The tag below makes Google ask for access to THIS spreadsheet only, not
@@ -39,7 +41,7 @@
  * @OnlyCurrentDoc
  */
 
-var PASSWORD_SHA256 = '06566c03087e9156bc49a006dc116d4a129c7ae7d0101f100219d644dc04a89a';
+var PASSWORD_SHA256 = '073c5d092744e265c7726e0ab4c911c0295a91f022eb8d98fa8391b64769dbd1';
 var SHEET_NAME = 'Visits';
 var MAX_READ   = 5000;   // newest visits returned to the dashboard
 
