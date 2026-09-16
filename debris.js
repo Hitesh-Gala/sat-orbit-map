@@ -2,21 +2,24 @@
 // debris at true altitude via one THREE.InstancedMesh, colour-coded by the
 // breakup event that produced it, plus a Chart.js statistics pop-up.
 //
-// Data: CelesTrak's per-event debris GROUPs (live → 6 h localStorage cache →
-// bundled data/debris.tle snapshot), the same resilience cascade the rest of
-// the site uses.  Each fragment is tagged to its source by the parent launch
-// designator in the TLE (line 1, cols 10–14) — e.g. 99025 = Fengyun-1C.
-//
-// CelesTrak publishes groups only for the four historic clouds, so recent
-// break-ups ride along in data/event-debris.tle — built from Space-Track by
-// scripts/gen_event_debris.py (see it for how to add the next one).
+// Data: two catalogues, merged.
+//   • Space-Track's whole debris set (data/spacetrack-debris.tle, ~12.3 k
+//     fragments, rebuilt daily by scripts/gen_spacetrack_debris.py) — the
+//     primary, because CelesTrak publishes debris GROUPs for four historic
+//     clouds only and nothing from any recent break-up.
+//   • CelesTrak's per-event GROUPs (live → 6 h localStorage cache → bundled
+//     data/debris.tle), the same resilience cascade as the rest of the site.
+// Objects are matched by NORAD number and Space-Track wins every
+// disagreement; each one is recorded and shown under "Source purification".
+// Each fragment is tagged to its event by the parent launch designator in the
+// TLE (line 1, cols 10–14) — e.g. 99025 = Fengyun-1C.
 
 const { parseTLE, propagate, EARTH_R_KM } = window.Argos;
 
 const $ = id => document.getElementById(id);
 const REFRESH_MS    = 12000;
 const CHUNK_SIZE    = 1500;
-const MAX_INSTANCES = 8000;      // ~2.6 k tracked fragments today + headroom
+const MAX_INSTANCES = 20000;     // ~12.4 k merged fragments today + headroom
 const SAT_RADIUS    = 1.3;
 
 // =========================================================================
@@ -103,19 +106,105 @@ async function fetchCelestrakDebris() {
   return { tles: parseTLE(await r.text()), source: 'bundled' };
 }
 
-// Break-ups with no CelesTrak group of their own (Yaogan-50 (02), 2026).
-// Small, same-origin and refreshed daily from Space-Track, so it is read
-// every load rather than cached with the groups above.
-async function fetchEventDebris() {
+// Space-Track's full debris catalogue.  Same-origin and rebuilt daily, so it
+// is read on every load rather than cached alongside the CelesTrak groups.
+async function fetchSpaceTrackDebris() {
   try {
-    const r = await fetch('data/event-debris.tle', { cache: 'no-cache' });
+    const r = await fetch('data/spacetrack-debris.tle', { cache: 'no-cache' });
     return r.ok ? parseTLE(await r.text()) : [];
   } catch { return []; }
 }
 
+// =========================================================================
+// Source purification — reconciling the two catalogues.
+//
+// Space-Track is preferred outright, so the interesting part is what that
+// choice costs: every object where the two disagree is recorded here, right
+// down to the cases where CelesTrak's element set was the fresher one.
+// Elements are only compared when both sides sit within an hour of each
+// other — orbits move, so a day-apart epoch is a different measurement, not
+// a contradiction.
+// =========================================================================
+const EPOCH_TOL_MS  = 12 * 3600 * 1000;   // "meaningfully staler" threshold
+const ELEM_TOL_MS   = 3600 * 1000;        // only compare elements this close
+const TOL = { inc: 0.02, raan: 0.5, ecc: 5e-4, mm: 1e-4 };
+
+const purity = {
+  ran: false, ctTotal: 0, stTotal: 0, both: 0, stOnly: 0,
+  ctOnly: [], stNewer: [], ctNewer: [], elements: [], names: [],
+};
+
+function tleFields(t) {
+  const yy = +t.l1.slice(18, 20), doy = +t.l1.slice(20, 32);
+  return {
+    epochMs: Date.UTC(yy < 57 ? 2000 + yy : 1900 + yy, 0, 1) + (doy - 1) * 86400000,
+    inc:  +t.l2.slice(8, 16),
+    raan: +t.l2.slice(17, 25),
+    ecc:  +('0.' + t.l2.slice(26, 33).trim()),
+    mm:   +t.l2.slice(52, 63),
+  };
+}
+
+function comparePair(c, st) {
+  const a = tleFields(c), b = tleFields(st);
+  const dt = b.epochMs - a.epochMs;          // positive → Space-Track is fresher
+  const row = {
+    norad: st.noradId, name: (st.name || '').trim(), ctName: (c.name || '').trim(),
+    ctEpoch: a.epochMs, stEpoch: b.epochMs, hours: Math.abs(dt) / 3600000,
+  };
+  if (dt > EPOCH_TOL_MS) purity.stNewer.push(row);
+  else if (-dt > EPOCH_TOL_MS) purity.ctNewer.push(row);
+
+  if (Math.abs(dt) <= ELEM_TOL_MS) {
+    const diffs = [];
+    const add = (k, label, dec, unit) => {
+      if (Math.abs(a[k] - b[k]) > TOL[k]) diffs.push([label, a[k].toFixed(dec) + unit, b[k].toFixed(dec) + unit]);
+    };
+    add('inc', 'Inclination', 4, '°');
+    add('raan', 'RAAN', 4, '°');
+    add('ecc', 'Eccentricity', 7, '');
+    add('mm', 'Mean motion', 8, ' rev/day');
+    if (diffs.length) purity.elements.push({ ...row, diffs });
+  }
+  if (row.ctName.toUpperCase() !== row.name.toUpperCase()) purity.names.push(row);
+}
+
+// Merge the two lists, Space-Track first.  Anything CelesTrak has that
+// Space-Track doesn't is kept rather than dropped — preferring one source
+// shouldn't mean losing objects only the other one carries.
+function mergeCatalogues(ct, st) {
+  purity.ctTotal = ct.length;
+  purity.stTotal = st.length;
+  const byId = new Map();
+  const noId = [];
+  for (const t of ct) {
+    if (Number.isFinite(t.noradId)) byId.set(t.noradId, t); else noId.push(t);
+  }
+  const out = [];
+  for (const t of st) {
+    const c = Number.isFinite(t.noradId) ? byId.get(t.noradId) : null;
+    if (c) {
+      purity.both++;
+      comparePair(c, t);
+      byId.delete(t.noradId);
+    } else {
+      purity.stOnly++;
+    }
+    out.push({ ...t, origin: 'Space-Track' });
+  }
+  for (const c of byId.values()) {
+    purity.ctOnly.push({ norad: c.noradId, name: (c.name || '').trim(), ctEpoch: tleFields(c).epochMs });
+    out.push({ ...c, origin: 'CelesTrak' });
+  }
+  for (const c of noId) out.push({ ...c, origin: 'CelesTrak' });
+  purity.ran = true;
+  return out;
+}
+
 async function fetchDebris() {
-  const [main, extra] = await Promise.all([fetchCelestrakDebris(), fetchEventDebris()]);
-  return { tles: main.tles.concat(extra), source: main.source };
+  const [ctRes, st] = await Promise.all([fetchCelestrakDebris(), fetchSpaceTrackDebris()]);
+  if (!st.length) return { tles: ctRes.tles, source: ctRes.source, stCount: 0 };
+  return { tles: mergeCatalogues(ctRes.tles, st), source: ctRes.source, stCount: st.length };
 }
 
 // =========================================================================
@@ -368,6 +457,7 @@ function renderTooltip(id) {
     <div>Source <strong>${esc(s.label)}</strong></div>
     <div>NORAD ID <strong>${Number.isFinite(d.noradId) ? d.noradId : '—'}</strong></div>
     <div>Int'l ID <strong>${esc(d.intlId || '—')}</strong></div>
+    <div>Catalogue <strong>${esc(d.origin || 'CelesTrak')}</strong></div>
     <div>Altitude <strong>${st.alt.toFixed(0)} km</strong></div>
     <div>Speed <strong>${speedStr}</strong></div>
     <div>Period <strong>${periodStr}</strong></div>`;
@@ -477,10 +567,11 @@ const INFO = {
   'other': {
     color: '#9aa7b3', title: 'Other tracked debris',
     sub: 'everything not from the named clouds',
-    stats: [['On this globe', 'usually ~0'], ['In the full catalogue', '~12,500 in orbit']],
+    stats: [['On this globe', '~9,500'], ['Named clouds', '~2,900'], ['Source', 'Space-Track']],
     paras: [
-      'Across the whole catalogue, most debris is <em>not</em> from these famous events: it is spent rocket upper stages that later exploded (leftover propellant or battery blasts), fragments from hundreds of smaller break-ups, and mission-related bits.',
-      'This globe carries CelesTrak’s four dedicated debris groups plus the Yaogan-50 (02) fragments from Space-Track, so “Other” is near zero here. For the complete ~12,500-object in-orbit debris population from every source, open the <strong>Statistics &amp; history</strong> dashboard.',
+      'Across the whole catalogue, most debris is <em>not</em> from the famous events: it is spent rocket upper stages that later exploded (leftover propellant or battery blasts), fragments from hundreds of smaller break-ups, and mission-related bits.',
+      'This globe now plots <em>all</em> of it. Space-Track’s catalogue carries every tracked fragment — roughly 12.3 k — where CelesTrak publishes ready-made debris groups for four clouds only, so everything outside those five named events lands in “Other”.',
+      'Where both catalogues describe the same fragment, Space-Track’s version is the one drawn. <strong>Source purification</strong> in the left panel lists every disagreement between the two.',
     ],
     trivia: [],
   },
@@ -495,7 +586,7 @@ const INFO = {
       '• <strong>India, 2019 (“Mission Shakti”)</strong> — India destroyed Microsat-R at ~283 km, again deliberately low. 129 tracked; none remain.',
       '• <strong>Russia</strong> — the Soviet “IS” co-orbital ASAT programme (1968–1982) scattered Cosmos-numbered debris, most long since decayed.',
       'So these aren’t hidden — there is simply nothing left in orbit to plot, which is exactly why CelesTrak keeps no live debris group for them. A low-altitude test is comparatively responsible: the mess clears in months. A high one like Fengyun-1C is a multi-century liability.',
-      'This globe intentionally shows only the big persistent clouds. The <strong>Statistics &amp; history</strong> dashboard, built from the full SATCAT, counts <em>every</em> tracked debris object (~35,800 catalogued, ~12,500 still up) from all nations — that is where US, Indian and everyone else’s debris is fully accounted for.',
+      'The globe plots every fragment Space-Track still tracks, so what is missing here is genuinely gone from orbit, not merely unplotted. The <strong>Statistics &amp; history</strong> dashboard, built from the full SATCAT, also counts what has <em>ever</em> been catalogued (~35,800) against what is still up, which is where these decayed clouds are accounted for.',
     ],
     trivia: [],
   },
@@ -515,6 +606,95 @@ function renderInfo(key) {
     ${info.trivia && info.trivia.length ? `<div class="deb-info-trivia"><span class="k">Trivia</span><ul>${info.trivia.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : ''}
   `;
 }
+
+// --- Source purification pop-up -------------------------------------------
+const fmtN = n => n.toLocaleString();
+const fmtEpoch = ms => (Number.isFinite(ms) ? new Date(ms).toISOString().replace('T', ' ').slice(0, 16) + 'Z' : '—');
+const ROWS_SHOWN = 250;
+
+function purityTable(head, rows, cells) {
+  if (!rows.length) return '';
+  const body = rows.slice(0, ROWS_SHOWN).map(r => `<tr>${cells(r).map(c => `<td>${c}</td>`).join('')}</tr>`).join('');
+  const more = rows.length > ROWS_SHOWN
+    ? `<div class="pur-more">…and ${fmtN(rows.length - ROWS_SHOWN)} more (${fmtN(rows.length)} in total)</div>` : '';
+  return `<table class="pur-table"><thead><tr>${head.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table>${more}`;
+}
+
+function purityBlock(title, note, table) {
+  return `<div class="pur-block"><h3>${esc(title)}</h3><p class="pur-note">${note}</p>${table || '<p class="pur-none">None found.</p>'}</div>`;
+}
+
+function renderPurity() {
+  const merged = allDebris.length;
+  const stDrawn = allDebris.filter(d => d.origin === 'Space-Track').length;
+  const stat = (k, v) => `<div class="deb-info-stat"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`;
+
+  const body = !purity.ran
+    ? '<p class="deb-info-p">Space-Track data did not load on this visit, so nothing could be reconciled — the globe is showing CelesTrak’s groups alone.</p>'
+    : `
+    <div class="deb-info-stats">
+      ${stat('Plotted now', fmtN(merged))}
+      ${stat('From Space-Track', fmtN(stDrawn))}
+      ${stat('From CelesTrak only', fmtN(purity.ctOnly.length))}
+      ${stat('In both catalogues', fmtN(purity.both))}
+      ${stat('Disagreements logged', fmtN(purity.stNewer.length + purity.ctNewer.length + purity.elements.length + purity.names.length))}
+      ${stat('Won’t propagate', fmtN(satState.filter(x => !x).length))}
+    </div>
+    <p class="deb-info-p">Space-Track lists <strong>${fmtN(purity.stTotal)}</strong> debris objects; CelesTrak’s four groups list <strong>${fmtN(purity.ctTotal)}</strong>. Where both describe the same object, <em>Space-Track’s element set is the one drawn</em> — every case where that choice overrides CelesTrak is listed below.</p>
+
+    ${purityBlock('Space-Track used although CelesTrak was fresher', 'The cost of the preference: CelesTrak held a newer element set (by more than 12 hours) for these fragments, and it was set aside. Space-Track is rebuilt here once a day, so a gap of roughly a day is normal and harmless for plotting.',
+      purityTable(['NORAD', 'Object', 'CelesTrak epoch', 'Space-Track epoch', 'Older by'], purity.ctNewer,
+        r => [r.norad, esc(r.name), fmtEpoch(r.ctEpoch), fmtEpoch(r.stEpoch), r.hours.toFixed(1) + ' h']))}
+
+    ${purityBlock('Space-Track was the fresher source', 'Cases where the preference also happens to give the newer measurement.',
+      purityTable(['NORAD', 'Object', 'CelesTrak epoch', 'Space-Track epoch', 'Newer by'], purity.stNewer,
+        r => [r.norad, esc(r.name), fmtEpoch(r.ctEpoch), fmtEpoch(r.stEpoch), r.hours.toFixed(1) + ' h']))}
+
+    ${purityBlock('Orbits that genuinely disagree', 'Both catalogues describe the same object within an hour of each other, yet the orbital elements differ by more than measurement noise. These are real contradictions rather than an age gap — Space-Track’s values are used.',
+      purityTable(['NORAD', 'Object', 'Element', 'CelesTrak', 'Space-Track'], purity.elements,
+        r => [r.norad, esc(r.name), r.diffs.map(d => esc(d[0])).join('<br>'), r.diffs.map(d => esc(d[1])).join('<br>'), r.diffs.map(d => esc(d[2])).join('<br>')]))}
+
+    ${purityBlock('Named differently', 'The same catalogued object under two different names. Space-Track’s spelling is shown on the globe.',
+      purityTable(['NORAD', 'CelesTrak name', 'Space-Track name'], purity.names,
+        r => [r.norad, esc(r.ctName), esc(r.name)]))}
+
+    ${purityBlock('Only in CelesTrak', 'Space-Track’s debris snapshot has no element set for these, so CelesTrak’s is plotted — preferring one source should not mean losing objects the other still carries. Typically these are the parent satellites themselves: CelesTrak ships the intact parent inside its debris group, while Space-Track files it as a payload rather than debris.',
+      purityTable(['NORAD', 'Object', 'CelesTrak epoch'], purity.ctOnly,
+        r => [Number.isFinite(r.norad) ? r.norad : '—', esc(r.name), fmtEpoch(r.ctEpoch)]))}
+
+    <p class="deb-info-p">“Won’t propagate” counts element sets that SGP4 rejects or that have already decayed past a usable orbit — they are catalogued but cannot be placed on the globe, which is why the fragment count in the status line runs slightly below the merged total.</p>
+
+    <div class="pur-foot">Space-Track’s set is refreshed once a day by the site’s robot; CelesTrak’s groups are fetched live in your browser, falling back to a bundled snapshot when the service rate-limits. Both are compared afresh on every load, so these figures describe this visit only.</div>`;
+
+  $('debris-purity-body').innerHTML = `
+    <div class="deb-info-head">
+      <span class="swatch" style="background:#7ee0c0;color:#7ee0c0"></span>
+      <div><h2 id="debris-purity-title">Source purification</h2>
+        <div class="deb-info-sub">Space-Track vs CelesTrak — every disagreement, and what was drawn</div></div>
+    </div>${body}`;
+}
+
+let purityOpen = false;
+function openPurity() {
+  renderPurity();
+  const m = $('debris-purity-modal');
+  m.hidden = false;
+  m.setAttribute('aria-hidden', 'false');
+  m.querySelector('.deb-modal-card').scrollTop = 0;
+  purityOpen = true;
+}
+function closePurity() {
+  const m = $('debris-purity-modal');
+  m.hidden = true;
+  m.setAttribute('aria-hidden', 'true');
+  purityOpen = false;
+}
+(function setupPurity() {
+  $('debris-purity-btn')?.addEventListener('click', openPurity);
+  $('debris-purity-close')?.addEventListener('click', closePurity);
+  $('debris-purity-modal')?.addEventListener('click', e => { if (e.target.id === 'debris-purity-modal') closePurity(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && purityOpen) closePurity(); });
+})();
 
 let infoOpen = false;
 function openInfo(key) {
@@ -551,8 +731,9 @@ async function boot() {
     setStatus('Debris fetch failed: ' + e.message, true);
     return;
   }
-  dataSource = result.source === 'celestrak' ? 'live'
-             : result.source === 'cache' ? 'cached' : 'bundled snapshot';
+  dataSource = result.stCount
+    ? `Space-Track ${result.stCount.toLocaleString()} + CelesTrak ${result.source === 'celestrak' ? 'live' : result.source === 'cache' ? 'cached' : 'bundled'}`
+    : (result.source === 'celestrak' ? 'live' : result.source === 'cache' ? 'cached' : 'bundled snapshot');
 
   const seen = new Set();
   allDebris = [];
@@ -561,7 +742,7 @@ async function boot() {
     let rec;
     try { rec = satellite.twoline2satrec(t.l1, t.l2); } catch { continue; }
     const src = SRC_INDEX[t.l1.slice(9, 14)] ?? OTHER;
-    allDebris.push({ name: t.name, noradId: t.noradId, intlId: intlIdOf(t.l1), src, rec });
+    allDebris.push({ name: t.name, noradId: t.noradId, intlId: intlIdOf(t.l1), src, rec, origin: t.origin });
   }
   if (allDebris.length > MAX_INSTANCES) allDebris.length = MAX_INSTANCES;
 

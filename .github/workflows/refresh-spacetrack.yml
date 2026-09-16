@@ -51,13 +51,14 @@ jobs:
           fi
           python3 scripts/fetch_spacetrack.py data/spacetrack-summary.json
 
-      # ---- Debris from break-ups CelesTrak has no group for --------------
-      # Lifts those fragments out of the Space-Track non-payload bundle into
-      # data/event-debris.tle for the Debris Tracker.  Keeps the previous file
-      # if the pull above failed, so the globe never loses the event.
-      - name: Rebuild event debris (Yaogan-50 …)
+      # ---- Debris TLEs for the Debris Tracker ---------------------------
+      # Flattens the debris half of the Space-Track non-payload bundle into
+      # data/spacetrack-debris.tle (~12 k fragments) — every catalogued piece,
+      # where CelesTrak only publishes four historic clouds.  Keeps the
+      # previous file if the pull above came back thin.
+      - name: Rebuild Space-Track debris TLEs
         continue-on-error: true
-        run: python3 scripts/gen_event_debris.py
+        run: python3 scripts/gen_spacetrack_debris.py
 
       # ---- CelesTrak side (local files, no network) ---------------------
       - name: Summarize bundled CelesTrak data
