@@ -43,6 +43,17 @@ window.NazarNews = (function () {
     { url: 'https://www.esa.int/rssfeed/Our_Activities/Space_News', source: 'ESA',       cat: 'Agency' },
     { url: 'https://spacenews.com/tag/china/feed/',           source: 'SpaceNews · China',      cat: 'China' },
     { url: 'https://spaceflightnow.com/tag/china/feed/',      source: 'Spaceflight Now · China', cat: 'China' },
+    // Topic searches.  Every feed above exposes only its newest ~25 items, so
+    // a story more than a few days old has already rotated off it — which is
+    // how the Yaogan-50 (02) breakup of 04 Sep 2026 never reached the ticker
+    // even though SpaceNews had run it.  These two look 30 days back, so a
+    // notable item is still caught days later, and they reach outlets NAZAR
+    // doesn't subscribe to.  `google: true` marks the "Headline - Publisher"
+    // title format so the real publisher becomes the source.
+    { url: 'https://news.google.com/rss/search?q=(china+OR+chinese)+(satellite+OR+spacecraft+OR+rocket+OR+launch+OR+orbit)+when:30d&hl=en-US&gl=US&ceid=US:en',
+      source: 'Google News · China', cat: 'China', google: true },
+    { url: 'https://news.google.com/rss/search?q=satellite+(breakup+OR+"break+up"+OR+fragmentation+OR+debris+OR+collision+OR+anomaly)+when:30d&hl=en-US&gl=US&ceid=US:en',
+      source: 'Google News · Orbital events', cat: 'Press', google: true },
   ];
 
   // Ordered proxy chain — each feed tries these until one returns parseable
@@ -68,6 +79,11 @@ window.NazarNews = (function () {
   // China relevance — matches the country, its agencies/programmes, launch
   // sites, rocket families and the commercial-launch startups.
   const CHINA_RE = /\b(china|chinese|prc|beijing|cnsa|casc|casic|long\s*march|(?:^|\s)cz[-\s]?\d|chang[' ’]?e|tiangong|tianzhou|tianwen|shenzhou|shijian|yaogan|gaofen|fengyun|beidou|kuaizhou|ceres[-\s]?1|hyperbola|zhuque|gravity[-\s]?1|pallas|landspace|galactic\s+energy|orienspace|space\s+pioneer|i[-\s]?space|deep\s+blue\s+aerospace|cas\s*space|expace|guowang|qianfan|thousand\s+sails|jielong|smart\s+dragon|wenchang|jiuquan|xichang|taiyuan)\b/i;
+
+  // Notable orbital events — a breakup, collision or failure leads the ticker
+  // even when newer routine items exist.  Titles only: descriptions mention
+  // debris in passing far too often.
+  const EVENT_RE = /\b(break[\s-]?up|breaks?\s+up|broke\s+up|breaking\s+up|fragmentation|fragments?|debris|collision|collides?|collided|explosion|exploded|anomaly|malfunction|failure|fails?|failed|lost\s+contact|re-?entry|de-?orbit(?:s|ed|ing)?)\b/i;
 
   // =======================================================================
   // Small helpers
@@ -113,6 +129,25 @@ window.NazarNews = (function () {
     return it.cat === 'China' || CHINA_RE.test((it.title || '') + ' ' + (it.desc || ''));
   }
 
+  function isEventItem(it) { return EVENT_RE.test(it.title || ''); }
+
+  // Same story reaching us from two feeds (the publisher's own and an
+  // aggregator's copy) shares a title but not a URL — dedupe on this.
+  function titleKey(t) {
+    return String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().slice(0, 80);
+  }
+  const isAggregator = link => hostOf(link) === 'news.google.com';
+
+  // Google News titles read "Headline - Publisher", and the item also carries
+  // the publisher in <source>.  Prefer that element; fall back to the suffix.
+  function splitGoogleTitle(title, pub) {
+    if (pub && title.endsWith(' - ' + pub)) return { title: title.slice(0, -(pub.length + 3)).trim(), source: pub };
+    if (pub) return { title, source: pub };
+    const i = title.lastIndexOf(' - ');
+    if (i > 20 && title.length - i <= 45) return { title: title.slice(0, i).trim(), source: title.slice(i + 3).trim() };
+    return { title, source: '' };
+  }
+
   // =======================================================================
   // Parsing
   // =======================================================================
@@ -132,15 +167,18 @@ window.NazarNews = (function () {
     return '';
   }
 
-  function makeItem(title, link, dateRaw, desc, feed) {
+  function makeItem(title, link, dateRaw, desc, feed, source) {
     title = (title || '').trim();
     link  = (link  || '').trim();
     // Require a real absolute URL — this is what stops dead / non-URL guids
-    // ending up as unclickable ticker entries.
+    // ending up as unclickable ticker entries.  A one- or two-word title is
+    // never a headline: agency feeds mix plain site pages (NASA's "Travel"
+    // services page) in with their news.
     if (!title || !/^https?:\/\//i.test(link)) return null;
+    if (title.split(/\s+/).length < 3) return null;
     const d = new Date(dateRaw);
     const pubDate = isNaN(d.getTime()) ? null : d.toISOString();
-    return { title, link, source: feed.source, cat: feed.cat, pubDate, desc: desc || '' };
+    return { title, link, source: source || feed.source, cat: feed.cat, pubDate, desc: desc || '' };
   }
 
   function parseXmlFeed(txt, feed) {
@@ -176,7 +214,13 @@ window.NazarNews = (function () {
       }
       const dateRaw = childText(n, ['pubdate', 'published', 'updated', 'date']);
       const desc = cleanText(childText(n, ['description', 'summary', 'encoded', 'content'])).slice(0, DESC_MAX);
-      const it = makeItem(title, link, dateRaw, desc, feed);
+      let name = '';
+      if (feed.google) {
+        const g = splitGoogleTitle(title, cleanText(childText(n, ['source'])));
+        title = g.title;
+        name = g.source;
+      }
+      const it = makeItem(title, link, dateRaw, desc, feed, name);
       if (it) items.push(it);
     }
     return items;
@@ -186,12 +230,16 @@ window.NazarNews = (function () {
     let j; try { j = JSON.parse(txt); } catch { return null; }
     if (!j || j.status !== 'ok' || !Array.isArray(j.items)) return null;
     return j.items
-      .map(it => makeItem(
-        cleanText(it.title),
-        it.link || it.guid || '',
-        it.pubDate || '',
-        cleanText(it.description || it.content || '').slice(0, DESC_MAX),
-        feed))
+      .map(it => {
+        const g = feed.google ? splitGoogleTitle(cleanText(it.title), '') : null;
+        return makeItem(
+          g ? g.title : cleanText(it.title),
+          it.link || it.guid || '',
+          it.pubDate || '',
+          cleanText(it.description || it.content || '').slice(0, DESC_MAX),
+          feed,
+          g ? g.source : '');
+      })
       .filter(Boolean);
   }
 
@@ -250,8 +298,12 @@ window.NazarNews = (function () {
   function setMeta(m) { try { localStorage.setItem(META_KEY, JSON.stringify(m)); } catch {} }
 
   function mergeIntoArchive(fresh) {
-    const byId = new Map();
-    for (const it of getArchive()) byId.set(it.id || normLink(it.link), it);
+    const byId = new Map(), byTitle = new Map();
+    for (const it of getArchive()) {
+      const id = it.id || normLink(it.link);
+      byId.set(id, it);
+      byTitle.set(titleKey(it.title), it);
+    }
 
     const now = Date.now();
     for (const it of fresh) {
@@ -259,11 +311,28 @@ window.NazarNews = (function () {
       const id = normLink(it.link);
       const prev = byId.get(id);
       if (prev) { if (!prev.desc && it.desc) prev.desc = it.desc; continue; }
-      byId.set(id, {
+
+      const same = byTitle.get(titleKey(it.title));
+      if (same) {                                    // already have this story
+        if (isAggregator(same.link) && !isAggregator(it.link)) {
+          byId.delete(same.id);                      // swap in the publisher's own link
+          same.id = id;
+          same.link = it.link;
+          same.source = it.source;
+          byId.set(id, same);
+        }
+        if (it.cat === 'China') same.cat = 'China';
+        if (!same.desc && it.desc) same.desc = it.desc;
+        continue;
+      }
+
+      const rec = {
         id, title: it.title, link: it.link, source: it.source, cat: it.cat,
         pubDate: it.pubDate || new Date(now).toISOString(),
         desc: it.desc, firstSeen: now,
-      });
+      };
+      byId.set(id, rec);
+      byTitle.set(titleKey(it.title), rec);
     }
 
     let merged = Array.from(byId.values()).filter(it => {
@@ -300,7 +369,9 @@ window.NazarNews = (function () {
   }
 
   // =======================================================================
-  // Selection for the ticker — China first (focus), then world, capped.
+  // Selection for the ticker — Chinese orbital events first (a breakup or
+  // collision shouldn't be pushed out by routine launch items), then the rest
+  // of the China feed, then the world, capped.
   // =======================================================================
   function getTickerItems() {
     const cutoff = Date.now() - TICKER_WINDOW_DAYS * 864e5;
@@ -308,12 +379,14 @@ window.NazarNews = (function () {
     const byDateDesc = (a, b) => new Date(b.pubDate) - new Date(a.pubDate);
     const china = recent.filter(isChinaItem).sort(byDateDesc);
     const world = recent.filter(it => !isChinaItem(it)).sort(byDateDesc);
-    return china.concat(world).slice(0, TICKER_MAX);
+    return china.filter(isEventItem)
+      .concat(china.filter(it => !isEventItem(it)), world)
+      .slice(0, TICKER_MAX);
   }
 
   return {
     FEEDS, PROXIES, CHINA_RE, ARCHIVE_START, TICKER_MAX, TICKER_WINDOW_DAYS,
-    esc, cleanText, hostOf, fmtShort, fmtLong, fmtDayKey, fmtDayLabel, isChinaItem,
+    esc, cleanText, hostOf, fmtShort, fmtLong, fmtDayKey, fmtDayLabel, isChinaItem, isEventItem,
     refresh, getArchive, getTickerItems, getMeta,
   };
 })();
