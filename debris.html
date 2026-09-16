@@ -70,46 +70,51 @@
     /* Info pop-up (story / facts / trivia) */
     .deb-modal {
       position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center;
-      padding: 22px; background: rgba(4, 8, 14, 0.74); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+      padding: 22px;   /* no dim or blur — the fragments keep moving behind the card */
     }
     .deb-modal[hidden] { display: none; }
+    /* The password card in front of Source purification follows the same rule. */
+    body.page-debris #nz-gate.nz-over { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
     .deb-modal-card {
-      position: relative; width: min(620px, 96vw); max-height: 92vh; overflow-y: auto; overflow-x: hidden;
+      position: relative; width: min(780px, 96vw); max-height: 92vh; overflow-y: auto; overflow-x: hidden;
+      /* Wider than it looks like it needs: at the larger type a 620 px measure
+         pushed the longest panel (Yaogan-50) past the window and back into a
+         scrollbar.  Shorter lines, no scrolling. */
       background: #070d14; border: 1px solid #1d3147; border-radius: 12px;
       box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6); padding: 20px 22px 22px;
     }
     .deb-modal-close {
       position: absolute; top: 12px; right: 12px; width: 30px; height: 30px; border-radius: 7px; cursor: pointer;
-      background: #10203a; color: #cfe0f2; border: 1px solid #1d3147; font-size: 18px; line-height: 1;
+      background: #10203a; color: #cfe0f2; border: 1px solid #1d3147; font-size: 19.8px; line-height: 1;
     }
     .deb-modal-close:hover { background: #1b3559; border-color: #4ea8ff; }
     .deb-info-head { display: flex; align-items: flex-start; gap: 12px; padding-right: 34px; margin-bottom: 12px; }
     .deb-info-head .swatch { flex: 0 0 auto; width: 15px; height: 15px; margin-top: 5px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }
-    .deb-info-head h2 { margin: 0; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 17px; letter-spacing: 0.02em; color: #e6f0fb; line-height: 1.25; }
-    .deb-info-sub { font-family: var(--mono); font-size: 12px; color: #8aa0b8; margin-top: 4px; }
+    .deb-info-head h2 { margin: 0; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 18.7px; letter-spacing: 0.02em; color: #e6f0fb; line-height: 1.25; }
+    .deb-info-sub { font-family: var(--mono); font-size: 13.2px; color: #8aa0b8; margin-top: 4px; }
     .deb-info-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin: 4px 0 14px; }
     .deb-info-stat { background: rgba(103, 200, 255, 0.06); border: 1px solid var(--line); border-radius: 7px; padding: 8px 10px; }
-    .deb-info-stat .k { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); }
-    .deb-info-stat .v { display: block; margin-top: 3px; font-family: var(--mono); font-size: 14px; color: var(--accent); font-variant-numeric: tabular-nums; }
-    .deb-info-p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.6; color: var(--text); }
+    .deb-info-stat .k { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); }
+    .deb-info-stat .v { display: block; margin-top: 3px; font-family: var(--mono); font-size: 15.4px; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .deb-info-p { margin: 0 0 10px; font-size: 14.9px; line-height: 1.6; color: var(--text); }
     .deb-info-p em { color: #ffd27f; font-style: normal; }
     .deb-info-trivia { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
-    .deb-info-trivia .k { font-family: 'Orbitron', sans-serif; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
+    .deb-info-trivia .k { font-family: 'Orbitron', sans-serif; font-size: 12.1px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
     .deb-info-trivia ul { margin: 8px 0 0; padding-left: 18px; }
-    .deb-info-trivia li { font-size: 12.5px; line-height: 1.5; color: var(--dim); margin-bottom: 6px; }
+    .deb-info-trivia li { font-size: 13.8px; line-height: 1.5; color: var(--dim); margin-bottom: 6px; }
 
     /* Source purification report */
     .deb-modal-card.wide { width: min(1000px, 100%); }
     .pur-block { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 12px; }
-    .pur-block h3 { margin: 0 0 4px; font-family: 'Orbitron', sans-serif; font-size: 13px; letter-spacing: 0.04em; color: #e6f0fb; }
-    .pur-note { margin: 0 0 9px; font-size: 12.5px; line-height: 1.55; color: var(--dim); }
-    .pur-none { margin: 0; font-family: var(--mono); font-size: 12px; color: #67e8a4; }
-    .pur-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 11.5px; display: block; overflow-x: auto; max-height: 300px; overflow-y: auto; }
+    .pur-block h3 { margin: 0 0 4px; font-family: 'Orbitron', sans-serif; font-size: 14.3px; letter-spacing: 0.04em; color: #e6f0fb; }
+    .pur-note { margin: 0 0 9px; font-size: 13.8px; line-height: 1.55; color: var(--dim); }
+    .pur-none { margin: 0; font-family: var(--mono); font-size: 13.2px; color: #67e8a4; }
+    .pur-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12.7px; display: block; overflow-x: auto; max-height: 300px; overflow-y: auto; }
     .pur-table th { position: sticky; top: 0; z-index: 1; background: #0a1119; text-align: left; padding: 5px 8px; white-space: nowrap;
-      color: var(--accent); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 1px solid var(--line); }
+      color: var(--accent); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 1px solid var(--line); }
     .pur-table td { padding: 4px 8px; white-space: nowrap; color: var(--text); border-bottom: 1px solid rgba(110, 200, 255, 0.08); vertical-align: top; }
-    .pur-more { margin-top: 6px; font-family: var(--mono); font-size: 11px; color: var(--dim); }
-    .pur-foot { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 10px; font-size: 12px; line-height: 1.6; color: var(--dim); }
+    .pur-more { margin-top: 6px; font-family: var(--mono); font-size: 12.1px; color: var(--dim); }
+    .pur-foot { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 10px; font-size: 13.2px; line-height: 1.6; color: var(--dim); }
 
     /* ============================================================
        2007 Chinese ASAT feature — right-edge button + long-read modal
@@ -131,7 +136,7 @@
 
     .asat-modal {
       position: fixed; inset: 0; z-index: 1100; display: flex; align-items: flex-start; justify-content: center;
-      padding: 3.5vh 16px; background: rgba(3,6,11,0.84); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+      padding: 3.5vh 16px;   /* no dim or blur — see .deb-modal */
     }
     .asat-modal[hidden] { display: none; }
     .asat-card {
@@ -143,37 +148,37 @@
       padding: 9px 12px 9px 16px; background: rgba(7,12,19,0.94);
       backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-bottom: 1px solid #1a2a3c;
     }
-    .asat-kicker { font-family: 'Orbitron', sans-serif; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #ff8b7d; }
-    .asat-close { width: 30px; height: 30px; border-radius: 7px; cursor: pointer; background: #10203a; color: #cfe0f2; border: 1px solid #24384f; font-size: 18px; line-height: 1; }
+    .asat-kicker { font-family: 'Orbitron', sans-serif; font-size: 12.1px; letter-spacing: .16em; text-transform: uppercase; color: #ff8b7d; }
+    .asat-close { width: 30px; height: 30px; border-radius: 7px; cursor: pointer; background: #10203a; color: #cfe0f2; border: 1px solid #24384f; font-size: 19.8px; line-height: 1; }
     .asat-close:hover { background: #1b3559; border-color: #4ea8ff; }
 
     .asat-body { padding: 0 clamp(16px, 3.4vw, 34px) 26px; }
     .asat-hero { margin: 0 0 4px; position: relative; }
     .asat-hero img { display: block; width: 100%; border-bottom: 1px solid #1a2a3c; }
     .asat-hero figcaption, .asat-fig figcaption {
-      font-family: var(--mono); font-size: 10.5px; line-height: 1.5; color: #7d93ab; padding: 7px 2px 0; letter-spacing: .01em;
+      font-family: var(--mono); font-size: 11.6px; line-height: 1.5; color: #7d93ab; padding: 7px 2px 0; letter-spacing: .01em;
     }
     .asat-hero figcaption { padding: 7px clamp(16px, 3.4vw, 34px) 0; }
     .asat-hero figcaption a, .asat-fig figcaption a, .asat-sources a { color: var(--accent); text-decoration: none; }
-    .asat-title { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(21px, 3.6vw, 30px); line-height: 1.12; letter-spacing: .01em; color: #fff; margin: 20px 0 6px; }
-    .asat-title .sub { display: block; font-family: var(--mono); font-weight: 400; font-size: 13px; letter-spacing: .02em; color: #ff9f93; margin-top: 8px; }
-    .asat-lede { font-size: 15px; line-height: 1.7; color: #d6e2f0; margin: 6px 0 4px; }
+    .asat-title { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(23.1px, 3.96vw, 33px); line-height: 1.12; letter-spacing: .01em; color: #fff; margin: 20px 0 6px; }
+    .asat-title .sub { display: block; font-family: var(--mono); font-weight: 400; font-size: 14.3px; letter-spacing: .02em; color: #ff9f93; margin-top: 8px; }
+    .asat-lede { font-size: 16.5px; line-height: 1.7; color: #d6e2f0; margin: 6px 0 4px; }
 
     .asat-body h3 {
-      font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 15.5px; letter-spacing: .02em; color: #cfe4ff;
+      font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 17.1px; letter-spacing: .02em; color: #cfe4ff;
       margin: 26px 0 8px; padding-top: 16px; border-top: 1px solid #16273a;
     }
-    .asat-body p { font-size: 13.8px; line-height: 1.72; color: #c3d2e2; margin: 0 0 12px; }
+    .asat-body p { font-size: 15.2px; line-height: 1.72; color: #c3d2e2; margin: 0 0 12px; }
     .asat-body p b { color: #ffd7a0; font-weight: 600; }
     .asat-body em { color: #ffd27f; font-style: normal; }
 
     /* Fact sheet */
     .asat-facts { margin: 16px 0 6px; border: 1px solid #24384f; border-radius: 12px; background: rgba(103,200,255,0.04); overflow: hidden; }
-    .asat-facts .fh { font-family: 'Orbitron', sans-serif; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: #8aa0b8; padding: 11px 14px; border-bottom: 1px solid #1a2a3c; background: rgba(103,200,255,0.05); }
+    .asat-facts .fh { font-family: 'Orbitron', sans-serif; font-size: 13.2px; letter-spacing: .12em; text-transform: uppercase; color: #8aa0b8; padding: 11px 14px; border-bottom: 1px solid #1a2a3c; background: rgba(103,200,255,0.05); }
     .asat-fact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px; background: #16273a; }
     .asat-fact { background: #070c13; padding: 10px 14px; }
-    .asat-fact .k { display: block; font-family: var(--mono); font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase; color: #718aa4; margin-bottom: 3px; }
-    .asat-fact .v { display: block; font-family: var(--mono); font-size: 13px; color: #e6f0fb; line-height: 1.35; }
+    .asat-fact .k { display: block; font-family: var(--mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: #718aa4; margin-bottom: 3px; }
+    .asat-fact .v { display: block; font-family: var(--mono); font-size: 14.3px; color: #e6f0fb; line-height: 1.35; }
     .asat-fact .v b { color: #ff9f93; font-weight: 700; }
 
     /* Figures (photos) */
@@ -185,8 +190,8 @@
 
     /* Charts (inline SVG) */
     .asat-chart { margin: 16px 0 6px; border: 1px solid #24384f; border-radius: 12px; padding: 14px 14px 10px; background: rgba(6,12,20,0.6); }
-    .asat-chart .ct { font-family: 'Orbitron', sans-serif; font-size: 12.5px; letter-spacing: .03em; color: #dbe8f7; margin: 0 0 2px; }
-    .asat-chart .cs { font-family: var(--mono); font-size: 10.5px; color: #7d93ab; margin: 0 0 8px; }
+    .asat-chart .ct { font-family: 'Orbitron', sans-serif; font-size: 13.8px; letter-spacing: .03em; color: #dbe8f7; margin: 0 0 2px; }
+    .asat-chart .cs { font-family: var(--mono); font-size: 11.6px; color: #7d93ab; margin: 0 0 8px; }
     .asat-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
     .asat-chart .axis { stroke: #2a3e54; stroke-width: 1; }
     .asat-chart .grid { stroke: #16273a; stroke-width: 1; }
@@ -194,17 +199,17 @@
     .asat-chart .lbly { fill: #8399ae; font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; }
     .asat-chart .val { fill: #e6f0fb; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; }
     .asat-chart .note { fill: #ffca8a; font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; }
-    .asat-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 8px; font-family: var(--mono); font-size: 10.5px; color: #9fb2c6; }
+    .asat-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 8px; font-family: var(--mono); font-size: 11.6px; color: #9fb2c6; }
     .asat-legend span { display: inline-flex; align-items: center; gap: 6px; }
     .asat-legend i { width: 12px; height: 3px; border-radius: 2px; display: inline-block; }
 
     /* Reaction / callout box */
     .asat-callout { margin: 18px 0; border-left: 3px solid #ff6f5f; background: rgba(255,90,66,0.06); border-radius: 0 10px 10px 0; padding: 12px 16px; }
-    .asat-callout .k { font-family: 'Orbitron', sans-serif; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #ff9f93; margin-bottom: 6px; }
-    .asat-callout p { font-size: 13px; margin-bottom: 8px; }
+    .asat-callout .k { font-family: 'Orbitron', sans-serif; font-size: 12.1px; letter-spacing: .12em; text-transform: uppercase; color: #ff9f93; margin-bottom: 6px; }
+    .asat-callout p { font-size: 14.3px; margin-bottom: 8px; }
     .asat-callout p:last-child { margin-bottom: 0; }
 
-    .asat-sources { margin-top: 24px; border-top: 1px solid #16273a; padding-top: 12px; font-family: var(--mono); font-size: 10.5px; line-height: 1.7; color: #7d93ab; }
+    .asat-sources { margin-top: 24px; border-top: 1px solid #16273a; padding-top: 12px; font-family: var(--mono); font-size: 11.6px; line-height: 1.7; color: #7d93ab; }
     .asat-sources b { color: #9fb2c6; font-weight: 600; }
 
     @media (max-width: 640px) {
@@ -341,7 +346,7 @@
           <div class="cap">
             <h3>The weapon</h3>
             <p>The interceptor — designated <b>SC-19</b> by U.S. intelligence — was a <em>direct-ascent</em> weapon: a road-mobile missile derived from the DF-21 (CSS-5) medium-range ballistic missile, fired from Xichang. It didn't go into orbit; it lobbed a ~600 kg <b>kinetic kill vehicle</b> onto a ballistic arc to meet the satellite. The kill vehicle carried no explosive at all. It didn't need one.</p>
-            <p class="asat-figcap" style="font-family:var(--mono);font-size:10.5px;color:#7d93ab;margin:0">A DF-21 launcher at the Chinese Military Museum, Beijing. Photo: Max Smith / Wikimedia Commons — public domain.</p>
+            <p class="asat-figcap" style="font-family:var(--mono);font-size:11.6px;color:#7d93ab;margin:0">A DF-21 launcher at the Chinese Military Museum, Beijing. Photo: Max Smith / Wikimedia Commons — public domain.</p>
           </div>
         </div>
 
