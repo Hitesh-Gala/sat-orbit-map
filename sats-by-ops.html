@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=43">
+  <link rel="stylesheet" href="styles.css?v=44">
   <style>
     /* Page-specific HUD — taller than the viz3d panel because the
        category list runs to ~30 rows.  Same visual idiom otherwise. */
@@ -23,7 +23,7 @@
       width: 344px;
       max-width: calc(100vw - 28px);
       max-height: calc(100vh - 100px);
-      overflow-y: auto;
+      overflow-y: auto; overflow-x: hidden;
       z-index: 10;
       display: flex;
       flex-direction: column;
@@ -170,8 +170,8 @@
     .sbo-modal[hidden] { display: none; }
     .sbo-modal-card {
       position: relative;
-      width: min(560px, 96vw); max-height: min(88vh, 760px);
-      overflow-y: auto;
+      width: min(560px, 96vw); max-height: 92vh;
+      overflow-y: auto; overflow-x: hidden;
       background: #070d14; border: 1px solid #1d3147; border-radius: 12px;
       box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
       padding: 20px 22px 18px;

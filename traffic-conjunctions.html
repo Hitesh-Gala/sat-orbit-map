@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>NAZAR · Traffic-Conjunctions</title>
   <!-- Space Stuff is password protected: the page stays hidden until the password is entered (nazar-gate.js). -->
-  <script src="nazar-gate.js?v=1" data-section="spacestuff"></script>
+  <script src="nazar-gate.js?v=2" data-section="spacestuff"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://unpkg.com">
@@ -73,7 +73,7 @@
     .side-head{display:flex; align-items:baseline; justify-content:space-between}
     .side-head h2{font-family:var(--disp); font-weight:600; font-size:20.8px; margin:0}
     .side-head .cnt{font-family:var(--mono); font-size:14.3px; color:var(--dim)}
-    .conj-list{display:flex; flex-direction:column; gap:9px; flex:1 1 auto; min-height:120px; overflow-y:auto; padding:2px 4px 2px 0}
+    .conj-list{display:flex; flex-direction:column; gap:9px; flex:1 1 auto; min-height:120px; overflow-y:auto; overflow-x: hidden; padding:2px 4px 2px 0}
     .conj{cursor:pointer; text-align:left; width:100%; background:var(--card); border:1px solid var(--line); border-left:4px solid var(--warn); border-radius:11px; padding:9px 12px; transition:.14s; box-shadow:var(--shadow)}
     .conj:hover{border-color:#bcd3ee; transform:translateY(-1px)}
     .conj.sel{border-color:var(--accent); box-shadow:0 0 0 2px rgba(20,102,201,.18), var(--shadow)}

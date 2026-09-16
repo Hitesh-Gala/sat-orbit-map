@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=43">
+  <link rel="stylesheet" href="styles.css?v=44">
   <style>
     /* Game-of-Cones-only chrome: a single left-edge HUD card with mode
        tabs, sliders, results.  The shared styles already supply the
@@ -25,7 +25,7 @@
       width: 320px;
       max-width: calc(100vw - 28px);
       max-height: calc(100vh - 100px);
-      overflow-y: auto;
+      overflow-y: auto; overflow-x: hidden;
       z-index: 10;
       display: flex;
       flex-direction: column;
@@ -87,7 +87,7 @@
     .goc-search:focus { border-color: var(--accent); }
     .goc-hits {
       max-height: 140px;
-      overflow-y: auto;
+      overflow-y: auto; overflow-x: hidden;
       border: 1px solid var(--line);
       border-radius: 3px;
       background: rgba(0, 0, 0, 0.22);

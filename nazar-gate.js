@@ -6,6 +6,8 @@
 //                password card until the password has been entered once in
 //                this tab (sessionStorage); after that every Space Stuff page
 //                opens straight away.
+//   One control  NazarGate.ask() puts the same card in front of a single
+//                button — the Debris Tracker's Source purification report.
 //
 // Only the password's SHA-256 is kept here.  It is a client-side gate on a
 // static site — it keeps casual visitors out, but the data files behind the
@@ -29,58 +31,65 @@
     if (!window.crypto || !crypto.subtle) return Promise.reject(new Error('insecure context'));
     return sha256(String(pw).trim()).then(function (h) { return h === SHA256; });
   }
-  window.NazarGate = { check: check };
 
-  var me = document.currentScript, section = SECTIONS[me && me.getAttribute('data-section')];
-  if (!section) return;
-  try { if (sessionStorage.getItem(section.key) === '1') return; } catch (e) { /* private mode: ask every time */ }
+  var stylesAdded = false;
+  function injectStyles() {
+    if (stylesAdded) return;
+    stylesAdded = true;
+    var css = document.createElement('style');
+    css.textContent =
+      'html.nz-locked body > :not(#nz-gate){visibility:hidden!important}' +
+      '#nz-gate{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:20px;' +
+        'background:radial-gradient(ellipse at center,#0b1624 0%,#03060b 72%);font-family:"JetBrains Mono","Fira Code",Consolas,ui-monospace,monospace}' +
+      '#nz-gate.nz-over{background:rgba(3,6,11,.82);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}' +
+      '#nz-gate .nz-card{position:relative;width:min(360px,92vw);text-align:center;background:#0a1119;border:1px solid #24384f;' +
+        'border-radius:14px;padding:26px 24px 22px;box-shadow:0 26px 70px rgba(0,0,0,.7);color:#cfe0f2}' +
+      '#nz-gate .nz-card.shake{animation:nz-shake .4s}' +
+      '@keyframes nz-shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}' +
+      '#nz-gate .nz-x{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:6px;cursor:pointer;' +
+        'background:#10203a;color:#cfe0f2;border:1px solid #24384f;font-size:17px;line-height:1}' +
+      '#nz-gate .nz-x:hover{background:#1b3559}' +
+      '#nz-gate .nz-ico{font-size:34px;line-height:1;margin-bottom:10px}' +
+      '#nz-gate .nz-title{font-family:Orbitron,sans-serif;font-size:20px;font-weight:800;color:#fff;letter-spacing:.04em}' +
+      '#nz-gate .nz-sub{margin-top:4px;font-size:11.5px;color:#8aa0b8;line-height:1.5}' +
+      '#nz-gate label{display:block;margin:18px 0 7px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#9fb2c6}' +
+      '#nz-gate .nz-row{display:flex;gap:8px}' +
+      '#nz-gate input{flex:1;min-width:0;padding:10px 12px;border-radius:8px;border:1px solid #24384f;background:#050a11;color:#eaf2fb;' +
+        'font-family:inherit;font-size:15px;letter-spacing:.2em;text-align:center;outline:none}' +
+      '#nz-gate input:focus{border-color:#67c8ff;box-shadow:0 0 0 2px rgba(103,200,255,.25)}' +
+      '#nz-gate button.nz-go{flex:0 0 auto;padding:10px 14px;border-radius:8px;cursor:pointer;border:1px solid #67c8ff;' +
+        'background:rgba(103,200,255,.18);color:#d6f0ff;font-family:inherit;font-size:13px;font-weight:700}' +
+      '#nz-gate button.nz-go:hover{background:rgba(103,200,255,.3)}' +
+      '#nz-gate .nz-err{margin-top:10px;font-size:11.5px;color:#ff8b7d}' +
+      '#nz-gate .nz-err[hidden]{display:none}' +
+      '#nz-gate .nz-home{display:inline-block;margin-top:16px;font-size:12px;color:#67c8ff;text-decoration:none}' +
+      '#nz-gate .nz-home:hover{text-decoration:underline}';
+    document.head.appendChild(css);
+  }
 
-  var root = document.documentElement;
-  root.classList.add('nz-locked');
-  var css = document.createElement('style');
-  css.textContent =
-    'html.nz-locked body > :not(#nz-gate){visibility:hidden!important}' +
-    '#nz-gate{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:20px;' +
-      'background:radial-gradient(ellipse at center,#0b1624 0%,#03060b 72%);font-family:"JetBrains Mono","Fira Code",Consolas,ui-monospace,monospace}' +
-    '#nz-gate .nz-card{position:relative;width:min(360px,92vw);text-align:center;background:#0a1119;border:1px solid #24384f;' +
-      'border-radius:14px;padding:26px 24px 22px;box-shadow:0 26px 70px rgba(0,0,0,.7);color:#cfe0f2}' +
-    '#nz-gate .nz-card.shake{animation:nz-shake .4s}' +
-    '@keyframes nz-shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}' +
-    '#nz-gate .nz-ico{font-size:34px;line-height:1;margin-bottom:10px}' +
-    '#nz-gate .nz-title{font-family:Orbitron,sans-serif;font-size:20px;font-weight:800;color:#fff;letter-spacing:.04em}' +
-    '#nz-gate .nz-sub{margin-top:4px;font-size:11.5px;color:#8aa0b8}' +
-    '#nz-gate label{display:block;margin:18px 0 7px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#9fb2c6}' +
-    '#nz-gate .nz-row{display:flex;gap:8px}' +
-    '#nz-gate input{flex:1;min-width:0;padding:10px 12px;border-radius:8px;border:1px solid #24384f;background:#050a11;color:#eaf2fb;' +
-      'font-family:inherit;font-size:15px;letter-spacing:.2em;text-align:center;outline:none}' +
-    '#nz-gate input:focus{border-color:#67c8ff;box-shadow:0 0 0 2px rgba(103,200,255,.25)}' +
-    '#nz-gate button{flex:0 0 auto;padding:10px 14px;border-radius:8px;cursor:pointer;border:1px solid #67c8ff;' +
-      'background:rgba(103,200,255,.18);color:#d6f0ff;font-family:inherit;font-size:13px;font-weight:700}' +
-    '#nz-gate button:hover{background:rgba(103,200,255,.3)}' +
-    '#nz-gate .nz-err{margin-top:10px;font-size:11.5px;color:#ff8b7d}' +
-    '#nz-gate .nz-err[hidden]{display:none}' +
-    '#nz-gate .nz-home{display:inline-block;margin-top:16px;font-size:12px;color:#67c8ff;text-decoration:none}' +
-    '#nz-gate .nz-home:hover{text-decoration:underline}';
-  document.head.appendChild(css);
-
-  function mount() {
+  // The card itself.  `foot` is the link/actions row under the field, and
+  // `onPass` runs once the password checks out.
+  function mount(opts, foot, onPass) {
+    injectStyles();
     var gate = document.createElement('div');
     gate.id = 'nz-gate';
+    if (opts.overlay) gate.className = 'nz-over';
     gate.setAttribute('role', 'dialog');
     gate.setAttribute('aria-modal', 'true');
     gate.setAttribute('aria-labelledby', 'nz-title');
     gate.innerHTML =
       '<div class="nz-card">' +
-        '<div class="nz-ico">' + section.icon + '</div>' +
-        '<div class="nz-title" id="nz-title">' + section.title + '</div>' +
-        '<div class="nz-sub">' + section.sub + '</div>' +
+        (opts.dismissible ? '<button type="button" class="nz-x" id="nz-x" aria-label="Close">×</button>' : '') +
+        '<div class="nz-ico">' + opts.icon + '</div>' +
+        '<div class="nz-title" id="nz-title">' + opts.title + '</div>' +
+        '<div class="nz-sub">' + opts.sub + '</div>' +
         '<label for="nz-pw">Enter password</label>' +
         '<div class="nz-row">' +
           '<input id="nz-pw" type="password" autocomplete="off" spellcheck="false" placeholder="••••••">' +
-          '<button type="button" id="nz-go">Enter →</button>' +
+          '<button type="button" class="nz-go" id="nz-go">Enter →</button>' +
         '</div>' +
         '<div class="nz-err" id="nz-err" hidden></div>' +
-        '<a class="nz-home" href="index.html">← NAZAR Home</a>' +
+        (foot || '') +
       '</div>';
     document.body.appendChild(gate);
 
@@ -96,14 +105,56 @@
     function submit() {
       check(pw.value).then(function (ok) {
         if (!ok) return fail('Incorrect password — try again.');
-        try { sessionStorage.setItem(section.key, '1'); } catch (e) { /* unlocks this page only */ }
-        root.classList.remove('nz-locked');
-        gate.remove();
+        if (opts.key) { try { sessionStorage.setItem(opts.key, '1'); } catch (e) { /* unlocks this once */ } }
+        onPass(gate);
       }, function () { fail('This browser can’t check the password here (it needs HTTPS).'); });
     }
     gate.querySelector('#nz-go').addEventListener('click', submit);
     pw.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); });
     setTimeout(function () { pw.focus(); }, 60);
+    return gate;
   }
-  if (document.body) mount(); else document.addEventListener('DOMContentLoaded', mount);
+
+  // Ask for the password before one action.  Resolves true when it checks
+  // out, false when the visitor backs out.  With `key`, a tab is asked once.
+  function ask(opts) {
+    var o = opts || {};
+    var conf = {
+      icon: o.icon || '🔒', title: o.title || 'Password required',
+      sub: o.sub || 'This is password protected.', key: o.key,
+      dismissible: true, overlay: true,
+    };
+    if (conf.key) {
+      try { if (sessionStorage.getItem(conf.key) === '1') return Promise.resolve(true); } catch (e) { /* ask again */ }
+    }
+    return new Promise(function (resolve) {
+      var gate = mount(conf, '', function (g) { g.remove(); resolve(true); });
+      function cancel() { gate.remove(); resolve(false); }
+      gate.querySelector('#nz-x').addEventListener('click', cancel);
+      gate.addEventListener('click', function (e) { if (e.target === gate) cancel(); });
+      document.addEventListener('keydown', function esc(e) {
+        if (e.key !== 'Escape') return;
+        document.removeEventListener('keydown', esc);
+        if (document.body.contains(gate)) cancel();
+      });
+    });
+  }
+
+  window.NazarGate = { check: check, ask: ask };
+
+  // --- whole-section gate (data-section="…") --------------------------------
+  var me = document.currentScript, section = SECTIONS[me && me.getAttribute('data-section')];
+  if (!section) return;
+  try { if (sessionStorage.getItem(section.key) === '1') return; } catch (e) { /* private mode: ask every time */ }
+
+  var root = document.documentElement;
+  root.classList.add('nz-locked');
+  injectStyles();
+
+  function lock() {
+    mount({ icon: section.icon, title: section.title, sub: section.sub, key: section.key },
+      '<a class="nz-home" href="index.html">← NAZAR Home</a>',
+      function (gate) { root.classList.remove('nz-locked'); gate.remove(); });
+  }
+  if (document.body) lock(); else document.addEventListener('DOMContentLoaded', lock);
 })();

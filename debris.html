@@ -13,13 +13,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=43">
+  <link rel="stylesheet" href="styles.css?v=44">
   <style>
     /* Left filter/legend card, same idiom as the Sats-by-Operator page. */
     .debris-shell {
       position: fixed; top: 86px; left: 14px; width: 300px;
       max-width: calc(100vw - 28px); max-height: calc(100vh - 100px);
-      overflow-y: auto; z-index: 10; display: flex; flex-direction: column; gap: 8px;
+      overflow-y: auto; overflow-x: hidden; z-index: 10; display: flex; flex-direction: column; gap: 8px;
     }
     .deb-controls { display: flex; gap: 6px; margin-bottom: 8px; }
     .deb-controls button {
@@ -74,7 +74,7 @@
     }
     .deb-modal[hidden] { display: none; }
     .deb-modal-card {
-      position: relative; width: min(620px, 96vw); max-height: min(90vh, 780px); overflow-y: auto;
+      position: relative; width: min(620px, 96vw); max-height: 92vh; overflow-y: auto; overflow-x: hidden;
       background: #070d14; border: 1px solid #1d3147; border-radius: 12px;
       box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6); padding: 20px 22px 22px;
     }
@@ -135,7 +135,7 @@
     }
     .asat-modal[hidden] { display: none; }
     .asat-card {
-      position: relative; width: min(900px, 96vw); max-height: 93vh; overflow-y: auto;
+      position: relative; width: min(900px, 96vw); max-height: 93vh; overflow-y: auto; overflow-x: hidden;
       background: #070c13; border: 1px solid #24384f; border-radius: 14px; box-shadow: 0 30px 90px rgba(0,0,0,0.7);
     }
     .asat-head {
@@ -492,7 +492,8 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=11"></script>
-  <script src="debris.js?v=5"></script>
+  <script src="nazar-gate.js?v=2"></script>
+  <script src="debris.js?v=6"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=4"></script>
   <script src="mobile-menu.js?v=23"></script>

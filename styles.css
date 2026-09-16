@@ -151,7 +151,7 @@ a:hover { text-decoration: underline; }
   max-height: calc(100vh - 100px);
   /* Allow internal scrolling when expanded <details> push the total
      content past the viewport — otherwise the overflow is invisible. */
-  overflow-y: auto;
+  overflow-y: auto; overflow-x: hidden;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
@@ -241,7 +241,7 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
 .list {
   margin-top: 4px;
   max-height: 280px;
-  overflow-y: auto;
+  overflow-y: auto; overflow-x: hidden;
   padding-right: 4px;
 }
 
@@ -375,7 +375,7 @@ details.sats[open] > summary::after { transform: rotate(0deg); }
   flex-direction: column;
   gap: 8px;
   max-height: calc(100vh - 100px);
-  overflow-y: auto;
+  overflow-y: auto; overflow-x: hidden;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
@@ -848,7 +848,7 @@ body.hud-open  .float-toggle.data-toggle {
     background: rgba(2, 6, 13, 0.95);
     border: 1px solid var(--line);
     border-radius: 10px;
-    overflow-y: auto;
+    overflow-y: auto; overflow-x: hidden;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     backdrop-filter: blur(12px);
@@ -2716,7 +2716,7 @@ body.page-2d .map-cell .map-sub {
   top: calc(100% + 4px);
   z-index: 8;
   max-height: 264px;
-  overflow-y: auto;
+  overflow-y: auto; overflow-x: hidden;
   background: #08121e;
   border: 1px solid rgba(120, 170, 220, 0.3);
   border-radius: 7px;

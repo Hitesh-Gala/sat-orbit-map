@@ -690,7 +690,18 @@ function closePurity() {
   purityOpen = false;
 }
 (function setupPurity() {
-  $('debris-purity-btn')?.addEventListener('click', openPurity);
+  // Password-gated: the report names every catalogue disagreement, which is
+  // owner-facing detail rather than something for casual visitors.  One
+  // unlock per tab (nazar-gate.js holds only the password's SHA-256).
+  $('debris-purity-btn')?.addEventListener('click', async () => {
+    const gate = window.NazarGate;
+    if (!gate) return openPurity();
+    if (await gate.ask({
+      icon: '🧪', title: 'Source purification',
+      sub: 'Space-Track vs CelesTrak reconciliation — password protected',
+      key: 'nazar.purity',
+    })) openPurity();
+  });
   $('debris-purity-close')?.addEventListener('click', closePurity);
   $('debris-purity-modal')?.addEventListener('click', e => { if (e.target.id === 'debris-purity-modal') closePurity(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && purityOpen) closePurity(); });

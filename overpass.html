@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=43">
+  <link rel="stylesheet" href="styles.css?v=44">
   <style>
     /* Overpass-only chrome: a left controls card + a right results card,
        both floating over the full-screen globe.  Reuses the shared .panel /
@@ -27,7 +27,7 @@
       width: 316px;
       max-width: calc(100vw - 28px);
       max-height: calc(100vh - 86px);
-      overflow-y: auto;
+      overflow-y: auto; overflow-x: hidden;
       z-index: 12;
       display: flex;
       flex-direction: column;
@@ -90,7 +90,7 @@
     .op-list-actions button:hover { border-color: var(--accent); background: rgba(103, 200, 255, 0.16); }
     .op-list {
       border: 1px solid var(--line); border-radius: 4px; background: rgba(0, 0, 0, 0.22);
-      max-height: 46vh; overflow-y: auto;
+      max-height: 46vh; overflow-y: auto; overflow-x: hidden;
     }
     .op-satrow { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer; }
     .op-satrow:last-child { border-bottom: 0; }
