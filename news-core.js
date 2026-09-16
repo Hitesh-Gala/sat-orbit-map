@@ -42,7 +42,17 @@ window.NazarNews = (function () {
     { url: 'https://www.nasa.gov/feed/',                      source: 'NASA',            cat: 'Agency' },
     { url: 'https://www.esa.int/rssfeed/Our_Activities/Space_News', source: 'ESA',       cat: 'Agency' },
     { url: 'https://spacenews.com/tag/china/feed/',           source: 'SpaceNews · China',      cat: 'China' },
+    // Andrew Jones (SpaceNews' China correspondent — his was the first report
+    // of the Yaogan-50 (02) break-up) writes his own newsletter; Blaine
+    // Curcio's covers the Chinese space industry.  Substack exposes /feed.
+    { url: 'https://chinaspacenewsroundup.substack.com/feed', source: 'China Space News Roundup', cat: 'China' },
+    { url: 'https://chinaspacemonitor.substack.com/feed',     source: 'China Space Monitor',      cat: 'China' },
     { url: 'https://spaceflightnow.com/tag/china/feed/',      source: 'Spaceflight Now · China', cat: 'China' },
+    // General-interest outlets that carried the Yaogan-50 break-up when the
+    // trade press had moved on.  `topic: true` keeps only their space stories —
+    // their feeds are site-wide and would otherwise bury the ticker in gadgets.
+    { url: 'https://gizmodo.com/feed',                        source: 'Gizmodo',         cat: 'Press', topic: true },
+    { url: 'https://futurism.com/feed',                       source: 'Futurism',        cat: 'Press', topic: true },
     // Topic searches.  Every feed above exposes only its newest ~25 items, so
     // a story more than a few days old has already rotated off it — which is
     // how the Yaogan-50 (02) breakup of 04 Sep 2026 never reached the ticker
@@ -58,10 +68,15 @@ window.NazarNews = (function () {
 
   // Ordered proxy chain — each feed tries these until one returns parseable
   // items.  `kind` selects the parser.
+  //
+  // corsproxy.io was first here until it began answering every request with
+  // HTTP 401 "a valid API key is required" (Sep 2026), which cost every feed
+  // one dead round-trip and left pulls half-empty.  Dropped; allorigins leads
+  // now, with codetabs as the third way in.
   const PROXIES = [
-    { name: 'corsproxy',  kind: 'xml',  mk: u => 'https://corsproxy.io/?url=' + encodeURIComponent(u) },
-    { name: 'rss2json',   kind: 'json', mk: u => 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(u) },
     { name: 'allorigins', kind: 'xml',  mk: u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u) },
+    { name: 'rss2json',   kind: 'json', mk: u => 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(u) },
+    { name: 'codetabs',   kind: 'xml',  mk: u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u) },
   ];
 
   const ARCHIVE_KEY   = 'nazar.news.archive.v2';
@@ -79,6 +94,9 @@ window.NazarNews = (function () {
   // China relevance — matches the country, its agencies/programmes, launch
   // sites, rocket families and the commercial-launch startups.
   const CHINA_RE = /\b(china|chinese|prc|beijing|cnsa|casc|casic|long\s*march|(?:^|\s)cz[-\s]?\d|chang[' ’]?e|tiangong|tianzhou|tianwen|shenzhou|shijian|yaogan|gaofen|fengyun|beidou|kuaizhou|ceres[-\s]?1|hyperbola|zhuque|gravity[-\s]?1|pallas|landspace|galactic\s+energy|orienspace|space\s+pioneer|i[-\s]?space|deep\s+blue\s+aerospace|cas\s*space|expace|guowang|qianfan|thousand\s+sails|jielong|smart\s+dragon|wenchang|jiuquan|xichang|taiyuan)\b/i;
+
+  // Space stories inside a general-interest feed (see `topic` above).
+  const SPACE_RE = /\b(space(craft|flight|x)?|satellites?|orbit(al|s|ing)?|rocket|launch(es|ed|ing)?|astronauts?|cosmonauts?|nasa|esa|isro|jaxa|roscosmos|starship|falcon\s*9|debris|iss|moon|lunar|mars|asteroid|telescope|observatory|constellation|reentry|re-entry)\b/i;
 
   // Notable orbital events — a breakup, collision or failure leads the ticker
   // even when newer routine items exist.  Titles only: descriptions mention
@@ -261,7 +279,10 @@ window.NazarNews = (function () {
     for (const proxy of PROXIES) {
       const txt = await fetchVia(feed.url, proxy);
       if (!txt) continue;
-      const items = proxy.kind === 'json' ? parseJsonFeed(txt, feed) : parseXmlFeed(txt, feed);
+      let items = proxy.kind === 'json' ? parseJsonFeed(txt, feed) : parseXmlFeed(txt, feed);
+      if (items && items.length && feed.topic) {
+        items = items.filter(it => SPACE_RE.test(it.title + ' ' + it.desc));
+      }
       if (items && items.length) return items.slice(0, PER_FEED_MAX);
     }
     return [];

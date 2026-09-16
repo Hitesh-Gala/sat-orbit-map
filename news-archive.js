@@ -189,6 +189,104 @@
   $('news-refresh').addEventListener('click', () => doRefresh(true));
   $('news-pdf-all').addEventListener('click', downloadAllPdf);
 
+  // ---- SOURCES pop-up ----------------------------------------------------
+  // The feed list is read from NazarNews.FEEDS so this can never drift from
+  // what is actually pulled; the notes and the hand-watched list below are
+  // the only things maintained here.
+  const FEED_NOTE = {
+    'SpaceNews': 'Space-industry daily. Andrew Jones files his China coverage here — including the Yaogan-50 (02) break-up.',
+    'SpaceNews · China': 'The same newsroom’s China tag feed.',
+    'Space.com': 'Popular space news; also carries Andrew Jones as a contributing writer.',
+    'NASASpaceflight': 'Launch-by-launch reporting and forums.',
+    'Spaceflight Now': 'Launch schedule and mission coverage.',
+    'Spaceflight Now · China': 'Its China tag feed.',
+    'Payload': 'Space-business and policy briefing.',
+    'Ars Technica': 'Rocket Report and space analysis.',
+    'Gizmodo': 'General tech/science; space stories only.',
+    'Futurism': 'General science; space stories only.',
+    'NASA': 'The agency’s own releases.',
+    'ESA': 'European Space Agency releases.',
+    'China Space News Roundup': 'Andrew Jones’ own newsletter on the Chinese space programme (Substack) — posts rarely, but watched so nothing is missed.',
+    'China Space Monitor': 'Blaine Curcio’s newsletter on the Chinese space industry (Substack).',
+  };
+
+  // Followed by hand — X/Twitter gives no public feed a browser can read, so
+  // these can't be pulled automatically. Listed for the record.
+  const WATCHED = [
+    ['Andrew Jones', 'https://x.com/AJ_FI', '@AJ_FI — breaks Chinese launch and anomaly news; his articles arrive via SpaceNews, Space.com and his Substack.'],
+    ['Jonathan McDowell', 'https://planet4589.org/space/jsr/jsr.html', 'Jonathan’s Space Report and @planet4589 — catalogue analysis; the 43-fragment Yaogan-50 count was his reading of US tracking data.'],
+    ['Byron Wan', 'https://x.com/Byron_Wan', '@Byron_Wan — Chinese space documents and orbital data.'],
+    ['Space-Track.org / 18th SDS', 'https://www.space-track.org/', 'The US catalogue itself. Not a news feed — it is what NAZAR’s trackers plot, including the Yaogan-50 fragments on the Debris Tracker.'],
+  ];
+
+  const GROUPS = [
+    ['China', 'China-focused feeds'],
+    ['Press', 'Space press'],
+    ['Agency', 'Space agencies'],
+  ];
+
+  const originOf = url => { try { return new URL(url).origin; } catch { return url; } };
+
+  function googleQuery(url) {
+    try { return decodeURIComponent(new URL(url).searchParams.get('q') || '').replace(/\+/g, ' '); }
+    catch { return ''; }
+  }
+
+  function sourceRow(name, href, note) {
+    return '<div class="news-src"><span class="nm">' + esc(name) + '</span>' +
+      '<span class="dsc">' + esc(note || '') +
+      (href ? ' <a href="' + esc(href) + '" target="_blank" rel="noopener">' + esc(NN.hostOf(href) || href) + '</a>' : '') +
+      '</span></div>';
+  }
+
+  function renderSources() {
+    const feeds = NN.FEEDS;
+    let html = '<h2 id="news-src-title">Sources</h2>' +
+      '<div class="sub">Every site and newsletter NAZAR pulls for the Ticker Tape — ' + feeds.length +
+      ' feeds, refreshed at most twice an hour and merged into this archive.</div>';
+
+    for (const [cat, heading] of GROUPS) {
+      const rows = feeds.filter(f => f.cat === cat && !f.google);
+      if (!rows.length) continue;
+      html += '<div class="news-src-group"><h3>' + esc(heading) + '</h3>' +
+        rows.map(f => sourceRow(f.source, originOf(f.url), FEED_NOTE[f.source])).join('') +
+        '</div>';
+    }
+
+    const searches = feeds.filter(f => f.google);
+    if (searches.length) {
+      html += '<div class="news-src-group"><h3>Topic searches</h3>' +
+        searches.map(f => sourceRow(f.source, 'https://news.google.com/',
+          'Any outlet matching “' + googleQuery(f.url) + '”. Catches stories the feeds above have already rotated past.')).join('') +
+        '</div>';
+    }
+
+    html += '<div class="news-src-group"><h3>Followed by hand — not auto-monitored</h3>' +
+      WATCHED.map(w => sourceRow(w[0], w[1], w[2])).join('') + '</div>';
+
+    html += '<div class="news-src-note">Feeds are fetched through public CORS proxies, so a source can occasionally miss a pull; ' +
+      'nothing already archived is ever lost when that happens. X/Twitter accounts have no public feed a web page may read — ' +
+      'they are listed above only to say whose reporting reaches the ticker by other routes.</div>';
+
+    $('news-src-body').innerHTML = html;
+  }
+
+  const srcModal = $('news-src-modal');
+  function openSources() {
+    renderSources();
+    srcModal.hidden = false;
+    srcModal.setAttribute('aria-hidden', 'false');
+    srcModal.querySelector('.news-modal-card').scrollTop = 0;
+  }
+  function closeSources() {
+    srcModal.hidden = true;
+    srcModal.setAttribute('aria-hidden', 'true');
+  }
+  $('news-sources').addEventListener('click', openSources);
+  $('news-src-close').addEventListener('click', closeSources);
+  srcModal.addEventListener('click', e => { if (e.target === srcModal) closeSources(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !srcModal.hidden) closeSources(); });
+
   // Instant paint from the archive, then a throttled background refresh.
   render();
   if (!NN.getArchive().length) setStatus('Fetching space-news feeds…');

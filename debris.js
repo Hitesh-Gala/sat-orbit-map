@@ -6,6 +6,10 @@
 // bundled data/debris.tle snapshot), the same resilience cascade the rest of
 // the site uses.  Each fragment is tagged to its source by the parent launch
 // designator in the TLE (line 1, cols 10–14) — e.g. 99025 = Fengyun-1C.
+//
+// CelesTrak publishes groups only for the four historic clouds, so recent
+// break-ups ride along in data/event-debris.tle — built from Space-Track by
+// scripts/gen_event_debris.py (see it for how to add the next one).
 
 const { parseTLE, propagate, EARTH_R_KM } = window.Argos;
 
@@ -24,6 +28,7 @@ const SOURCES = [
   { key: '93036', short: 'Cosmos 2251', label: 'Cosmos 2251', country: 'Russia', color: '#4a90e2' },
   { key: '97051', short: 'Iridium 33',  label: 'Iridium 33',  country: 'USA',    color: '#67e8a4' },
   { key: '82092', short: 'Cosmos 1408', label: 'Cosmos 1408', country: 'Russia', color: '#f39c12' },
+  { key: '26051', short: 'Yaogan-50 (02)', label: 'Yaogan-50 (02)', country: 'China', color: '#d77eff' },
   { key: 'other', short: 'Other',       label: 'Other debris', country: '—',     color: '#9aa7b3' },
 ];
 const OTHER = SOURCES.length - 1;
@@ -81,7 +86,7 @@ async function fetchGroup(g) {
   } catch { clearTimeout(to); return ''; }
 }
 
-async function fetchDebris() {
+async function fetchCelestrakDebris() {
   const cached = cacheGet();
   if (cached && cached.length) return { tles: cached, source: 'cache' };
 
@@ -96,6 +101,21 @@ async function fetchDebris() {
   const r = await fetch('data/debris.tle', { cache: 'no-cache' });
   if (!r.ok) throw new Error(`bundled debris missing (HTTP ${r.status})`);
   return { tles: parseTLE(await r.text()), source: 'bundled' };
+}
+
+// Break-ups with no CelesTrak group of their own (Yaogan-50 (02), 2026).
+// Small, same-origin and refreshed daily from Space-Track, so it is read
+// every load rather than cached with the groups above.
+async function fetchEventDebris() {
+  try {
+    const r = await fetch('data/event-debris.tle', { cache: 'no-cache' });
+    return r.ok ? parseTLE(await r.text()) : [];
+  } catch { return []; }
+}
+
+async function fetchDebris() {
+  const [main, extra] = await Promise.all([fetchCelestrakDebris(), fetchEventDebris()]);
+  return { tles: main.tles.concat(extra), source: main.source };
 }
 
 // =========================================================================
@@ -438,13 +458,29 @@ const INFO = {
       'A vivid lesson in altitude: the same kind of test as Fengyun-1C, but ~380 km lower — so it cleans itself up in a few years instead of centuries.',
     ],
   },
+  '26051': {
+    color: '#d77eff', title: 'Yaogan-50 (02) — break-up in a rare retrograde orbit',
+    sub: '4 September 2026 · ~950 km · 142° inclination',
+    stats: [['Fragments catalogued', '43'], ['Break-up altitude', '~950 km'], ['Inclination', '142° (retrograde)']],
+    paras: [
+      'Yaogan-50 (02) is a Chinese reconnaissance satellite launched on 15 March 2026 from Taiyuan on a Long March 6A, into a near-circular orbit around 950 km. On <em>4 September 2026</em> it fragmented; US Space Force tracking (18th Space Defense Squadron) catalogued <em>43</em> pieces, first reported by Andrew Jones in SpaceNews from Jonathan McDowell’s reading of the orbital data.',
+      'The orbit is the unusual part. At an inclination near <em>142°</em> it is <em>retrograde</em> — travelling against the Earth’s spin, which costs considerably more energy to reach and is flown by only a handful of satellites. It lets the satellite revisit mid-latitude targets, China included, more often than a conventional low orbit would.',
+      'No cause has been established. Analysts list a propulsion failure, a battery failure or burst, and a collision with an existing piece of debris among the possibilities — and whether the fragment count will grow is equally unknown. China has not commented.',
+      'At ~950 km there is almost no atmospheric drag to clean up after it. The fragments have spread across roughly <em>600–1,100 km</em>, straddling the shells used by Earth-observation and communications constellations, and will stay there for decades or longer.',
+    ],
+    trivia: [
+      'A retrograde cloud is doubly awkward: its fragments meet ordinary prograde traffic almost head-on, so a conjunction closes far faster than usual.',
+      'These fragments come from Space-Track, not CelesTrak — which publishes debris groups only for the four historic clouds, which is why this event was missing from the globe until now.',
+      'The parent satellite (NORAD 68196, 2026-051A) is still tracked and intact-listed; the fragments carry Alpha-5 catalogue numbers — A0564 means 100564.',
+    ],
+  },
   'other': {
     color: '#9aa7b3', title: 'Other tracked debris',
-    sub: 'everything not from the four named clouds',
+    sub: 'everything not from the named clouds',
     stats: [['On this globe', 'usually ~0'], ['In the full catalogue', '~12,500 in orbit']],
     paras: [
-      'Across the whole catalogue, most debris is <em>not</em> from these four famous events: it is spent rocket upper stages that later exploded (leftover propellant or battery blasts), fragments from hundreds of smaller break-ups, and mission-related bits.',
-      'This globe only carries CelesTrak’s four dedicated debris groups, so “Other” is near zero here. For the complete ~12,500-object in-orbit debris population from every source, open the <strong>Statistics &amp; history</strong> dashboard.',
+      'Across the whole catalogue, most debris is <em>not</em> from these famous events: it is spent rocket upper stages that later exploded (leftover propellant or battery blasts), fragments from hundreds of smaller break-ups, and mission-related bits.',
+      'This globe carries CelesTrak’s four dedicated debris groups plus the Yaogan-50 (02) fragments from Space-Track, so “Other” is near zero here. For the complete ~12,500-object in-orbit debris population from every source, open the <strong>Statistics &amp; history</strong> dashboard.',
     ],
     trivia: [],
   },
@@ -459,7 +495,7 @@ const INFO = {
       '• <strong>India, 2019 (“Mission Shakti”)</strong> — India destroyed Microsat-R at ~283 km, again deliberately low. 129 tracked; none remain.',
       '• <strong>Russia</strong> — the Soviet “IS” co-orbital ASAT programme (1968–1982) scattered Cosmos-numbered debris, most long since decayed.',
       'So these aren’t hidden — there is simply nothing left in orbit to plot, which is exactly why CelesTrak keeps no live debris group for them. A low-altitude test is comparatively responsible: the mess clears in months. A high one like Fengyun-1C is a multi-century liability.',
-      'This globe intentionally shows only the four big persistent clouds. The <strong>Statistics &amp; history</strong> dashboard, built from the full SATCAT, counts <em>every</em> tracked debris object (~35,800 catalogued, ~12,500 still up) from all nations — that is where US, Indian and everyone else’s debris is fully accounted for.',
+      'This globe intentionally shows only the big persistent clouds. The <strong>Statistics &amp; history</strong> dashboard, built from the full SATCAT, counts <em>every</em> tracked debris object (~35,800 catalogued, ~12,500 still up) from all nations — that is where US, Indian and everyone else’s debris is fully accounted for.',
     ],
     trivia: [],
   },
