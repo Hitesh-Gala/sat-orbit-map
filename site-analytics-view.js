@@ -127,6 +127,50 @@
     $('st-vtoday').textContent = today.length.toLocaleString();
     $('st-avg').textContent = fmtDur(avg);
     $('st-countries').textContent = new Set(visits.map(v => v.country).filter(Boolean)).size.toLocaleString();
+    renderUsersPop(res);
+    renderCountriesPop();
+  }
+
+  // "Total users" counts browsers — each keeps a random visitor ID — so the
+  // same person on a phone and a laptop, or in a private window, is two users.
+  // The hover sets that beside the other ways of counting people.
+  function renderUsersPop(res) {
+    const n = x => `<strong>${x.toLocaleString()}</strong>`;
+    const ips = new Set(visits.map(v => v.ip).filter(Boolean)).size;
+    const devices = new Set(visits.filter(v => v.ip).map(v => [v.ip, v.deviceName, v.os, v.browser].join('|'))).size;
+    const returning = Object.values(visits.reduce((m, v) => { const k = v.vid || v.sid; m[k] = (m[k] || 0) + 1; return m; }, {}))
+      .filter(c => c > 1).length;
+    $('pop-users').innerHTML = `
+      <h3>Unique users</h3>
+      <dl>
+        <dt>Unique browsers</dt><dd>${n(res.uniqueUsers ?? 0)}</dd>
+        <dt>Unique IP addresses</dt><dd>${n(ips)}</dd>
+        <dt>Unique devices</dt><dd>${n(devices)}</dd>
+        <dt>Came back more than once</dt><dd>${n(returning)}</dd>
+      </dl>
+      <p>The headline counts browsers. One person on two devices counts twice; people sharing an office or
+        mobile network can share one IP. A device is one IP + model + OS + browser — the closest estimate of
+        distinct people.${res.truncated ? ` IP, device and return counts cover the newest ${visits.length.toLocaleString()} visits.` : ''}</p>`;
+  }
+
+  function renderCountriesPop() {
+    const by = new Map();
+    for (const v of visits) {
+      const k = v.country || '';
+      const e = by.get(k) || { visits: 0, users: new Set() };
+      e.visits++;
+      e.users.add(v.vid || v.sid);
+      by.set(k, e);
+    }
+    const rows = [...by.entries()]
+      .sort((a, b) => (!a[0]) - (!b[0]) || b[1].visits - a[1].visits || a[0].localeCompare(b[0]));
+    $('pop-countries').innerHTML = rows.length
+      ? `<h3>Countries</h3>
+         <table><thead><tr><th>Country</th><th class="num">Users</th><th class="num">Visits</th></tr></thead><tbody>
+         ${rows.map(([c, e]) => `<tr><td>${c ? esc(c) : '<em>Location unknown</em>'}</td>
+           <td class="num">${e.users.size.toLocaleString()}</td><td class="num">${e.visits.toLocaleString()}</td></tr>`).join('')}
+         </tbody></table>`
+      : '<h3>Countries</h3><p>No visits recorded yet.</p>';
   }
 
   // ── table ──────────────────────────────────────────────────────────────
