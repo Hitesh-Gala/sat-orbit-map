@@ -48,28 +48,11 @@
     if (document.querySelector('.logo-credit')) return; // never duplicate
     const credit = document.createElement('div');
     credit.className = 'logo-credit';
+    // One credit on every page: two lines, the second centred under the first,
+    // beside the lighthouse logo (placement and type live in styles.css).
     credit.innerHTML =
-      'Hitesh Gala is a Researcher in Space<br>' +
-      'and a Defence Fellow at -<br>' +
-      '<a href="https://takshashila.org.in" target="_blank" rel="noopener noreferrer">www.takshashila.org.in</a>';
-    // The main page and these globe / help sub-pages show the larger, brighter
-    // 2-line credit sat beside the lighthouse logo (top line centred over the
-    // longer bottom line).  Desktop only — phones keep the compact default.
-    // hud-tr also catches Orbit Visualisation, whose <body> carries no class.
-    var BESIDE_LOGO_PAGES = ['page-main', 'page-launchmap', 'page-debris',
-      'page-overpass', 'page-sbo', 'page-goc', 'page-orbitmaker', 'page-about'];
-    var besideLogo = BESIDE_LOGO_PAGES.some(function (c) { return document.body.classList.contains(c); })
-                     || document.querySelector('.hud-tr');
-    if (besideLogo && window.innerWidth > 720) {
-      credit.innerHTML =
-        'Hitesh Gala is a Space Researcher &amp;<br>' +
-        'A Defence Fellow at <a href="https://takshashila.org.in" target="_blank" rel="noopener noreferrer">www.takshashila.org.in</a>';
-      credit.style.fontSize = '11px';
-      credit.style.color = '#b6c6d6';
-      credit.style.textAlign = 'center';
-      credit.style.top = '22px';
-      credit.style.right = '100px';
-    }
+      'Hitesh Gala is a Space Researcher and<br>' +
+      'a Defence Fellow at <a href="https://takshashila.org.in" target="_blank" rel="noopener noreferrer">www.takshashila.org.in</a>';
     if (logo.parentElement === document.body) document.body.appendChild(credit);
     else logo.insertAdjacentElement('afterend', credit);
   }

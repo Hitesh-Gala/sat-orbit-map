@@ -14,7 +14,7 @@
   <!-- Orbitron: display caps for the brand.  Caveat: handwritten script
        for the Hinglish tagline.  JetBrains Mono stays for data/UI. -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=44">
+  <link rel="stylesheet" href="styles.css?v=45">
   <style>
     /* ===================================================================
        "View all satellites" pop-up — a self-contained modal globe that
@@ -158,14 +158,13 @@
        and scroll inside if a short screen can't fit them.  Phones keep the
        ☰ drawer layout untouched. */
     @media (min-width: 721px) and (min-height: 501px) {
-      .topbar, .left-nav, .hud-tr, .allsats-cta, .fb-fab, .logo-credit, .top-logo, .mobile-menu-btn { zoom: 1.1; }
+      .topbar, .left-nav, .hud-tr, .allsats-cta, .fb-fab, .top-logo, .mobile-menu-btn { zoom: 1.1; }
       .left-nav, .hud-tr { max-height: calc((100vh - 262px) / 1.1); }
-      /* The larger title and the Takshashila credit share the top strip: the
-         credit wraps to three short lines (it is right-anchored, so it pulls
-         back from the title) and the title's tracking tightens a touch —
-         both stay whole on a 1280 px laptop. */
-      .brand .brand-long { letter-spacing: 0.12em; }
-      .logo-credit { white-space: normal; max-width: 200px; }
+      /* The larger title shares the top strip with the two-line credit beside
+         the logo: its tracking tightens so both stay whole on a 1280 px laptop.
+         The logo grows with the zoom, so the credit steps left to stay beside it. */
+      .brand .brand-long { letter-spacing: 0.06em; }
+      body.page-main .logo-credit { right: 110px; }
     }
 
     /* Ticker tape — ~50% larger text than the shared styles.css defaults
@@ -452,7 +451,7 @@
   <script src="news-ticker.js?v=14"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=4"></script>
-  <script src="mobile-menu.js?v=23"></script>
+  <script src="mobile-menu.js?v=24"></script>
   <script src="flash-popup.js?v=5"></script>
   <script src="feedback.js?v=7"></script>
   <script src="nazar-gate.js?v=2"></script>

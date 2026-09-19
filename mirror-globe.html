@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;600&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=46">
+  <link rel="stylesheet" href="styles.css?v=47">
   <style>
     /* ===================================================================
        Mirror Globe — the NAZAR home globe rebuilt on Space-Track data.
@@ -49,13 +49,6 @@
     }
     #globe { position: fixed; inset: 0; z-index: 1; }
 
-    /* Takshashila credit: two right-aligned lines level with the lighthouse
-       logo (which occupies the top-right corner), not stacked beneath it. */
-    body.page-mirror .logo-credit {
-      top: 20px; right: 100px; width: 330px; max-width: 330px;
-      text-align: right; text-align-last: right; white-space: normal;
-      font-size: 10.5px; line-height: 1.5;
-    }
 
     .mg-panel {
       position: fixed; z-index: 20;
@@ -350,15 +343,6 @@
   <script src="mirror-globe.js?v=6"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=4"></script>
-  <script src="mobile-menu.js?v=22"></script>
-  <script>
-    // Two-line credit for this page, set after mobile-menu.js injects it.
-    (function setCredit() {
-      var c = document.querySelector('.logo-credit');
-      if (!c) { return setTimeout(setCredit, 50); }
-      c.innerHTML = 'Hitesh Gala is a Researcher in Space<br>and a Defence Fellow at - '
-        + '<a href="https://takshashila.org.in" target="_blank" rel="noopener noreferrer">takshashila.org.in</a>';
-    })();
-  </script>
+  <script src="mobile-menu.js?v=23"></script>
 </body>
 </html>
