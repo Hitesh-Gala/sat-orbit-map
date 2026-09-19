@@ -174,6 +174,27 @@
     @media (min-width: 721px) and (max-width: 1320px) and (min-height: 501px) {
       .brand .brand-long { letter-spacing: 0; }
     }
+    /* Narrower than 1280 px (e.g. a half-screen window) the full form can't clear
+       the credit at any tracking; show NAZAR and the tagline only, as phones
+       already do — the full expansion stays in the tab title. */
+    @media (min-width: 721px) and (max-width: 1279.98px) {
+      body.page-main .brand .brand-long { display: none; }
+    }
+
+    /* Banner colours, from God Mode's gold.  The full form wears the gold
+       itself (#ffd166); NAZAR takes God Mode's paler label gold (#ffe9b0) with
+       a soft gold glow — brighter, so the name leads, but the same family, so
+       name and full form read as one title rather than a badge and a caption.
+       Main page only: elsewhere .brand-long carries the page's own name. */
+    body.page-main .brand .brand-short {
+      color: #ffe9b0;
+      text-shadow: 0 0 12px rgba(255, 209, 102, 0.55), 0 0 28px rgba(255, 209, 102, 0.2);
+    }
+    body.page-main .brand .brand-long {
+      color: #ffd166;
+      opacity: 0.85;
+      text-shadow: 0 0 10px rgba(255, 209, 102, 0.22);
+    }
 
     /* Ticker tape — ~50% larger text than the shared styles.css defaults
        (main page only; the inline block loads after styles.css so it wins). */
