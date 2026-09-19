@@ -117,10 +117,11 @@
        to the RIGHT of the Hinglish tagline (distinct from it, not part of it).
        The topbar is pointer-events:none, so the button re-enables itself. */
     .sub-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 3px; }
-    /* A separate cyan-outlined two-line CTA, positioned to sit level with the
-       "Orbit Visualisation" nav button (just to the right of the nav column). */
+    /* A separate cyan-outlined two-line CTA, bottom-right under the RHS panel,
+       level with the "Connect with me" button bottom-left (feedback.js puts
+       that at bottom: 92px, 76px on phones). */
     .allsats-cta {
-      position: fixed; top: 118px; left: 280px; z-index: 12;
+      position: fixed; right: 14px; bottom: 92px; z-index: 12;
       pointer-events: auto;
       display: inline-flex; align-items: center; gap: 8px;
       padding: 6px 13px; border-radius: 6px; cursor: pointer;
@@ -141,7 +142,30 @@
     .allsats-cta .btn-viewmode-icon { font-size: 15px; }
     .allsats-cta .avi-label { display: flex; flex-direction: column; line-height: 1.16; text-align: left; }
     @media (max-width: 720px) {
-      .allsats-cta { position: static; margin-top: 2px; }
+      /* Phones: the ticker rides at bottom 60px and is 48px tall, so both
+         bottom buttons sit just above it, level with each other.  The
+         page-main prefix beats feedback.js's own later-injected 76px rule. */
+      .allsats-cta, body.page-main .fb-fab { bottom: calc(116px + env(safe-area-inset-bottom)); }
+      .allsats-cta { right: 12px; }
+    }
+
+    /* Laptop and up: the whole main page 10 % larger — banner, both panels and
+       the floating buttons — but not the ticker tape.  `zoom` scales each box
+       together with its text, so panels widen with their labels instead of
+       wrapping or clipping.  Under zoom a fixed element's offsets and heights
+       scale too, so the panels' height budgets are divided back by 1.1: they
+       now stop above the bottom button row (Connect with me / View everything)
+       and scroll inside if a short screen can't fit them.  Phones keep the
+       ☰ drawer layout untouched. */
+    @media (min-width: 721px) and (min-height: 501px) {
+      .topbar, .left-nav, .hud-tr, .allsats-cta, .fb-fab, .logo-credit, .top-logo, .mobile-menu-btn { zoom: 1.1; }
+      .left-nav, .hud-tr { max-height: calc((100vh - 262px) / 1.1); }
+      /* The larger title and the Takshashila credit share the top strip: the
+         credit wraps to three short lines (it is right-anchored, so it pulls
+         back from the title) and the title's tracking tightens a touch —
+         both stay whole on a 1280 px laptop. */
+      .brand .brand-long { letter-spacing: 0.12em; }
+      .logo-credit { white-space: normal; max-width: 200px; }
     }
 
     /* Ticker tape — ~50% larger text than the shared styles.css defaults
@@ -280,12 +304,13 @@
     <div class="brand"><span class="brand-short">NAZAR</span><span class="brand-long"> — Nonchalantly Assembled Zero-Budget Assessment of Space Reconnaissance</span></div>
     <div class="sub-row">
       <div class="sub">Kyon ki NAZAR lagni chahiye!</div>
-      <button type="button" id="allsats-btn" class="allsats-cta" title="Open a pop-up globe showing every satellite above the horizon over India — the main globe stays unchanged">
-        <span class="btn-viewmode-icon">🛰</span>
-        <span class="avi-label"><span>View everything</span><span>over India</span></span>
-      </button>
     </div>
   </header>
+
+  <button type="button" id="allsats-btn" class="allsats-cta" title="Open a pop-up globe showing every satellite above the horizon over India — the main globe stays unchanged">
+    <span class="btn-viewmode-icon">🛰</span>
+    <span class="avi-label"><span>View everything</span><span>over India</span></span>
+  </button>
 
   <aside class="hud-tr">
     <section class="panel clock" aria-label="clocks">
