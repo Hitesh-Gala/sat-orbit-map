@@ -158,13 +158,21 @@
        and scroll inside if a short screen can't fit them.  Phones keep the
        ☰ drawer layout untouched. */
     @media (min-width: 721px) and (min-height: 501px) {
-      .topbar, .left-nav, .hud-tr, .allsats-cta, .fb-fab, .top-logo, .mobile-menu-btn { zoom: 1.1; }
-      .left-nav, .hud-tr { max-height: calc((100vh - 262px) / 1.1); }
+      .left-nav, .hud-tr, .allsats-cta, .fb-fab, .top-logo, .mobile-menu-btn { zoom: 1.1; }
+      /* The banner (NAZAR, its full form, the tagline) a further 10 % on top. */
+      .topbar { zoom: 1.21; }
+      /* …so both side panels start lower to clear it (86 → 100 px, ×1.1). */
+      .left-nav, .hud-tr { top: 100px; max-height: calc((100vh - 277px) / 1.1); }
       /* The larger title shares the top strip with the two-line credit beside
          the logo: its tracking tightens so both stay whole on a 1280 px laptop.
          The logo grows with the zoom, so the credit steps left to stay beside it. */
       .brand .brand-long { letter-spacing: 0.06em; }
       body.page-main .logo-credit { right: 110px; }
+    }
+    /* Narrow laptops (1280 px): the enlarged full form needs its tracking
+       closed up to stay clear of the credit. */
+    @media (min-width: 721px) and (max-width: 1320px) and (min-height: 501px) {
+      .brand .brand-long { letter-spacing: 0; }
     }
 
     /* Ticker tape — ~50% larger text than the shared styles.css defaults
