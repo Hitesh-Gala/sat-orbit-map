@@ -43,6 +43,37 @@
     if (m) return `${m}m ${pad2(s)}s`;
     return `${s}s`;
   }
+  // The visits table packs several fields per column, so a few helpers turn a
+  // value into stacked lines and keep the narrow columns narrow.
+  function durLines(sec) {
+    const parts = fmtDur(sec).split(' ');            // "1h 02m 03s" | "4m 05s" | "37s"
+    return parts.length > 1
+      ? `${esc(parts.slice(0, -1).join(' '))}<br>${esc(parts[parts.length - 1])}`
+      : esc(fmtDur(sec));
+  }
+
+  function ipLines(ip) {
+    if (!ip) return '—';
+    const p = String(ip).split('.');
+    if (p.length === 4) return `${esc(p.slice(0, 2).join('.'))}.<br>${esc(p.slice(2).join('.'))}`;
+    const s = String(ip), half = Math.ceil(s.length / 2);   // IPv6 and anything else: down the middle
+    return `${esc(s.slice(0, half))}<br>${esc(s.slice(half))}`;
+  }
+
+  const OS_SHORT = [[/^windows/i, 'Win'], [/^android/i, 'Andr'], [/^chrome ?os/i, 'ChrOS']];
+  function shortOs(os) {
+    const t = String(os || '').trim();
+    for (const [re, abbr] of OS_SHORT) if (re.test(t)) return t.replace(re, abbr);
+    return t;
+  }
+
+  // First line plain, the rest dimmed under it.
+  function stack(...lines) {
+    const rows = lines.map(x => String(x || '').trim()).filter(Boolean);
+    if (!rows.length) return '—';
+    return rows.map((t, i) => (i ? `<span class="sub2">${esc(t)}</span>` : esc(t))).join('<br>');
+  }
+
   function pageName(p) {
     const file = String(p || '').split('/').pop();
     return file ? file.replace(/\.html$/, '') : 'home';
@@ -189,26 +220,21 @@
       const from = pageName(v.landing), to = pageName(v.lastPage);
       return `<tr class="${isToday(v.start) ? 'today' : ''}">
         <td class="dim num">${start + i + 1}</td>
-        <td>${esc(fmtWhen(v.start))}</td>
-        <td class="nowrap dur">${fmtDur(v.seconds)}</td>
-        <td class="ip">${esc(v.ip) || '—'}</td>
-        <td title="${esc(v.ua)}">${esc(v.deviceName) || '—'}</td>
-        <td>${esc(v.deviceType) || '—'}</td>
-        <td>${esc(v.os) || '—'}</td>
-        <td>${esc(v.browser) || '—'}</td>
-        <td>${esc(v.country) || '—'}</td>
-        <td>${esc(v.region) || '—'}</td>
-        <td>${esc(v.city) || '—'}</td>
+        <td class="col-when">${esc(fmtWhen(v.start))}</td>
+        <td class="col-dur dur">${durLines(v.seconds)}</td>
+        <td class="col-ip ip">${ipLines(v.ip)}</td>
+        <td title="${esc(v.ua)}">${stack(v.deviceName, v.deviceType)}</td>
+        <td>${stack(shortOs(v.os), v.browser)}</td>
+        <td>${stack(v.country, v.region, v.city)}</td>
         <td class="num">${Number(v.pages) || 1}</td>
         <td>${esc(from === to ? from : `${from} → ${to}`)}</td>
         <td title="${esc(v.referrer)}">${esc(refHost(v.referrer))}</td>
         <td>${esc(v.isp) || '—'}</td>
         <td class="nowrap">${esc(v.screen) || '—'}</td>
-        <td>${esc(v.lang) || '—'}</td>
         <td>${esc(v.tz) || '—'}</td>
         <td class="nowrap">${v.visitNo > 1 ? `Returning · visit ${v.visitNo}` : 'New'}</td>
       </tr>`;
-    }).join('') || `<tr><td colspan="19" class="empty">${visits.length ? 'No visits match.' : 'No visits logged yet.'}</td></tr>`;
+    }).join('') || `<tr><td colspan="14" class="empty">${visits.length ? 'No visits match.' : 'No visits logged yet.'}</td></tr>`;
     $('va-count').textContent = shown.length.toLocaleString();
     $('va-page').textContent = `${page + 1} / ${pages}`;
   }

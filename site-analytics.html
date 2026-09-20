@@ -37,10 +37,10 @@
     .va-stats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
     @media (max-width: 1000px) { .va-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
     @media (max-width: 560px)  { .va-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    .va-stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+    .va-stat { background: var(--panel); border: 1px solid rgba(103, 200, 255, .38); border-radius: 10px; padding: 7px 11px; }
     .va-stat b { display: block; font-family: 'Orbitron', sans-serif; font-size: 26.4px; color: #eaf6ff; }
-    .va-stat span { display: block; margin-top: 4px; font-family: var(--mono); font-size: 13.2px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
-    .va-stat.big { border-color: rgba(255, 209, 102, .45); }
+    .va-stat span { display: block; margin-top: 1px; font-family: var(--mono); font-size: 13.2px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+    .va-stat.big { border-color: rgba(103, 200, 255, .6); }
     .va-stat.big b { font-size: 36px; color: #ffd166; }
 
     /* Hover / focus detail on a headline card.  Built from <strong>, <dl>,
@@ -94,6 +94,12 @@
     .va-table .dim { color: var(--dim); }
     .va-table .num { text-align: right; font-variant-numeric: tabular-nums; }
     .va-table .nowrap { white-space: nowrap; }
+    /* Column widths.  `width: 1%` on a table cell means "as narrow as the
+       content allows", so the stacked columns shrink and hand their space to
+       the timestamp, which must stay on one line. */
+    .va-table .col-when { white-space: nowrap; }
+    .va-table .col-dur, .va-table .col-ip { width: 1%; white-space: nowrap; text-align: right; }
+    .va-table .sub2 { color: var(--dim); }
     /* styles.css sizes the shared .dim helper at 10px; inside this table the
        cells should follow the table's own type. */
     .va-table tbody td.dim, .va-table tbody td .dim { font-size: inherit; }
@@ -164,19 +170,14 @@
               <th>Time of access</th>
               <th>Time spent</th>
               <th>User IP</th>
-              <th>Device name</th>
-              <th>Device type</th>
-              <th>OS</th>
-              <th>Browser</th>
-              <th>Country</th>
-              <th>State / region</th>
-              <th>City</th>
+              <th>Device</th>
+              <th>OS / browser</th>
+              <th>Location</th>
               <th>Pages</th>
               <th>Landing → last page</th>
               <th>Referrer</th>
               <th>ISP / network</th>
               <th>Screen</th>
-              <th>Language</th>
               <th>Time zone</th>
               <th>Visitor</th>
             </tr>
@@ -191,7 +192,7 @@
   </main>
 
   <script src="site-analytics.js?v=4"></script>
-  <script src="site-analytics-view.js?v=4"></script>
+  <script src="site-analytics-view.js?v=5"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=24"></script>
 </body>
