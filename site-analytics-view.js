@@ -189,7 +189,7 @@
       const from = pageName(v.landing), to = pageName(v.lastPage);
       return `<tr class="${isToday(v.start) ? 'today' : ''}">
         <td class="dim num">${start + i + 1}</td>
-        <td class="nowrap">${esc(fmtWhen(v.start))}</td>
+        <td>${esc(fmtWhen(v.start))}</td>
         <td class="nowrap dur">${fmtDur(v.seconds)}</td>
         <td class="ip">${esc(v.ip) || '—'}</td>
         <td title="${esc(v.ua)}">${esc(v.deviceName) || '—'}</td>

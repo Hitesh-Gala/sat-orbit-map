@@ -10,38 +10,38 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=45">
   <style>
-    .va-page { max-width: 1560px; margin: 0 auto; padding: 78px 22px 70px; }
+    .va-page { max-width: none; margin: 0 auto; padding: 78px 22px 70px; }
     .va-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
-    .va-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: #ffd166; }
-    .va-top h1 { margin: 4px 0 0; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 26px; letter-spacing: .06em; color: #fff; }
-    .va-link { font-family: var(--mono); font-size: 13px; color: var(--accent); text-decoration: none; white-space: nowrap;
+    .va-eyebrow { font-family: var(--mono); font-size: 13.2px; letter-spacing: .22em; text-transform: uppercase; color: #ffd166; }
+    .va-top h1 { margin: 4px 0 0; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 31.2px; letter-spacing: .06em; color: #fff; }
+    .va-link { font-family: var(--mono); font-size: 15.6px; color: var(--accent); text-decoration: none; white-space: nowrap;
       border: 1px solid var(--line); border-radius: 7px; padding: 7px 13px; background: rgba(2, 6, 13, .6); }
     .va-link:hover { border-color: var(--accent); }
 
     .va-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 24px 22px; }
     .va-gate { max-width: 440px; margin: 40px auto; text-align: center; }
-    .va-gate label { display: block; font-family: var(--mono); font-size: 13px; color: var(--text); margin-bottom: 12px; }
+    .va-gate label { display: block; font-family: var(--mono); font-size: 15.6px; color: var(--text); margin-bottom: 12px; }
     .va-gate input { font: 14px var(--mono); color: var(--text); background: rgba(103, 200, 255, .06); border: 1px solid var(--line);
       border-radius: 7px; padding: 9px 12px; width: min(260px, 85%); }
     .va-gate input:focus, .va-toolbar input[type=search]:focus { outline: none; border-color: var(--accent); }
-    .va-err { color: #ff6b6b; font-family: var(--mono); font-size: 12px; min-height: 16px; margin-top: 10px; }
-    .va-btn { font-family: var(--mono); font-size: 13px; font-weight: 700; border-radius: 8px; padding: 8px 16px; cursor: pointer;
+    .va-err { color: #ff6b6b; font-family: var(--mono); font-size: 14.4px; min-height: 16px; margin-top: 10px; }
+    .va-btn { font-family: var(--mono); font-size: 15.6px; font-weight: 700; border-radius: 8px; padding: 8px 16px; cursor: pointer;
       border: 1px solid var(--accent); background: rgba(103, 200, 255, .14); color: #eaf6ff; }
     .va-btn:hover { background: rgba(103, 200, 255, .26); }
     .va-btn.ghost { border-color: var(--line); background: transparent; color: var(--text); }
     .va-gate .va-btn { margin-top: 12px; }
-    .va-setup { max-width: 760px; margin: 30px auto; font-family: var(--mono); font-size: 13px; line-height: 1.75; color: var(--text); }
-    .va-setup h2 { font-family: 'Orbitron', sans-serif; font-size: 16px; color: #fff; margin: 0 0 8px; }
+    .va-setup { max-width: 760px; margin: 30px auto; font-family: var(--mono); font-size: 15.6px; line-height: 1.75; color: var(--text); }
+    .va-setup h2 { font-family: 'Orbitron', sans-serif; font-size: 19.2px; color: #fff; margin: 0 0 8px; }
     .va-setup code { color: #ffd166; }
 
     .va-stats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
     @media (max-width: 1000px) { .va-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
     @media (max-width: 560px)  { .va-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     .va-stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
-    .va-stat b { display: block; font-family: 'Orbitron', sans-serif; font-size: 22px; color: #eaf6ff; }
-    .va-stat span { display: block; margin-top: 4px; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+    .va-stat b { display: block; font-family: 'Orbitron', sans-serif; font-size: 26.4px; color: #eaf6ff; }
+    .va-stat span { display: block; margin-top: 4px; font-family: var(--mono); font-size: 13.2px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
     .va-stat.big { border-color: rgba(255, 209, 102, .45); }
-    .va-stat.big b { font-size: 30px; color: #ffd166; }
+    .va-stat.big b { font-size: 36px; color: #ffd166; }
 
     /* Hover / focus detail on a headline card.  Built from <strong>, <dl>,
        <table> and <p> only — .va-stat b / span above would restyle those tags. */
@@ -55,25 +55,25 @@
       max-height: 340px; overflow-y: auto; overflow-x: hidden;
       padding: 12px 14px; background: #0a1119; border: 1px solid var(--line); border-radius: 10px;
       box-shadow: 0 18px 50px rgba(0, 0, 0, .55);
-      font-family: var(--mono); font-size: 12.5px; line-height: 1.5; color: var(--text);
+      font-family: var(--mono); font-size: 15px; line-height: 1.5; color: var(--text);
       opacity: 0; visibility: hidden; transform: translateY(-4px);
       transition: opacity .12s, transform .12s, visibility .12s;
     }
     .va-hov.edge-right .va-pop { left: auto; right: 0; }
     .va-hov:hover .va-pop, .va-hov:focus .va-pop, .va-hov:focus-within .va-pop { opacity: 1; visibility: visible; transform: none; }
-    .va-pop h3 { margin: 0 0 8px; font-family: 'Orbitron', sans-serif; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #ffd166; }
+    .va-pop h3 { margin: 0 0 8px; font-family: 'Orbitron', sans-serif; font-size: 14.4px; letter-spacing: .08em; text-transform: uppercase; color: #ffd166; }
     .va-pop dl { display: grid; grid-template-columns: 1fr auto; gap: 5px 18px; margin: 0; }
     .va-pop dt { color: var(--dim); }
     .va-pop dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
     .va-pop dd strong { color: #eaf6ff; }
     .va-pop table { width: 100%; border-collapse: collapse; }
-    .va-pop th { text-align: left; font-weight: normal; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); padding: 0 0 5px; }
+    .va-pop th { text-align: left; font-weight: normal; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); padding: 0 0 5px; }
     .va-pop td { padding: 3px 0; border-top: 1px solid rgba(110, 200, 255, .08); }
     .va-pop th.num, .va-pop td.num { text-align: right; padding-left: 14px; font-variant-numeric: tabular-nums; }
     .va-pop em { font-style: normal; color: var(--dim); }
-    .va-pop p { margin: 9px 0 0; font-size: 11.5px; line-height: 1.5; color: var(--dim); }
+    .va-pop p { margin: 9px 0 0; font-size: 13.8px; line-height: 1.5; color: var(--dim); }
 
-    .va-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 10px; font-family: var(--mono); font-size: 12.5px; color: var(--dim); }
+    .va-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 10px; font-family: var(--mono); font-size: 15px; color: var(--dim); }
     .va-toolbar input[type=search] { flex: 1 1 260px; min-width: 180px; font: 13px var(--mono); color: var(--text);
       background: rgba(103, 200, 255, .05); border: 1px solid var(--line); border-radius: 7px; padding: 8px 11px; }
     .va-toolbar b { color: var(--text); }
@@ -83,10 +83,10 @@
     .va-pager button:hover { border-color: var(--accent); color: var(--accent); }
 
     .va-tablewrap { overflow: auto; max-height: calc(100vh - 300px); min-height: 240px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
-    .va-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; color: var(--text); }
+    .va-table { width: 100%; min-width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 14.4px; color: var(--text); }
     .va-table thead th { position: sticky; top: 0; z-index: 1; background: rgba(2, 6, 13, .97); border-bottom: 1px solid var(--line); color: var(--dim);
-      font-weight: normal; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; text-align: left; padding: 9px 10px; white-space: nowrap; }
-    .va-table tbody td { padding: 7px 10px; border-bottom: 1px solid rgba(110, 200, 255, .07); vertical-align: top; }
+      font-weight: normal; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; text-align: left; padding: 8px 6px; white-space: normal; }
+    .va-table tbody td { padding: 6px 6px; border-bottom: 1px solid rgba(110, 200, 255, .07); vertical-align: top; overflow-wrap: anywhere; }
     .va-table tbody tr:hover td { background: rgba(103, 200, 255, .06); }
     .va-table tr.today td:first-child { box-shadow: inset 3px 0 0 #ffd166; }
     .va-table .ip { color: #ffd166; white-space: nowrap; }
@@ -94,8 +94,11 @@
     .va-table .dim { color: var(--dim); }
     .va-table .num { text-align: right; font-variant-numeric: tabular-nums; }
     .va-table .nowrap { white-space: nowrap; }
+    /* styles.css sizes the shared .dim helper at 10px; inside this table the
+       cells should follow the table's own type. */
+    .va-table tbody td.dim, .va-table tbody td .dim { font-size: inherit; }
     .va-table .empty { padding: 28px; text-align: center; color: var(--dim); }
-    .va-state { margin: 10px 2px 0; font-family: var(--mono); font-size: 12px; color: var(--dim); }
+    .va-state { margin: 10px 2px 0; font-family: var(--mono); font-size: 14.4px; color: var(--dim); }
     .va-state.err { color: #ff6b6b; }
   </style>
 </head>
@@ -188,7 +191,7 @@
   </main>
 
   <script src="site-analytics.js?v=4"></script>
-  <script src="site-analytics-view.js?v=3"></script>
+  <script src="site-analytics-view.js?v=4"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=24"></script>
 </body>
