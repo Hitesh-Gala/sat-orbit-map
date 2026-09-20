@@ -26,6 +26,7 @@ EVENTS = {  # OBJECT_ID prefix -> (name, kind, when)
     '1997-051': ('Iridium 33',  'Accidental collision', '10 February 2009'),
     '1982-092': ('Cosmos 1408', 'Russia ASAT test',     '15 November 2021'),
     '2026-051': ('Yaogan-50 (02)', 'In-orbit break-up',  '4 September 2026'),
+    '1988-078': ('USA 32 (Farrah)', 'In-orbit break-up', '13 September 2026'),
 }
 
 def country_group(owner):

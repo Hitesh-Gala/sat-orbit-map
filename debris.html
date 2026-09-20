@@ -218,6 +218,16 @@
       .asat-btn .txt small { display: none; }
       .asat-fig.side { grid-template-columns: 1fr; }
     }
+    /* Laptop and up: the page's chrome 10 % larger, matching the main page.
+       `zoom` scales each box with its text, so the panel widens with its
+       labels instead of wrapping; its height budget is divided back by 1.1
+       so it still ends where it did.  The pop-ups are left alone — their type
+       was raised separately. */
+    @media (min-width: 721px) and (min-height: 501px) {
+      .debris-shell, .asat-btn, .sat-tip-3d { zoom: 1.1; }
+      .debris-shell { max-height: calc((100vh - 100px) / 1.1); }
+    }
+
   </style>
 </head>
 <body class="page-debris">
@@ -498,7 +508,7 @@
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=11"></script>
   <script src="nazar-gate.js?v=2"></script>
-  <script src="debris.js?v=6"></script>
+  <script src="debris.js?v=7"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=4"></script>
   <script src="mobile-menu.js?v=24"></script>

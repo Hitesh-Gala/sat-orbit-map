@@ -32,6 +32,7 @@ const SOURCES = [
   { key: '97051', short: 'Iridium 33',  label: 'Iridium 33',  country: 'USA',    color: '#67e8a4' },
   { key: '82092', short: 'Cosmos 1408', label: 'Cosmos 1408', country: 'Russia', color: '#f39c12' },
   { key: '26051', short: 'Yaogan-50 (02)', label: 'Yaogan-50 (02)', country: 'China', color: '#d77eff' },
+  { key: '88078', short: 'USA 32 (Farrah)', label: 'USA 32 “Farrah”', country: 'USA', color: '#5ee7ff' },
   { key: 'other', short: 'Other',       label: 'Other debris', country: '—',     color: '#9aa7b3' },
 ];
 const OTHER = SOURCES.length - 1;
@@ -562,6 +563,22 @@ const INFO = {
       'A retrograde cloud is doubly awkward: its fragments meet ordinary prograde traffic almost head-on, so a conjunction closes far faster than usual.',
       'These fragments come from Space-Track, not CelesTrak — which publishes debris groups only for the four historic clouds, which is why this event was missing from the globe until now.',
       'The parent satellite (NORAD 68196, 2026-051A) is still tracked and intact-listed; the fragments carry Alpha-5 catalogue numbers — A0564 means 100564.',
+    ],
+  },
+  '88078': {
+    color: '#5ee7ff', title: 'USA 32 “Farrah” — a Cold War listener breaks up',
+    sub: '13 September 2026 · ~775 km · 85° near-polar',
+    stats: [['Fragments catalogued', 'not yet published'], ['Break-up altitude', '~775 km'], ['Inclination', '85.0° (near-polar)']],
+    paras: [
+      'USA 32 (NORAD 19460, 1988-078A) went up on <em>5 September 1988</em> from Vandenberg SLC-4W on a Titan II SLV — a refurbished Titan II ICBM. It was a National Reconnaissance Office signals-intelligence satellite of the Program 989 family, a squat cylinder about a metre across whose job was to listen for Soviet radar and radio emissions. The mission was reported declassified only in 2026, 38 years after launch.',
+      'U.S. Space Forces–Space confirmed it <em>fragmented on 13 September 2026 at about 21:13 UTC</em>. Ground trackers filming the pass shortly afterwards caught pieces already strung out along the orbit. No cause has been established: for a spacecraft dead this long the usual suspects are a battery rupture or leftover propellant, not a collision.',
+      'It broke up in a busy place. At ~775 km, in a near-polar 85° orbit, there is almost no atmospheric drag, so fragments stay up for decades or longer — and that shell carries the Iridium NEXT constellation (~780 km) with <em>more than 200 active satellites within 50 km</em> of the break-up altitude.',
+      'Nothing is plotted for this event yet: Space-Track has published <em>no element sets for the fragments</em> so far, and its public catalogue still lists only the intact parent. This globe reads the whole Space-Track debris set once a day, so the pieces will appear here — and this counter will climb off zero — as soon as they are catalogued.',
+    ],
+    trivia: [
+      'The nickname followed a run of NRO listening satellites named after actresses — URSALA, RAQUEL and FARRAH, the last after Farrah Fawcett.',
+      'Earlier satellites of this type rode piggyback on HEXAGON film-return spy satellites; when HEXAGON ended they needed a rocket of their own, and surplus Titan II missiles took the job.',
+      'The parent itself is a payload, not debris, so it is tracked on the other NAZAR globes rather than this one.',
     ],
   },
   'other': {
