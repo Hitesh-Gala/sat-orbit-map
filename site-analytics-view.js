@@ -80,6 +80,14 @@
     return i < 0 ? esc(t) : stack(t.slice(0, i), t.slice(i + 2));
   }
 
+  // news.ycombinator.com -> "news.ycombinator" then ".com" on the next line.
+  function refLines(u) {
+    const host = refHost(u), parts = host.split('.');
+    return parts.length <= 2
+      ? esc(host)
+      : `${esc(parts.slice(0, 2).join('.'))}<br>${esc('.' + parts.slice(2).join('.'))}`;
+  }
+
   function tzLines(tz) {
     const t = String(tz || '').trim();
     if (!t) return '—';
@@ -239,9 +247,9 @@
         <td title="${esc(v.ua)}">${stack(v.deviceName, v.deviceType)}</td>
         <td>${stack(shortOs(v.os), v.browser)}</td>
         <td>${stack(v.country, v.region, v.city)}</td>
-        <td class="num">${Number(v.pages) || 1}</td>
+        <td class="num col-pages">${Number(v.pages) || 1}</td>
         <td class="col-landing">${esc(from === to ? from : `${from} → ${to}`)}</td>
-        <td title="${esc(v.referrer)}">${esc(refHost(v.referrer))}</td>
+        <td class="col-ref" title="${esc(v.referrer)}">${refLines(v.referrer)}</td>
         <td class="col-isp">${esc(v.isp) || '—'}</td>
         <td class="nowrap">${esc(v.screen) || '—'}</td>
         <td class="nowrap">${tzLines(v.tz)}</td>

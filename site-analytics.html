@@ -10,7 +10,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=45">
   <style>
-    .va-page { max-width: none; margin: 0 auto; padding: 78px 22px 70px; }
+    .va-page { max-width: none; margin: 0 auto; padding: 30px 22px 70px; }
+    /* Same banner as the main page (without its tagline), filling the gap
+       above the headline.  In the page flow, not fixed — this page scrolls. */
+    .va-brand { font-family: var(--display); font-weight: 700; letter-spacing: .22em; margin: 0 0 16px;
+      /* stop short of the lighthouse mark and its credit, top-right */
+      max-width: calc(100vw - 430px); }
+    .va-brand .brand-short { font-weight: 900; font-size: 26.6px; letter-spacing: .34em; color: #ffe9b0;
+      text-shadow: 0 0 12px rgba(255, 209, 102, .55), 0 0 28px rgba(255, 209, 102, .2); }
+    .va-brand .brand-long { font-weight: 500; font-size: 15.7px; letter-spacing: .06em; color: #ffd166; opacity: .85; }
+    @media (max-width: 900px) { .va-brand .brand-long { display: none; } }
     .va-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
     .va-eyebrow { font-family: var(--mono); font-size: 13.2px; letter-spacing: .22em; text-transform: uppercase; color: #ffd166; }
     .va-top h1 { margin: 4px 0 0; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 31.2px; letter-spacing: .06em; color: #fff; }
@@ -105,9 +114,16 @@
     /* Referrer-ish columns are the widest text; hold them to ~70 % and let
        them wrap, which pays for the larger type elsewhere. */
     .va-table th:nth-child(9), .va-table td.col-landing,
-    .va-table th:nth-child(11), .va-table td.col-isp {
+    .va-table th:nth-child(10), .va-table td.col-ref {
       width: 86px; max-width: 86px; white-space: normal; overflow-wrap: break-word;
     }
+    /* wide enough for a one-line "Midcontinent" */
+    .va-table th:nth-child(11), .va-table td.col-isp {
+      width: 132px; max-width: 132px; white-space: normal; overflow-wrap: break-word;
+    }
+    /* time spent and pages read as labels, not figures */
+    .va-table th:nth-child(3), .va-table td.col-dur,
+    .va-table th:nth-child(8), .va-table td.col-pages { text-align: left; }
     /* the last column was hard against the scrollbar */
     .va-table th:last-child, .va-table td:last-child { padding-right: 16px; }
     /* styles.css sizes the shared .dim helper at 10px; inside this table the
@@ -124,6 +140,10 @@
   </a>
 
   <main class="va-page">
+    <div class="va-brand">
+      <span class="brand-short">NAZAR</span><span class="brand-long"> — Nonchalantly Assembled Zero-Budget Assessment of Space Reconnaissance</span>
+    </div>
+
     <header class="va-top">
       <div>
         <div class="va-eyebrow">Owner only</div>
@@ -203,7 +223,7 @@
   </main>
 
   <script src="site-analytics.js?v=4"></script>
-  <script src="site-analytics-view.js?v=7"></script>
+  <script src="site-analytics-view.js?v=8"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=24"></script>
 </body>
