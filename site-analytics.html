@@ -37,10 +37,10 @@
     .va-stats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
     @media (max-width: 1000px) { .va-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
     @media (max-width: 560px)  { .va-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    .va-stat { background: var(--panel); border: 1px solid rgba(103, 200, 255, .38); border-radius: 10px; padding: 7px 11px; }
+    .va-stat { background: var(--panel); border: 1px solid rgba(103, 200, 255, .8); border-radius: 10px; padding: 7px 11px; }
     .va-stat b { display: block; font-family: 'Orbitron', sans-serif; font-size: 26.4px; color: #eaf6ff; }
     .va-stat span { display: block; margin-top: 1px; font-family: var(--mono); font-size: 13.2px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
-    .va-stat.big { border-color: rgba(103, 200, 255, .6); }
+    /* every card carries the same outline; the headline pair is marked by its type, not its border */
     .va-stat.big b { font-size: 36px; color: #ffd166; }
 
     /* Hover / focus detail on a headline card.  Built from <strong>, <dl>,
@@ -78,12 +78,14 @@
       background: rgba(103, 200, 255, .05); border: 1px solid var(--line); border-radius: 7px; padding: 8px 11px; }
     .va-toolbar b { color: var(--text); }
     .va-chk { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+    .va-legend { display: inline-flex; align-items: center; gap: 6px; color: var(--dim); }
+    .va-legend i { width: 3px; height: 14px; border-radius: 2px; background: #ffd166; }
     .va-pager { display: inline-flex; align-items: center; gap: 6px; }
     .va-pager button { width: 26px; height: 26px; border-radius: 6px; cursor: pointer; border: 1px solid var(--line); background: transparent; color: var(--text); }
     .va-pager button:hover { border-color: var(--accent); color: var(--accent); }
 
     .va-tablewrap { overflow: auto; max-height: calc(100vh - 300px); min-height: 240px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
-    .va-table { width: 100%; min-width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 14.4px; color: var(--text); }
+    .va-table { width: 100%; min-width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 16px; color: var(--text); }
     .va-table thead th { position: sticky; top: 0; z-index: 1; background: rgba(2, 6, 13, .97); border-bottom: 1px solid var(--line); color: var(--dim);
       font-weight: normal; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; text-align: left; padding: 8px 6px; white-space: normal; }
     .va-table tbody td { padding: 6px 6px; border-bottom: 1px solid rgba(110, 200, 255, .07); vertical-align: top; overflow-wrap: anywhere; }
@@ -100,6 +102,14 @@
     .va-table .col-when { white-space: nowrap; }
     .va-table .col-dur, .va-table .col-ip { width: 1%; white-space: nowrap; text-align: right; }
     .va-table .sub2 { color: var(--dim); }
+    /* Referrer-ish columns are the widest text; hold them to ~70 % and let
+       them wrap, which pays for the larger type elsewhere. */
+    .va-table th:nth-child(9), .va-table td.col-landing,
+    .va-table th:nth-child(11), .va-table td.col-isp {
+      width: 86px; max-width: 86px; white-space: normal; overflow-wrap: break-word;
+    }
+    /* the last column was hard against the scrollbar */
+    .va-table th:last-child, .va-table td:last-child { padding-right: 16px; }
     /* styles.css sizes the shared .dim helper at 10px; inside this table the
        cells should follow the table's own type. */
     .va-table tbody td.dim, .va-table tbody td .dim { font-size: inherit; }
@@ -153,6 +163,7 @@
         <input type="search" id="va-q" placeholder="Filter by IP, place, device, OS, browser, page…" autocomplete="off">
         <label class="va-chk"><input type="checkbox" id="va-todayonly"> Today only</label>
         <span><b id="va-count">0</b> visits</span>
+        <span class="va-legend"><i></i> today</span>
         <span class="va-pager">
           <button type="button" id="va-prev" aria-label="Previous page">‹</button>
           <span id="va-page">1 / 1</span>
@@ -192,7 +203,7 @@
   </main>
 
   <script src="site-analytics.js?v=4"></script>
-  <script src="site-analytics-view.js?v=6"></script>
+  <script src="site-analytics-view.js?v=7"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=24"></script>
 </body>

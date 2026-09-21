@@ -74,6 +74,12 @@
     return rows.map((t, i) => (i ? `<span class="sub2">${esc(t)}</span>` : esc(t))).join('<br>');
   }
 
+  // "21 Sept 2026, 18:39:55" -> date on top, clock time beneath.
+  function whenLines(iso) {
+    const t = fmtWhen(iso), i = t.indexOf(', ');
+    return i < 0 ? esc(t) : stack(t.slice(0, i), t.slice(i + 2));
+  }
+
   function tzLines(tz) {
     const t = String(tz || '').trim();
     if (!t) return '—';
@@ -227,16 +233,16 @@
       const from = pageName(v.landing), to = pageName(v.lastPage);
       return `<tr class="${isToday(v.start) ? 'today' : ''}">
         <td class="dim num">${start + i + 1}</td>
-        <td class="col-when">${esc(fmtWhen(v.start))}</td>
+        <td class="col-when">${whenLines(v.start)}</td>
         <td class="col-dur dur">${durLines(v.seconds)}</td>
         <td class="col-ip ip">${ipLines(v.ip)}</td>
         <td title="${esc(v.ua)}">${stack(v.deviceName, v.deviceType)}</td>
         <td>${stack(shortOs(v.os), v.browser)}</td>
         <td>${stack(v.country, v.region, v.city)}</td>
         <td class="num">${Number(v.pages) || 1}</td>
-        <td>${esc(from === to ? from : `${from} → ${to}`)}</td>
+        <td class="col-landing">${esc(from === to ? from : `${from} → ${to}`)}</td>
         <td title="${esc(v.referrer)}">${esc(refHost(v.referrer))}</td>
-        <td>${esc(v.isp) || '—'}</td>
+        <td class="col-isp">${esc(v.isp) || '—'}</td>
         <td class="nowrap">${esc(v.screen) || '—'}</td>
         <td class="nowrap">${tzLines(v.tz)}</td>
         <td class="nowrap">${v.visitNo > 1 ? stack('Returning', `visit ${v.visitNo}`) : 'New'}</td>
