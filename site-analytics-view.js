@@ -74,6 +74,13 @@
     return rows.map((t, i) => (i ? `<span class="sub2">${esc(t)}</span>` : esc(t))).join('<br>');
   }
 
+  function tzLines(tz) {
+    const t = String(tz || '').trim();
+    if (!t) return '—';
+    const i = t.indexOf('/');
+    return i < 0 ? esc(t) : stack(t.slice(0, i), t.slice(i + 1).replace(/_/g, ' '));
+  }
+
   function pageName(p) {
     const file = String(p || '').split('/').pop();
     return file ? file.replace(/\.html$/, '') : 'home';
@@ -231,8 +238,8 @@
         <td title="${esc(v.referrer)}">${esc(refHost(v.referrer))}</td>
         <td>${esc(v.isp) || '—'}</td>
         <td class="nowrap">${esc(v.screen) || '—'}</td>
-        <td>${esc(v.tz) || '—'}</td>
-        <td class="nowrap">${v.visitNo > 1 ? `Returning · visit ${v.visitNo}` : 'New'}</td>
+        <td class="nowrap">${tzLines(v.tz)}</td>
+        <td class="nowrap">${v.visitNo > 1 ? stack('Returning', `visit ${v.visitNo}`) : 'New'}</td>
       </tr>`;
     }).join('') || `<tr><td colspan="14" class="empty">${visits.length ? 'No visits match.' : 'No visits logged yet.'}</td></tr>`;
     $('va-count').textContent = shown.length.toLocaleString();
