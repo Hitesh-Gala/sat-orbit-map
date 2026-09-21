@@ -1,13 +1,13 @@
 {
  "source": "CelesTrak",
- "retrieved": "2026-09-20T11:37:59Z",
+ "retrieved": "2026-09-21T13:03:10Z",
  "satcat": {
   "label": "Active payloads",
-  "count": 20096,
+  "count": 20130,
   "topOwners": [
    [
     "US",
-    13760
+    13783
    ],
    [
     "CIS",
@@ -15,7 +15,7 @@
    ],
    [
     "PRC",
-    1613
+    1624
    ],
    [
     "UK",
@@ -31,7 +31,7 @@
  "tle": {
   "label": "Active TLE sets",
   "count": 15994,
-  "latestEpoch": "2026-09-22T02:07:24Z",
+  "latestEpoch": "2026-09-24T05:20:53Z",
   "oldestEpoch": "2026-08-24T07:03:18Z",
   "note": "GROUP=active TLE catalogue (gp.php)."
  },
@@ -39,10 +39,10 @@
   "label": "SOCRATES close approaches",
   "count": 10,
   "window": {
-   "from": "2026-09-19T11:16:56Z",
-   "to": "2026-09-25T16:10:49Z"
+   "from": "2026-09-20T14:03:29Z",
+   "to": "2026-09-25T18:56:50Z"
   },
-  "generated": "2026-09-20T10:07:50Z",
+  "generated": "2026-09-21T11:27:07Z",
   "note": "Top pairs by max collision probability (SOCRATES)."
  }
 }
