@@ -21,7 +21,12 @@
   const mq = window.matchMedia(PHONE_MQ);
 
   const $ = s => document.querySelector(s);
-  let tools = null, logoTap = null;
+  const isMain = () => document.body.classList.contains('page-main');
+  // Pages whose drawer holds page controls rather than navigation: there the
+  // drawer becomes a floating, movable card and the button says CONTROLS.
+  const CONTROL_PANELS = '.viz-shell, .goc-shell, .sbo-shell, .debris-shell';
+  const hasControls = () => !!document.querySelector(CONTROL_PANELS);
+  let tools = null, logoTap = null, strap = null, drag = null;
 
   // ---- bottom-right tools cluster -----------------------------------------
   // Each entry points at a control that already exists on the page; the
@@ -109,6 +114,91 @@
     tools.remove();
     tools = null;
     document.body.classList.remove('nz-ticker-on', 'nz-tools-open');
+  }
+
+  // ---- one-line strap under the top row (main page only) -------------------
+  function buildStrap() {
+    if (strap || !isMain()) return;
+    strap = document.createElement('div');
+    strap.className = 'nz-strap';
+    strap.textContent = 'Your friendly satellite-tracker site. Works better on desktops';
+    document.body.appendChild(strap);
+  }
+
+  function destroyStrap() {
+    if (strap) strap.remove();
+    strap = null;
+  }
+
+  // ---- the drawer button, and HOME under the mark --------------------------
+  function labelChrome() {
+    const btn = $('.mobile-menu-btn');
+    if (btn && hasControls()) {
+      btn.querySelector('.lbl').textContent =
+        document.body.classList.contains('menu-open') ? 'CLOSE' : 'CONTROLS';
+    }
+    const home = $('.top-nazar-btn');
+    if (home) {
+      const lbl = home.querySelector('.lbl');
+      if (lbl) lbl.textContent = 'HOME';
+      home.title = 'Back to the NAZAR main page';
+    }
+  }
+
+  function unlabelChrome() {
+    const btn = $('.mobile-menu-btn');
+    if (btn) btn.querySelector('.lbl').textContent =
+      document.body.classList.contains('menu-open') ? 'CLOSE' : 'MENU';
+    const home = $('.top-nazar-btn');
+    const lbl = home && home.querySelector('.lbl');
+    if (lbl) lbl.textContent = 'NAZAR';
+  }
+
+  // ---- the controls card can be dragged out of the way ---------------------
+  function makeDraggable(card, handle) {
+    let id = null, dx = 0, dy = 0;
+    const down = e => {
+      if (e.target.closest('button, a, input, select, summary')) return;
+      id = e.pointerId;
+      const r = card.getBoundingClientRect();
+      dx = e.clientX - r.left;
+      dy = e.clientY - r.top;
+      card.style.right = 'auto';
+      card.style.left = r.left + 'px';
+      card.style.top = r.top + 'px';
+      handle.setPointerCapture(id);
+      e.preventDefault();
+    };
+    const move = e => {
+      if (e.pointerId !== id) return;
+      const w = card.offsetWidth, h = card.offsetHeight;
+      card.style.left = Math.min(Math.max(4, e.clientX - dx), innerWidth - w - 4) + 'px';
+      card.style.top = Math.min(Math.max(4, e.clientY - dy), innerHeight - Math.min(h, 120) - 4) + 'px';
+    };
+    const up = e => { if (e.pointerId === id) id = null; };
+    handle.addEventListener('pointerdown', down);
+    handle.addEventListener('pointermove', move);
+    handle.addEventListener('pointerup', up);
+    handle.addEventListener('pointercancel', up);
+    drag = { handle, down, move, up };
+  }
+
+  function floatDrawer() {
+    const drawer = document.querySelector('.mobile-drawer');
+    if (!drawer || !hasControls() || drawer.querySelector('.nz-drag')) return;
+    document.body.classList.add('nz-floating');
+    const bar = document.createElement('div');
+    bar.className = 'nz-drag';
+    bar.innerHTML = '<span>Controls</span><span class="nz-drag-grip">⠿</span>';
+    drawer.insertBefore(bar, drawer.firstChild);
+    makeDraggable(drawer, bar);
+  }
+
+  function unfloatDrawer() {
+    document.body.classList.remove('nz-floating');
+    const bar = document.querySelector('.mobile-drawer .nz-drag');
+    if (bar) bar.remove();
+    drag = null;
   }
 
   // ---- the lighthouse opens the credit ------------------------------------
@@ -211,14 +301,19 @@
       buildTools();
       buildLogoTap();
       buildTitleTap();
+      buildStrap();
+      labelChrome();
       // mobile-menu.js builds the drawer on the same media-query event; wait
       // a frame so the panels are inside it before folding them.
-      requestAnimationFrame(foldDrawer);
+      requestAnimationFrame(() => { foldDrawer(); floatDrawer(); labelChrome(); });
     } else {
       document.body.classList.remove('nz-mobile');
       destroyTools();
       destroyLogoTap();
       destroyTitleTap();
+      destroyStrap();
+      unlabelChrome();
+      unfloatDrawer();
       unfoldDrawer();
     }
   }

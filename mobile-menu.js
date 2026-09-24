@@ -232,7 +232,9 @@
   // -------------------------------------------------------------------------
   (function rotatePrompt() {
     if (!document.getElementById('globe')) return;   // text pages read fine upright
-    if (document.body.classList.contains('page-main')) return;  // main page is built for portrait too
+    // Pages with the phone UX layer are built for portrait; don't nag there.
+    if (document.body.classList.contains('page-main') ||
+        document.body.classList.contains('page-viz3d')) return;
 
     const PORTRAIT_MQ = window.matchMedia(
       '(orientation: portrait) and (max-width: 720px), ' +
