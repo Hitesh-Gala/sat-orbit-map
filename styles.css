@@ -874,7 +874,16 @@ body.hud-open  .float-toggle.data-toggle {
   .mobile-drawer > .viz-shell,
   .mobile-drawer > .viz-search,
   .mobile-drawer > .right,
-  .mobile-drawer > .header-right {
+  .mobile-drawer > .header-right,
+  .mobile-drawer .nz-sec-body > .left-nav,
+  .mobile-drawer .nz-sec-body > .hud-tr,
+  .mobile-drawer .nz-sec-body > .hud-tl,
+  .mobile-drawer .nz-sec-body > .goc-shell,
+  .mobile-drawer .nz-sec-body > .viz-shell,
+  .mobile-drawer .nz-sec-body > .sbo-shell,
+  .mobile-drawer .nz-sec-body > .debris-shell,
+  .mobile-drawer .nz-sec-body > .right,
+  .mobile-drawer .nz-sec-body > .header-right {
     position: static !important;
     top: auto !important;
     left: auto !important;
@@ -905,7 +914,8 @@ body.hud-open  .float-toggle.data-toggle {
   /* Navigation launchers as a tidy 2-column grid instead of seven tall
      full-width rows — much less "ungainly".  Overrides the column-flex
      reset above (same specificity, later in source → wins). */
-  .mobile-drawer > .left-nav {
+  .mobile-drawer > .left-nav,
+  .mobile-drawer .nz-sec-body > .left-nav {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
     gap: 6px !important;
@@ -923,7 +933,8 @@ body.hud-open  .float-toggle.data-toggle {
   .mobile-drawer .btn-nav-icon { font-size: 13px; }
   /* The theme toggle (if present) spans both columns so it reads as a
      full-width control, not a stray half-button. */
-  .mobile-drawer > .left-nav .btn-theme { grid-column: 1 / -1; }
+  .mobile-drawer > .left-nav .btn-theme,
+  .mobile-drawer .nz-sec-body > .left-nav .btn-theme { grid-column: 1 / -1; }
 
   /* News ticker covers the bottom strip — keep it visible but slim. */
   .news-ticker { font-size: 10px; }
@@ -3365,3 +3376,88 @@ body.page-2d .map-cell .map-sub {
   .tle-table .tle-cell div { font-size: 9.5px; }
 }
 
+/* ==========================================================================
+   Phone UX layer (mobile-ux.js) — globe first, controls one tap away.
+   Desktop never sees any of this: the whole block is inside the phone query.
+   ========================================================================== */
+@media (max-width: 720px), (max-height: 500px) and (max-width: 950px) {
+  /* The four loose controls now live in the bottom-right cluster. */
+  body.nz-mobile .fb-fab,
+  body.nz-mobile #allsats-btn,
+  body.nz-mobile #nazar-bgm-toggle { display: none !important; }
+  body.nz-mobile .news-ticker { display: none; }
+  body.nz-mobile.nz-ticker-on.nz-tools-open .news-ticker { display: none; }
+  body.nz-mobile.nz-ticker-on .news-ticker {
+    display: flex;
+    left: max(8px, env(safe-area-inset-left));
+    right: max(8px, env(safe-area-inset-right));
+    width: auto;
+    transform: none;
+    bottom: calc(82px + env(safe-area-inset-bottom));
+  }
+
+  .nz-tools {
+    position: fixed; z-index: 120;
+    right: max(10px, env(safe-area-inset-right));
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; align-items: flex-end; gap: 9px;
+  }
+  .nz-tools-list { display: none; flex-direction: column; align-items: flex-end; gap: 9px; }
+  .nz-tools.open .nz-tools-list { display: flex; }
+  .nz-chip {
+    display: inline-flex; align-items: center; gap: 9px;
+    min-height: 44px; padding: 0 15px; border-radius: 22px; cursor: pointer;
+    background: rgba(8, 16, 28, .95); border: 1px solid var(--line); color: var(--text);
+    font-family: var(--mono); font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .5);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  .nz-chip .ic { font-size: 16px; }
+  .nz-chip.on { border-color: var(--accent); color: var(--accent); }
+  .nz-fab {
+    width: 54px; height: 54px; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(103, 200, 255, .18); border: 1.5px solid var(--accent); color: var(--accent);
+    font-size: 22px; line-height: 1; box-shadow: 0 8px 22px rgba(0, 0, 0, .55);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+
+  /* Credit: folded away until the lighthouse mark is tapped. */
+  body.nz-mobile .logo-credit { display: none; }
+  body.nz-mobile.nz-credit-on .logo-credit {
+    display: block; position: fixed; z-index: 60;
+    top: calc(50px + env(safe-area-inset-top));
+    right: max(8px, env(safe-area-inset-right)); left: auto;
+    max-width: min(262px, calc(100vw - 20px));
+    white-space: normal; text-align: right;
+    font-size: 11.5px; line-height: 1.55; color: var(--text);
+    background: rgba(8, 16, 28, .96); border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 12px; box-shadow: 0 10px 26px rgba(0, 0, 0, .5);
+  }
+
+  /* Banner: small enough to sit clear of the ☰ button and the mark. */
+  body.nz-mobile .topbar { padding: 7px 96px 0 78px; pointer-events: none; }
+  body.nz-mobile .brand .brand-short { font-size: 17px; letter-spacing: .26em; }
+  body.nz-mobile .brand .brand-long { display: none; }
+  body.nz-mobile .sub { font-size: 13.5px; margin-top: 1px; }
+
+  /* Drawer: labelled, collapsible sections with thumb-sized rows. */
+  .mobile-drawer .nz-sec {
+    border: 1px solid var(--line); border-radius: 10px;
+    background: rgba(6, 12, 20, .55); overflow: hidden;
+  }
+  .mobile-drawer .nz-sec + .nz-sec { margin-top: 8px; }
+  .mobile-drawer .nz-sec > summary {
+    display: flex; align-items: center; justify-content: space-between;
+    min-height: 46px; padding: 0 13px; cursor: pointer; list-style: none;
+    font-family: var(--mono); font-size: 12.5px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .mobile-drawer .nz-sec > summary::-webkit-details-marker { display: none; }
+  .mobile-drawer .nz-sec > summary::after { content: '▾'; font-size: 13px; transition: transform .15s; }
+  .mobile-drawer .nz-sec[open] > summary::after { transform: rotate(180deg); }
+  .mobile-drawer .nz-sec-body { padding: 2px 9px 10px; }
+  .mobile-drawer .nz-sec-body > * { max-height: none; }
+  /* Thumb-sized nav rows. */
+  .mobile-drawer .btn-nav { min-height: 46px; }
+}

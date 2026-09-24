@@ -83,6 +83,12 @@ function setStatus(msg, cls = '') {
 // Globe — mirrors game-of-cones.js
 // =========================================================================
 
+// Phones hold the globe in a tall, narrow window, so the camera sits further
+// back than on a desktop — the whole sphere fits with room to spare instead of
+// spilling past the edges.  Portrait-phone only; every other screen is 2.4 as
+// before.
+const HOME_ALT = window.matchMedia('(max-width: 720px) and (orientation: portrait)').matches ? 3.5 : 2.4;
+
 const globe = Globe()($('globe'))
   .globeImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg')
   .bumpImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-topology.png')
@@ -90,7 +96,7 @@ const globe = Globe()($('globe'))
   .showAtmosphere(true)
   .atmosphereColor('#4ea8ff')
   .atmosphereAltitude(0.18)
-  .pointOfView({ lat: 22, lng: 80, altitude: 2.4 }, 0)
+  .pointOfView({ lat: 22, lng: 80, altitude: HOME_ALT }, 0)
   // Satellite markers — small sphere meshes at TRUE altitude (alt is
   // in km; globe.gl wants a fraction of Earth-radius).  A GEO sat now
   // floats 5.6 Earth-radii out exactly as it does on the 3-D
@@ -585,14 +591,14 @@ function renderCNHorizonList(items) {
       });
       // Frame the whole subcontinent — the union footprint spans
       // Jaisalmer to Kohima.
-      globe.pointOfView({ lat: 23, lng: 82, altitude: 2.6 }, 1200);
+      globe.pointOfView({ lat: 23, lng: 82, altitude: HOME_ALT + 0.2 }, 1200);
     } else {
       observerMode = 'single';
       observerCity = CITIES[parseInt(v, 10)] || CITIES[0];
       document.querySelectorAll('.obs-city-name').forEach(el => {
         el.textContent = observerCity.name;
       });
-      globe.pointOfView({ lat: observerCity.lat, lng: observerCity.lon, altitude: 2.4 }, 1200);
+      globe.pointOfView({ lat: observerCity.lat, lng: observerCity.lon, altitude: HOME_ALT }, 1200);
     }
     // Recompute the over-horizon sets right away rather than waiting
     // out the 10-s tick.  If a tick is already mid-flight this is a
