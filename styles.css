@@ -3444,7 +3444,11 @@ body.page-2d .map-cell .map-sub {
     text-align: center; pointer-events: none;
   }
   body.nz-mobile .brand { pointer-events: auto; display: inline-block; cursor: pointer; }
-  body.nz-mobile .brand .brand-short { font-size: 18px; letter-spacing: .28em; }
+  /* The name wears the main page's golds on every phone top bar. */
+  body.nz-mobile .brand .brand-short {
+    font-size: 18px; letter-spacing: .28em; color: #ffe9b0;
+    text-shadow: 0 0 12px rgba(255, 209, 102, .55), 0 0 28px rgba(255, 209, 102, .2);
+  }
   body.nz-mobile .brand .brand-long,
   body.nz-mobile .sub { display: none; }
   body.nz-mobile .sub-row { display: none; }
