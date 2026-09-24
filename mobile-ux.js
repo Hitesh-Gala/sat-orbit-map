@@ -145,6 +145,22 @@
     }
   }
 
+  // mobile-menu.js rewrites MENU/CLOSE on every toggle, so the CONTROLS name
+  // is re-applied right after each one.
+  let relabel = null;
+  function watchLabel() {
+    const btn = $('.mobile-menu-btn');
+    if (!btn || relabel) return;
+    relabel = () => setTimeout(labelChrome, 0);
+    btn.addEventListener('click', relabel);
+  }
+
+  function unwatchLabel() {
+    const btn = $('.mobile-menu-btn');
+    if (btn && relabel) btn.removeEventListener('click', relabel);
+    relabel = null;
+  }
+
   function unlabelChrome() {
     const btn = $('.mobile-menu-btn');
     if (btn) btn.querySelector('.lbl').textContent =
@@ -189,8 +205,14 @@
     document.body.classList.add('nz-floating');
     const bar = document.createElement('div');
     bar.className = 'nz-drag';
-    bar.innerHTML = '<span>Controls</span><span class="nz-drag-grip">⠿</span>';
+    bar.innerHTML = '<span class="nz-drag-grip">⠿</span><span>Controls</span>' +
+                    '<button type="button" class="nz-drag-x" aria-label="Close controls">✕</button>';
     drawer.insertBefore(bar, drawer.firstChild);
+    bar.querySelector('.nz-drag-x').addEventListener('click', () => {
+      const btn = $('.mobile-menu-btn');
+      if (btn) btn.click();                    // mobile-menu.js owns open/closed
+      setTimeout(labelChrome, 0);
+    });
     makeDraggable(drawer, bar);
   }
 
@@ -272,7 +294,11 @@
   function foldDrawer() {
     const drawer = document.querySelector('.mobile-drawer');
     if (!drawer) return;
+    // On a control page the floating card's own header names it, so its panel
+    // is left bare rather than wrapped in a second collapsible header.
+    const floating = hasControls();
     for (const { sel, title, open } of SECTIONS) {
+      if (floating && sel !== '.left-nav' && sel !== '.hud-tr') continue;
       const panel = drawer.querySelector(':scope > ' + sel);
       if (!panel) continue;
       const box = document.createElement('details');
@@ -303,6 +329,7 @@
       buildTitleTap();
       buildStrap();
       labelChrome();
+      watchLabel();
       // mobile-menu.js builds the drawer on the same media-query event; wait
       // a frame so the panels are inside it before folding them.
       requestAnimationFrame(() => { foldDrawer(); floatDrawer(); labelChrome(); });
@@ -313,6 +340,7 @@
       destroyTitleTap();
       destroyStrap();
       unlabelChrome();
+      unwatchLabel();
       unfloatDrawer();
       unfoldDrawer();
     }

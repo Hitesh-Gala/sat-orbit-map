@@ -3491,20 +3491,37 @@ body.page-2d .map-cell .map-sub {
   body.nz-floating .mobile-drawer {
     left: auto; right: max(8px, env(safe-area-inset-right));
     top: calc(92px + env(safe-area-inset-top));
-    width: min(300px, calc(100vw - 16px));
-    max-height: min(62vh, 470px);
-    padding: 0 9px 9px;
+    /* About half the old card, so the globe stays readable while a slider
+       is being dragged.  The card itself scrolls; the panel inside must not
+       keep its own height or its lower controls fall outside the card. */
+    width: min(224px, calc(100vw - 16px));
+    max-height: min(38vh, 300px);
+    overflow-y: auto; overflow-x: hidden;
+    padding: 0 8px 8px;
     border-radius: 12px;
     box-shadow: 0 18px 44px rgba(0, 0, 0, .6);
   }
+  body.nz-mobile.nz-floating .mobile-drawer .viz-shell,
+  body.nz-mobile.nz-floating .mobile-drawer .goc-shell,
+  body.nz-mobile.nz-floating .mobile-drawer .sbo-shell,
+  body.nz-mobile.nz-floating .mobile-drawer .debris-shell {
+    max-height: none; overflow: visible; width: auto;
+  }
   .mobile-drawer .nz-drag {
-    display: flex; align-items: center; justify-content: space-between;
-    margin: 0 -9px 7px; padding: 9px 12px; cursor: grab; touch-action: none;
+    position: sticky; top: 0; z-index: 2;
+    display: flex; align-items: center; gap: 8px;
+    margin: 0 -8px 7px; padding: 8px 10px; cursor: grab; touch-action: none;
     border-bottom: 1px solid var(--line); background: rgba(103, 200, 255, .1);
     font-family: var(--mono); font-size: 12px; letter-spacing: .14em;
     text-transform: uppercase; color: var(--accent);
   }
-  .mobile-drag-grip, .nz-drag-grip { opacity: .7; letter-spacing: 0; }
+  .mobile-drawer .nz-drag > span:nth-child(2) { flex: 1; }
+  .nz-drag-grip { opacity: .7; letter-spacing: 0; }
+  .nz-drag-x {
+    flex: 0 0 auto; width: 26px; height: 26px; border-radius: 6px; cursor: pointer;
+    background: rgba(103, 200, 255, .12); border: 1px solid var(--line); color: var(--accent);
+    font-size: 13px; line-height: 1;
+  }
   /* Tighter wrapping and shorter sliders — same type size as before. */
   body.nz-floating .mobile-drawer .panel { padding: 7px 9px; }
   body.nz-floating .mobile-drawer .viz-row,
