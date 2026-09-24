@@ -285,14 +285,34 @@
     const el = document.documentElement;
     if (!el.requestFullscreen && !el.webkitRequestFullscreen) return;
 
+    // Fullscreen needs a user gesture, so the first one on the page is used —
+    // but a single attempt is fragile (the gesture can land on an element that
+    // swallows it, or the request can be refused while the page is still
+    // settling).  Keep trying on each gesture until it takes, then stop.  If
+    // the visitor leaves fullscreen themselves, take the hint and stop asking.
+    // The orientation is never locked: the phone auto-rotates as usual.
+    let armed = true, entered = false;
+
     function go() {
-      window.removeEventListener('pointerdown', go);
+      if (!armed || document.fullscreenElement || document.webkitFullscreenElement) return;
       try {
-        if (document.fullscreenElement) return;
-        (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+        const req = el.requestFullscreen || el.webkitRequestFullscreen;
+        const out = req.call(el);
+        if (out && out.catch) out.catch(() => { /* refused — try on the next gesture */ });
       } catch { /* unsupported / blocked — leave the page as-is */ }
     }
-    window.addEventListener('pointerdown', go, { once: true, passive: true });
+
+    function onChange() {
+      const now = !!(document.fullscreenElement || document.webkitFullscreenElement);
+      if (now) entered = true;
+      else if (entered) armed = false;      // they backed out; don't nag
+    }
+
+    for (const ev of ['pointerdown', 'touchend', 'click']) {
+      window.addEventListener(ev, go, { passive: true, capture: true });
+    }
+    document.addEventListener('fullscreenchange', onChange);
+    document.addEventListener('webkitfullscreenchange', onChange);
   })();
 
   // -------------------------------------------------------------------------

@@ -27,14 +27,15 @@
   // Each entry points at a control that already exists on the page; the
   // chip just drives it, so the underlying behaviour (and its desktop
   // button) stays exactly as it was.
+  // One letter each, sized like the music button they replace.
   function toolSpecs() {
     return [
-      { key: 'india', ic: '🛰', label: 'Over India', el: '#allsats-btn', act: el => el.click(), close: true },
-      { key: 'connect', ic: '💬', label: 'Connect', el: '.fb-fab', act: el => el.click(), close: true },
-      { key: 'ticker', ic: '📰', label: 'Ticker tape', el: '.news-ticker',
+      { key: 'connect', txt: 'C', label: 'Connect with me', el: '.fb-fab', act: el => el.click(), close: true },
+      { key: 'india', txt: 'V', label: 'View everything over India', el: '#allsats-btn', act: el => el.click(), close: true },
+      { key: 'ticker', txt: 'TT', label: 'Ticker tape', el: '.news-ticker',
         act: () => document.body.classList.toggle('nz-ticker-on'),
         state: () => document.body.classList.contains('nz-ticker-on') },
-      { key: 'music', ic: '♪', label: 'Music', el: '#nazar-bgm-toggle',
+      { key: 'music', txt: '♪', label: 'Music', el: '#nazar-bgm-toggle',
         act: el => el.click(), state: el => el.getAttribute('aria-pressed') === 'true' },
     ].filter(t => $(t.el));
   }
@@ -60,7 +61,9 @@
       chip.type = 'button';
       chip.className = 'nz-chip';
       chip.dataset.key = spec.key;
-      chip.innerHTML = `<span class="ic">${spec.ic}</span><span>${spec.label}</span>`;
+      chip.textContent = spec.txt;
+      chip.title = spec.label;
+      chip.setAttribute('aria-label', spec.label);
       chip.addEventListener('click', () => {
         const el = $(spec.el);
         if (!el) return;
@@ -71,15 +74,15 @@
       list.appendChild(chip);
     }
 
-    const fab = document.createElement('button');
-    fab.type = 'button';
-    fab.className = 'nz-fab';
-    fab.setAttribute('aria-label', 'Tools');
-    fab.setAttribute('aria-expanded', 'false');
-    fab.innerHTML = '<span class="ic">⋯</span>';
-    fab.addEventListener('click', () => setOpen(!tools.classList.contains('open')));
+    const pill = document.createElement('button');
+    pill.type = 'button';
+    pill.className = 'nz-pill';
+    pill.setAttribute('aria-label', 'Show controls');
+    pill.setAttribute('aria-expanded', 'false');
+    pill.innerHTML = '<span class="ic">•••</span>';
+    pill.addEventListener('click', () => setOpen(!tools.classList.contains('open')));
 
-    tools.append(list, fab);
+    tools.append(list, pill);
     document.body.appendChild(tools);
 
     // A tap anywhere else closes the cluster, so it never sits over the globe.
@@ -89,10 +92,11 @@
   function setOpen(open) {
     if (!tools) return;
     tools.classList.toggle('open', open);
-    // The open chips stand where the ticker runs, so it steps aside for them.
+    // The open buttons stand where the ticker runs, so it steps aside for them.
     document.body.classList.toggle('nz-tools-open', open);
-    tools.querySelector('.nz-fab').setAttribute('aria-expanded', String(open));
-    tools.querySelector('.nz-fab .ic').textContent = open ? '✕' : '⋯';
+    const pill = tools.querySelector('.nz-pill');
+    pill.setAttribute('aria-expanded', String(open));
+    pill.querySelector('.ic').textContent = open ? '✕' : '•••';
   }
 
   function onOutside(e) {
@@ -126,6 +130,42 @@
     if (logo && logoTap) logo.removeEventListener('click', logoTap);
     logoTap = null;
     document.body.classList.remove('nz-credit-on');
+  }
+
+  // ---- the name shows its full form and tagline on tap ---------------------
+  // The top bar carries just "NAZAR" on a phone; the expansion and the
+  // Hinglish tagline appear under it for a few seconds when it is tapped.
+  let titleTap = null, titleTimer = 0;
+
+  function buildTitleTap() {
+    const brand = $('.brand');
+    if (!brand || titleTap) return;
+    if (!$('.nz-title-card')) {
+      const long = ($('.brand-long') || {}).textContent || '';
+      const sub = ($('.sub') || {}).textContent || '';
+      const card = document.createElement('div');
+      card.className = 'nz-title-card';
+      card.innerHTML = `<div class="nz-title-long">${long.replace(/^[\s—·]+/, '')}</div>` +
+                       (sub ? `<div class="nz-title-sub">${sub}</div>` : '');
+      document.body.appendChild(card);
+    }
+    titleTap = () => {
+      if (!mq.matches) return;
+      document.body.classList.add('nz-title-on');
+      clearTimeout(titleTimer);
+      titleTimer = setTimeout(() => document.body.classList.remove('nz-title-on'), 4500);
+    };
+    brand.addEventListener('click', titleTap);
+  }
+
+  function destroyTitleTap() {
+    const brand = $('.brand');
+    if (brand && titleTap) brand.removeEventListener('click', titleTap);
+    titleTap = null;
+    clearTimeout(titleTimer);
+    document.body.classList.remove('nz-title-on');
+    const card = $('.nz-title-card');
+    if (card) card.remove();
   }
 
   // ---- drawer panels become collapsible sections ---------------------------
@@ -170,6 +210,7 @@
       document.body.classList.add('nz-mobile');
       buildTools();
       buildLogoTap();
+      buildTitleTap();
       // mobile-menu.js builds the drawer on the same media-query event; wait
       // a frame so the panels are inside it before folding them.
       requestAnimationFrame(foldDrawer);
@@ -177,6 +218,7 @@
       document.body.classList.remove('nz-mobile');
       destroyTools();
       destroyLogoTap();
+      destroyTitleTap();
       unfoldDrawer();
     }
   }

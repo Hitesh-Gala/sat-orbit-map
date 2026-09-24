@@ -1,0 +1,20 @@
+{
+  "name": "NAZAR — Nonchalantly Assembled Zero-Budget Assessment of Space Reconnaissance",
+  "short_name": "NAZAR",
+  "description": "Live satellite tracking, 3-D globes and space reference pages.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "any",
+  "background_color": "#02060d",
+  "theme_color": "#02060d",
+  "icons": [
+    {
+      "src": "data/nazar-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

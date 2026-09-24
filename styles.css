@@ -3393,32 +3393,34 @@ body.page-2d .map-cell .map-sub {
     right: max(8px, env(safe-area-inset-right));
     width: auto;
     transform: none;
-    bottom: calc(82px + env(safe-area-inset-bottom));
+    bottom: calc(62px + env(safe-area-inset-bottom));
   }
 
+  /* One ellipse at the foot of the screen; it opens a row of letter buttons,
+     each the size of the music toggle they replace. */
   .nz-tools {
     position: fixed; z-index: 120;
-    right: max(10px, env(safe-area-inset-right));
-    bottom: calc(14px + env(safe-area-inset-bottom));
-    display: flex; flex-direction: column; align-items: flex-end; gap: 9px;
+    left: 50%; transform: translateX(-50%);
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
   }
-  .nz-tools-list { display: none; flex-direction: column; align-items: flex-end; gap: 9px; }
+  .nz-tools-list { display: none; flex-direction: row; align-items: center; gap: 10px; }
   .nz-tools.open .nz-tools-list { display: flex; }
   .nz-chip {
-    display: inline-flex; align-items: center; gap: 9px;
-    min-height: 44px; padding: 0 15px; border-radius: 22px; cursor: pointer;
+    width: 42px; height: 42px; padding: 0; border-radius: 50%; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
     background: rgba(8, 16, 28, .95); border: 1px solid var(--line); color: var(--text);
-    font-family: var(--mono); font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
+    font-family: var(--mono); font-size: 15px; font-weight: 700; letter-spacing: .02em;
     box-shadow: 0 6px 18px rgba(0, 0, 0, .5);
     backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   }
-  .nz-chip .ic { font-size: 16px; }
-  .nz-chip.on { border-color: var(--accent); color: var(--accent); }
-  .nz-fab {
-    width: 54px; height: 54px; border-radius: 50%; cursor: pointer;
+  .nz-chip.on { border-color: var(--accent); color: var(--accent); background: rgba(103, 200, 255, .18); }
+  .nz-pill {
+    min-width: 96px; height: 34px; padding: 0 18px; border-radius: 999px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(103, 200, 255, .18); border: 1.5px solid var(--accent); color: var(--accent);
-    font-size: 22px; line-height: 1; box-shadow: 0 8px 22px rgba(0, 0, 0, .55);
+    background: rgba(103, 200, 255, .16); border: 1.5px solid var(--accent); color: var(--accent);
+    font-size: 15px; line-height: 1; letter-spacing: .18em;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .55);
     backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   }
 
@@ -3435,11 +3437,31 @@ body.page-2d .map-cell .map-sub {
     padding: 10px 12px; box-shadow: 0 10px 26px rgba(0, 0, 0, .5);
   }
 
-  /* Banner: small enough to sit clear of the ☰ button and the mark. */
-  body.nz-mobile .topbar { padding: 7px 96px 0 78px; pointer-events: none; }
-  body.nz-mobile .brand .brand-short { font-size: 17px; letter-spacing: .26em; }
-  body.nz-mobile .brand .brand-long { display: none; }
-  body.nz-mobile .sub { font-size: 13.5px; margin-top: 1px; }
+  /* Top bar carries the name alone, centred in the band between the ☰ button
+     and the lighthouse mark.  Tapping it reveals the rest for a few seconds. */
+  body.nz-mobile .topbar {
+    left: 78px; right: 62px; width: auto; padding: 9px 0 0;
+    text-align: center; pointer-events: none;
+  }
+  body.nz-mobile .brand { pointer-events: auto; display: inline-block; cursor: pointer; }
+  body.nz-mobile .brand .brand-short { font-size: 18px; letter-spacing: .28em; }
+  body.nz-mobile .brand .brand-long,
+  body.nz-mobile .sub { display: none; }
+  body.nz-mobile .sub-row { display: none; }
+
+  .nz-title-card {
+    position: fixed; z-index: 58;
+    top: calc(44px + env(safe-area-inset-top));
+    left: max(10px, env(safe-area-inset-left)); right: max(10px, env(safe-area-inset-right));
+    padding: 9px 12px; text-align: center;
+    background: rgba(8, 16, 28, .96); border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, .5);
+    opacity: 0; visibility: hidden; transform: translateY(-6px);
+    transition: opacity .18s, transform .18s, visibility .18s;
+  }
+  body.nz-title-on .nz-title-card { opacity: 1; visibility: visible; transform: none; }
+  .nz-title-long { font-family: var(--mono); font-size: 11.5px; line-height: 1.5; letter-spacing: .06em; color: #ffd166; }
+  .nz-title-sub { margin-top: 5px; font-family: var(--script, 'Caveat', cursive); font-size: 18px; color: var(--accent2); }
 
   /* Drawer: labelled, collapsible sections with thumb-sized rows. */
   .mobile-drawer .nz-sec {
