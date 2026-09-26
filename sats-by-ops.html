@@ -33,7 +33,13 @@
        pages read at one size.  Declared after the base rule so its height
        budget wins; the 86px top offset scales with the zoom too, hence 125. */
     @media (min-width: 721px) and (min-height: 501px) {
-      .sbo-shell { zoom: 1.265; max-height: calc((100vh - 125px) / 1.265); }
+      .sbo-shell { zoom: 1.265; max-height: calc((100vh - 125px) / 1.265); overflow: hidden; }
+      /* The filter panel takes the slack: its heading and the Show/Hide All
+         buttons stay put, the category list scrolls inside it, and the
+         sliders and status line below stay pinned to the bottom. */
+      .sbo-shell > .panel:first-child { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+      .sbo-shell > .panel:not(:first-child) { flex: 0 0 auto; }
+      #sbo-categories { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; }
     }
     .sbo-controls {
       display: flex;
