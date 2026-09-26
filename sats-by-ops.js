@@ -1025,7 +1025,7 @@ function openCompany(idx) {
     : '';
 
   body.innerHTML = `
-    <div class="sbo-modal-head">
+    <div class="sbo-modal-head" title="Drag to move this window">
       <span class="sbo-modal-dot" style="background:${c.color};color:${c.color}"></span>
       <div class="sbo-modal-titles">
         <h2 id="sbo-modal-title">${escHtml(info.name || c.label)}</h2>
@@ -1051,6 +1051,58 @@ function openCompany(idx) {
   `;
   modal.hidden = false;
   modal.setAttribute('aria-hidden', 'false');
+  const card = modal.querySelector('.sbo-modal-card');
+  if (card) {
+    makeWindowDraggable(card);
+    applyWindowPos(card);            // reopen where the reader left it
+  }
+}
+
+// The dossier is a window, not a modal: drag it by its header to read it
+// against the globe.  Position is remembered until the page reloads.
+let winPos = null;
+
+function makeWindowDraggable(card) {
+  const head = card.querySelector('.sbo-modal-head');
+  if (!head || head.dataset.drag) return;
+  head.dataset.drag = '1';
+  if (!card.querySelector('.sbo-modal-grip')) {
+    const grip = document.createElement('span');
+    grip.className = 'sbo-modal-grip';
+    grip.textContent = '\u283f';
+    card.appendChild(grip);
+  }
+  let id = null, dx = 0, dy = 0;
+  head.addEventListener('pointerdown', e => {
+    if (e.target.closest('button, a')) return;
+    const r = card.getBoundingClientRect();
+    id = e.pointerId;
+    dx = e.clientX - r.left;
+    dy = e.clientY - r.top;
+    card.classList.add('dragging');
+    head.setPointerCapture(id);
+    e.preventDefault();
+  });
+  head.addEventListener('pointermove', e => {
+    if (e.pointerId !== id) return;
+    const w = card.offsetWidth, h = card.offsetHeight;
+    winPos = {
+      left: Math.min(Math.max(6, e.clientX - dx), innerWidth - w - 6),
+      top: Math.min(Math.max(6, e.clientY - dy), innerHeight - Math.min(h, 90) - 6),
+    };
+    applyWindowPos(card);
+  });
+  const end = e => { if (e.pointerId === id) { id = null; card.classList.remove('dragging'); } };
+  head.addEventListener('pointerup', end);
+  head.addEventListener('pointercancel', end);
+}
+
+function applyWindowPos(card) {
+  if (!winPos) return;
+  card.style.position = 'fixed';
+  card.style.margin = '0';
+  card.style.left = winPos.left + 'px';
+  card.style.top = winPos.top + 'px';
 }
 
 function closeCompany() {
