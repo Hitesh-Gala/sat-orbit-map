@@ -24,12 +24,15 @@ const SAT_RADIUS    = 1.6;        // matches viz3d's hover-friendly default
 const CATEGORIES = [
   // ----- GNSS constellations ---------------------------------------------
   { id: 'gnss-gps',     tier: 'GNSS',           label: 'GPS / NAVSTAR',           color: '#4a90e2', test: n => /^(NAVSTAR|GPS\s|GPS-)/i.test(n) },
-  { id: 'gnss-glonass', tier: 'GNSS',           label: 'GLONASS',                 color: '#9b59b6', test: n => /^GLONASS\b/i.test(n) },
+  // The feed names these "COSMOS 2433 [GLONASS-M]", so an anchored test found
+  // none of them and the Cosmos rule below swallowed the lot.
+  { id: 'gnss-glonass', tier: 'GNSS',           label: 'GLONASS',                 color: '#9b59b6', test: n => /GLONASS/i.test(n) },
   { id: 'gnss-galileo', tier: 'GNSS',           label: 'Galileo',                 color: '#5fc7e6', test: n => /^GALILEO\b/i.test(n) || /^GSAT0\d/i.test(n) },
   { id: 'gnss-beidou',  tier: 'GNSS',           label: 'BeiDou',                  color: '#e74c3c', test: n => /^BEIDOU\b/i.test(n) },
   { id: 'gnss-qzss',    tier: 'GNSS',           label: 'QZSS (Japan)',            color: '#e67e22', test: n => /^QZS-/i.test(n) || /^QZSS\b/i.test(n) },
   { id: 'gnss-navic',   tier: 'GNSS',           label: 'NAVIC / IRNSS (India)',   color: '#27ae60', test: n => /^(IRNSS|NVS-)/i.test(n) },
   { id: 'gnss-centispace', tier: 'GNSS',        label: 'CentiSpace (China LEO PNT)', color: '#6c5ce7', test: n => /^CENTISPACE/i.test(n) },
+  { id: 'gnss-xona',    tier: 'GNSS',           label: 'Xona Pulsar (US LEO PNT)', color: '#a29bfe', test: n => /^(XONA|PULSAR-\d)/i.test(n) },
 
   // ----- Mega-constellations / LEO comms ---------------------------------
   { id: 'op-starlink',  tier: 'Constellations', label: 'Starlink (SpaceX)',       color: '#67e8a4', test: n => /^STARLINK/i.test(n) },
@@ -51,7 +54,9 @@ const CATEGORIES = [
   { id: 'eo-planet',    tier: 'Earth Obs',      label: 'Planet (Flock / SkySat)', color: '#16a085', test: n => /^(FLOCK|SKYSAT|PELICAN|TANAGER)/i.test(n) },
   { id: 'eo-spire',     tier: 'Earth Obs',      label: 'Spire (LEMUR)',           color: '#1abc9c', test: n => /^LEMUR/i.test(n) },
   { id: 'eo-maxar',     tier: 'Earth Obs',      label: 'Vantor — ex-Maxar (WorldView)', color: '#3498db', test: n => /^(WORLDVIEW|GEOEYE|MAXAR|QUICKBIRD|LEGION)/i.test(n) },
-  { id: 'eo-blacksky',  tier: 'Earth Obs',      label: 'BlackSky',                color: '#5b6dcd', test: n => /^BLACKSKY/i.test(n) },
+  // Catalogued as "GLOBAL-4", not "BLACKSKY …" — the old anchored test matched
+  // nothing.  Globalstar is tested earlier, so there is no clash.
+  { id: 'eo-blacksky',  tier: 'Earth Obs',      label: 'BlackSky (Global)',       color: '#5b6dcd', test: n => /^(BLACKSKY|GLOBAL-\d)/i.test(n) },
   { id: 'eo-capella',   tier: 'Earth Obs',      label: 'Capella Space (SAR)',     color: '#8e44ad', test: n => /^CAPELLA/i.test(n) },
   { id: 'eo-iceye',     tier: 'Earth Obs',      label: 'ICEYE (SAR)',             color: '#2980b9', test: n => /^ICEYE/i.test(n) },
   { id: 'eo-hawkeye',   tier: 'Earth Obs',      label: 'HawkEye 360 (RF)',        color: '#00b8d4', test: n => /^HAWK[- ]/i.test(n) },
@@ -89,6 +94,12 @@ const CATEGORIES = [
   { id: 'isr-usa',      tier: 'ISR',            label: 'USA-series (US classified)', color: '#bd1a1a', test: n => /^USA\s*\d/i.test(n) },
   { id: 'isr-sda',      tier: 'ISR',            label: 'SDA Tranche (US military)', color: '#cb4335', test: n => /^(SDA[ _-]?\d|PRAETORIAN)/i.test(n) },
   { id: 'isr-cosmos',   tier: 'ISR',            label: 'Cosmos (Russia)',         color: '#76448a', test: n => /^COSMOS\s*\d/i.test(n) },
+
+  // ----- Rendezvous & proximity operations, and space surveillance -------
+  { id: 'rpo-servicing', tier: 'RPO & SSA',     label: 'RPO & servicing (TJS · MEV · SJ-21/25)', color: '#ff6fd8',
+    test: n => /^(TJS-\d|MEV-\d|MRV\b|LDPE-\d)/i.test(n) || /^(SHIJIAN-2[15]\b|SJ-2[15]\b)/i.test(n) },
+  { id: 'ssa-surv',     tier: 'RPO & SSA',      label: 'Space surveillance (SBSS)', color: '#ffd166',
+    test: n => /^SBSS/i.test(n) || /SILENT ?BARKER/i.test(n) },
 
   // ----- Catch-all -------------------------------------------------------
   // Default OFF so the ~10 k uncategorised dots don't drown out the
@@ -450,6 +461,209 @@ const COMPANY_INFO = {
 // Concise corporate / programme history — [year, event] pairs, rendered as
 // a timeline in the pop-up so you can see how each operator was founded and
 // renamed / merged / split over the years.  Keyed by category `id`.
+// =========================================================================
+// Refreshed dossier data, merged over COMPANY_INFO at render time.
+//
+// The four counts answer the same four questions for every operator:
+//   launched  - how many of this fleet have ever been put up
+//   lost      - how many are gone: de-orbited, re-entered or destroyed
+//   inOrbit   - how many are still up there, working or not
+//   active    - how many are confirmed to be working
+// Where a figure is genuinely unknown it is left out rather than guessed;
+// the live catalogue count is always shown beside these.
+//
+// `people` names the figures behind a system - architects and founders for
+// the government constellations (those do not change), founders and chief
+// executives for the companies.  `links` are primary sources and background
+// reading.  Compiled from open sources, September 2026.
+// =========================================================================
+const INFO_EXTRA = {
+  'gnss-gps': {
+    launched: '~80 across Blocks I-III (since 1978)', lost: '~45 retired or de-orbited',
+    inOrbit: '~38 catalogued', active: '31 healthy - the baseline the US Space Force maintains',
+    people: [
+      ['Bradford Parkinson', 'chief architect of the GPS programme'],
+      ['Roger L. Easton', 'Naval Research Lab - space-based timing (TIMATION)'],
+      ['Gladys West', 'mathematician whose Earth models underpin GPS accuracy'],
+    ],
+    links: [
+      ['Constellation status (official)', 'https://www.gps.gov/systems/gps/space/', 'The US government page listing every operational space vehicle, block by block.'],
+      ['GPS Block III', 'https://en.wikipedia.org/wiki/GPS_Block_III', 'The current generation: stronger signals, the civil L1C signal and longer design life.'],
+    ] },
+  'gnss-glonass': {
+    launched: '~140 since 1982', lost: '~110 retired, decayed or replaced',
+    inOrbit: '~27 catalogued', active: '~24 - the number needed for global cover',
+    people: [
+      ['Mikhail F. Reshetnev', 'founding designer of the Soviet navigation satellites; his bureau still builds them'],
+      ['ISS Reshetnev', 'the company at Zheleznogorsk producing GLONASS-K / K2 today'],
+    ],
+    links: [
+      ['Information & Analysis Centre (official)', 'https://glonass-iac.ru/en/', 'Russia\u2019s own status board: which satellites are healthy, in maintenance or commissioning.'],
+      ['GLONASS', 'https://en.wikipedia.org/wiki/GLONASS', 'The system\u2019s collapse after 1991 and its restoration to full service in 2011.'],
+    ],
+    note: 'The catalogue names these "COSMOS 2xxx [GLONASS-M]", which is why an earlier version of this page filed them under Cosmos.' },
+  'gnss-galileo': {
+    launched: '~32 including the two GIOVE test craft', lost: '~4 retired or unusable',
+    inOrbit: '~32 catalogued', active: '~24 usable plus spares',
+    people: [
+      ['European Commission', 'owner of the system'],
+      ['EUSPA', 'runs the service; ESA designed and procured the satellites'],
+    ],
+    links: [
+      ['Constellation information (official)', 'https://www.gsc-europa.eu/system-service-status/constellation-information', 'Live per-satellite status from the European GNSS Service Centre.'],
+      ['Galileo', 'https://en.wikipedia.org/wiki/Galileo_(satellite_navigation)', 'How Europe built a civil system independent of GPS, including the 2014 launch into a wrong orbit.'],
+    ] },
+  'gnss-beidou': {
+    launched: '~60 across BDS-1/2/3', lost: '~15 retired or decayed',
+    inOrbit: '~56 catalogued', active: '~45 across MEO, IGSO and GEO',
+    people: [
+      ['Sun Jiadong', 'chief designer of the BeiDou programme'],
+      ['Yang Changfeng', 'chief designer of the BDS-3 generation'],
+    ],
+    links: [
+      ['BeiDou official portal', 'http://en.beidou.gov.cn/', 'System status, signal documents and policy statements from the Chinese operator.'],
+      ['BeiDou', 'https://en.wikipedia.org/wiki/BeiDou', 'The three-step build-out from a regional demonstrator to global service in 2020.'],
+    ] },
+  'gnss-qzss': {
+    launched: '7 including the original QZS-1', lost: 'QZS-1 retired once its replacement arrived',
+    inOrbit: '~5 catalogued', active: '4 operational, expanding toward 7',
+    people: [['Cabinet Office, Government of Japan', 'system owner'], ['Mitsubishi Electric', 'prime contractor']],
+    links: [
+      ['QZSS (official)', 'https://qzss.go.jp/en/', 'Technical pages for the "Michibiki" satellites and their high-elevation orbits over Japan.'],
+      ['QZSS', 'https://en.wikipedia.org/wiki/Quasi-Zenith_Satellite_System', 'Why a country of urban canyons augments GPS from near-zenith orbits.'],
+    ] },
+  'gnss-navic': {
+    launched: '~11 (IRNSS-1A to 1I, NVS-01/02)', lost: 'IRNSS-1A unusable after its atomic clocks failed',
+    inOrbit: '~8 catalogued', active: '7-8 serving the regional service area',
+    people: [['ISRO', 'builds and operates the system'], ['U R Rao Satellite Centre, Bengaluru', 'spacecraft bus and payload integration']],
+    links: [
+      ['ISRO (official)', 'https://www.isro.gov.in/', 'Mission pages for the IRNSS/NVS series and the newer L1 civil signal.'],
+      ['NavIC', 'https://en.wikipedia.org/wiki/Indian_Regional_Navigation_Satellite_System', 'India\u2019s regional system, and the clock failures that forced replacements.'],
+    ] },
+  'gnss-centispace': {
+    launched: '~33', inOrbit: '~33 catalogued', active: '~30',
+    people: [['Future Navigation (Beijing)', 'operator of the CentiSpace low-orbit augmentation fleet']],
+    links: [['Satellite navigation', 'https://en.wikipedia.org/wiki/Satellite_navigation', 'Why low-orbit augmentation is being added to GNSS: stronger signals, faster convergence, harder to jam.']] },
+  'gnss-xona': {
+    name: 'Xona Space Systems - Pulsar', operator: 'Xona Space Systems (USA)', founded: '2019',
+    launched: '1 demonstrator (Pulsar-0, 2025)', inOrbit: '1 catalogued', active: '1 in test',
+    desc: 'A commercial low-orbit alternative to GNSS: a planned 258-satellite fleet broadcasting encrypted signals far stronger than the MEO systems, aimed at jamming-resistant precision for vehicles and industry.',
+    people: [['Brian Manning', 'co-founder & CEO'], ['Tyler Reid', 'co-founder & CTO']],
+    links: [
+      ['Xona Space Systems', 'https://xonaspace.com/', 'The company\u2019s own description of the Pulsar service and its signal design.'],
+      ['Satellite navigation', 'https://en.wikipedia.org/wiki/Satellite_navigation', 'Background on why low-orbit PNT is being pursued alongside GPS, Galileo and BeiDou.'],
+    ],
+    note: 'Only the first demonstrator is flying, so expect a single dot until the operational fleet begins launching.' },
+
+  'op-starlink': {
+    launched: '~10,000+ since 2019', lost: '~1,500 de-orbited or re-entered',
+    inOrbit: '~8,900 catalogued', active: '~8,500 serving customers',
+    people: [['Elon Musk', 'founder & CEO, SpaceX'], ['Gwynne Shotwell', 'president & COO, SpaceX']],
+    links: [
+      ['Starlink', 'https://www.starlink.com/', 'Coverage map, service tiers and the current satellite count from the operator.'],
+      ['Starlink', 'https://en.wikipedia.org/wiki/Starlink', 'Constellation history, the astronomy brightness dispute and the five-year replacement cycle.'],
+    ] },
+  'op-oneweb': {
+    launched: '~660 first-generation', lost: 'a handful of early failures',
+    inOrbit: '~650 catalogued', active: '~630 in the operational shell',
+    people: [['Greg Wyler', 'founder of OneWeb'], ['Eutelsat Group', 'owner since the 2023 merger']],
+    links: [
+      ['Eutelsat OneWeb', 'https://oneweb.net/', 'The operator\u2019s service and coverage pages.'],
+      ['OneWeb', 'https://en.wikipedia.org/wiki/OneWeb', 'Bankruptcy in 2020, rescue by the UK government and Bharti, then the merger with Eutelsat.'],
+    ] },
+  'op-iridium': {
+    launched: '~170 across both generations', lost: 'the entire 95-satellite first generation de-orbited by 2019',
+    inOrbit: '~80 catalogued', active: '66 operational plus ~14 on-orbit spares',
+    people: [['Matt Desch', 'CEO, Iridium Communications'], ['Motorola', 'original developer of the 1990s system']],
+    links: [
+      ['Iridium', 'https://www.iridium.com/', 'The operator\u2019s network and service pages.'],
+      ['2009 satellite collision', 'https://en.wikipedia.org/wiki/2009_satellite_collision', 'Iridium 33 and Cosmos 2251: the first accidental collision of two intact satellites.'],
+    ] },
+  'op-globalstar': {
+    launched: '~90 across two generations', lost: 'most first-generation units retired',
+    inOrbit: '~50 catalogued', active: '~31 second-generation',
+    people: [['Paul E. Jacobs', 'CEO, Globalstar'], ['Loral and Qualcomm', 'the original 1990s partners behind the system']],
+    links: [['Globalstar', 'https://www.globalstar.com/', 'Services including the satellite connectivity behind some smartphone emergency features.']] },
+  'op-spacemobile': {
+    launched: '~7 (BlueWalker 3 and the first BlueBird block)', inOrbit: '~7 catalogued', active: '~6',
+    people: [['Abel Avellan', 'founder, chairman & CEO']],
+    links: [
+      ['AST SpaceMobile', 'https://ast-science.com/', 'The direct-to-phone approach using very large unfolding arrays.'],
+      ['AST SpaceMobile', 'https://en.wikipedia.org/wiki/AST_SpaceMobile', 'Background including the brightness of BlueWalker 3, which drew objections from astronomers.'],
+    ] },
+
+  'eo-planet': {
+    launched: '~600+ - the largest Earth-observation fleet ever flown', lost: 'hundreds of early Doves re-entered after roughly three-year lives',
+    inOrbit: '~200 catalogued', active: '~150 imaging daily',
+    people: [['Will Marshall', 'co-founder & CEO'], ['Robbie Schingler', 'co-founder & chief strategy officer'], ['Chris Boshuizen', 'co-founder']],
+    links: [
+      ['Planet constellations', 'https://www.planet.com/our-constellations/', 'How the Dove, SkySat, Pelican and Tanager fleets differ in resolution and revisit.'],
+      ['Planet Labs', 'https://en.wikipedia.org/wiki/Planet_Labs', 'The flock model: many cheap satellites replaced continuously rather than a few expensive ones.'],
+    ] },
+  'eo-spire': {
+    launched: '~200 LEMUR', lost: 'many early LEMURs re-entered',
+    inOrbit: '~120 catalogued', active: '100+ carrying weather, ship- and aircraft-tracking payloads',
+    people: [['Peter Platzer', 'co-founder & executive chairman'], ['Theresa Condor', 'co-founder & CEO']],
+    links: [['Spire Global', 'https://spire.com/', 'Radio-occultation weather data, ship tracking and aircraft tracking sold as subscriptions.']] },
+  'eo-blacksky': {
+    launched: '~25 Global satellites', lost: 'early first-generation units retired',
+    inOrbit: '~15 catalogued', active: '~14 second-generation plus the first Gen-3',
+    people: [['Brian E. O\u2019Toole', 'CEO'], ['Peter Wegner', 'chief technology officer']],
+    links: [
+      ['BlackSky', 'https://www.blacksky.com/', 'High-revisit imaging and the analytics layer sold with it.'],
+      ['BlackSky', 'https://en.wikipedia.org/wiki/BlackSky_(company)', 'Background on the Global constellation and its defence and intelligence customers.'],
+    ],
+    note: 'These are catalogued as "GLOBAL-n" rather than "BlackSky", which is why this row read zero until September 2026.' },
+  'eo-capella': {
+    launched: '~20', lost: 'early Whitney units retired',
+    inOrbit: '~12 catalogued', active: 'about a dozen radar satellites',
+    people: [['Payam Banazadeh', 'founder & CEO'], ['William Woods', 'co-founder']],
+    links: [['Capella Space', 'https://www.capellaspace.com/', 'Synthetic-aperture radar imaging that works at night and through cloud.']] },
+  'eo-iceye': {
+    launched: '60+ since 2018 - the largest radar constellation', lost: 'earliest X-band units retired',
+    inOrbit: '~40 catalogued', active: '~40 radar satellites',
+    people: [['Rafal Modrzewski', 'co-founder & CEO'], ['Pekka Laurila', 'co-founder & chief strategy officer']],
+    links: [
+      ['ICEYE', 'https://www.iceye.com/', 'Flood and wildfire monitoring, plus sovereign radar capability sold to governments.'],
+      ['ICEYE', 'https://en.wikipedia.org/wiki/ICEYE', 'How a Finnish university spin-out came to fly the largest radar fleet in orbit.'],
+    ] },
+  'eo-satellogic': {
+    launched: '~45', inOrbit: '~35 catalogued', active: '~30',
+    people: [['Emiliano Kargieman', 'founder & CEO']],
+    links: [['Satellogic', 'https://satellogic.com/', 'Vertically integrated manufacturing aimed at cheap, frequent sub-metre imagery.']] },
+  'eo-synspective': {
+    launched: '~8 StriX radar satellites', inOrbit: '~8 catalogued', active: '~7',
+    people: [['Motoyuki Arai', 'founder & CEO']],
+    links: [['Synspective', 'https://synspective.com/', 'Japanese small radar satellites and the ground-deformation analytics built on them.']] },
+
+  'rpo-servicing': {
+    name: 'Rendezvous, proximity operations & servicing', operator: 'Multiple - China (TJS, Shijian), USA (Northrop Grumman, Space Force)',
+    founded: 'MEV-1 docked in 2020; Shijian-21 towed a satellite in 2022',
+    launched: '~30 tracked under these names', inOrbit: '~28 catalogued', active: 'most still manoeuvring',
+    desc: 'Satellites that approach, inspect, dock with or move other satellites. Northrop Grumman\u2019s Mission Extension Vehicles docked with ageing Intelsat craft to fly them for another five years. China\u2019s Shijian-21 towed a dead BeiDou satellite to a graveyard orbit, and Shijian-25 has demonstrated refuelling. The TJS series sits in geostationary orbit and is described by China as communications technology testing; Western trackers watch it closely because several have manoeuvred near other satellites.',
+    people: [
+      ['Northrop Grumman SpaceLogistics', 'operator of MEV-1, MEV-2 and the Mission Robotic Vehicle'],
+      ['Joe Anderson', 'long-time leader of the satellite-servicing business'],
+      ['CASC / SAST', 'builders of the Shijian and TJS spacecraft'],
+    ],
+    links: [
+      ['Mission Extension Vehicle', 'https://en.wikipedia.org/wiki/Mission_Extension_Vehicle', 'The first commercial docking with a live satellite: MEV-1 and Intelsat 901, February 2020.'],
+      ['Shijian-21', 'https://en.wikipedia.org/wiki/Shijian-21', 'In January 2022 it docked with a defunct BeiDou satellite and pulled it above the geostationary belt.'],
+      ['Northrop Grumman SpaceLogistics', 'https://www.northropgrumman.com/space/space-logistics-services', 'The operator\u2019s account of life extension and the robotic servicing vehicle that follows it.'],
+    ],
+    note: 'Grouped by what these satellites do, not by who owns them. Most US inspection craft are catalogued only as "USA n", so they cannot be separated by name and stay under the USA series.' },
+  'ssa-surv': {
+    name: 'Space surveillance from orbit', operator: 'U.S. Space Force', founded: 'SBSS Block 10 launched 2010',
+    launched: '1 publicly named (SBSS)', inOrbit: '1 catalogued', active: '1',
+    desc: 'Satellites whose job is watching other satellites. SBSS tracks objects in geostationary orbit from low orbit, where weather and daylight do not limit it as they do ground telescopes.',
+    people: [['U.S. Space Force, Space Systems Command', 'operator'], ['Boeing and Ball Aerospace', 'builders of SBSS Block 10']],
+    links: [
+      ['Space-Based Space Surveillance', 'https://en.wikipedia.org/wiki/Space-Based_Space_Surveillance', 'What SBSS does, and why orbital tracking complements the ground radar network.'],
+      ['Silent Barker', 'https://en.wikipedia.org/wiki/Silent_Barker', 'The NRO and Space Force programme watching the geostationary belt; catalogued only as USA numbers.'],
+    ],
+    note: 'Only SBSS carries a public name in the catalogue. GSSAP and Silent Barker appear under the USA series instead.' },
+};
+
 const COMPANY_HISTORY = {
   'gnss-gps': [['1978','First Block I satellite launched'],['1993','24-satellite constellation complete'],['1995','Full operational capability'],['2018','GPS III modernisation begins']],
   'gnss-glonass': [['1982','First satellite launched (USSR)'],['1995','Constellation completed'],['1990s','Decays after Soviet collapse'],['2011','Restored to full global service']],
@@ -775,7 +989,7 @@ let openCompanyIdx = -1;   // category index whose pop-up is open, or -1
 
 function openCompany(idx) {
   const c = CATEGORIES[idx];
-  const info = COMPANY_INFO[c.id] || {};
+  const info = { ...(COMPANY_INFO[c.id] || {}), ...(INFO_EXTRA[c.id] || {}) };
   const modal = $('sbo-modal');
   const body  = $('sbo-modal-body');
   if (!modal || !body) return;
@@ -784,6 +998,24 @@ function openCompany(idx) {
   const stat = (k, v) => v
     ? `<div class="sbo-stat"><span class="k">${escHtml(k)}</span><span class="v">${escHtml(v)}</span></div>` : '';
   const live = categoryCount[idx];
+
+  const people = info.people || [];
+  const peopleHtml = people.length
+    ? `<div class="sbo-people"><span class="k">People behind it</span><ul>`
+      + people.map(([who, role]) => `<li><b>${escHtml(who)}</b><span>${escHtml(role)}</span></li>`).join('')
+      + `</ul></div>`
+    : '';
+
+  // Primary sources and background reading.  Every link is an operator or
+  // agency page, or an encyclopaedia entry - nothing paywalled.
+  const links = info.links || [];
+  const linksHtml = links.length
+    ? `<div class="sbo-links"><span class="k">Read more</span><ul>`
+      + links.map(([title, url, summary]) =>
+          `<li><a href="${escHtml(url)}" target="_blank" rel="noopener noreferrer">${escHtml(title)} \u2197</a>`
+          + `<span>${escHtml(summary)}</span></li>`).join('')
+      + `</ul></div>`
+    : '';
 
   const hist = COMPANY_HISTORY[c.id];
   const histHtml = (hist && hist.length)
@@ -801,17 +1033,21 @@ function openCompany(idx) {
       </div>
     </div>
     <div class="sbo-stats">
-      <div class="sbo-stat hl"><span class="k">On the globe now</span><span class="v" style="color:${c.color}">${live.toLocaleString()}</span></div>
-      ${stat('Fleet operated to date', info.fleet)}
-      ${stat('Active now', info.active)}
-      ${stat('Retired / de-orbited', info.retired)}
+      <div class="sbo-stat hl"><span class="k">Tracked on this globe right now</span><span class="v" style="color:${c.color}">${live.toLocaleString()}</span></div>
+      ${stat('Launched to date', info.launched || info.fleet)}
+      ${stat('Gone \u2014 de-orbited, re-entered or destroyed', info.lost || info.retired)}
+      ${stat('Still in orbit', info.inOrbit)}
+      ${stat('Confirmed working', info.active)}
     </div>
     ${info.desc ? `<p class="sbo-desc">${escHtml(info.desc)}</p>` : ''}
     ${histHtml}
     ${info.news ? `<p class="sbo-field"><span class="k">Latest</span> ${escHtml(info.news)}</p>` : ''}
+    ${peopleHtml}
+    ${linksHtml}
     ${info.note ? `<div class="sbo-note"><span class="k">Why the globe may show fewer</span> ${escHtml(info.note)}</div>` : ''}
-    <p class="sbo-foot">“On the globe now” is the live count of matching satellites in CelesTrak’s active catalogue.
-      Other figures are compiled from open sources (late 2025 – early 2026) and are approximate.</p>
+    <p class="sbo-foot">The top figure counts matching satellites in CelesTrak’s active catalogue, refreshed each time this page loads.
+      The other four come from open sources (September 2026) and are approximate: a fleet is rarely all working at once, and
+      operators do not always announce retirements.</p>
   `;
   modal.hidden = false;
   modal.setAttribute('aria-hidden', 'false');
