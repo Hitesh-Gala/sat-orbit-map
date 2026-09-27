@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>NAZAR · Geoid Globe</title>
+<meta name="description" content="An interactive 3-D globe of Earth's gravity field, synthesised from the GRACE GGM02C spherical-harmonic model, with live satellite tracking from TLEs.">
+<meta name="author" content="Hitesh Gala">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Geoid Globe">
+<meta property="og:description" content="Earth's gravity field as a rotatable 3-D globe, rebuilt from GRACE GGM02C coefficients, with satellites plotted from live TLEs.">
+<meta name="theme-color" content="#05070d">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2367c8ff'/%3E%3Ccircle cx='16' cy='16' r='14' fill='none' stroke='%2305070d' stroke-width='2'/%3E%3Cellipse cx='16' cy='16' rx='14' ry='5' fill='none' stroke='%2305070d' stroke-width='1.5'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #05070d; --panel: rgba(12,17,28,.82); --line: rgba(120,150,190,.28);
+    --text: #dfe8f4; --dim: #8ea3bd; --accent: #67c8ff; --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text);
+               font-family: var(--mono); overflow: hidden; }
+  #globe { position: fixed; inset: 0; }
+
+  .panel {
+    position: fixed; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; backdrop-filter: blur(8px); padding: 12px 14px; z-index: 10;
+  }
+  #head { top: 14px; left: 14px; max-width: 300px; }
+  #head .back { display: inline-block; font-size: 10.5px; letter-spacing: .05em;
+                color: var(--dim); text-decoration: none; margin-bottom: 5px; }
+  #head .back:hover { color: var(--accent); }
+  #head h1 { font-family: 'Orbitron', sans-serif; font-size: 14px; letter-spacing: .1em;
+             margin: 0 0 6px; color: var(--accent); }
+  #head p { margin: 0; font-size: 10.5px; line-height: 1.55; color: var(--dim); }
+
+  /* Anchored under the header rather than to the bottom of the window. Bottom
+     anchoring left ~320px of dead space above the panel on a 900px screen --
+     it grew upwards as controls were added, but still read as sitting low. */
+  /* 24px lower than the standalone copy: the "NAZAR" back link above the
+     title makes this page's header taller, and at 152px the two overlapped. */
+  #ctl { top: 176px; left: 14px; width: 306px; padding: 9px 11px;
+         max-height: calc(100vh - 190px); overflow-y: auto; }
+  #ctl label { display: block; font-size: 11.5px; letter-spacing: .05em; color: var(--dim);
+               margin: 7px 0 2px; text-transform: uppercase; }
+  #ctl label:first-child { margin-top: 0; }
+  #ctl input[type=range] { width: 100%; accent-color: var(--accent);
+                           margin: 0 0 1px; height: 16px; }
+  .row { display: flex; gap: 5px; flex-wrap: wrap; }
+  button {
+    font-family: var(--mono); font-size: 12px; color: var(--text); cursor: pointer;
+    background: rgba(103,200,255,.08); border: 1px solid var(--line);
+    border-radius: 6px; padding: 5px 9px; transition: border-color .15s, background .15s;
+  }
+  button:hover { border-color: var(--accent); background: rgba(103,200,255,.18); }
+  button.on { border-color: var(--accent); background: rgba(103,200,255,.24); }
+  .val { color: var(--accent); }
+  /* Class filters carry their own swatch, so they double as the legend. */
+  button.cls { flex: 1; text-align: center; padding: 5px 4px; opacity: .42; }
+  button.cls.on { opacity: 1; }
+  button.cls i { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+                 margin-right: 5px; vertical-align: middle; }
+
+  /* The pause control earns full width -- it's the one people reach for. */
+  button.primary {
+    width: 100%; padding: 8px; font-size: 13.5px; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase;
+    border-color: var(--accent); background: rgba(103,200,255,.16);
+  }
+  button.primary.paused { border-color: #ffbe4d; color: #ffd591;
+                          background: rgba(255,190,77,.18); }
+  #hud .warn { color: #ffbe4d; }
+  #hud .dev { margin-top: 5px; padding-top: 5px; border-top: 1px solid var(--line); }
+  #hud .swatch { display: inline-block; width: 15px; height: 0;
+                 border-top: 2px solid currentColor; vertical-align: middle;
+                 margin-right: 5px; }
+  #hud .green { color: #35e06a; border-top-width: 3px; }
+  #hud .red { color: #ff5a50; }
+  #hud .faded { color: #ff5a50; opacity: .55; }
+
+  #legend { top: 14px; right: 14px; width: 172px; }
+  #legend .bar { height: 12px; border-radius: 3px; margin: 8px 0 5px;
+    background: linear-gradient(to right,
+      rgb(12,20,90) 0%, rgb(20,70,190) 18%, rgb(40,160,220) 36%, rgb(70,200,140) 50%,
+      rgb(230,220,90) 64%, rgb(235,130,45) 82%, rgb(170,20,25) 100%); }
+  #legend .ends { display: flex; justify-content: space-between; font-size: 9.5px; color: var(--dim); }
+  #legend h2 { font-size: 10px; letter-spacing: .08em; margin: 0; color: var(--dim);
+               text-transform: uppercase; }
+
+  #hud { bottom: 14px; right: 14px; width: 262px; font-size: 11.5px; line-height: 1.62; }
+  #hud .k { color: var(--dim); }
+  #hud .sat { color: var(--accent); font-weight: 600; }
+  #tip { position: fixed; z-index: 20; pointer-events: none; display: none;
+         background: rgba(8,12,20,.94); border: 1px solid var(--accent); border-radius: 6px;
+         padding: 5px 9px; font-size: 10.5px; white-space: nowrap; }
+  #loading { position: fixed; inset: 0; display: grid; place-items: center; z-index: 30;
+             background: var(--bg); font-size: 12px; letter-spacing: .1em; color: var(--dim); }
+
+  @media (max-width: 760px) {
+    #head { max-width: 46vw; padding: 9px 10px; }
+    #head p { display: none; }
+    #legend { width: 130px; padding: 9px 10px; }
+    /* On a phone the header collapses and vertical room is scarce, so the
+       panel goes back to the bottom where a thumb can reach it. */
+    #ctl { top: auto; bottom: 14px; width: calc(100vw - 28px); max-height: 46vh; }
+    /* The readout carries the orbit details now, so it can't just vanish on a
+       phone -- it sits above the panel, and only when there's something in it. */
+    #hud { display: none; left: 14px; right: 14px; width: auto;
+           top: auto; bottom: calc(48vh + 18px); }
+    #hud.show { display: block; }
+    #hud .utcline { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="globe"></div>
+<div id="loading">BUILDING GEOID…</div>
+
+<div class="panel" id="head">
+  <a class="back" href="index.html">← NAZAR</a>
+  <h1>GEOID GLOBE</h1>
+  <p>GRACE <strong>GGM02C</strong> geoid undulation, synthesised to degree 200 from the
+     published spherical-harmonic coefficients. Relief is exaggerated — satellite
+     altitudes are not. Drag to rotate, pinch or scroll to zoom.</p>
+</div>
+
+<div class="panel" id="legend">
+  <h2>Undulation vs WGS84</h2>
+  <div class="bar"></div>
+  <div class="ends"><span id="lmin">—</span><span>0 m</span><span id="lmax">—</span></div>
+</div>
+
+<div class="panel" id="ctl">
+  <button id="bPlay" class="primary"><span id="playIcon">❚❚</span> Pause</button>
+
+  <label>Time rate — <span class="val" id="vRate">1× real time</span></label>
+  <input type="range" id="rate" min="0" max="12" step="1" value="1">
+
+  <label>Satellite size — <span class="val" id="vSize">1.8%</span></label>
+  <input type="range" id="size" min="0.6" max="6" step="0.1" value="1.8">
+
+  <label>Orbit altitude scale — <span class="val" id="vAlt">1×</span></label>
+  <input type="range" id="alt" min="0" max="9" step="1" value="5">
+
+  <label>Relief exaggeration — <span class="val" id="vRelief">3.5%</span></label>
+  <input type="range" id="relief" min="0" max="12" step="0.5" value="3.5">
+
+  <label>Real orbit exaggeration — <span class="val" id="vDev">5.5%</span></label>
+  <input type="range" id="dev" min="0" max="20" step="0.5" value="5.5">
+
+  <label>Orbit classes</label>
+  <div class="row">
+    <button class="cls on" data-cls="LEO"><i style="background:#67c8ff"></i>LEO</button>
+    <button class="cls on" data-cls="MEO"><i style="background:#f2d34a"></i>MEO</button>
+    <button class="cls on" data-cls="GEO"><i style="background:#ff7b42"></i>GEO</button>
+    <button class="cls on" data-cls="HEO"><i style="background:#c58cff"></i>HEO</button>
+  </div>
+
+  <label>Display</label>
+  <div class="row">
+    <button id="bOutlines" class="on">Coastlines</button>
+    <button id="bGrat" class="on">Graticule</button>
+    <button id="bSpin">Auto-spin</button>
+    <button id="bNow">Reset clock</button>
+  </div>
+</div>
+
+<div class="panel" id="hud">
+  <div class="utcline"><span class="k">UTC </span><span id="utc">—</span></div>
+  <div class="utcline"><span class="k">Tracking </span><span id="count">0</span><span class="k"> objects</span></div>
+  <div id="sel"><span class="k">Click a satellite for details.</span></div>
+</div>
+
+<div id="tip"></div>
+
+<script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
+<script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+<script src="geoid-globe.js?v=2"></script>
+<script>
+(function () {
+  // GitHub Pages serves these with Cache-Control: max-age=600, so without a
+  // cache-buster a returning visitor runs up to ten minutes of stale code
+  // after a deploy. Bump V (and the ?v= on the script tag above) whenever
+  // geoid-globe.js or anything under data/ changes.
+  var V = '?v=2';
+
+  var globe = GeoidGlobe.create({
+    container: '#globe',
+    modelUrl: 'data/geoid-globe.json' + V,
+    coastlinesUrl: 'data/countries-110m.geojson' + V,
+    radius: 100,
+    relief: 0.035,
+    initialLat: 15, initialLon: 20, initialZoom: 3.0,
+    satSize: 0.018
+  });
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  globe.ready.then(function () {
+    $('loading').style.display = 'none';
+    var dom = globe.model.colormap.domain;
+    $('lmin').textContent = dom[0].toFixed(0) + ' m';
+    $('lmax').textContent = '+' + dom[1].toFixed(0) + ' m';
+    globe.setSatelliteSize(parseFloat($('size').value) / 100);
+    globe.setAltitudeScale(ALTS[parseInt($('alt').value, 10)]);
+    globe.setDeviationTarget(parseFloat($('dev').value) / 100);
+    loadSample();
+  }).catch(function (err) {
+    $('loading').textContent = String(err.message || err);
+  });
+
+  // ---- satellites -------------------------------------------------------
+  // Eccentricity is tested before period: what sets a Molniya or a Chandra
+  // apart is the shape of the orbit, not how long it takes to go round.
+  var CLASS_COLOR = { LEO: 0x67c8ff, MEO: 0xf2d34a, GEO: 0xff7b42, HEO: 0xc58cff };
+  var shown = { LEO: true, MEO: true, GEO: true, HEO: true };
+
+  function regimeOf(s) {
+    if (!s.satrec) return 'LEO';
+    if (s.satrec.ecco > 0.25) return 'HEO';
+    var periodMin = 2 * Math.PI / s.satrec.no;
+    if (periodMin > 1200) return 'GEO';
+    if (periodMin > 128) return 'MEO';   // ~2000 km altitude and up
+    return 'LEO';
+  }
+
+  function applyClasses() {
+    var n = 0;
+    globe.satellites().forEach(function (s) {
+      if (!s.cls) s.cls = regimeOf(s);
+      s.color = CLASS_COLOR[s.cls];
+      s.visible = shown[s.cls];
+      if (s.visible) n++;
+    });
+    $('count').textContent = n;
+    // Don't leave an orbit drawn for a satellite the user just hid.
+    if (selected && !shown[selected.cls]) { selected = null; drawSelection(); }
+  }
+
+  function loadSample() {
+    fetch('data/geoid-sample.tle' + V).then(function (r) { return r.text(); }).then(function (t) {
+      globe.clearSatellites();
+      globe.loadTLEText(t);
+      applyClasses();
+    });
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('button.cls'), function (b) {
+    b.addEventListener('click', function () {
+      var c = b.getAttribute('data-cls');
+      shown[c] = !shown[c];
+      b.classList.toggle('on', shown[c]);
+      applyClasses();
+    });
+  });
+
+  // ---- controls ---------------------------------------------------------
+  var ALTS = [0.1, 0.2, 0.3, 0.4, 0.5, 1, 1.2, 1.5, 2, 4];
+  $('alt').addEventListener('input', function (e) {
+    var k = ALTS[parseInt(e.target.value, 10)];
+    $('vAlt').textContent = k + '×';
+    globe.setAltitudeScale(k);
+    drawSelection();          // the orbit curves move with the dots
+  });
+
+  // How far the red curve is pushed off the green, as a percentage of the
+  // orbit's own radius. At 0 the real path is drawn exactly where it flies --
+  // which is honest, and invisible, since the true offset is ~0.1%.
+  $('dev').addEventListener('input', function (e) {
+    var pct = parseFloat(e.target.value);
+    $('vDev').textContent = pct.toFixed(1) + '%';
+    globe.setDeviationTarget(pct / 100);
+    drawSelection();
+  });
+
+  $('relief').addEventListener('input', function (e) {
+    var pct = parseFloat(e.target.value);
+    $('vRelief').textContent = pct.toFixed(1) + '%';
+    globe.setExaggeration(pct / 100);
+  });
+
+  // Time rate no longer carries a zero stop -- pausing belongs to the button,
+  // and having two controls that both stop the clock just confuses things.
+  var RATES = [0.5, 1, 50, 100, 200, 300, 500, 1000, 2000, 3000, 5000, 7000, 10000];
+  $('rate').addEventListener('input', function (e) {
+    var r = RATES[parseInt(e.target.value, 10)];
+    globe.setTimeScale(r);
+    $('vRate').textContent = r === 1 ? '1× real time' : r + '×';
+  });
+
+  $('size').addEventListener('input', function (e) {
+    var pct = parseFloat(e.target.value);
+    $('vSize').textContent = pct.toFixed(1) + '%';
+    globe.setSatelliteSize(pct / 100);
+  });
+
+  // ---- pause / play -----------------------------------------------------
+  // Pausing freezes the clock (so satellites stop) and suspends auto-spin,
+  // restoring whatever spin state you had when you resume.
+  var spinBeforePause = false;
+
+  function setPaused(paused) {
+    if (paused) {
+      spinBeforePause = globe.controls.autoRotate;
+      globe.setAutoRotate(false);
+      globe.pause();
+    } else {
+      globe.play();
+      globe.setAutoRotate(spinBeforePause);
+      $('bSpin').classList.toggle('on', spinBeforePause);
+    }
+    $('bPlay').classList.toggle('paused', paused);
+    $('playIcon').textContent = paused ? '▶' : '❚❚';
+    $('bPlay').lastChild.textContent = paused ? ' Play' : ' Pause';
+    drawSelection();   // the orbit is drawn differently in each state
+  }
+
+  $('bPlay').addEventListener('click', function () { setPaused(!globe.isPaused()); });
+
+  $('bNow').addEventListener('click', function () { globe.setTime(new Date()); });
+  $('bSpin').addEventListener('click', function () {
+    var on = !globe.controls.autoRotate;
+    globe.setAutoRotate(on);
+    this.classList.toggle('on', on);
+  });
+  $('bGrat').addEventListener('click', function () {
+    globe.graticule.visible = !globe.graticule.visible;
+    this.classList.toggle('on', globe.graticule.visible);
+  });
+  $('bOutlines').addEventListener('click', function () {
+    if (!globe.coastlines) return;
+    globe.coastlines.visible = !globe.coastlines.visible;
+    this.classList.toggle('on', globe.coastlines.visible);
+  });
+
+  // ---- readouts ---------------------------------------------------------
+  globe.on('tick', function (t) {
+    $('utc').textContent = t.toISOString().replace('T', ' ').slice(0, 19);
+  });
+
+  var tip = $('tip');
+  globe.on('hover', function (sat) {
+    if (!sat) { tip.style.display = 'none'; return; }
+    tip.textContent = sat.name + '  ·  ' + sat.altKm.toFixed(0) + ' km';
+    tip.style.display = 'block';
+  });
+  document.addEventListener('pointermove', function (e) {
+    tip.style.left = (e.clientX + 14) + 'px';
+    tip.style.top = (e.clientY + 14) + 'px';
+  });
+
+  // ---- selection --------------------------------------------------------
+  // Paused, a click gives you the orbit as it really is in space: the true
+  // path plus the ideal Kepler ellipse it would follow around a perfectly
+  // spherical Earth. Running, the ground track is the more useful curve.
+  var selected = null;
+
+  function drawSelection() {
+    globe.hideAllOrbits();
+    $('hud').classList.toggle('show', !!selected);
+    if (!selected) {
+      $('sel').innerHTML = '<span class="k">Click a satellite for details.</span>';
+      return;
+    }
+    var sat = selected;
+    var N = globe.geoidAt(sat.lat, sat.lon);
+    var html =
+      '<div class="sat">' + sat.name + '</div>' +
+      '<div><span class="k">NORAD </span>' + sat.id + '</div>' +
+      '<div><span class="k">Sub-point </span>' + sat.lat.toFixed(2) + '°, ' + sat.lon.toFixed(2) + '°</div>' +
+      '<div><span class="k">Altitude </span>' + sat.altKm.toFixed(1) + ' km</div>' +
+      '<div><span class="k">Geoid below </span>' + (N >= 0 ? '+' : '') + N.toFixed(1) + ' m</div>';
+
+    if (globe.isPaused()) {
+      var orbit = globe.showOrbitEllipse(sat.id);
+      if (orbit) {
+        var u = orbit.userData;
+        html += '<div class="dev">' +
+          '<div><span class="swatch red"></span><span class="k">real path · </span>' +
+            u.periodMin.toFixed(1) + ' min</div>';
+        if (u.hasIdeal) {
+          html += '<div><span class="swatch green"></span><span class="k">ideal ellipse · e=</span>' +
+              u.eccentricity.toFixed(4) + '</div>' +
+            '<div><span class="k">Perigee/apogee </span>' + u.perigeeKm.toFixed(0) +
+              ' / ' + u.apogeeKm.toFixed(0) + ' km</div>';
+          if (u.deviationScale > 1) {
+            html += '<div><span class="swatch faded"></span><span class="k">distortion shown · ×</span>' +
+              Math.round(u.deviationScale) + '</div>';
+          }
+          html += '<div><span class="warn">Gravity offset ' + u.maxDeviationKm.toFixed(1) +
+              ' km</span></div>';
+        }
+        html += '</div>';
+      }
+    } else {
+      globe.showOrbit(sat.id, { opacity: 0.9 });
+    }
+    $('sel').innerHTML = html;
+  }
+
+  globe.on('select', function (sat) {
+    selected = sat;
+    drawSelection();
+  });
+
+  window.globe = globe; // handy in the console
+})();
+</script>
+</body>
+</html>

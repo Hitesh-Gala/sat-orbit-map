@@ -45,6 +45,33 @@ All page scripts read from one shared module:
 - `makeSatrecs(tles)` runs each TLE through `satellite.twoline2satrec` and **dedupes by NORAD ID** — the raw feed sometimes carries the same object twice.
 - **TLE refresh log** (feeds Sat-Stats' "TLE Analytics" pop-up). There is no server to diff refreshes, so `fetchBaseTLEs` captures them client-side at the exact moment a fresh live pull replaces the cached catalogue: the about-to-be-overwritten `argos.tle.v2` cache supplies each object's *previous* two lines, the incoming pull supplies the *new* ones. `scheduleRefreshDiff` runs the diff deferred (`setTimeout 0`) so it never delays first paint; only objects whose lines changed are appended to `nazar.tle.refreshlog.v1` (localStorage), deduped by `(noradId + new-epoch)`, pruned to the last **15 days** and the newest **1000**. No separate full-catalogue snapshot is stored — the cache itself is the baseline — so it adds no quota pressure. On the first live pull (no prior cache) the baseline is the bundled `data/active.tle`. `getTLERefreshLog()` returns the pruned, newest-first log; `ensureRefreshBootstrap()` (called once from Sat-Stats `boot()`) seeds the log by diffing the bundled snapshot against the cached set when it's still empty, so the table shows real data on the first visit rather than waiting a refresh cycle.
 
+## Geoid Globe page — a mirrored copy
+
+`geoid.html` and its assets are a **copy** of the standalone site at
+<https://hitesh-gala.github.io/geoid/> (repo `Hitesh-Gala/geoid`). There is no
+git link between them — forks work on whole repos, not single pages — so the two
+copies drift unless you re-copy.
+
+| NAZAR file | Source in the `geoid` repo |
+|---|---|
+| `geoid.html` | `index.html` |
+| `geoid-globe.js` | `dist/geoid-globe.js` |
+| `data/geoid-globe.json` | `dist/geoid-globe.json` |
+| `data/geoid-sample.tle` | `data/sample.tle` |
+
+`data/countries-110m.geojson` is NAZAR's own file, reused rather than duplicated.
+
+Four deliberate differences from the standalone, to re-apply after any re-copy:
+asset paths (`dist/` → repo root and `data/`), the `<title>`, a `← NAZAR` back
+link in the header, and `#ctl { top: 176px }` instead of `152px` — the back link
+makes the header taller and the two overlapped at 152.
+
+The page is self-contained: no `styles.css`, no `tle-loader.js`, no
+`mobile-menu.js`. It is intentionally **not** in `mobile-menu.js`'s `PAGES`
+list, so its button appears only on the home page, between China Sat Repo and
+God Mode.
+
+
 ## Architecture — pages
 
 Each `.html` is paired with a same-name `.js`. All pages share `styles.css` and most also load `tle-loader.js`.
