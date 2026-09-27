@@ -68,6 +68,11 @@ const CATEGORIES = [
   { id: 'eo-ghgsat',    tier: 'Earth Obs',      label: 'GHGSat (methane)',        color: '#66bb6a', test: n => /^GHGSAT/i.test(n) },
   { id: 'eo-superview', tier: 'Earth Obs',      label: 'SuperView / Gaojing (China)', color: '#5c9ce6', test: n => /^SUPERVIEW/i.test(n) },
   { id: 'eo-sentinel',  tier: 'Earth Obs',      label: 'Copernicus Sentinel (EU)', color: '#3d9970', test: n => /^SENTINEL/i.test(n) },
+  // India's remote-sensing fleet is catalogued under a series name per mission
+  // rather than one prefix.  `EOS-\d` must keep its hyphen: EOSSAT-1 is EOS Data
+  // Analytics (Ukraine), and IRS-P5 is Cartosat-1 under its old IRS designation.
+  { id: 'eo-isro',      tier: 'Earth Obs',      label: 'ISRO remote sensing (Cartosat · RISAT · EOS)', color: '#ff8c42',
+    test: n => /^(CARTOSAT|RESOURCESAT|OCEANSAT|RISAT|EOS-\d|HYSIS|SCATSAT|EMISAT|SARAL|MEGHA)/i.test(n) || /^IRS-/i.test(n) },
 
   // ----- Communications (mostly GEO) -------------------------------------
   { id: 'com-inmarsat', tier: 'Communications', label: 'Viasat / Inmarsat',       color: '#d35400', test: n => /^(INMARSAT|VIASAT)/i.test(n) },
@@ -331,6 +336,13 @@ const COMPANY_INFO = {
     desc: 'The satellite backbone of the EU’s Copernicus programme — the world’s largest free-and-open Earth-observation data source: Sentinel-1 (radar), -2 (optical), -3 (ocean/land), -5P (air quality) and -6 (sea-level altimetry).',
     news: 'Sentinel-1C launched Dec 2024 to restore the radar pair; next-generation "Expansion" missions in build.',
     note: 'A government science programme named “SENTINEL-…”, not a commercial operator.' },
+  'eo-isro': {
+    name: 'ISRO remote sensing', operator: 'ISRO / NRSC (India)', founded: '1988 (IRS-1A)',
+    fleet: '~60 launched across the IRS, Cartosat, Resourcesat, Oceansat, RISAT and EOS series',
+    active: '~20 catalogued and working', retired: 'The early IRS-1 and Cartosat-2 series are largely retired',
+    desc: 'India’s Earth-observation and remote-sensing fleet, flown by ISRO and operated for users by the National Remote Sensing Centre: Cartosat (sub-metre cartographic imaging), Resourcesat (multispectral land and crop survey), Oceansat (ocean colour and winds), RISAT (all-weather radar), Scatsat (scatterometer winds), HySIS (hyperspectral) and the renamed EOS series.',
+    news: 'Missions now launch under the plain "EOS-nn" name — EOS-4 is RISAT-1A, EOS-6 is Oceansat-3 and EOS-08 is a microsatellite platform.',
+    note: 'Catalogued under a different series name for each mission rather than one operator prefix, which is why these were showing up as uncategorised until this category was added. GSAT (communications) and INSAT (meteorology) are ISRO satellites too, but sit in their own categories.' },
 
   // ---- Communications (mostly GEO) ----
   'com-inmarsat': {
@@ -480,7 +492,7 @@ const COMPANY_INFO = {
 const INFO_EXTRA = {
   'gnss-gps': {
     launched: '~80 across Blocks I-III (since 1978)', lost: '~45 retired or de-orbited',
-    inOrbit: '~38 catalogued', active: '31 healthy - the baseline the US Space Force maintains',
+    inOrbit: '~40 catalogued', active: '31 healthy - the baseline the US Space Force maintains',
     people: [
       ['Bradford Parkinson', 'chief architect of the GPS programme'],
       ['Roger L. Easton', 'Naval Research Lab - space-based timing (TIMATION)'],
@@ -556,8 +568,8 @@ const INFO_EXTRA = {
     note: 'Only the first demonstrator is flying, so expect a single dot until the operational fleet begins launching.' },
 
   'op-starlink': {
-    launched: '~10,000+ since 2019', lost: '~1,500 de-orbited or re-entered',
-    inOrbit: '~8,900 catalogued', active: '~8,500 serving customers',
+    launched: '~12,000 since 2019', lost: '~1,500 de-orbited or re-entered',
+    inOrbit: '~10,700 catalogued', active: 'most of the catalogued fleet is in service',
     people: [['Elon Musk', 'founder & CEO, SpaceX'], ['Gwynne Shotwell', 'president & COO, SpaceX']],
     links: [
       ['Starlink', 'https://www.starlink.com/', 'Coverage map, service tiers and the current satellite count from the operator.'],
@@ -565,7 +577,7 @@ const INFO_EXTRA = {
     ] },
   'op-oneweb': {
     launched: '~660 first-generation', lost: 'a handful of early failures',
-    inOrbit: '~650 catalogued', active: '~630 in the operational shell',
+    inOrbit: '~655 catalogued', active: '~630 in the operational shell',
     people: [['Greg Wyler', 'founder of OneWeb'], ['Eutelsat Group', 'owner since the 2023 merger']],
     links: [
       ['Eutelsat OneWeb', 'https://oneweb.net/', 'The operator\u2019s service and coverage pages.'],
@@ -585,7 +597,8 @@ const INFO_EXTRA = {
     people: [['Paul E. Jacobs', 'CEO, Globalstar'], ['Loral and Qualcomm', 'the original 1990s partners behind the system']],
     links: [['Globalstar', 'https://www.globalstar.com/', 'Services including the satellite connectivity behind some smartphone emergency features.']] },
   'op-spacemobile': {
-    launched: '~7 (BlueWalker 3 and the first BlueBird block)', inOrbit: '~7 catalogued', active: '~6',
+    launched: '10 (BlueWalker 3 and the first BlueBird block)', inOrbit: '10 catalogued',
+    active: 'BlueWalker 3 plus the BlueBird block in commissioning',
     people: [['Abel Avellan', 'founder, chairman & CEO']],
     links: [
       ['AST SpaceMobile', 'https://ast-science.com/', 'The direct-to-phone approach using very large unfolding arrays.'],
@@ -621,7 +634,7 @@ const INFO_EXTRA = {
     links: [['Capella Space', 'https://www.capellaspace.com/', 'Synthetic-aperture radar imaging that works at night and through cloud.']] },
   'eo-iceye': {
     launched: '60+ since 2018 - the largest radar constellation', lost: 'earliest X-band units retired',
-    inOrbit: '~40 catalogued', active: '~40 radar satellites',
+    inOrbit: '~52 catalogued', active: '~40 radar satellites',
     people: [['Rafal Modrzewski', 'co-founder & CEO'], ['Pekka Laurila', 'co-founder & chief strategy officer']],
     links: [
       ['ICEYE', 'https://www.iceye.com/', 'Flood and wildfire monitoring, plus sovereign radar capability sold to governments.'],
@@ -635,6 +648,20 @@ const INFO_EXTRA = {
     launched: '~8 StriX radar satellites', inOrbit: '~8 catalogued', active: '~7',
     people: [['Motoyuki Arai', 'founder & CEO']],
     links: [['Synspective', 'https://synspective.com/', 'Japanese small radar satellites and the ground-deformation analytics built on them.']] },
+  'eo-isro': {
+    launched: '~60 across the IRS, Cartosat, Resourcesat, Oceansat, RISAT and EOS series since 1988',
+    lost: '~40 retired or de-orbited, including most of the IRS-1 and Cartosat-2 generations',
+    inOrbit: '~21 catalogued', active: '~15 supplying imagery through NRSC',
+    people: [
+      ['V. Narayanan', 'Chairman, ISRO'],
+      ['U R Rao Satellite Centre, Bengaluru', 'builds the remote-sensing spacecraft buses'],
+      ['National Remote Sensing Centre, Hyderabad', 'receives, processes and distributes the imagery'],
+    ],
+    links: [
+      ['ISRO Earth observation', 'https://www.isro.gov.in/EarthObservationSatellites.html', 'Official mission pages for the Cartosat, Resourcesat, Oceansat, RISAT and EOS series.'],
+      ['Bhoonidhi (NRSC)', 'https://bhoonidhi.nrsc.gov.in/', 'The national portal where Indian remote-sensing data is browsed and ordered.'],
+      ['Indian Remote Sensing satellites', 'https://en.wikipedia.org/wiki/Indian_Remote_Sensing_Programme', 'How the programme grew from IRS-1A in 1988 into today’s series, and what each one carries.'],
+    ] },
 
   'rpo-servicing': {
     name: 'Rendezvous, proximity operations & servicing', operator: 'Multiple - China (TJS, Shijian), USA (Northrop Grumman, Space Force)',
@@ -702,6 +729,7 @@ const COMPANY_HISTORY = {
   'eo-iride': [['2023','Italy funds IRIDE (PNRR + ESA)'],['2025','First IRIDE satellites launched'],['2026','Multi-sensor constellation completing']],
   'eo-ghgsat': [['2011','Founded (Montreal)'],['2016','GHGSat-D “Claire” demo'],['2020s','GHGSat-C commercial methane fleet']],
   'eo-superview': [['2016','First SuperView-1 pair'],['2022','SuperView Neo higher-res birds'],['2020s','China Siwei commercial imagery']],
+  'eo-isro': [['1988','IRS-1A begins India’s remote-sensing programme'],['2005','Cartosat-1 (IRS-P5) starts sub-metre cartographic imaging'],['2012','RISAT-1 adds all-weather radar'],['2022–','Missions renamed to the plain EOS series (EOS-4 = RISAT-1A, EOS-6 = Oceansat-3)']],
   'eo-sentinel': [['2014','Sentinel-1A launched'],['2015–18','Sentinel-2/-3/-5P follow'],['2024','Sentinel-1C restores the radar pair']],
 
   'com-inmarsat': [['1979','Inmarsat founded (maritime-safety body)'],['1986','Viasat founded (US)'],['1999','Inmarsat privatised'],['2023','Viasat acquires Inmarsat']],
@@ -998,6 +1026,15 @@ function openCompany(idx) {
   const stat = (k, v) => v
     ? `<div class="sbo-stat"><span class="k">${escHtml(k)}</span><span class="v">${escHtml(v)}</span></div>` : '';
   const live = categoryCount[idx];
+  // The four lower figures are hand-kept open-source estimates; the top one is
+  // counted from today's catalogue.  A constellation that outgrows its estimate
+  // would otherwise read as an impossibility — fewer launched than are flying —
+  // so the live count becomes the floor and the stale estimate is labelled.
+  const floorStat = text => {
+    const m = String(text || '').match(/\d[\d,]*/);
+    if (!m || live <= +m[0].replace(/,/g, '')) return text;
+    return `at least ${live.toLocaleString()} — the open-source estimate (${text}) is behind the catalogue`;
+  };
 
   const people = info.people || [];
   const peopleHtml = people.length
@@ -1034,9 +1071,9 @@ function openCompany(idx) {
     </div>
     <div class="sbo-stats">
       <div class="sbo-stat hl"><span class="k">Tracked on this globe right now</span><span class="v" style="color:${c.color}">${live.toLocaleString()}</span></div>
-      ${stat('Launched to date', info.launched || info.fleet)}
+      ${stat('Launched to date', floorStat(info.launched || info.fleet))}
       ${stat('Gone \u2014 de-orbited, re-entered or destroyed', info.lost || info.retired)}
-      ${stat('Still in orbit', info.inOrbit)}
+      ${stat('Still in orbit', floorStat(info.inOrbit))}
       ${stat('Confirmed working', info.active)}
     </div>
     ${info.desc ? `<p class="sbo-desc">${escHtml(info.desc)}</p>` : ''}
