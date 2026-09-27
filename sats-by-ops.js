@@ -1025,7 +1025,7 @@ function openCompany(idx) {
     : '';
 
   body.innerHTML = `
-    <div class="sbo-modal-head" title="Drag to move this window">
+    <div class="sbo-modal-head" title="Drag to move this window — drag its bottom-right corner to resize">
       <span class="sbo-modal-dot" style="background:${c.color};color:${c.color}"></span>
       <div class="sbo-modal-titles">
         <h2 id="sbo-modal-title">${escHtml(info.name || c.label)}</h2>

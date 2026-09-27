@@ -185,6 +185,10 @@
       position: relative; pointer-events: auto;
       width: min(760px, 96vw); max-height: 94vh;
       overflow-y: auto; overflow-x: hidden;
+      /* Drag the header to move it, drag the bottom-right corner to resize.
+         `resize` needs a non-visible overflow, which the card already has. */
+      resize: both;
+      min-width: 320px; min-height: 160px; max-width: 96vw;
       background: #070d14; border: 1px solid #1d3147; border-radius: 12px;
       box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
       padding: 20px 22px 18px;
@@ -197,6 +201,8 @@
       transition: background .15s, border-color .15s;
     }
     .sbo-modal-close:hover { background: #1b3559; border-color: #4ea8ff; }
+    /* The default resizer is nearly invisible on this dark card. */
+    .sbo-modal-card::-webkit-resizer { background-color: #1b3559; }
     /* The header is the drag handle. */
     .sbo-modal-head { display: flex; align-items: flex-start; gap: 12px; padding-right: 34px; cursor: grab; touch-action: none; }
     .sbo-modal-card.dragging .sbo-modal-head { cursor: grabbing; }
@@ -355,7 +361,7 @@
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=11"></script>
-  <script src="sats-by-ops.js?v=9"></script>
+  <script src="sats-by-ops.js?v=10"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=4"></script>
   <script src="mobile-menu.js?v=26"></script>
