@@ -100,6 +100,13 @@
     .va-table tbody td { padding: 6px 6px; border-bottom: 1px solid rgba(110, 200, 255, .07); vertical-align: top; overflow-wrap: anywhere; }
     .va-table tbody tr:hover td { background: rgba(103, 200, 255, .06); }
     .va-table tr.today td:first-child { box-shadow: inset 3px 0 0 #ffd166; }
+    /* The owner's own visits, folded into one row at the foot of the table.
+       Not sticky: a sticky row can only move inside its containing block, and
+       a tfoot is exactly as tall as its row, so it would never pin. */
+    .va-table tfoot td { padding: 8px 6px; vertical-align: top;
+      background: rgba(4, 12, 24, .97); border-top: 2px solid rgba(103, 200, 255, .45); overflow-wrap: anywhere; }
+    .va-table tfoot .va-ownrow td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+    .va-table tfoot b { color: var(--accent); font-weight: normal; }
     .va-table .ip { color: #ffd166; white-space: nowrap; }
     .va-table .dur { color: #8bff9e; }
     .va-table .dim { color: var(--dim); }
@@ -214,6 +221,9 @@
             </tr>
           </thead>
           <tbody id="va-rows"></tbody>
+          <!-- One pinned row summarising the owner's own visits, which are kept
+               out of the list above but still counted in the figures. -->
+          <tfoot id="va-own"></tfoot>
         </table>
       </div>
     </section>
@@ -222,7 +232,7 @@
     <button type="button" class="va-btn ghost" id="va-retry" hidden>↻ Try again</button>
   </main>
 
-  <script src="site-analytics.js?v=4"></script>
+  <script src="site-analytics.js?v=5"></script>
   <script src="site-analytics-view.js?v=8"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=26"></script>

@@ -15,6 +15,27 @@
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   let visits = [], shown = [], page = 0, lastPw = null;
+  // `visits` is what the table lists — the owner's own rows are lifted out of it
+  // into `own` and summarised in one pinned footer row.  `allVisits` keeps both,
+  // because the headline counts above the table are meant to include this
+  // machine; only the row-by-row list is cleaned up.
+  let own = [], allVisits = [];
+
+  // Rows carry the browser's random visitor id.  This machine's id is in
+  // localStorage, and past ids are remembered alongside it so a cleared or
+  // rotated id doesn't put old owner visits back in the table.
+  const OWN_VIDS_KEY = 'nazar.va.ownvids';
+  function ownVids() {
+    const set = new Set();
+    try {
+      const cur = localStorage.getItem(NA.VID_KEY);
+      if (cur) set.add(cur);
+      const past = JSON.parse(localStorage.getItem(OWN_VIDS_KEY) || '[]');
+      if (Array.isArray(past)) for (const v of past) if (v) set.add(String(v));
+    } catch { /* storage blocked — nothing is treated as the owner's */ }
+    try { localStorage.setItem(OWN_VIDS_KEY, JSON.stringify([...set])); } catch { /* storage blocked */ }
+    return set;
+  }
 
   function show(id) {
     for (const s of ['va-setup', 'va-gate', 'va-dash']) $(s).hidden = s !== id;
@@ -162,23 +183,31 @@
     }
     visits.reverse();                                           // newest first
 
+    const mine = ownVids();
+    allVisits = visits;
+    own = visits.filter(v => v.vid && mine.has(v.vid));
+    visits = visits.filter(v => !(v.vid && mine.has(v.vid)));
+
     renderStats(res);
+    renderOwn();
     show('va-dash');
     setState(`Updated ${fmtWhen(new Date().toISOString())}` +
              (res.truncated ? ` · showing the newest ${visits.length.toLocaleString()} visits` : ''));
     applyFilter();
   }
 
+  // Counts run over `allVisits`, this machine included — only the table below
+  // hides those rows.
   function renderStats(res) {
-    const today = visits.filter(v => isToday(v.start));
-    const timed = visits.filter(v => Number(v.seconds) > 0);
+    const today = allVisits.filter(v => isToday(v.start));
+    const timed = allVisits.filter(v => Number(v.seconds) > 0);
     const avg = timed.length ? timed.reduce((t, v) => t + Number(v.seconds), 0) / timed.length : 0;
     $('st-users').textContent = (res.uniqueUsers ?? 0).toLocaleString();
     $('st-today').textContent = new Set(today.map(v => v.vid || v.sid)).size.toLocaleString();
-    $('st-visits').textContent = (res.totalVisits ?? visits.length).toLocaleString();
+    $('st-visits').textContent = (res.totalVisits ?? allVisits.length).toLocaleString();
     $('st-vtoday').textContent = today.length.toLocaleString();
     $('st-avg').textContent = fmtDur(avg);
-    $('st-countries').textContent = new Set(visits.map(v => v.country).filter(Boolean)).size.toLocaleString();
+    $('st-countries').textContent = new Set(allVisits.map(v => v.country).filter(Boolean)).size.toLocaleString();
     renderUsersPop(res);
     renderCountriesPop();
   }
@@ -188,9 +217,9 @@
   // The hover sets that beside the other ways of counting people.
   function renderUsersPop(res) {
     const n = x => `<strong>${x.toLocaleString()}</strong>`;
-    const ips = new Set(visits.map(v => v.ip).filter(Boolean)).size;
-    const devices = new Set(visits.filter(v => v.ip).map(v => [v.ip, v.deviceName, v.os, v.browser].join('|'))).size;
-    const returning = Object.values(visits.reduce((m, v) => { const k = v.vid || v.sid; m[k] = (m[k] || 0) + 1; return m; }, {}))
+    const ips = new Set(allVisits.map(v => v.ip).filter(Boolean)).size;
+    const devices = new Set(allVisits.filter(v => v.ip).map(v => [v.ip, v.deviceName, v.os, v.browser].join('|'))).size;
+    const returning = Object.values(allVisits.reduce((m, v) => { const k = v.vid || v.sid; m[k] = (m[k] || 0) + 1; return m; }, {}))
       .filter(c => c > 1).length;
     $('pop-users').innerHTML = `
       <h3>Unique users</h3>
@@ -202,12 +231,12 @@
       </dl>
       <p>The headline counts browsers. One person on two devices counts twice; people sharing an office or
         mobile network can share one IP. A device is one IP + model + OS + browser — the closest estimate of
-        distinct people.${res.truncated ? ` IP, device and return counts cover the newest ${visits.length.toLocaleString()} visits.` : ''}</p>`;
+        distinct people.${res.truncated ? ` IP, device and return counts cover the newest ${allVisits.length.toLocaleString()} visits.` : ''}</p>`;
   }
 
   function renderCountriesPop() {
     const by = new Map();
-    for (const v of visits) {
+    for (const v of allVisits) {
       const k = v.country || '';
       const e = by.get(k) || { visits: 0, users: new Set() };
       e.visits++;
@@ -258,6 +287,41 @@
     }).join('') || `<tr><td colspan="14" class="empty">${visits.length ? 'No visits match.' : 'No visits logged yet.'}</td></tr>`;
     $('va-count').textContent = shown.length.toLocaleString();
     $('va-page').textContent = `${page + 1} / ${pages}`;
+  }
+
+  // ── this machine, summarised ───────────────────────────────────────────
+  // The owner's own visits would otherwise pad the table with rows that say
+  // nothing about the audience, so they are lifted out and folded into one
+  // pinned row in the table's foot — always at the bottom, whatever page or
+  // filter the table is on.  They still count in every figure above.
+  function renderOwn() {
+    const foot = $('va-own');
+    if (!foot) return;
+    if (!own.length) { foot.innerHTML = ''; return; }
+
+    const sum = (k, dflt) => own.reduce((t, v) => t + (Number(v[k]) || dflt || 0), 0);
+    const uniq = k => [...new Set(own.map(v => v[k]).filter(Boolean))];
+    const latest = own[0], first = own[own.length - 1];   // own is newest-first
+    const secs = sum('seconds');
+    const list = (arr, one) => arr.length ? (arr.length === 1 ? esc(arr[0]) : `${esc(arr[0])}<span class="sub2"> +${arr.length - 1} more</span>`) : (one || '—');
+    const days = new Set(own.map(v => new Date(v.start).toDateString())).size;
+
+    foot.innerHTML = `<tr class="va-ownrow">
+      <td class="dim num">—</td>
+      <td class="col-when">${whenLines(latest.start)}<span class="sub2">since ${esc(fmtWhen(first.start).split(',')[0])}</span></td>
+      <td class="col-dur dur">${durLines(secs)}</td>
+      <td class="col-ip ip">${ipLines(uniq('ip')[0])}${uniq('ip').length > 1 ? `<span class="sub2">+${uniq('ip').length - 1} IPs</span>` : ''}</td>
+      <td>${stack(latest.deviceName, latest.deviceType)}</td>
+      <td>${stack(shortOs(latest.os), latest.browser)}</td>
+      <td>${stack(latest.country, latest.region, latest.city)}</td>
+      <td class="num col-pages">${sum('pages', 1).toLocaleString()}</td>
+      <td class="col-landing" colspan="2"><b>This machine — kept out of the list above</b>
+        <span class="sub2">${own.length.toLocaleString()} visit${own.length === 1 ? '' : 's'} on ${days.toLocaleString()} day${days === 1 ? '' : 's'}; still counted in the figures at the top</span></td>
+      <td class="col-isp">${list(uniq('isp'))}</td>
+      <td class="nowrap">${esc(latest.screen) || '—'}</td>
+      <td class="nowrap">${tzLines(latest.tz)}</td>
+      <td class="nowrap">${stack('Owner', `${own.length.toLocaleString()} visits`)}</td>
+    </tr>`;
   }
 
   // ── gate ───────────────────────────────────────────────────────────────

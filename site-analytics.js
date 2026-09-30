@@ -33,7 +33,9 @@
   }
 
   // Shared with the dashboard page (site-analytics-view.js).
-  window.NazarAnalytics = { CFG: CFG, sha256: sha256, PW_KEY: PW_KEY, OWNER_FLAG: OWNER_FLAG };
+  // VID_KEY is exported so the dashboard can recognise this machine's own rows
+  // and lift them out of the visits table.
+  window.NazarAnalytics = { CFG: CFG, sha256: sha256, PW_KEY: PW_KEY, OWNER_FLAG: OWNER_FLAG, VID_KEY: VID_KEY };
 
   function getItem(area, key) { try { return window[area].getItem(key); } catch (e) { return null; } }
   function setItem(area, key, val) { try { window[area].setItem(key, val); } catch (e) { /* storage blocked */ } }
