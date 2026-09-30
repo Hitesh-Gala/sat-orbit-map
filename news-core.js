@@ -32,15 +32,14 @@ window.NazarNews = (function () {
   // feeds are quiet.  China focus is enforced by scoring (below), not by
   // which feeds happen to answer.
   // =======================================================================
+  // ORDER MATTERS.  Feeds are pulled in this order, four at a time, and the
+  // proxies in front of them fail in bulk — allorigins and codetabs sit behind
+  // Cloudflare and both answered 522 for every URL on 30 Sep 2026, which left
+  // rss2json carrying the whole pull until it returned 429.  Whatever sits last
+  // in this list is what gets dropped on a thin day, so China comes first: it
+  // is the point of the site, and those feeds were the ones going missing.
   const FEEDS = [
-    { url: 'https://spacenews.com/feed/',                     source: 'SpaceNews',       cat: 'Press'  },
-    { url: 'https://www.space.com/feeds/all',                 source: 'Space.com',       cat: 'Press'  },
-    { url: 'https://www.nasaspaceflight.com/feed/',           source: 'NASASpaceflight', cat: 'Press'  },
-    { url: 'https://spaceflightnow.com/feed/',                source: 'Spaceflight Now', cat: 'Press'  },
-    { url: 'https://payloadspace.com/feed/',                  source: 'Payload',         cat: 'Press'  },
-    { url: 'https://arstechnica.com/space/feed/',             source: 'Ars Technica',    cat: 'Press'  },
-    { url: 'https://www.nasa.gov/feed/',                      source: 'NASA',            cat: 'Agency' },
-    { url: 'https://www.esa.int/rssfeed/Our_Activities/Space_News', source: 'ESA',       cat: 'Agency' },
+    // ---- China ----------------------------------------------------------
     { url: 'https://spacenews.com/tag/china/feed/',           source: 'SpaceNews · China',      cat: 'China' },
     // Andrew Jones (SpaceNews' China correspondent — his was the first report
     // of the Yaogan-50 (02) break-up) writes his own newsletter; Blaine
@@ -48,22 +47,41 @@ window.NazarNews = (function () {
     { url: 'https://chinaspacenewsroundup.substack.com/feed', source: 'China Space News Roundup', cat: 'China' },
     { url: 'https://chinaspacemonitor.substack.com/feed',     source: 'China Space Monitor',      cat: 'China' },
     { url: 'https://spaceflightnow.com/tag/china/feed/',      source: 'Spaceflight Now · China', cat: 'China' },
+    // Topic searches.  Every RSS feed exposes only its newest ~25 items, so a
+    // story more than a few days old has already rotated off it — which is how
+    // the Yaogan-50 (02) breakup of 04 Sep 2026 never reached the ticker even
+    // though SpaceNews had run it.  These look 30 days back, so a notable item
+    // is still caught days later, and they reach outlets NAZAR doesn't
+    // subscribe to.  `google: true` marks the "Headline - Publisher" title
+    // format so the real publisher becomes the source.
+    { url: 'https://news.google.com/rss/search?q=(china+OR+chinese)+(satellite+OR+spacecraft+OR+rocket+OR+launch+OR+orbit)+when:30d&hl=en-US&gl=US&ceid=US:en',
+      source: 'Google News · China', cat: 'China', google: true },
+    // Crewed and programme-level news needs its own search: the query above
+    // insists on satellite/rocket/orbit words, so "China trains two Pakistani
+    // astronauts for Tiangong" — carried by Reuters, Global Times, The Hindu
+    // and others in Sep 2026 — matched nothing and never reached the archive.
+    // Kept separate rather than widening the query above, which would push
+    // break-up stories out of its newest-25 window.
+    { url: 'https://news.google.com/rss/search?q=(china+OR+chinese)+(astronaut+OR+taikonaut+OR+"space+station"+OR+tiangong+OR+shenzhou+OR+"space+programme"+OR+"space+program")+when:30d&hl=en-US&gl=US&ceid=US:en',
+      source: 'Google News · China crewed & programme', cat: 'China', google: true },
+    // ---- Orbital events anywhere ----------------------------------------
+    { url: 'https://news.google.com/rss/search?q=satellite+(breakup+OR+"break+up"+OR+fragmentation+OR+debris+OR+collision+OR+anomaly)+when:30d&hl=en-US&gl=US&ceid=US:en',
+      source: 'Google News · Orbital events', cat: 'Press', google: true },
+    // ---- Space press -----------------------------------------------------
+    { url: 'https://spacenews.com/feed/',                     source: 'SpaceNews',       cat: 'Press'  },
+    { url: 'https://www.space.com/feeds/all',                 source: 'Space.com',       cat: 'Press'  },
+    { url: 'https://www.nasaspaceflight.com/feed/',           source: 'NASASpaceflight', cat: 'Press'  },
+    { url: 'https://spaceflightnow.com/feed/',                source: 'Spaceflight Now', cat: 'Press'  },
+    { url: 'https://payloadspace.com/feed/',                  source: 'Payload',         cat: 'Press'  },
+    { url: 'https://arstechnica.com/space/feed/',             source: 'Ars Technica',    cat: 'Press'  },
+    // ---- Agencies --------------------------------------------------------
+    { url: 'https://www.nasa.gov/feed/',                      source: 'NASA',            cat: 'Agency' },
+    { url: 'https://www.esa.int/rssfeed/Our_Activities/Space_News', source: 'ESA',       cat: 'Agency' },
     // General-interest outlets that carried the Yaogan-50 break-up when the
     // trade press had moved on.  `topic: true` keeps only their space stories —
     // their feeds are site-wide and would otherwise bury the ticker in gadgets.
     { url: 'https://gizmodo.com/feed',                        source: 'Gizmodo',         cat: 'Press', topic: true },
     { url: 'https://futurism.com/feed',                       source: 'Futurism',        cat: 'Press', topic: true },
-    // Topic searches.  Every feed above exposes only its newest ~25 items, so
-    // a story more than a few days old has already rotated off it — which is
-    // how the Yaogan-50 (02) breakup of 04 Sep 2026 never reached the ticker
-    // even though SpaceNews had run it.  These two look 30 days back, so a
-    // notable item is still caught days later, and they reach outlets NAZAR
-    // doesn't subscribe to.  `google: true` marks the "Headline - Publisher"
-    // title format so the real publisher becomes the source.
-    { url: 'https://news.google.com/rss/search?q=(china+OR+chinese)+(satellite+OR+spacecraft+OR+rocket+OR+launch+OR+orbit)+when:30d&hl=en-US&gl=US&ceid=US:en',
-      source: 'Google News · China', cat: 'China', google: true },
-    { url: 'https://news.google.com/rss/search?q=satellite+(breakup+OR+"break+up"+OR+fragmentation+OR+debris+OR+collision+OR+anomaly)+when:30d&hl=en-US&gl=US&ceid=US:en',
-      source: 'Google News · Orbital events', cat: 'Press', google: true },
   ];
 
   // Ordered proxy chain — each feed tries these until one returns parseable
@@ -93,7 +111,7 @@ window.NazarNews = (function () {
 
   // China relevance — matches the country, its agencies/programmes, launch
   // sites, rocket families and the commercial-launch startups.
-  const CHINA_RE = /\b(china|chinese|prc|beijing|cnsa|casc|casic|long\s*march|(?:^|\s)cz[-\s]?\d|chang[' ’]?e|tiangong|tianzhou|tianwen|shenzhou|shijian|yaogan|gaofen|fengyun|beidou|kuaizhou|ceres[-\s]?1|hyperbola|zhuque|gravity[-\s]?1|pallas|landspace|galactic\s+energy|orienspace|space\s+pioneer|i[-\s]?space|deep\s+blue\s+aerospace|cas\s*space|expace|guowang|qianfan|thousand\s+sails|jielong|smart\s+dragon|wenchang|jiuquan|xichang|taiyuan)\b/i;
+  const CHINA_RE = /\b(china|chinese|prc|beijing|cnsa|casc|casic|long\s*march|(?:^|\s)cz[-\s]?\d|chang[' ’]?e|tiangong|tianzhou|tianwen|shenzhou|taikonaut|shijian|yaogan|gaofen|fengyun|beidou|kuaizhou|ceres[-\s]?1|hyperbola|zhuque|gravity[-\s]?1|pallas|landspace|galactic\s+energy|orienspace|space\s+pioneer|i[-\s]?space|deep\s+blue\s+aerospace|cas\s*space|expace|guowang|qianfan|thousand\s+sails|jielong|smart\s+dragon|wenchang|jiuquan|xichang|taiyuan)\b/i;
 
   // Space stories inside a general-interest feed (see `topic` above).
   const SPACE_RE = /\b(space(craft|flight|x)?|satellites?|orbit(al|s|ing)?|rocket|launch(es|ed|ing)?|astronauts?|cosmonauts?|nasa|esa|isro|jaxa|roscosmos|starship|falcon\s*9|debris|iss|moon|lunar|mars|asteroid|telescope|observatory|constellation|reentry|re-entry)\b/i;
@@ -161,8 +179,14 @@ window.NazarNews = (function () {
   function splitGoogleTitle(title, pub) {
     if (pub && title.endsWith(' - ' + pub)) return { title: title.slice(0, -(pub.length + 3)).trim(), source: pub };
     if (pub) return { title, source: pub };
+    // 70, not 45: mastheads like "The Diplomat – Asia-Pacific Current Affairs
+    // Magazine" and "European Union Institute for Security Studies |" ran past
+    // the old limit, so the item was labelled with the feed's own name instead
+    // of its publisher.  Trailing separators come off with the split.
     const i = title.lastIndexOf(' - ');
-    if (i > 20 && title.length - i <= 45) return { title: title.slice(0, i).trim(), source: title.slice(i + 3).trim() };
+    if (i > 20 && title.length - i <= 70) {
+      return { title: title.slice(0, i).trim(), source: title.slice(i + 3).replace(/[\s|·—–-]+$/, '').trim() };
+    }
     return { title, source: '' };
   }
 
@@ -210,7 +234,12 @@ window.NazarNews = (function () {
 
     const items = [];
     for (const n of nodes) {
-      const title = cleanText(childText(n, ['title']));
+      // `let`, not `const`: a Google item rewrites this below to strip the
+      // " - Publisher" suffix.  As a const it threw TypeError, and since
+      // nothing caught it the whole pull was abandoned — which is why the
+      // Google topic searches never contributed anything through the XML
+      // proxies, and why stories they alone carried never reached the archive.
+      let title = cleanText(childText(n, ['title']));
       let link = '';
       if (atom) {
         // Atom: prefer <link rel="alternate" href>, else the first link href.
@@ -279,7 +308,12 @@ window.NazarNews = (function () {
     for (const proxy of PROXIES) {
       const txt = await fetchVia(feed.url, proxy);
       if (!txt) continue;
-      let items = proxy.kind === 'json' ? parseJsonFeed(txt, feed) : parseXmlFeed(txt, feed);
+      // One malformed feed must never abandon the pull: pmap has no per-task
+      // catch, so a parser throw here used to reject the whole refresh and
+      // every other feed's items were lost with it.
+      let items;
+      try { items = proxy.kind === 'json' ? parseJsonFeed(txt, feed) : parseXmlFeed(txt, feed); }
+      catch { items = null; }
       if (items && items.length && feed.topic) {
         items = items.filter(it => SPACE_RE.test(it.title + ' ' + it.desc));
       }
