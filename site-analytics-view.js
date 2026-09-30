@@ -21,20 +21,50 @@
   // machine; only the row-by-row list is cleaned up.
   let own = [], allVisits = [];
 
-  // Rows carry the browser's random visitor id.  This machine's id is in
-  // localStorage, and past ids are remembered alongside it so a cleared or
-  // rotated id doesn't put old owner visits back in the table.
+  // Rows carry the browser's random visitor id.  Matching only the id this
+  // browser holds right now is not enough: visits logged before the owner flag
+  // was set, from another profile, or from a browser whose storage has since
+  // been cleared, carry ids this machine no longer knows.  So the ids are a
+  // list the owner can add to — "this is me" on any row folds that browser's
+  // whole history away — and `nazar.va.ownself` remembers a decision to stop
+  // treating the current browser as the owner's.
   const OWN_VIDS_KEY = 'nazar.va.ownvids';
-  function ownVids() {
-    const set = new Set();
+  const OWN_SELF_KEY = 'nazar.va.ownself';
+  const readLS = (k, dflt) => { try { return localStorage.getItem(k) ?? dflt; } catch { return dflt; } };
+  const writeLS = (k, v) => { try { localStorage.setItem(k, v); } catch { /* storage blocked */ } };
+
+  function markedVids() {
     try {
-      const cur = localStorage.getItem(NA.VID_KEY);
-      if (cur) set.add(cur);
-      const past = JSON.parse(localStorage.getItem(OWN_VIDS_KEY) || '[]');
-      if (Array.isArray(past)) for (const v of past) if (v) set.add(String(v));
-    } catch { /* storage blocked — nothing is treated as the owner's */ }
-    try { localStorage.setItem(OWN_VIDS_KEY, JSON.stringify([...set])); } catch { /* storage blocked */ }
+      const a = JSON.parse(readLS(OWN_VIDS_KEY, '[]'));
+      return Array.isArray(a) ? a.filter(Boolean).map(String) : [];
+    } catch { return []; }
+  }
+  function ownVids() {
+    const set = new Set(markedVids());
+    const cur = readLS(NA.VID_KEY, '');
+    if (cur && readLS(OWN_SELF_KEY, '1') !== '0') set.add(cur);
     return set;
+  }
+  function markMine(vid) {
+    if (!vid) return;
+    const list = markedVids();
+    if (!list.includes(vid)) list.push(vid);
+    writeLS(OWN_VIDS_KEY, JSON.stringify(list));
+    splitOwn();
+  }
+  function unfoldMine() {
+    writeLS(OWN_VIDS_KEY, '[]');
+    writeLS(OWN_SELF_KEY, '0');           // stop auto-claiming this browser too
+    splitOwn();
+  }
+
+  // Re-derive the listed rows and the owner summary from the full set.
+  function splitOwn() {
+    const mine = ownVids();
+    own = allVisits.filter(v => v.vid && mine.has(v.vid));
+    visits = allVisits.filter(v => !(v.vid && mine.has(v.vid)));
+    renderOwn();
+    applyFilter();
   }
 
   function show(id) {
@@ -183,17 +213,13 @@
     }
     visits.reverse();                                           // newest first
 
-    const mine = ownVids();
     allVisits = visits;
-    own = visits.filter(v => v.vid && mine.has(v.vid));
-    visits = visits.filter(v => !(v.vid && mine.has(v.vid)));
+    splitOwn();                                               // sets `own` + `visits`
 
     renderStats(res);
-    renderOwn();
     show('va-dash');
     setState(`Updated ${fmtWhen(new Date().toISOString())}` +
-             (res.truncated ? ` · showing the newest ${visits.length.toLocaleString()} visits` : ''));
-    applyFilter();
+             (res.truncated ? ` · showing the newest ${allVisits.length.toLocaleString()} visits` : ''));
   }
 
   // Counts run over `allVisits`, this machine included — only the table below
@@ -282,7 +308,9 @@
         <td class="col-isp">${esc(v.isp) || '—'}</td>
         <td class="nowrap">${esc(v.screen) || '—'}</td>
         <td class="nowrap">${tzLines(v.tz)}</td>
-        <td class="nowrap">${v.visitNo > 1 ? stack('Returning', `visit ${v.visitNo}`) : 'New'}</td>
+        <td class="nowrap">${v.visitNo > 1 ? stack('Returning', `visit ${v.visitNo}`) : 'New'}
+          ${v.vid ? `<button type="button" class="va-mine" data-vid="${esc(v.vid)}"
+            title="Fold every visit from this browser into the summary row at the foot of the table">this is me</button>` : ''}</td>
       </tr>`;
     }).join('') || `<tr><td colspan="14" class="empty">${visits.length ? 'No visits match.' : 'No visits logged yet.'}</td></tr>`;
     $('va-count').textContent = shown.length.toLocaleString();
@@ -305,6 +333,7 @@
     const secs = sum('seconds');
     const list = (arr, one) => arr.length ? (arr.length === 1 ? esc(arr[0]) : `${esc(arr[0])}<span class="sub2"> +${arr.length - 1} more</span>`) : (one || '—');
     const days = new Set(own.map(v => new Date(v.start).toDateString())).size;
+    const browsers = new Set(own.map(v => v.vid)).size;
 
     foot.innerHTML = `<tr class="va-ownrow">
       <td class="dim num">—</td>
@@ -316,7 +345,9 @@
       <td>${stack(latest.country, latest.region, latest.city)}</td>
       <td class="num col-pages">${sum('pages', 1).toLocaleString()}</td>
       <td class="col-landing" colspan="2"><b>This machine — kept out of the list above</b>
-        <span class="sub2">${own.length.toLocaleString()} visit${own.length === 1 ? '' : 's'} on ${days.toLocaleString()} day${days === 1 ? '' : 's'}; still counted in the figures at the top</span></td>
+        <span class="sub2">${own.length.toLocaleString()} visit${own.length === 1 ? '' : 's'} on ${days.toLocaleString()} day${days === 1 ? '' : 's'}
+          from ${browsers.toLocaleString()} browser${browsers === 1 ? '' : 's'}; still counted in the figures at the top</span>
+        <button type="button" class="va-unfold">put these rows back in the table</button></td>
       <td class="col-isp">${list(uniq('isp'))}</td>
       <td class="nowrap">${esc(latest.screen) || '—'}</td>
       <td class="nowrap">${tzLines(latest.tz)}</td>
@@ -348,6 +379,14 @@
     $('va-unlock').addEventListener('click', unlock);
     $('va-pw').addEventListener('keydown', e => { if (e.key === 'Enter') unlock(); });
     $('va-q').addEventListener('input', applyFilter);
+    // "this is me" on any row claims that browser; the foot row can undo the lot.
+    $('va-rows').addEventListener('click', e => {
+      const b = e.target.closest('.va-mine');
+      if (b) markMine(b.dataset.vid);
+    });
+    $('va-own').addEventListener('click', e => {
+      if (e.target.closest('.va-unfold')) unfoldMine();
+    });
     $('va-todayonly').addEventListener('change', applyFilter);
     $('va-prev').addEventListener('click', () => { page--; render(); });
     $('va-next').addEventListener('click', () => { page++; render(); });

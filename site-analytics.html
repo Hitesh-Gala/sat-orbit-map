@@ -107,6 +107,12 @@
       background: rgba(4, 12, 24, .97); border-top: 2px solid rgba(103, 200, 255, .45); overflow-wrap: anywhere; }
     .va-table tfoot .va-ownrow td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
     .va-table tfoot b { color: var(--accent); font-weight: normal; }
+    /* "this is me" / "put these rows back": plain text buttons, so the columns
+       keep their widths. */
+    .va-mine, .va-unfold { display: block; margin-top: 3px; padding: 0; background: none; border: 0;
+      color: var(--dim); font: inherit; font-size: 11px; text-decoration: underline dotted; cursor: pointer; }
+    .va-mine:hover, .va-unfold:hover { color: var(--accent); }
+    .va-unfold { font-size: 12px; }
     .va-table .ip { color: #ffd166; white-space: nowrap; }
     .va-table .dur { color: #8bff9e; }
     .va-table .dim { color: var(--dim); }
@@ -233,7 +239,7 @@
   </main>
 
   <script src="site-analytics.js?v=5"></script>
-  <script src="site-analytics-view.js?v=8"></script>
+  <script src="site-analytics-view.js?v=9"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=26"></script>
 </body>
