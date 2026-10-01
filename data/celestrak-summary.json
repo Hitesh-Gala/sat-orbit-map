@@ -1,13 +1,13 @@
 {
  "source": "CelesTrak",
- "retrieved": "2026-09-30T12:48:57Z",
+ "retrieved": "2026-10-01T13:35:02Z",
  "satcat": {
   "label": "Active payloads",
-  "count": 20148,
+  "count": 20191,
   "topOwners": [
    [
     "US",
-    13797
+    13841
    ],
    [
     "CIS",
@@ -39,10 +39,10 @@
   "label": "SOCRATES close approaches",
   "count": 10,
   "window": {
-   "from": "2026-09-23T19:15:04Z",
-   "to": "2026-09-28T23:38:55Z"
+   "from": "2026-10-01T11:17:35Z",
+   "to": "2026-10-07T08:16:54Z"
   },
-  "generated": "2026-09-24T10:33:43Z",
+  "generated": "2026-10-01T11:55:28Z",
   "note": "Top pairs by max collision probability (SOCRATES)."
  }
 }
