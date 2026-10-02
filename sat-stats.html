@@ -37,7 +37,31 @@
     body.page-stats .stats-shell { zoom: 1.2; min-height: calc(100vh / 1.2); }
     body.page-stats .tle-modal-card { zoom: 1.2; }
     /* The shared .dim helper is a fixed 10px; at this scale it is unreadable. */
+    /* The catalogue table takes a further 10% of type, paid for out of the
+       column padding - the columns were spread wider than their content
+       needed, so the gaps shrink and the words grow. */
+    body.page-stats .stats-table { font-size: 12.1px; }
+    body.page-stats .stats-table thead th {
+      font-size: 11px; padding: 8px 4px; letter-spacing: .08em;
+    }
+    body.page-stats .stats-table tbody td { padding: 6px 4px; }
+    body.page-stats .stats-table .col-photo { width: 56px; padding: 4px 5px; }
+    body.page-stats .stats-table .col-name { min-width: 150px; }
+    body.page-stats .stats-table .col-country { min-width: 132px; }
     body.page-stats .dim { font-size: 12px; }
+    /* The catalogue table reads another 10% up on top of the page zoom, and
+       pays for it out of the gutter between columns - 8px of cell padding
+       either side was more air than the columns needed. */
+    body.page-stats #view-table .stats-table { font-size: 12.1px; }
+    body.page-stats #view-table .stats-table thead th { font-size: 11px; padding: 10px 4px; letter-spacing: .1em; }
+    body.page-stats #view-table .stats-table tbody td { padding: 8px 4px; }
+    body.page-stats #view-table .stats-table .col-photo { padding: 6px 4px; }
+    body.page-stats #view-table .stats-table .dim { font-size: 13.2px; }
+    /* The name and country columns reserved width the tighter cells no longer
+       need, which is what was spreading the table out. */
+    body.page-stats #view-table .stats-table .col-name { min-width: 150px; }
+    body.page-stats #view-table .stats-table .col-country { min-width: 130px; }
+    body.page-stats #view-table .stats-table-wrap { padding: 0 12px 20px; }
     body.page-stats .repo-table .muted,
     body.page-stats .tle-modal .muted { color: #a3b9ce; }
     /* "Previously tracked" section — the archive of objects no longer in

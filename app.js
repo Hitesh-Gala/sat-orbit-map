@@ -89,6 +89,32 @@ function setStatus(msg, cls = '') {
 // before.
 const HOME_ALT = window.matchMedia('(max-width: 720px) and (orientation: portrait)').matches ? 3.5 : 2.4;
 
+// A satellite dot is only a few pixels across, so landing the cursor exactly on
+// one was fiddly.  Each marker now carries an invisible halo: the dot keeps its
+// size, but the pointer counts as "on it" anywhere inside a sphere HOVER_HALO
+// times its radius.  It is done by replacing the mesh's raycast with a single
+// ray-sphere test rather than by adding a second mesh, because the globe can
+// carry ~16k markers and a second mesh each would double the scene.
+const HOVER_HALO = 3.4;
+const _haloSphere = new THREE.Sphere();
+const _haloHit = new THREE.Vector3();
+
+function giveHoverHalo(mesh, radius) {
+  mesh.userData.hoverRadius = radius * HOVER_HALO;
+  mesh.raycast = function (raycaster, intersects) {
+    _haloSphere.center.setFromMatrixPosition(this.matrixWorld);
+    _haloSphere.radius = this.userData.hoverRadius;
+    if (!raycaster.ray.intersectSphere(_haloSphere, _haloHit)) return;
+    // Sort by distance to the dot's centre, not to the halo's surface, so the
+    // nearest satellite wins when two halos overlap.
+    intersects.push({
+      distance: raycaster.ray.origin.distanceTo(_haloSphere.center),
+      point: _haloHit.clone(),
+      object: this,
+    });
+  };
+}
+
 const globe = Globe()($('globe'))
   .globeImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-blue-marble.jpg')
   .bumpImageUrl('https://unpkg.com/three-globe@2.31.1/example/img/earth-topology.png')
@@ -113,7 +139,7 @@ const globe = Globe()($('globe'))
     // Flat 2-D mode uses a uniform dot; 3-D scales gently with
     // altitude so distant GEO markers stay visible.
     const radius = flatMode ? 0.6 : 0.6 + Math.min(1.4, d.alt / 30000);
-    return new THREE.Mesh(
+    const mesh = new THREE.Mesh(
       new THREE.SphereGeometry(radius, 12, 12),
       new THREE.MeshBasicMaterial({
         color: d.cn ? COLOR_CN : COLOR_NONCN,
@@ -122,6 +148,8 @@ const globe = Globe()($('globe'))
         depthWrite: !dim,
       }),
     );
+    giveHoverHalo(mesh, radius);
+    return mesh;
   })
   .objectLabel(satTipHtml)
   .onObjectClick(onObjectClick)
