@@ -66,7 +66,8 @@
   }
 
   function factRow(c) {
-    return ['Founded', 'Headquarters', 'Founders', 'Current Leaders', 'Capital & Scale', 'Education']
+    return ['Founded', 'Headquarters', 'Team size', 'Organisation type', 'Sector as stated',
+            'Founders', 'Current Leaders', 'Capital & Scale', 'Education']
       .filter(function (k) { return c.snapshot[k]; })
       .map(function (k) {
         return '<div class="is-m-fact"><span class="k">' + esc(k) + '</span>' +
@@ -94,7 +95,7 @@
     var h = '';
     h += '<div class="is-m-hero">' +
       '<button type="button" class="is-m-close" id="is-m-close" aria-label="Close">×</button>' +
-      '<div class="is-m-kick"><span class="is-m-num">' + esc(c.num) + ' / 36</span>' +
+      '<div class="is-m-kick"><span class="is-m-num">' + esc(c.num) + ' / ' + COMPANIES.length + '</span>' +
       '<span class="is-m-cat">' + cat.icon + ' ' + esc(cat.label) + '</span></div>' +
       '<h2 class="is-m-name">' + esc(c.name) + '</h2>' +
       '<div class="is-m-sector">' + esc(c.sector) + '</div>' +
@@ -119,6 +120,58 @@
     if (c.story && c.story.length) {
       h += '<div class="is-m-sec"><h3 class="is-m-h">📖 Origin story</h3>' +
         c.story.map(function (s, i) { return '<p class="is-m-p' + (i === 0 ? ' lead' : '') + '">' + esc(s) + '</p>'; }).join('') + '</div>';
+    }
+    // Where the DataWall slide and the research card disagree, both are shown
+    // rather than one quietly overwriting the other.
+    if (c.clashes && c.clashes.length) {
+      h += '<div class="is-m-clash"><h3 class="is-m-h warn">⚠ Where the sources disagree</h3>' +
+        c.clashes.map(function (x) {
+          return '<div class="is-m-clash-row"><div class="f">' + esc(x.field) + '</div>' +
+            '<div class="s"><span class="lab">This profile</span>' + esc(x.page) + '</div>' +
+            '<div class="s alt"><span class="lab">DataWall slide</span>' + esc(x.deck) + '</div>' +
+            (x.note ? '<div class="why">' + esc(x.note) + '</div>' : '') + '</div>';
+        }).join('') + '</div>';
+    }
+    if (c.datawall) {
+      var d = c.datawall, dh = '';
+      var chips = [['Founded', d.founded], ['Team', d.team], ['Type', d.type], ['State', d.state]]
+        .filter(function (p) { return p[1]; })
+        .map(function (p) { return '<div class="is-m-fact"><span class="k">' + esc(p[0]) + '</span><span class="v">' + esc(p[1]) + '</span></div>'; }).join('');
+      if (chips) dh += '<div class="is-m-facts">' + chips + '</div>';
+      if (d.about) dh += '<p class="is-m-p lead">' + esc(d.about) + '</p>';
+      if (d.vision) dh += '<p class="is-m-p"><b class="dw-k">Vision —</b> ' + esc(d.vision) + '</p>';
+      if (d.milestones && d.milestones.length) {
+        dh += '<div class="dw-sub">Milestones</div><ul class="is-m-ach">' +
+          d.milestones.map(function (m) { return '<li>' + esc(m) + '</li>'; }).join('') + '</ul>';
+      }
+      if (d.products && d.products.length) {
+        dh += '<div class="dw-sub">Products &amp; services</div><ul class="is-m-ach">' +
+          d.products.map(function (m) { return '<li>' + esc(m) + '</li>'; }).join('') + '</ul>';
+      }
+      if (d.achievements && d.achievements.length && c.achievements !== d.achievements) {
+        dh += '<div class="dw-sub">Stated achievements</div><ul class="is-m-ach">' +
+          d.achievements.map(function (m) { return '<li>' + esc(m) + '</li>'; }).join('') + '</ul>';
+      }
+      var ct = d.contact || {}, cbits = [];
+      if (ct.website) cbits.push('<a href="' + esc(ct.website) + '" target="_blank" rel="noopener noreferrer">' + esc(host(ct.website)) + ' ↗</a>');
+      if (ct.email) cbits.push(esc(ct.email));
+      if (ct.phone) cbits.push(esc(ct.phone));
+      if (ct.address) cbits.push(esc(ct.address));
+      if (cbits.length) dh += '<div class="dw-contact">' + cbits.join(' · ') + '</div>';
+      if (dh) {
+        h += '<div class="is-m-sec is-m-dw"><h3 class="is-m-h">📋 From the Indian NGEs DataWall ' +
+          '<span class="dw-when">IIC-10 · 10–11 June 2026</span></h3>' + dh + '</div>';
+      }
+    }
+    if (c.siteUpdate && (c.siteUpdate.summary || (c.siteUpdate.points || []).length)) {
+      var u = c.siteUpdate;
+      h += '<div class="is-m-sec is-m-site"><h3 class="is-m-h">🌐 From the company’s own site ' +
+        '<span class="dw-when">checked ' + esc(u.checked) + '</span></h3>' +
+        (u.summary ? '<p class="is-m-p lead">' + esc(u.summary) + '</p>' : '') +
+        ((u.points || []).length ? '<ul class="is-m-ach">' +
+          u.points.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ul>' : '') +
+        (u.url ? '<div class="dw-contact"><a href="' + esc(u.url) + '" target="_blank" rel="noopener noreferrer">' +
+          esc(host(u.url)) + ' ↗</a></div>' : '') + '</div>';
     }
     if (c.researchNote) {
       h += '<div class="is-m-note"><div class="k">Research note</div><div class="v">' + esc(c.researchNote) + '</div></div>';

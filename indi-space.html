@@ -103,6 +103,38 @@
     .is-m-note { margin-top: 16px; border: 1px dashed #3a4a5f; border-radius: 10px; padding: 11px 14px; background: rgba(255,207,92,0.05); }
     .is-m-note .k { font-family: 'Orbitron', sans-serif; font-size: 15px; letter-spacing: .1em; text-transform: uppercase; color: #ffcf5c; margin-bottom: 5px; }
     .is-m-note .v { font-size: 18.8px; line-height: 1.6; color: #b7c6d8; }
+    /* ---- IIC-10 DataWall additions ---------------------------------- */
+    /* What the company itself put on its slide, kept visibly separate from the
+       researched profile above it. */
+    .is-m-dw { border-left: 3px solid var(--cat); padding-left: 14px; }
+    .is-m-dw .dw-when { margin-left: 8px; font-family: var(--mono); font-size: 14px; letter-spacing: .06em;
+      text-transform: none; color: #8aa0b8; }
+    .is-m-dw .dw-sub { margin: 16px 0 7px; font-family: 'Orbitron', sans-serif; font-size: 14.5px;
+      letter-spacing: .1em; text-transform: uppercase; color: var(--cat); }
+    .is-m-dw .dw-k { color: var(--cat); font-weight: 600; }
+    .is-m-dw .dw-contact { margin-top: 14px; font-family: var(--mono); font-size: 15.5px; line-height: 1.7;
+      color: #93a7bd; overflow-wrap: anywhere; }
+    .is-m-dw .dw-contact a { color: var(--cat); text-decoration: none; }
+    /* A clash is never silently resolved: both readings sit side by side. */
+    .is-m-clash { margin-top: 22px; border: 1px solid #a8632b; border-radius: 12px; padding: 13px 15px;
+      background: rgba(255,138,46,0.09); }
+    .is-m-clash .is-m-h.warn { color: #ffae5c; margin-bottom: 4px; }
+    .is-m-clash-row { margin-top: 12px; padding-top: 11px; border-top: 1px dashed rgba(255,174,92,.35); }
+    .is-m-clash-row:first-of-type { border-top: 0; padding-top: 2px; }
+    .is-m-clash-row .f { font-family: 'Orbitron', sans-serif; font-size: 16px; letter-spacing: .06em;
+      color: #ffd9b0; margin-bottom: 6px; }
+    .is-m-clash-row .s { font-size: 18px; line-height: 1.55; color: #e7eef7; margin-bottom: 4px; }
+    .is-m-clash-row .s .lab { display: inline-block; min-width: 132px; font-family: var(--mono); font-size: 14.5px;
+      letter-spacing: .08em; text-transform: uppercase; color: #ffae5c; }
+    .is-m-clash-row .s.alt .lab { color: #67c8ff; }
+    .is-m-clash-row .why { margin-top: 6px; font-size: 16.5px; line-height: 1.55; color: #c2b09c; font-style: italic; }
+    /* What the company's own website says today, kept apart from both the
+       researched profile and the June slide. */
+    .is-m-site { border-left: 3px solid #58d68d; padding-left: 14px; }
+    .is-m-site .dw-when { margin-left: 8px; font-family: var(--mono); font-size: 14px; letter-spacing: .06em;
+      text-transform: none; color: #8aa0b8; }
+    .is-m-site .dw-contact { margin-top: 12px; font-family: var(--mono); font-size: 15.5px; }
+    .is-m-site .dw-contact a { color: #58d68d; text-decoration: none; }
     .is-m-src { display: flex; flex-wrap: wrap; gap: 7px; }
     .is-m-src a { display: inline-flex; align-items: baseline; gap: 6px; max-width: 100%; text-decoration: none; font-family: var(--mono); font-size: 16.5px; color: #b7c6d8; background: rgba(103,200,255,0.05); border: 1px solid #23374d; border-radius: 7px; padding: 6px 10px; }
     .is-m-src a:hover { color: #eaf2fb; border-color: var(--cat); }
@@ -127,7 +159,7 @@
   <header class="is-hero">
     <div class="is-hero-tag">NAZAR · Indian Private Space Ecosystem</div>
     <h1 class="is-hero-title">India’s <b>Private Space</b> Ecosystem</h1>
-    <p class="is-hero-sub">Founder stories and company vignettes — 36 firms turning an engineer’s idea, a student team that refused to disband, or a precision workshop into an industry. Tap any card for the story.</p>
+    <p class="is-hero-sub">Founder stories and company vignettes — 105 firms turning an engineer’s idea, a student team that refused to disband, or a precision workshop into an industry. Tap any card for the story.</p>
     <div class="is-tricolor"></div>
   </header>
 
@@ -140,11 +172,11 @@
   <div class="is-empty" id="is-empty" hidden>No companies match your search.</div>
 
   <footer class="is-foot">
-    36 company vignettes compiled from <b>“People Behind India’s Private Space Industry”</b> — public-source research edition, research frozen 9&nbsp;Aug&nbsp;2026. Each profile links to the company and its cited sources.
+    105 company vignettes: 36 compiled from <b>“People Behind India’s Private Space Industry”</b> (public-source research edition, research frozen 9&nbsp;Aug&nbsp;2026) and 69 more added from the <b>Indian NGEs DataWall</b> at IIC-10, 10–11&nbsp;June&nbsp;2026, where companies wrote their own slides. Fourteen of the original profiles carry that slide too — and where the two disagree, both readings are shown side by side rather than one being quietly overwritten. Each profile links to the company and its cited sources.
   </footer>
 
   <script src="site-analytics.js?v=5"></script>
   <script src="mobile-menu.js?v=26"></script>
-  <script src="indi-space.js?v=1"></script>
+  <script src="indi-space.js?v=3"></script>
 </body>
 </html>
