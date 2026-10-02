@@ -17,6 +17,29 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=52">
   <style>
+    /* ---- Page type scale and contrast -------------------------------
+       Everything on this page reads 20% larger.  It is done as one zoom on
+       the content shell and on each pop-up card rather than by editing every
+       font-size, so boxes, padding and column widths grow with the text and
+       nothing collides.
+         - the zoom sits on .stats-shell, NOT on <body>, so the lighthouse
+           mark (outside the shell) keeps its size;
+         - it sits on .tle-modal-card, NOT on the .tle-modal backdrop, because
+           that backdrop is position:fixed inset:0 and a zoom would stretch it
+           to 120% of the viewport;
+         - 100vh inside a zoomed box is 1.2 viewports tall, hence the divide.
+       Cyan and grey are lifted a few steps for contrast against the black. */
+    body.page-stats {
+      --accent: #8bd8ff;        /* was #67c8ff */
+      --dim:    #a3b9ce;        /* was #7891a8 */
+      --text:   #e2f1ff;        /* was #cfe8ff */
+    }
+    body.page-stats .stats-shell { zoom: 1.2; min-height: calc(100vh / 1.2); }
+    body.page-stats .tle-modal-card { zoom: 1.2; }
+    /* The shared .dim helper is a fixed 10px; at this scale it is unreadable. */
+    body.page-stats .dim { font-size: 12px; }
+    body.page-stats .repo-table .muted,
+    body.page-stats .tle-modal .muted { color: #a3b9ce; }
     /* "Previously tracked" section — the archive of objects no longer in
        the live snapshot.  Page-specific, so scoped here rather than in the
        shared styles.css. */
@@ -663,7 +686,7 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
   <script src="tle-loader.js?v=12"></script>
-  <script src="sat-stats.js?v=20"></script>
+  <script src="sat-stats.js?v=21"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=5"></script>
   <script src="mobile-menu.js?v=26"></script>

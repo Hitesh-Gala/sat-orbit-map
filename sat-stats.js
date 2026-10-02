@@ -1318,8 +1318,20 @@ function commonScaleOptions(label) {
   };
 }
 
+// The page's content shell carries zoom: 1.2 for its type, and a canvas is a
+// bitmap: left alone, Chart.js would size the backing store in the zoomed
+// coordinate space and the browser would stretch it, so every chart would come
+// out soft.  Drawing at dpr x zoom keeps them sharp, and the labels pick up the
+// same 20% as the rest of the page.
+function chartScale() {
+  const shell = document.querySelector('.stats-shell');
+  const z = shell ? parseFloat(getComputedStyle(shell).zoom) : 1;
+  return (window.devicePixelRatio || 1) * (z && !isNaN(z) ? z : 1);
+}
+
 function renderCharts(db) {
   destroyCharts();
+  if (window.Chart) Chart.defaults.devicePixelRatio = chartScale();
   const records = Object.values(db);
 
   // ---- 1. Orbit class doughnut ----
