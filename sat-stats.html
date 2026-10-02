@@ -48,6 +48,24 @@
     body.page-stats .stats-table .col-photo { width: 56px; padding: 4px 5px; }
     body.page-stats .stats-table .col-name { min-width: 150px; }
     body.page-stats .stats-table .col-country { min-width: 132px; }
+    /* The pop-up tables - TLE Repository, Alpha-5, Previously tracked and
+       TLE Analytics - all read 20% larger. Row padding stays put: these tables
+       scroll inside a fixed card, so the extra height costs nothing. */
+    body.page-stats .tle-modal .stats-table,
+    body.page-stats .tle-modal .repo-table { font-size: 13.2px; }
+    body.page-stats .tle-modal .stats-table thead th,
+    body.page-stats .tle-modal .repo-table thead th { font-size: 12px; }
+    body.page-stats .tle-modal .tle-table { font-size: 13.8px; }
+    body.page-stats .tle-modal .tle-table thead th { font-size: 12px; }
+    body.page-stats .tle-modal .tle-table .tle-cell div { font-size: 12.6px; }
+    body.page-stats .tle-modal .tle-validity { font-size: 10.8px; }
+    body.page-stats .tle-modal .tle-fields-table { font-size: 14.4px; }
+    body.page-stats .tle-modal .tle-fields-table thead th { font-size: 12px; }
+    body.page-stats .tle-modal .col-remarks {
+      font-family: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 13.2px; line-height: 1.45; letter-spacing: 0;
+    }
+    body.page-stats .tle-modal .dim { font-size: 12px; }
     body.page-stats .dim { font-size: 12px; }
     /* The catalogue table reads another 10% up on top of the page zoom, and
        pays for it out of the gutter between columns - 8px of cell padding
@@ -196,7 +214,10 @@
     .stats-table th.col-remarks { min-width: 210px; }
     .stats-table td.col-remarks {
       white-space: normal; min-width: 210px; max-width: 360px;
-      font-size: 12px; line-height: 1.42; color: var(--dim);
+      /* Prose, not data: the page's mono face has a short x-height and read
+         small here, so this one column uses the UI sans at 10% more. */
+      font-family: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 13.2px; line-height: 1.45; letter-spacing: 0; color: var(--dim);
     }
     .stats-table td.col-remarks strong { color: var(--text); font-weight: 600; }
     /* "known but not tracked" injected rows + their status pill */
