@@ -29,10 +29,28 @@
       text-transform: uppercase; color: #ffcf5c; }
     .cp-soon .v { margin-top: 10px; font-size: 19px; line-height: 1.65; color: #b7c6d8; }
     .cp-soon a { color: var(--accent); text-decoration: none; }
+    /* A plain link back to Indi-Space. It carries the look of .top-nazar-btn
+       but not the class, because mobile-menu.js turns that class into the
+       NAZAR drop-down - and this button should just go back. Absolute, so it
+       rolls up with the page like the lighthouse mark. */
+    .an-back {
+      position: absolute; top: 14px; left: 14px; z-index: 60;
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 8px 16px; border-radius: 6px;
+      background: rgba(2, 6, 13, 0.85); border: 1px solid var(--accent); color: var(--accent);
+      font-family: var(--mono); font-size: 13px; font-weight: 700; letter-spacing: 0.22em;
+      text-transform: uppercase; text-decoration: none;
+      text-shadow: 0 0 10px rgba(103, 200, 255, 0.55);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+      transition: background .15s, transform .15s, border-color .15s;
+    }
+    .an-back:hover { background: rgba(103, 200, 255, 0.22); transform: scale(1.04); }
+    .an-back:active { transform: scale(0.98); }
   </style>
 </head>
 <body class="page-comparatives">
-  <a class="top-nazar-btn" href="indi-space.html" title="Back to Indi-Space">◉ INDI-SPACE</a>
+  <a class="an-back" href="indi-space.html" title="Back to Indi-Space">◉ INDI-SPACE</a>
   <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
     <img src="data/nazar-logo.svg?v=5" alt="NAZAR">
   </a>
