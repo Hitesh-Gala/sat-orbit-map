@@ -25,8 +25,18 @@
   function host(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } }
   function colorOf(cat) { return (CATS[cat] || CATS.sat).color; }
 
-  var GLOBAL = {}, INDIAN = {}, BY_G = {}, BY_I = {}, NOTE = {};
+  var GLOBAL = {}, INDIAN = {}, BY_G = {}, BY_I = {}, NOTE = {}, LOGOS = {};
   var sel = { g: null, i: null };
+
+  // Logos were fetched once into data/logos (see scripts/gen_analogues.py's
+  // companion fetcher); the manifest says which ones exist, so a company
+  // without one falls back to a monogram instead of a broken image.
+  function logoSrc(slug) { return LOGOS[slug] ? 'data/logos/' + slug + '.png' : ''; }
+  function markHtml(slug, name, color) {
+    var src = logoSrc(slug);
+    if (src) return '<img class="an-logo" src="' + esc(src) + '" alt="" loading="lazy">';
+    return '<span class="an-mono" style="--c:' + color + '">' + esc((name || '?').charAt(0).toUpperCase()) + '</span>';
+  }
 
   // ---- data -------------------------------------------------------------
   function index(an, ind) {
@@ -57,22 +67,25 @@
         .sort(function (a, b) { return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1; })
         .filter(function (g) { return !q || (g.name + ' ' + g.country + ' ' + g.focus).toLowerCase().indexOf(q) !== -1; })
         .map(function (g) {
-          return { id: g.id, name: g.name, sub: g.country + ' · ' + (BY_G[g.id] || []).length + ' Indian counterpart' +
-                   ((BY_G[g.id] || []).length === 1 ? '' : 's'), cat: g.cat };
+          return { id: g.id, slug: 'g-' + g.id, name: g.name, cat: g.cat,
+                   sub: g.country + ' · ' + (BY_G[g.id] || []).length + ' Indian counterpart' +
+                        ((BY_G[g.id] || []).length === 1 ? '' : 's') };
         });
     } else {
       rows = Object.keys(BY_I).map(function (n) { return INDIAN[n]; }).filter(Boolean)
         .sort(function (a, b) { return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1; })
         .filter(function (c) { return !q || (c.name + ' ' + c.sector).toLowerCase().indexOf(q) !== -1; })
         .map(function (c) {
-          return { id: c.num, name: c.name, sub: (BY_I[c.num] || []).length + ' global counterpart' +
-                   ((BY_I[c.num] || []).length === 1 ? '' : 's'), cat: c.cat };
+          return { id: c.num, slug: 'in-' + c.num, name: c.name, cat: c.cat,
+                   sub: (BY_I[c.num] || []).length + ' global counterpart' +
+                        ((BY_I[c.num] || []).length === 1 ? '' : 's') };
         });
     }
     box.innerHTML = rows.map(function (r) {
+      var col = colorOf(r.cat);
       return '<button type="button" class="an-opt' + (sel[which] === r.id ? ' on' : '') + '" data-id="' + esc(r.id) +
-        '" style="--c:' + colorOf(r.cat) + '"><span class="dot"></span>' + esc(r.name) +
-        '<span class="sub">' + esc(r.sub) + '</span></button>';
+        '" style="--c:' + col + '">' + markHtml(r.slug, r.name, col) +
+        '<span class="txt">' + esc(r.name) + '<span class="sub">' + esc(r.sub) + '</span></span></button>';
     }).join('') || '<div class="an-hint">Nothing matches that search.</div>';
   }
 
@@ -100,20 +113,35 @@
     return lines;
   }
 
-  function nodeBox(parent, x, y, title, sub, color, isHub, onPick, onHover) {
-    var w = isHub ? 232 : 186, lines = wrap(title, isHub ? 22 : 20, 2);
-    var h = (isHub ? 30 : 24) + lines.length * (isHub ? 19 : 16) + (sub ? 15 : 0);
+  function nodeBox(parent, x, y, title, sub, color, isHub, onPick, onHover, slug) {
+    var lg = isHub ? 28 : 22;                       // the mark sits inside the box, at its left
+    var w = (isHub ? 232 : 186) + lg + 6, lines = wrap(title, isHub ? 22 : 20, 2);
+    var h = Math.max((isHub ? 30 : 24) + lines.length * (isHub ? 19 : 16) + (sub ? 15 : 0), lg + 16);
     var g = el('g', { class: 'node' + (isHub ? ' hub' : ''), style: '--cat:' + color, tabindex: '0',
                       role: 'button', 'aria-label': title }, parent);
     el('rect', { class: 'bg', x: x - w / 2, y: y - h / 2, width: w, height: h, rx: 9 }, g);
+    var lx = x - w / 2 + 10, ly = y - lg / 2, src = logoSrc(slug);
+    if (src) {
+      el('rect', { x: lx, y: ly, width: lg, height: lg, rx: 5, fill: '#fff' }, g);
+      var im = el('image', { x: lx + 2, y: ly + 2, width: lg - 4, height: lg - 4,
+                             preserveAspectRatio: 'xMidYMid meet' }, g);
+      im.setAttribute('href', src);
+      im.setAttributeNS('http://www.w3.org/1999/xlink', 'href', src);
+    } else {
+      el('rect', { x: lx, y: ly, width: lg, height: lg, rx: 5, fill: color, 'fill-opacity': '.85' }, g);
+      var mono = el('text', { x: lx + lg / 2, y: ly + lg / 2 + 5, 'text-anchor': 'middle',
+                              style: 'font-size:' + (lg - 10) + 'px;fill:#04101c;font-weight:700' }, g);
+      mono.textContent = (title || '?').charAt(0).toUpperCase();
+    }
+    var tx = x + (lg + 6) / 2;                      // text centres in what is left of the box
     var ty = y - h / 2 + (isHub ? 24 : 19);
     lines.forEach(function (ln) {
-      var t = el('text', { x: x, y: ty, 'text-anchor': 'middle' }, g);
+      var t = el('text', { x: tx, y: ty, 'text-anchor': 'middle' }, g);
       t.textContent = ln;
       ty += isHub ? 19 : 16;
     });
     if (sub) {
-      var s = el('text', { class: 'sub', x: x, y: ty + 1, 'text-anchor': 'middle' }, g);
+      var s = el('text', { class: 'sub', x: tx, y: ty + 1, 'text-anchor': 'middle' }, g);
       s.textContent = sub;
     }
     if (onPick) {
@@ -139,7 +167,8 @@
       hubSub = hub.country;
       leaves = (BY_G[id] || []).map(function (n) {
         var c = INDIAN[n];
-        return { id: n, name: c ? c.name : n, sub: c ? (CATS[c.cat] || {}).label : '', color: colorOf(c && c.cat) };
+        return { id: n, slug: 'in-' + n, name: c ? c.name : n,
+                 sub: c ? (CATS[c.cat] || {}).label : '', color: colorOf(c && c.cat) };
       });
     } else {
       hub = INDIAN[id];
@@ -148,7 +177,8 @@
       hubSub = 'India · ' + ((CATS[hub.cat] || {}).label || '');
       leaves = (BY_I[id] || []).map(function (gid) {
         var g = GLOBAL[gid];
-        return { id: gid, name: g ? g.name : gid, sub: g ? g.country : '', color: colorOf(g && g.cat) };
+        return { id: gid, slug: 'g-' + gid, name: g ? g.name : gid,
+                 sub: g ? g.country : '', color: colorOf(g && g.cat) };
       });
     }
 
@@ -167,9 +197,10 @@
       var edge = el('path', { class: 'edge', style: '--cat:' + leaf.color,
                               d: 'M ' + cx + ' ' + cy + ' Q ' + mx + ' ' + my + ' ' + x + ' ' + y }, edges);
       var detail = function () { showDetail(which, leaf, edge, edges); };
-      nodeBox(nodes, x, y, leaf.name, leaf.sub, leaf.color, false, function () { jump(which, leaf.id); }, detail);
+      nodeBox(nodes, x, y, leaf.name, leaf.sub, leaf.color, false, function () { jump(which, leaf.id); }, detail, leaf.slug);
     });
-    nodeBox(nodes, cx, cy, hub.name, hubSub, hubColor, true, null, function () { showHub(which, hub); });
+    nodeBox(nodes, cx, cy, hub.name, hubSub, hubColor, true, null, function () { showHub(which, hub); },
+            which === 'g' ? 'g-' + hub.id : 'in-' + hub.num);
     showHub(which, hub);
   }
 
@@ -178,7 +209,8 @@
     var box = $('det-' + which);
     var isG = which === 'g';
     var count = (isG ? BY_G[hub.id] : BY_I[hub.num]) || [];
-    box.innerHTML = '<div class="nm">' + esc(hub.name) +
+    box.innerHTML = '<div class="nm">' + markHtml(isG ? 'g-' + hub.id : 'in-' + hub.num, hub.name, colorOf(hub.cat)) +
+      '<span>' + esc(hub.name) + '</span>' +
       '<span class="flag">' + esc(isG ? hub.country : 'India') + '</span></div>' +
       '<div class="ft">' + esc(isG ? hub.focus : hub.sector) + '</div>' +
       '<div class="why">' + count.length + (isG ? ' Indian' : ' global') + ' counterpart' + (count.length === 1 ? '' : 's') +
@@ -197,7 +229,8 @@
     var subject = isG ? ind : glob;
     if (!subject) return;
     var box = $('det-' + which);
-    box.innerHTML = '<div class="nm">' + esc(subject.name) +
+    box.innerHTML = '<div class="nm">' + markHtml(leaf.slug, subject.name, leaf.color) +
+      '<span>' + esc(subject.name) + '</span>' +
       '<span class="flag">' + esc(isG ? 'India' : glob.country) + '</span></div>' +
       '<div class="ft">' + esc(isG ? ind.sector : glob.focus) + '</div>' +
       '<div class="why">' + esc(why(gid, inum)) + '</div>' +
@@ -241,7 +274,9 @@
   Promise.all([
     fetch('data/analogues.json').then(function (r) { return r.json(); }),
     fetch('data/indi-space.json').then(function (r) { return r.json(); }),
+    fetch('data/logos/_manifest.json').then(function (r) { return r.json(); }).catch(function () { return []; }),
   ]).then(function (res) {
+    (res[2] || []).forEach(function (slug) { LOGOS[slug] = 1; });
     index(res[0], res[1]);
     wire('g');
     wire('i');

@@ -14,11 +14,14 @@
   <link rel="stylesheet" href="styles.css?v=52">
   <style>
     body.page-analogues { overflow-y: auto; }
+    /* The INDI-SPACE button rolls up with the page instead of sitting fixed
+       over the content - the same behaviour as the lighthouse mark. */
+    body.page-analogues .top-nazar-btn { position: absolute; }
     :root { --cat: #67c8ff; }
     .an-cat-launch { --cat: #ff7a3c; } .an-cat-sat { --cat: #67c8ff; } .an-cat-eo { --cat: #58d68d; }
     .an-cat-rf { --cat: #c9a0ff; } .an-cat-heavy { --cat: #ffcf5c; } .an-cat-ssa { --cat: #ff6f9c; }
 
-    .an-hero { max-width: 1180px; margin: 0 auto; padding: 74px 22px 6px; text-align: center; }
+    .an-hero { max-width: none; margin: 0 auto; padding: 74px 20px 6px; text-align: center; }
     .an-hero-tag { font-family: var(--mono); font-size: 18px; letter-spacing: .22em; text-transform: uppercase; color: #ff9f6a; }
     .an-hero-title { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(36px, 4.6vw, 60px);
       line-height: 1.08; margin: 12px 0 8px; color: #fff; }
@@ -28,14 +31,20 @@
     .an-tricolor { width: 120px; height: 5px; margin: 16px auto 0; border-radius: 3px;
       background: linear-gradient(90deg, #ff9933 0 33%, #f4f4f4 33% 66%, #138808 66% 100%); box-shadow: 0 0 18px rgba(255,153,51,.35); }
 
-    .an-sec { max-width: 1180px; margin: 30px auto 0; padding: 0 22px; }
+    /* Sections run the full width of the screen bar a 20px gutter, and carry
+       the +25% type as one zoom so boxes and text scale together. */
+    .an-sec { max-width: none; margin: 30px auto 0; padding: 0 16px; zoom: 1.25; }
+    .an-sec + .an-sec { margin-top: 58px; }
+    .an-div { max-width: none; margin: 46px 20px 0; height: 1px; border: 0;
+      background: linear-gradient(90deg, transparent, #2b4663 12%, #67c8ff 50%, #2b4663 88%, transparent);
+      box-shadow: 0 0 14px rgba(103,200,255,.25); }
     .an-sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; border-bottom: 1px solid #23374d; padding-bottom: 10px; }
     .an-sec-n { font-family: 'Orbitron', sans-serif; font-size: 15px; letter-spacing: .18em; color: #ff9f6a; }
     .an-sec-h { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 25px; color: #eaf2fb; margin: 0; }
     .an-sec-p { flex: 1 1 320px; font-size: 17.5px; line-height: 1.55; color: #93a7bd; margin: 0; }
 
     /* hub picker + web, side by side on a desktop */
-    .an-wrap { display: grid; grid-template-columns: 330px 1fr; gap: 18px; margin-top: 16px; align-items: start; }
+    .an-wrap { display: grid; grid-template-columns: 300px 1fr; gap: 18px; margin-top: 16px; align-items: start; }
     .an-pick { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px;
       max-height: 620px; overflow-y: auto; overflow-x: hidden; }
     .an-search { width: 100%; box-sizing: border-box; background: rgba(8,16,28,.9); border: 1px solid #23374d; border-radius: 8px;
@@ -48,6 +57,16 @@
     .an-opt.on { background: rgba(103,200,255,.13); border-left-color: var(--c, #67c8ff); color: #fff; }
     .an-opt .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px;
       background: var(--c, #67c8ff); box-shadow: 0 0 7px var(--c, #67c8ff); }
+    /* Company marks are fetched once into data/logos and served from here, so
+       the page never calls a third party.  Firms without one get a monogram. */
+    .an-logo, .an-mono { width: 22px; height: 22px; border-radius: 5px; flex: 0 0 auto; }
+    .an-logo { object-fit: contain; background: #fff; padding: 2px; box-sizing: border-box; }
+    .an-mono { display: inline-flex; align-items: center; justify-content: center; font-family: 'Orbitron', sans-serif;
+      font-size: 12px; color: #04101c; background: var(--c, #67c8ff); }
+    .an-opt { display: flex; align-items: center; gap: 9px; }
+    .an-opt .txt { min-width: 0; }
+    .an-detail .nm { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .an-detail .an-logo, .an-detail .an-mono { width: 30px; height: 30px; border-radius: 7px; font-size: 15px; }
 
     .an-webwrap { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 6px 6px 10px; min-height: 420px; }
     .an-web { display: block; width: 100%; height: auto; }
@@ -74,7 +93,7 @@
     .an-detail a:hover, .an-detail button:hover { color: #fff; border-color: var(--accent); }
     .an-hint { margin-top: 8px; font-family: var(--mono); font-size: 14.5px; color: #7f94ab; }
 
-    .an-foot { max-width: 1180px; margin: 30px auto 48px; padding: 0 22px; font-size: 16.5px; line-height: 1.65; color: #8aa0b8; text-align: center; }
+    .an-foot { max-width: none; margin: 30px auto 48px; padding: 0 20px; font-size: 16.5px; line-height: 1.65; color: #8aa0b8; text-align: center; }
 
     @media (max-width: 900px) {
       .an-wrap { grid-template-columns: 1fr; }
@@ -115,6 +134,8 @@
     </div>
   </section>
 
+  <hr class="an-div">
+
   <section class="an-sec" id="sec-i">
     <div class="an-sec-head">
       <span class="an-sec-n">SECTION 02</span>
@@ -138,6 +159,6 @@
 
   <script src="site-analytics.js?v=5"></script>
   <script src="mobile-menu.js?v=26"></script>
-  <script src="analogues.js?v=1"></script>
+  <script src="analogues.js?v=2"></script>
 </body>
 </html>
