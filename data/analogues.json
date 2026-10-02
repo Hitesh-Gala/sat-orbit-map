@@ -1,0 +1,2552 @@
+{
+ "compiled": "2 October 2026",
+ "about": "Global reference companies set against the Indian firms on the Indi-Space page that do comparable work. A pairing means the two are solving a similar problem - not that they are at the same stage, scale or maturity.",
+ "global": [
+  {
+   "id": "aacclyde",
+   "name": "AAC Clyde Space",
+   "country": "Sweden / UK",
+   "cat": "sat",
+   "focus": "Cubesat subsystems, full missions and space-data-as-a-service",
+   "url": "https://www.aac-clyde.space/"
+  },
+  {
+   "id": "aethero",
+   "name": "Aethero",
+   "country": "USA",
+   "cat": "sat",
+   "focus": "Radiation-tolerant edge GPUs for autonomous spacecraft",
+   "url": "https://aethero.com/"
+  },
+  {
+   "id": "agile",
+   "name": "Agile Space Industries",
+   "country": "USA",
+   "cat": "launch",
+   "focus": "In-space thrusters and propulsion test services for other builders",
+   "url": "https://agilespaceindustries.com/"
+  },
+  {
+   "id": "albedo",
+   "name": "Albedo",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "Very-low-Earth-orbit satellites for 10 cm optical and thermal imagery",
+   "url": "https://albedo.com/"
+  },
+  {
+   "id": "isotropic",
+   "name": "All.Space (Isotropic Systems)",
+   "country": "UK",
+   "cat": "rf",
+   "focus": "Multi-beam optical-RF terminals linking several satellites at once",
+   "url": "https://all.space/"
+  },
+  {
+   "id": "amsat",
+   "name": "AMSAT",
+   "country": "International",
+   "cat": "sat",
+   "focus": "Volunteer-built amateur radio satellites - the original student pipeline",
+   "url": "https://www.amsat.org/"
+  },
+  {
+   "id": "anello",
+   "name": "Anello Photonics",
+   "country": "USA",
+   "cat": "rf",
+   "focus": "Silicon photonic optical gyroscope on a chip for navigation without GNSS",
+   "url": "https://www.anellophotonics.com/"
+  },
+  {
+   "id": "ansys",
+   "name": "Ansys (STK / Systems Tool Kit)",
+   "country": "USA",
+   "cat": "heavy",
+   "focus": "Physics simulation and the mission-analysis standard for orbital modelling",
+   "url": "https://www.ansys.com/"
+  },
+  {
+   "id": "apex",
+   "name": "Apex Space",
+   "country": "USA",
+   "cat": "sat",
+   "focus": "Productised satellite buses built on an assembly line for fast delivery",
+   "url": "https://www.apexspace.com/"
+  },
+  {
+   "id": "astspacemobile",
+   "name": "AST SpaceMobile",
+   "country": "USA",
+   "cat": "rf",
+   "focus": "Direct-to-handset broadband from very large unfolding phased arrays",
+   "url": "https://ast-science.com/"
+  },
+  {
+   "id": "astrocast",
+   "name": "Astrocast",
+   "country": "Switzerland",
+   "cat": "rf",
+   "focus": "L-band nanosatellite IoT network and modules",
+   "url": "https://www.astrocast.com/"
+  },
+  {
+   "id": "astroscale",
+   "name": "Astroscale",
+   "country": "Japan",
+   "cat": "ssa",
+   "focus": "Debris removal, life extension and close-approach inspection missions",
+   "url": "https://astroscale.com/"
+  },
+  {
+   "id": "atlasspace",
+   "name": "ATLAS Space Operations",
+   "country": "USA",
+   "cat": "sat",
+   "focus": "Freedom software platform federating third-party antennas",
+   "url": "https://atlasground.com/"
+  },
+  {
+   "id": "atmos",
+   "name": "ATMOS Space Cargo",
+   "country": "Germany",
+   "cat": "sat",
+   "focus": "PHOENIX inflatable-heatshield re-entry capsules for payload return",
+   "url": "https://atmos-space-cargo.com/"
+  },
+  {
+   "id": "aurora",
+   "name": "Aurora Insight",
+   "country": "USA",
+   "cat": "rf",
+   "focus": "Spectrum measurement and RF environment mapping from space and air",
+   "url": "https://www.aurorainsight.com/"
+  },
+  {
+   "id": "awsgs",
+   "name": "AWS Ground Station",
+   "country": "USA",
+   "cat": "sat",
+   "focus": "Antennas rented by the minute, with downlinked data landing straight in the cloud",
+   "url": "https://aws.amazon.com/ground-station/"
+  },
+  {
+   "id": "axaxl",
+   "name": "AXA XL Space",
+   "country": "France / USA",
+   "cat": "heavy",
+   "focus": "Underwriter of launch and in-orbit policies, and of newer parametric covers",
+   "url": "https://axaxl.com/"
+  },
+  {
+   "id": "benchmark",
+   "name": "Benchmark Space Systems",
+   "country": "USA",
+   "cat": "launch",
+   "focus": "Non-toxic chemical and hybrid propulsion with in-space refuelling plans",
+   "url": "https://www.benchmarkspacesystems.com/"
+  },
+  {
+   "id": "beyondgravity",
+   "name": "Beyond Gravity (RUAG Space)",
+   "country": "Switzerland",
+   "cat": "heavy",
+   "focus": "Launcher fairings, structures, mechanisms and satellite electronics",
+   "url": "https://www.beyondgravity.com/"
+  },
+  {
+   "id": "blacksky",
+   "name": "BlackSky",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "High-revisit optical imaging with automated tipping and monitoring",
+   "url": "https://www.blacksky.com/"
+  },
+  {
+   "id": "bluecanyon",
+   "name": "Blue Canyon Technologies (RTX)",
+   "country": "USA",
+   "cat": "sat",
+   "focus": "XB-series buses and the XACT attitude determination and control units",
+   "url": "https://bluecanyontech.com/"
+  },
+  {
+   "id": "blueorigin",
+   "name": "Blue Origin",
+   "country": "USA",
+   "cat": "launch",
+   "focus": "New Shepard suborbital flights and the New Glenn orbital vehicle",
+   "url": "https://www.blueorigin.com/"
+  },
+  {
+   "id": "ecaps",
+   "name": "Bradford ECAPS",
+   "country": "Sweden",
+   "cat": "launch",
+   "focus": "LMP-103S high-performance green monopropellant, flight-proven since 2010",
+   "url": "https://ecaps.space/"
+  },
+  {
+   "id": "capella",
+   "name": "Capella Space",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "Commercial X-band SAR with sub-metre spotlight imaging",
+   "url": "https://www.capellaspace.com/"
+  },
+  {
+   "id": "capgemini",
+   "name": "Capgemini Engineering",
+   "country": "France",
+   "cat": "heavy",
+   "focus": "Outsourced R&D and engineering services across aerospace programmes",
+   "url": "https://capgemini-engineering.com/"
+  },
+  {
+   "id": "clearspace",
+   "name": "ClearSpace",
+   "country": "Switzerland",
+   "cat": "ssa",
+   "focus": "ESA-backed capture and de-orbit of large derelict objects",
+   "url": "https://clearspace.today/"
+  },
+  {
+   "id": "climateai",
+   "name": "ClimateAi",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "Seasonal climate risk forecasting for agriculture and supply chains",
+   "url": "https://climate.ai/"
+  },
+  {
+   "id": "climavision",
+   "name": "Climavision",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "Private radar and satellite data fused into high-resolution forecasts",
+   "url": "https://climavision.com/"
+  },
+  {
+   "id": "cubespace",
+   "name": "CubeSpace",
+   "country": "South Africa",
+   "cat": "sat",
+   "focus": "Plug-and-play attitude determination and control for cubesats",
+   "url": "https://www.cubespace.co.za/"
+  },
+  {
+   "id": "dorbit",
+   "name": "D-Orbit",
+   "country": "Italy",
+   "cat": "sat",
+   "focus": "ION orbital transfer vehicle, last-mile delivery and in-orbit services",
+   "url": "https://www.dorbit.space/"
+  },
+  {
+   "id": "dassault",
+   "name": "Dassault Systèmes",
+   "country": "France",
+   "cat": "heavy",
+   "focus": "3DEXPERIENCE: CAD, simulation and digital-twin engineering platforms",
+   "url": "https://www.3ds.com/"
+  },
+  {
+   "id": "dawn",
+   "name": "Dawn Aerospace",
+   "country": "New Zealand / Netherlands",
+   "cat": "launch",
+   "focus": "Green bipropellant thrusters and the Mk-II Aurora rocket-powered aircraft",
+   "url": "https://www.dawnaerospace.com/"
+  },
+  {
+   "id": "descartes",
+   "name": "Descartes Labs",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "Petabyte-scale geospatial data refinery and analytics platform",
+   "url": "https://www.descarteslabs.com/"
+  },
+  {
+   "id": "earthdaily",
+   "name": "EarthDaily Analytics",
+   "country": "Canada",
+   "cat": "eo",
+   "focus": "Analysis-ready imagery pipelines and a daily-change constellation",
+   "url": "https://earthdaily.com/"
+  },
+  {
+   "id": "element",
+   "name": "Element Materials Technology",
+   "country": "UK",
+   "cat": "heavy",
+   "focus": "Independent testing, qualification and certification for aerospace parts",
+   "url": "https://www.element.com/"
+  },
+  {
+   "id": "endurosat",
+   "name": "EnduroSat",
+   "country": "Bulgaria",
+   "cat": "sat",
+   "focus": "Modular cubesat components and shared-satellite missions",
+   "url": "https://www.endurosat.com/"
+  },
+  {
+   "id": "esri",
+   "name": "Esri",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "ArcGIS - the reference GIS software stack for mapping and spatial analysis",
+   "url": "https://www.esri.com/"
+  },
+  {
+   "id": "exoanalytic",
+   "name": "ExoAnalytic Solutions",
+   "country": "USA",
+   "cat": "ssa",
+   "focus": "Worldwide optical telescope network watching GEO behaviour",
+   "url": "https://exoanalytic.com/"
+  },
+  {
+   "id": "exolaunch",
+   "name": "Exolaunch",
+   "country": "Germany",
+   "cat": "sat",
+   "focus": "Deployment systems and rideshare integration for smallsats",
+   "url": "https://exolaunch.com/"
+  },
+  {
+   "id": "exotrail",
+   "name": "Exotrail",
+   "country": "France",
+   "cat": "launch",
+   "focus": "Electric propulsion plus the spacevan orbital transfer vehicle",
+   "url": "https://www.exotrail.com/"
+  },
+  {
+   "id": "firefly",
+   "name": "Firefly Aerospace",
+   "country": "USA",
+   "cat": "launch",
+   "focus": "Alpha launcher, Blue Ghost lunar lander and orbital transfer vehicles",
+   "url": "https://fireflyspace.com/"
+  },
+  {
+   "id": "gallagher",
+   "name": "Gallagher Space",
+   "country": "UK / USA",
+   "cat": "heavy",
+   "focus": "Specialist space insurance broking for launch and in-orbit risk",
+   "url": "https://www.ajg.com/"
+  },
+  {
+   "id": "gilmour",
+   "name": "Gilmour Space",
+   "country": "Australia",
+   "cat": "launch",
+   "focus": "Eris hybrid-propulsion small launcher and satellite platforms",
+   "url": "https://www.gspace.com/"
+  },
+  {
+   "id": "gmv",
+   "name": "GMV",
+   "country": "Spain",
+   "cat": "heavy",
+   "focus": "Flight dynamics, mission control and GNSS software behind many missions",
+   "url": "https://www.gmv.com/"
+  },
+  {
+   "id": "gomspace",
+   "name": "GomSpace",
+   "country": "Denmark",
+   "cat": "sat",
+   "focus": "Nanosatellite platforms, radios and mission services",
+   "url": "https://gomspace.com/"
+  },
+  {
+   "id": "gro",
+   "name": "Gro Intelligence",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "Agricultural and climate data models; ceased trading in 2024",
+   "url": "https://en.wikipedia.org/wiki/Gro_Intelligence"
+  },
+  {
+   "id": "hawkeye360",
+   "name": "HawkEye 360",
+   "country": "USA",
+   "cat": "rf",
+   "focus": "Formation-flying RF geolocation: dark ships, GPS interference, emitter mapping",
+   "url": "https://www.he360.com/"
+  },
+  {
+   "id": "honeywell",
+   "name": "Honeywell Aerospace",
+   "country": "USA",
+   "cat": "rf",
+   "focus": "Avionics, inertial sensors and spacecraft electronics at prime scale",
+   "url": "https://aerospace.honeywell.com/"
+  },
+  {
+   "id": "hydrosat",
+   "name": "Hydrosat",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "Thermal infrared for crop water stress and yield forecasting",
+   "url": "https://hydrosat.com/"
+  },
+  {
+   "id": "iceye",
+   "name": "ICEYE",
+   "country": "Finland",
+   "cat": "eo",
+   "focus": "X-band SAR smallsat constellation; all-weather, day-night imaging and flood intelligence",
+   "url": "https://www.iceye.com/"
+  },
+  {
+   "id": "interstellar",
+   "name": "Interstellar Technologies",
+   "country": "Japan",
+   "cat": "launch",
+   "focus": "MOMO sounding rocket and the ZERO small orbital launcher",
+   "url": "https://www.istellartech.com/en/"
+  },
+  {
+   "id": "inversion",
+   "name": "Inversion Space",
+   "country": "USA",
+   "cat": "sat",
+   "focus": "Re-entry vehicles that store cargo in orbit and return it on demand",
+   "url": "https://www.inversionspace.com/"
+  },
+  {
+   "id": "iqps",
+   "name": "iQPS",
+   "country": "Japan",
+   "cat": "eo",
+   "focus": "QPS-SAR constellation built around a deployable lightweight antenna",
+   "url": "https://i-qps.net/en/"
+  },
+  {
+   "id": "isar",
+   "name": "Isar Aerospace",
+   "country": "Germany",
+   "cat": "launch",
+   "focus": "Spectrum small launcher built on in-house Aquila engines",
+   "url": "https://www.isaraerospace.com/"
+  },
+  {
+   "id": "jupiter",
+   "name": "Jupiter Intelligence",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "Physical climate risk analytics for assets and infrastructure",
+   "url": "https://jupiterintel.com/"
+  },
+  {
+   "id": "kallmorris",
+   "name": "Kall Morris Inc",
+   "country": "USA",
+   "cat": "ssa",
+   "focus": "Captures tumbling debris without grapple fixtures, using adhesive end effectors",
+   "url": "https://www.kallmorris.com/"
+  },
+  {
+   "id": "kayhan",
+   "name": "Kayhan Space",
+   "country": "USA",
+   "cat": "ssa",
+   "focus": "Automated conjunction screening and manoeuvre planning (Pathfinder)",
+   "url": "https://kayhan.space/"
+  },
+  {
+   "id": "keplercomms",
+   "name": "Kepler Communications",
+   "country": "Canada",
+   "cat": "rf",
+   "focus": "Optical data relay network in LEO - note the name clash with India’s Kepler Aerospace",
+   "url": "https://kepler.space/"
+  },
+  {
+   "id": "kleos",
+   "name": "Kleos Space",
+   "country": "Luxembourg",
+   "cat": "rf",
+   "focus": "RF reconnaissance clusters; wound down in 2024 - a cautionary comparison",
+   "url": "https://en.wikipedia.org/wiki/Kleos_Space"
+  },
+  {
+   "id": "ksat",
+   "name": "Kongsberg Satellite Services (KSAT)",
+   "country": "Norway",
+   "cat": "sat",
+   "focus": "The largest commercial ground-station network, polar to equatorial",
+   "url": "https://www.ksat.no/"
+  },
+  {
+   "id": "kuva",
+   "name": "Kuva Space",
+   "country": "Finland",
+   "cat": "eo",
+   "focus": "Hyperspectral cubesat constellation with a data-products business",
+   "url": "https://kuvaspace.com/"
+  },
+  {
+   "id": "kvh",
+   "name": "KVH Industries",
+   "country": "USA",
+   "cat": "rf",
+   "focus": "Fibre-optic gyros and inertial systems for guidance and stabilisation",
+   "url": "https://www.kvh.com/"
+  },
+  {
+   "id": "kymeta",
+   "name": "Kymeta",
+   "country": "USA",
+   "cat": "rf",
+   "focus": "Flat-panel electronically steered antennas for on-the-move connectivity",
+   "url": "https://www.kymetacorp.com/"
+  },
+  {
+   "id": "aerojet",
+   "name": "L3Harris Aerojet Rocketdyne",
+   "country": "USA",
+   "cat": "heavy",
+   "focus": "Rocket engines and propulsion hardware for launchers and defence",
+   "url": "https://www.rocket.com/"
+  },
+  {
+   "id": "leafspace",
+   "name": "Leaf Space",
+   "country": "Italy",
+   "cat": "sat",
+   "focus": "Ground-segment-as-a-service for smallsat operators",
+   "url": "https://leaf.space/"
+  },
+  {
+   "id": "leolabs",
+   "name": "LeoLabs",
+   "country": "USA",
+   "cat": "ssa",
+   "focus": "Global phased-array radar network tracking LEO objects commercially",
+   "url": "https://leolabs.space/"
+  },
+  {
+   "id": "librespace",
+   "name": "Libre Space Foundation",
+   "country": "Greece",
+   "cat": "sat",
+   "focus": "Open-source satellites, ground stations (SatNOGS) and launcher work",
+   "url": "https://libre.space/"
+  },
+  {
+   "id": "littleplace",
+   "name": "Little Place Labs",
+   "country": "USA",
+   "cat": "sat",
+   "focus": "Near-real-time onboard analytics delivered seconds after capture",
+   "url": "https://littleplace.com/"
+  },
+  {
+   "id": "lynk",
+   "name": "Lynk Global",
+   "country": "USA",
+   "cat": "rf",
+   "focus": "Satellite-direct-to-standard-phone messaging service",
+   "url": "https://lynk.world/"
+  },
+  {
+   "id": "marsh",
+   "name": "Marsh Space Projects",
+   "country": "UK",
+   "cat": "heavy",
+   "focus": "Space risk placement and structured cover for operators and lenders",
+   "url": "https://www.marsh.com/"
+  },
+  {
+   "id": "mercury",
+   "name": "Mercury Systems",
+   "country": "USA",
+   "cat": "rf",
+   "focus": "Rugged processing, RF subsystems and secure electronics for defence",
+   "url": "https://www.mrcy.com/"
+  },
+  {
+   "id": "planetarycomputer",
+   "name": "Microsoft Planetary Computer",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "Open Earth data catalogue with hosted compute and natural-language querying",
+   "url": "https://planetarycomputer.microsoft.com/"
+  },
+  {
+   "id": "morpheus",
+   "name": "Morpheus Space",
+   "country": "Germany / USA",
+   "cat": "launch",
+   "focus": "Field-emission electric propulsion and constellation-scale mobility software",
+   "url": "https://www.morpheus-space.com/"
+  },
+  {
+   "id": "myriota",
+   "name": "Myriota",
+   "country": "Australia",
+   "cat": "rf",
+   "focus": "Low-power satellite IoT for remote assets with years of battery life",
+   "url": "https://myriota.com/"
+  },
+  {
+   "id": "nanoavionics",
+   "name": "NanoAvionics (Kongsberg)",
+   "country": "Lithuania",
+   "cat": "sat",
+   "focus": "Preconfigured nanosat and microsat buses sold as a product line",
+   "url": "https://nanoavionics.com/"
+  },
+  {
+   "id": "spacelogistics",
+   "name": "Northrop Grumman SpaceLogistics",
+   "country": "USA",
+   "cat": "ssa",
+   "focus": "Mission Extension Vehicles that docked with and flew ageing Intelsat craft",
+   "url": "https://www.northropgrumman.com/space/space-logistics-services"
+  },
+  {
+   "id": "northstar",
+   "name": "NorthStar Earth & Space",
+   "country": "Canada",
+   "cat": "ssa",
+   "focus": "Space-based optical SSA - watching space from space rather than the ground",
+   "url": "https://northstar-data.com/"
+  },
+  {
+   "id": "omnispace",
+   "name": "Omnispace",
+   "country": "USA",
+   "cat": "rf",
+   "focus": "Global 5G NTN using S-band spectrum and a hybrid LEO-GEO architecture",
+   "url": "https://omnispace.com/"
+  },
+  {
+   "id": "opencosmos",
+   "name": "Open Cosmos",
+   "country": "UK",
+   "cat": "sat",
+   "focus": "Mission-as-a-service: satellite, launch, ground and data in one contract",
+   "url": "https://www.open-cosmos.com/"
+  },
+  {
+   "id": "orbex",
+   "name": "Orbex",
+   "country": "UK",
+   "cat": "launch",
+   "focus": "Prime micro-launcher running on bio-propane, built around 3D-printed engines",
+   "url": "https://orbex.space/"
+  },
+  {
+   "id": "orbion",
+   "name": "Orbion Space Technology",
+   "country": "USA",
+   "cat": "launch",
+   "focus": "Mass-manufactured Hall-effect thrusters for smallsat constellations",
+   "url": "https://orbionspace.com/"
+  },
+  {
+   "id": "orbitfab",
+   "name": "Orbit Fab",
+   "country": "USA",
+   "cat": "launch",
+   "focus": "In-orbit refuelling: standard fuel ports and propellant depots",
+   "url": "https://www.orbitfab.com/"
+  },
+  {
+   "id": "orbitalinsight",
+   "name": "Orbital Insight (Privateer)",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "Geospatial activity analytics from imagery and location data",
+   "url": "https://www.privateer.com/"
+  },
+  {
+   "id": "orbitalsidekick",
+   "name": "Orbital Sidekick",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "Hyperspectral monitoring of pipelines, methane and mineralogy",
+   "url": "https://www.orbitalsidekick.com/"
+  },
+  {
+   "id": "ororatech",
+   "name": "OroraTech",
+   "country": "Germany",
+   "cat": "eo",
+   "focus": "Thermal cubesats for wildfire detection and global heat monitoring",
+   "url": "https://ororatech.com/"
+  },
+  {
+   "id": "oxfordspace",
+   "name": "Oxford Space Systems",
+   "country": "UK",
+   "cat": "sat",
+   "focus": "Deployable antennas and booms that stow small and unfurl precisely",
+   "url": "https://oxford.space/"
+  },
+  {
+   "id": "phasefour",
+   "name": "Phase Four",
+   "country": "USA",
+   "cat": "launch",
+   "focus": "RF thruster using a plasma source with no electrodes or cathodes",
+   "url": "https://phasefour.io/"
+  },
+  {
+   "id": "planet",
+   "name": "Planet Labs",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "Daily global optical imaging (Dove, SkySat, Pelican) plus an analytics platform",
+   "url": "https://www.planet.com/"
+  },
+  {
+   "id": "radian",
+   "name": "Radian Aerospace",
+   "country": "USA",
+   "cat": "launch",
+   "focus": "Single-stage-to-orbit horizontal take-off and landing spaceplane",
+   "url": "https://www.radianaerospace.com/"
+  },
+  {
+   "id": "redwire",
+   "name": "Redwire Space",
+   "country": "USA",
+   "cat": "sat",
+   "focus": "Deployable structures, solar arrays, in-space manufacturing and avionics",
+   "url": "https://redwirespace.com/"
+  },
+  {
+   "id": "regrow",
+   "name": "Regrow Ag",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "Remote-sensing agronomy: crop practice detection and soil carbon at field scale",
+   "url": "https://www.regrow.ag/"
+  },
+  {
+   "id": "relativity",
+   "name": "Relativity Space",
+   "country": "USA",
+   "cat": "launch",
+   "focus": "3D-printed launch vehicles and engines; Terran R in development",
+   "url": "https://www.relativityspace.com/"
+  },
+  {
+   "id": "rfa",
+   "name": "Rocket Factory Augsburg",
+   "country": "Germany",
+   "cat": "launch",
+   "focus": "RFA ONE staged-combustion small launcher aimed at low cost per kilo",
+   "url": "https://www.rfa.space/"
+  },
+  {
+   "id": "rocketlab",
+   "name": "Rocket Lab",
+   "country": "USA / NZ",
+   "cat": "launch",
+   "focus": "Electron small launcher, Neutron in build, plus satellite components",
+   "url": "https://www.rocketlabusa.com/"
+  },
+  {
+   "id": "safran",
+   "name": "Safran Electronics & Defense",
+   "country": "France",
+   "cat": "rf",
+   "focus": "Inertial navigation, optronics and avionics for aerospace and defence",
+   "url": "https://www.safran-group.com/"
+  },
+  {
+   "id": "satelles",
+   "name": "Satelles (Iridium STL)",
+   "country": "USA",
+   "cat": "rf",
+   "focus": "Timing and positioning delivered over the Iridium constellation",
+   "url": "https://www.iridium.com/services/satelles-stl/"
+  },
+  {
+   "id": "satellogic",
+   "name": "Satellogic",
+   "country": "Argentina / USA",
+   "cat": "eo",
+   "focus": "Vertically integrated sub-metre optical and hyperspectral imaging at low cost",
+   "url": "https://satellogic.com/"
+  },
+  {
+   "id": "satrec",
+   "name": "Satrec Initiative",
+   "country": "South Korea",
+   "cat": "sat",
+   "focus": "High-resolution EO satellites and payloads exported to national customers",
+   "url": "https://www.satreci.com/"
+  },
+  {
+   "id": "satvu",
+   "name": "SatVu",
+   "country": "UK",
+   "cat": "eo",
+   "focus": "High-resolution thermal infrared imaging of the built environment",
+   "url": "https://www.satellitevu.com/"
+  },
+  {
+   "id": "sener",
+   "name": "SENER Aeroespacial",
+   "country": "Spain",
+   "cat": "heavy",
+   "focus": "Precision mechanisms, pointing systems and structures for space primes",
+   "url": "https://www.aeroespacial.sener/"
+  },
+  {
+   "id": "sentinelhub",
+   "name": "Sentinel Hub (Planet Insights)",
+   "country": "Slovenia / USA",
+   "cat": "eo",
+   "focus": "Satellite data APIs and on-the-fly processing for developers",
+   "url": "https://www.sentinel-hub.com/"
+  },
+  {
+   "id": "septentrio",
+   "name": "Septentrio",
+   "country": "Belgium",
+   "cat": "rf",
+   "focus": "High-precision multi-constellation GNSS receivers with interference resilience",
+   "url": "https://www.septentrio.com/"
+  },
+  {
+   "id": "sharemyspace",
+   "name": "Share My Space",
+   "country": "France",
+   "cat": "ssa",
+   "focus": "Optical debris tracking and a catalogue aimed at European autonomy",
+   "url": "https://www.sharemyspace.space/"
+  },
+  {
+   "id": "sierra",
+   "name": "Sierra Space",
+   "country": "USA",
+   "cat": "sat",
+   "focus": "Dream Chaser lifting-body spaceplane and LIFE inflatable habitats",
+   "url": "https://www.sierraspace.com/"
+  },
+  {
+   "id": "skylo",
+   "name": "Skylo",
+   "country": "USA / India",
+   "cat": "rf",
+   "focus": "Non-terrestrial network service over existing GEO satellites and 3GPP NTN",
+   "url": "https://www.skylo.tech/"
+  },
+  {
+   "id": "skyrora",
+   "name": "Skyrora",
+   "country": "UK",
+   "cat": "launch",
+   "focus": "Suborbital Skylark and the Skyrora XL small launcher",
+   "url": "https://www.skyrora.com/"
+  },
+  {
+   "id": "slingshot",
+   "name": "Slingshot Aerospace",
+   "country": "USA",
+   "cat": "ssa",
+   "focus": "Space traffic coordination, optical sensor network and threat analytics",
+   "url": "https://www.slingshot.space/"
+  },
+  {
+   "id": "spaceforge",
+   "name": "Space Forge",
+   "country": "UK",
+   "cat": "sat",
+   "focus": "Reusable in-orbit manufacturing of semiconductor materials",
+   "url": "https://www.spaceforge.com/"
+  },
+  {
+   "id": "spaceperspective",
+   "name": "Space Perspective",
+   "country": "USA",
+   "cat": "launch",
+   "focus": "Stratospheric balloon capsule flights for passengers",
+   "url": "https://spaceperspective.com/"
+  },
+  {
+   "id": "spaceknow",
+   "name": "SpaceKnow",
+   "country": "USA / Czechia",
+   "cat": "eo",
+   "focus": "Economic and defence indices derived from satellite imagery",
+   "url": "https://www.spaceknow.com/"
+  },
+  {
+   "id": "spacex",
+   "name": "SpaceX",
+   "country": "USA",
+   "cat": "launch",
+   "focus": "Falcon 9 reuse economics, Starship, and the Starlink constellation",
+   "url": "https://www.spacex.com/"
+  },
+  {
+   "id": "starcloud",
+   "name": "Starcloud",
+   "country": "USA",
+   "cat": "sat",
+   "focus": "Orbital data centres powered by continuous sunlight",
+   "url": "https://www.starcloud.com/"
+  },
+  {
+   "id": "starfish",
+   "name": "Starfish Space",
+   "country": "USA",
+   "cat": "ssa",
+   "focus": "Otter servicing vehicle using electric propulsion and autonomous docking",
+   "url": "https://www.starfishspace.com/"
+  },
+  {
+   "id": "stoke",
+   "name": "Stoke Space",
+   "country": "USA",
+   "cat": "launch",
+   "focus": "Fully and rapidly reusable two-stage vehicle with a novel reusable upper stage",
+   "url": "https://www.stokespace.com/"
+  },
+  {
+   "id": "synspective",
+   "name": "Synspective",
+   "country": "Japan",
+   "cat": "eo",
+   "focus": "StriX small SAR satellites and ground-deformation analytics",
+   "url": "https://synspective.com/"
+  },
+  {
+   "id": "teledyne",
+   "name": "Teledyne e2v",
+   "country": "UK / USA",
+   "cat": "rf",
+   "focus": "Space-qualified imaging sensors, processors and radiation-tolerant parts",
+   "url": "https://www.teledyneimaging.com/"
+  },
+  {
+   "id": "terranorbital",
+   "name": "Terran Orbital (Lockheed Martin)",
+   "country": "USA",
+   "cat": "sat",
+   "focus": "Smallsat buses at constellation volume, including Tranche satellites",
+   "url": "https://terranorbital.com/"
+  },
+  {
+   "id": "thalesalenia",
+   "name": "Thales Alenia Space",
+   "country": "France / Italy",
+   "cat": "sat",
+   "focus": "Full-stack satellite prime: payloads, platforms, integration and ground",
+   "url": "https://www.thalesaleniaspace.com/"
+  },
+  {
+   "id": "explorationco",
+   "name": "The Exploration Company",
+   "country": "Germany / France",
+   "cat": "sat",
+   "focus": "Nyx reusable cargo capsule for station resupply and return",
+   "url": "https://www.exploration.space/"
+  },
+  {
+   "id": "thrustme",
+   "name": "ThrustMe",
+   "country": "France",
+   "cat": "launch",
+   "focus": "Iodine electric propulsion for smallsats, flown since 2020",
+   "url": "https://www.thrustme.fr/"
+  },
+  {
+   "id": "tomorrowio",
+   "name": "Tomorrow.io",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "Owns weather radar/sounder satellites and sells operational forecasts",
+   "url": "https://www.tomorrow.io/"
+  },
+  {
+   "id": "trimble",
+   "name": "Trimble",
+   "country": "USA",
+   "cat": "rf",
+   "focus": "Precise positioning hardware and correction services for field industries",
+   "url": "https://www.trimble.com/"
+  },
+  {
+   "id": "trustpoint",
+   "name": "TrustPoint",
+   "country": "USA",
+   "cat": "rf",
+   "focus": "Commercial LEO PNT designed for jam-resistant precise positioning",
+   "url": "https://www.trustpointgps.com/"
+  },
+  {
+   "id": "ublox",
+   "name": "u-blox",
+   "country": "Switzerland",
+   "cat": "rf",
+   "focus": "GNSS modules and chips for mass-market positioning",
+   "url": "https://www.u-blox.com/"
+  },
+  {
+   "id": "ubotica",
+   "name": "Ubotica",
+   "country": "Ireland",
+   "cat": "sat",
+   "focus": "Onboard AI inference hardware flown on ESA Phi-Sat and commercial missions",
+   "url": "https://ubotica.com/"
+  },
+  {
+   "id": "umbra",
+   "name": "Umbra",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "Very-high-resolution commercial SAR, sold as open data licences",
+   "url": "https://umbra.space/"
+  },
+  {
+   "id": "unibap",
+   "name": "Unibap",
+   "country": "Sweden",
+   "cat": "sat",
+   "focus": "SpaceCloud onboard compute and an app store for in-orbit processing",
+   "url": "https://unibap.com/"
+  },
+  {
+   "id": "unseenlabs",
+   "name": "Unseenlabs",
+   "country": "France",
+   "cat": "rf",
+   "focus": "Single-satellite RF maritime domain awareness (BRO constellation)",
+   "url": "https://unseenlabs.space/"
+  },
+  {
+   "id": "ursamajor",
+   "name": "Ursa Major",
+   "country": "USA",
+   "cat": "launch",
+   "focus": "Rocket engines sold as a product to launch and defence primes",
+   "url": "https://www.ursamajor.com/"
+  },
+  {
+   "id": "ursa",
+   "name": "Ursa Space Systems",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "Virtual constellation: buys SAR and optical capacity, sells the analysis",
+   "url": "https://ursaspace.com/"
+  },
+  {
+   "id": "maxar",
+   "name": "Vantor (ex-Maxar Intelligence)",
+   "country": "USA",
+   "cat": "eo",
+   "focus": "Sub-30 cm optical imaging and the WorldView/Legion constellations",
+   "url": "https://www.maxar.com/"
+  },
+  {
+   "id": "varda",
+   "name": "Varda Space Industries",
+   "country": "USA",
+   "cat": "sat",
+   "focus": "In-space pharmaceutical crystallisation with a returning capsule",
+   "url": "https://www.varda.com/"
+  },
+  {
+   "id": "viasat",
+   "name": "Viasat",
+   "country": "USA",
+   "cat": "rf",
+   "focus": "High-throughput satellite broadband, terminals and government comms",
+   "url": "https://www.viasat.com/"
+  },
+  {
+   "id": "vyoma",
+   "name": "Vyoma",
+   "country": "Germany",
+   "cat": "ssa",
+   "focus": "In-orbit surveillance satellites and collision-avoidance services",
+   "url": "https://www.vyoma.space/"
+  },
+  {
+   "id": "what3words",
+   "name": "what3words",
+   "country": "UK",
+   "cat": "eo",
+   "focus": "Three-word addressing grid for places without street addresses",
+   "url": "https://what3words.com/"
+  },
+  {
+   "id": "worldview",
+   "name": "World View",
+   "country": "USA",
+   "cat": "launch",
+   "focus": "Stratospheric balloons for remote sensing and crewed edge-of-space flights",
+   "url": "https://worldview.space/"
+  },
+  {
+   "id": "wyvern",
+   "name": "Wyvern",
+   "country": "Canada",
+   "cat": "eo",
+   "focus": "Deployable-optic hyperspectral imaging for agriculture and forestry",
+   "url": "https://wyvern.space/"
+  },
+  {
+   "id": "xona",
+   "name": "Xona Space Systems",
+   "country": "USA",
+   "cat": "rf",
+   "focus": "Pulsar LEO PNT constellation: stronger, encrypted alternative to GNSS",
+   "url": "https://www.xonaspace.com/"
+  }
+ ],
+ "links": [
+  {
+   "i": "01",
+   "g": "regrow",
+   "note": ""
+  },
+  {
+   "i": "01",
+   "g": "esri",
+   "note": ""
+  },
+  {
+   "i": "01",
+   "g": "descartes",
+   "note": ""
+  },
+  {
+   "i": "02",
+   "g": "relativity",
+   "note": "Both print their engines whole: Agnikul’s Agnilet and Relativity’s Aeon are single-piece 3D-printed designs."
+  },
+  {
+   "i": "02",
+   "g": "rocketlab",
+   "note": ""
+  },
+  {
+   "i": "02",
+   "g": "orbex",
+   "note": ""
+  },
+  {
+   "i": "03",
+   "g": "thalesalenia",
+   "note": ""
+  },
+  {
+   "i": "03",
+   "g": "redwire",
+   "note": ""
+  },
+  {
+   "i": "03",
+   "g": "beyondgravity",
+   "note": ""
+  },
+  {
+   "i": "04",
+   "g": "beyondgravity",
+   "note": ""
+  },
+  {
+   "i": "04",
+   "g": "thalesalenia",
+   "note": ""
+  },
+  {
+   "i": "05",
+   "g": "teledyne",
+   "note": ""
+  },
+  {
+   "i": "05",
+   "g": "mercury",
+   "note": ""
+  },
+  {
+   "i": "05",
+   "g": "septentrio",
+   "note": ""
+  },
+  {
+   "i": "06",
+   "g": "viasat",
+   "note": ""
+  },
+  {
+   "i": "06",
+   "g": "spacex",
+   "note": ""
+  },
+  {
+   "i": "06",
+   "g": "kymeta",
+   "note": ""
+  },
+  {
+   "i": "07",
+   "g": "ksat",
+   "note": ""
+  },
+  {
+   "i": "07",
+   "g": "viasat",
+   "note": ""
+  },
+  {
+   "i": "07",
+   "g": "thalesalenia",
+   "note": ""
+  },
+  {
+   "i": "08",
+   "g": "beyondgravity",
+   "note": ""
+  },
+  {
+   "i": "08",
+   "g": "redwire",
+   "note": ""
+  },
+  {
+   "i": "08",
+   "g": "sener",
+   "note": ""
+  },
+  {
+   "i": "09",
+   "g": "satrec",
+   "note": ""
+  },
+  {
+   "i": "09",
+   "g": "terranorbital",
+   "note": ""
+  },
+  {
+   "i": "09",
+   "g": "satellogic",
+   "note": ""
+  },
+  {
+   "i": "10",
+   "g": "exotrail",
+   "note": ""
+  },
+  {
+   "i": "10",
+   "g": "thrustme",
+   "note": ""
+  },
+  {
+   "i": "10",
+   "g": "phasefour",
+   "note": ""
+  },
+  {
+   "i": "10",
+   "g": "morpheus",
+   "note": ""
+  },
+  {
+   "i": "10",
+   "g": "albedo",
+   "note": ""
+  },
+  {
+   "i": "11",
+   "g": "teledyne",
+   "note": ""
+  },
+  {
+   "i": "11",
+   "g": "mercury",
+   "note": ""
+  },
+  {
+   "i": "11",
+   "g": "honeywell",
+   "note": ""
+  },
+  {
+   "i": "12",
+   "g": "teledyne",
+   "note": ""
+  },
+  {
+   "i": "12",
+   "g": "mercury",
+   "note": ""
+  },
+  {
+   "i": "13",
+   "g": "nanoavionics",
+   "note": ""
+  },
+  {
+   "i": "13",
+   "g": "terranorbital",
+   "note": ""
+  },
+  {
+   "i": "13",
+   "g": "exolaunch",
+   "note": ""
+  },
+  {
+   "i": "13",
+   "g": "ksat",
+   "note": ""
+  },
+  {
+   "i": "13",
+   "g": "opencosmos",
+   "note": ""
+  },
+  {
+   "i": "14",
+   "g": "leolabs",
+   "note": "LeoLabs watches LEO from the ground with phased-array radar; Digantara is building the same picture from orbit."
+  },
+  {
+   "i": "14",
+   "g": "slingshot",
+   "note": ""
+  },
+  {
+   "i": "14",
+   "g": "exoanalytic",
+   "note": ""
+  },
+  {
+   "i": "14",
+   "g": "northstar",
+   "note": ""
+  },
+  {
+   "i": "14",
+   "g": "vyoma",
+   "note": ""
+  },
+  {
+   "i": "15",
+   "g": "iceye",
+   "note": "GalaxEye goes further than ICEYE’s single sensor by fusing SAR with optical on one satellite."
+  },
+  {
+   "i": "15",
+   "g": "umbra",
+   "note": ""
+  },
+  {
+   "i": "15",
+   "g": "planet",
+   "note": ""
+  },
+  {
+   "i": "16",
+   "g": "thalesalenia",
+   "note": ""
+  },
+  {
+   "i": "16",
+   "g": "mercury",
+   "note": ""
+  },
+  {
+   "i": "17",
+   "g": "astroscale",
+   "note": ""
+  },
+  {
+   "i": "17",
+   "g": "orbitfab",
+   "note": ""
+  },
+  {
+   "i": "17",
+   "g": "starfish",
+   "note": ""
+  },
+  {
+   "i": "17",
+   "g": "spacelogistics",
+   "note": ""
+  },
+  {
+   "i": "18",
+   "g": "descartes",
+   "note": ""
+  },
+  {
+   "i": "18",
+   "g": "sentinelhub",
+   "note": ""
+  },
+  {
+   "i": "18",
+   "g": "planet",
+   "note": ""
+  },
+  {
+   "i": "19",
+   "g": "hawkeye360",
+   "note": ""
+  },
+  {
+   "i": "19",
+   "g": "aurora",
+   "note": ""
+  },
+  {
+   "i": "19",
+   "g": "keplercomms",
+   "note": "Same name, different businesses - Canada’s Kepler Communications builds an optical relay network, India’s Kepler Aerospace does RF intelligence."
+  },
+  {
+   "i": "20",
+   "g": "sener",
+   "note": ""
+  },
+  {
+   "i": "20",
+   "g": "aerojet",
+   "note": ""
+  },
+  {
+   "i": "20",
+   "g": "beyondgravity",
+   "note": ""
+  },
+  {
+   "i": "21",
+   "g": "benchmark",
+   "note": ""
+  },
+  {
+   "i": "21",
+   "g": "dawn",
+   "note": ""
+  },
+  {
+   "i": "21",
+   "g": "ecaps",
+   "note": "The green-propellant comparison: ECAPS’ LMP-103S has flown since 2010, Manastu’s hydrogen-peroxide blend is the Indian attempt at the same substitution for hydrazine."
+  },
+  {
+   "i": "21",
+   "g": "kayhan",
+   "note": ""
+  },
+  {
+   "i": "22",
+   "g": "capgemini",
+   "note": ""
+  },
+  {
+   "i": "22",
+   "g": "element",
+   "note": ""
+  },
+  {
+   "i": "23",
+   "g": "sener",
+   "note": ""
+  },
+  {
+   "i": "23",
+   "g": "aerojet",
+   "note": ""
+  },
+  {
+   "i": "24",
+   "g": "what3words",
+   "note": "Both replace street addresses with a short, speakable code so that deliveries and emergency services can find a doorstep."
+  },
+  {
+   "i": "25",
+   "g": "orbitalsidekick",
+   "note": ""
+  },
+  {
+   "i": "25",
+   "g": "wyvern",
+   "note": ""
+  },
+  {
+   "i": "25",
+   "g": "kuva",
+   "note": ""
+  },
+  {
+   "i": "25",
+   "g": "planet",
+   "note": ""
+  },
+  {
+   "i": "26",
+   "g": "planet",
+   "note": ""
+  },
+  {
+   "i": "26",
+   "g": "blacksky",
+   "note": ""
+  },
+  {
+   "i": "26",
+   "g": "maxar",
+   "note": ""
+  },
+  {
+   "i": "26",
+   "g": "earthdaily",
+   "note": ""
+  },
+  {
+   "i": "27",
+   "g": "esri",
+   "note": ""
+  },
+  {
+   "i": "27",
+   "g": "sentinelhub",
+   "note": ""
+  },
+  {
+   "i": "28",
+   "g": "rocketlab",
+   "note": ""
+  },
+  {
+   "i": "28",
+   "g": "firefly",
+   "note": ""
+  },
+  {
+   "i": "28",
+   "g": "isar",
+   "note": ""
+  },
+  {
+   "i": "28",
+   "g": "gilmour",
+   "note": ""
+  },
+  {
+   "i": "29",
+   "g": "amsat",
+   "note": "Both put non-professionals in orbit - AMSAT through amateur radio clubs, Space Kidz through school and college teams."
+  },
+  {
+   "i": "29",
+   "g": "librespace",
+   "note": ""
+  },
+  {
+   "i": "30",
+   "g": "gmv",
+   "note": ""
+  },
+  {
+   "i": "30",
+   "g": "opencosmos",
+   "note": ""
+  },
+  {
+   "i": "31",
+   "g": "thalesalenia",
+   "note": ""
+  },
+  {
+   "i": "31",
+   "g": "redwire",
+   "note": ""
+  },
+  {
+   "i": "31",
+   "g": "beyondgravity",
+   "note": ""
+  },
+  {
+   "i": "32",
+   "g": "orbitalinsight",
+   "note": ""
+  },
+  {
+   "i": "32",
+   "g": "spaceknow",
+   "note": ""
+  },
+  {
+   "i": "32",
+   "g": "descartes",
+   "note": ""
+  },
+  {
+   "i": "33",
+   "g": "opencosmos",
+   "note": ""
+  },
+  {
+   "i": "33",
+   "g": "leafspace",
+   "note": ""
+  },
+  {
+   "i": "34",
+   "g": "sener",
+   "note": ""
+  },
+  {
+   "i": "34",
+   "g": "aerojet",
+   "note": ""
+  },
+  {
+   "i": "35",
+   "g": "hawkeye360",
+   "note": ""
+  },
+  {
+   "i": "35",
+   "g": "unseenlabs",
+   "note": ""
+  },
+  {
+   "i": "35",
+   "g": "kleos",
+   "note": "Kleos chased the same RF-geolocation market and wound down in 2024; a reminder that the business model, not the physics, is the hard part."
+  },
+  {
+   "i": "36",
+   "g": "ansys",
+   "note": ""
+  },
+  {
+   "i": "36",
+   "g": "dassault",
+   "note": ""
+  },
+  {
+   "i": "37",
+   "g": "regrow",
+   "note": ""
+  },
+  {
+   "i": "37",
+   "g": "gro",
+   "note": ""
+  },
+  {
+   "i": "38",
+   "g": "teledyne",
+   "note": ""
+  },
+  {
+   "i": "38",
+   "g": "mercury",
+   "note": ""
+  },
+  {
+   "i": "39",
+   "g": "oxfordspace",
+   "note": ""
+  },
+  {
+   "i": "39",
+   "g": "redwire",
+   "note": ""
+  },
+  {
+   "i": "39",
+   "g": "sierra",
+   "note": ""
+  },
+  {
+   "i": "40",
+   "g": "sierra",
+   "note": ""
+  },
+  {
+   "i": "40",
+   "g": "explorationco",
+   "note": ""
+  },
+  {
+   "i": "40",
+   "g": "atmos",
+   "note": ""
+  },
+  {
+   "i": "40",
+   "g": "inversion",
+   "note": ""
+  },
+  {
+   "i": "40",
+   "g": "radian",
+   "note": ""
+  },
+  {
+   "i": "41",
+   "g": "planetarycomputer",
+   "note": ""
+  },
+  {
+   "i": "41",
+   "g": "descartes",
+   "note": ""
+  },
+  {
+   "i": "41",
+   "g": "ansys",
+   "note": ""
+  },
+  {
+   "i": "42",
+   "g": "cubespace",
+   "note": ""
+  },
+  {
+   "i": "42",
+   "g": "bluecanyon",
+   "note": ""
+  },
+  {
+   "i": "43",
+   "g": "rfa",
+   "note": ""
+  },
+  {
+   "i": "43",
+   "g": "isar",
+   "note": ""
+  },
+  {
+   "i": "43",
+   "g": "orbex",
+   "note": ""
+  },
+  {
+   "i": "44",
+   "g": "librespace",
+   "note": ""
+  },
+  {
+   "i": "44",
+   "g": "amsat",
+   "note": ""
+  },
+  {
+   "i": "45",
+   "g": "orbitalinsight",
+   "note": ""
+  },
+  {
+   "i": "45",
+   "g": "descartes",
+   "note": ""
+  },
+  {
+   "i": "46",
+   "g": "anello",
+   "note": "The closest match on this page: a photonic gyroscope reduced to a chip, replacing spinning or fibre-optic inertial units."
+  },
+  {
+   "i": "46",
+   "g": "kvh",
+   "note": ""
+  },
+  {
+   "i": "46",
+   "g": "safran",
+   "note": ""
+  },
+  {
+   "i": "46",
+   "g": "honeywell",
+   "note": ""
+  },
+  {
+   "i": "47",
+   "g": "opencosmos",
+   "note": ""
+  },
+  {
+   "i": "47",
+   "g": "gmv",
+   "note": ""
+  },
+  {
+   "i": "48",
+   "g": "thalesalenia",
+   "note": ""
+  },
+  {
+   "i": "48",
+   "g": "kymeta",
+   "note": ""
+  },
+  {
+   "i": "49",
+   "g": "ursamajor",
+   "note": ""
+  },
+  {
+   "i": "49",
+   "g": "dawn",
+   "note": ""
+  },
+  {
+   "i": "49",
+   "g": "agile",
+   "note": ""
+  },
+  {
+   "i": "50",
+   "g": "astroscale",
+   "note": "Active debris removal as a commercial service - Astroscale has flown demonstrations, Cosmoserve is at design stage."
+  },
+  {
+   "i": "50",
+   "g": "clearspace",
+   "note": ""
+  },
+  {
+   "i": "50",
+   "g": "kallmorris",
+   "note": ""
+  },
+  {
+   "i": "50",
+   "g": "sharemyspace",
+   "note": ""
+  },
+  {
+   "i": "51",
+   "g": "gomspace",
+   "note": ""
+  },
+  {
+   "i": "51",
+   "g": "endurosat",
+   "note": ""
+  },
+  {
+   "i": "52",
+   "g": "descartes",
+   "note": ""
+  },
+  {
+   "i": "52",
+   "g": "planetarycomputer",
+   "note": ""
+  },
+  {
+   "i": "53",
+   "g": "kayhan",
+   "note": ""
+  },
+  {
+   "i": "53",
+   "g": "slingshot",
+   "note": ""
+  },
+  {
+   "i": "53",
+   "g": "ansys",
+   "note": ""
+  },
+  {
+   "i": "54",
+   "g": "oxfordspace",
+   "note": ""
+  },
+  {
+   "i": "54",
+   "g": "exolaunch",
+   "note": ""
+  },
+  {
+   "i": "54",
+   "g": "redwire",
+   "note": ""
+  },
+  {
+   "i": "55",
+   "g": "ecaps",
+   "note": ""
+  },
+  {
+   "i": "55",
+   "g": "dawn",
+   "note": ""
+  },
+  {
+   "i": "55",
+   "g": "benchmark",
+   "note": ""
+  },
+  {
+   "i": "56",
+   "g": "esri",
+   "note": ""
+  },
+  {
+   "i": "56",
+   "g": "sentinelhub",
+   "note": ""
+  },
+  {
+   "i": "57",
+   "g": "septentrio",
+   "note": ""
+  },
+  {
+   "i": "57",
+   "g": "ublox",
+   "note": ""
+  },
+  {
+   "i": "57",
+   "g": "xona",
+   "note": ""
+  },
+  {
+   "i": "58",
+   "g": "stoke",
+   "note": "Both are aiming straight at full reusability, including the upper stage, rather than reusing the booster alone."
+  },
+  {
+   "i": "58",
+   "g": "spacex",
+   "note": ""
+  },
+  {
+   "i": "58",
+   "g": "relativity",
+   "note": ""
+  },
+  {
+   "i": "59",
+   "g": "esri",
+   "note": ""
+  },
+  {
+   "i": "59",
+   "g": "sentinelhub",
+   "note": ""
+  },
+  {
+   "i": "60",
+   "g": "endurosat",
+   "note": ""
+  },
+  {
+   "i": "60",
+   "g": "bluecanyon",
+   "note": ""
+  },
+  {
+   "i": "60",
+   "g": "beyondgravity",
+   "note": ""
+  },
+  {
+   "i": "61",
+   "g": "sentinelhub",
+   "note": ""
+  },
+  {
+   "i": "61",
+   "g": "planetarycomputer",
+   "note": ""
+  },
+  {
+   "i": "61",
+   "g": "esri",
+   "note": ""
+  },
+  {
+   "i": "62",
+   "g": "apex",
+   "note": ""
+  },
+  {
+   "i": "62",
+   "g": "nanoavionics",
+   "note": ""
+  },
+  {
+   "i": "63",
+   "g": "aacclyde",
+   "note": ""
+  },
+  {
+   "i": "63",
+   "g": "endurosat",
+   "note": ""
+  },
+  {
+   "i": "63",
+   "g": "nanoavionics",
+   "note": ""
+  },
+  {
+   "i": "64",
+   "g": "aethero",
+   "note": ""
+  },
+  {
+   "i": "64",
+   "g": "hawkeye360",
+   "note": ""
+  },
+  {
+   "i": "65",
+   "g": "varda",
+   "note": "Manufacturing in orbit and bringing the product home - Varda returns pharmaceutical crystals, Inbound is building the lifting-body vehicle to do the same."
+  },
+  {
+   "i": "65",
+   "g": "spaceforge",
+   "note": ""
+  },
+  {
+   "i": "65",
+   "g": "explorationco",
+   "note": ""
+  },
+  {
+   "i": "66",
+   "g": "esri",
+   "note": ""
+  },
+  {
+   "i": "66",
+   "g": "maxar",
+   "note": ""
+  },
+  {
+   "i": "67",
+   "g": "capgemini",
+   "note": ""
+  },
+  {
+   "i": "67",
+   "g": "ansys",
+   "note": ""
+  },
+  {
+   "i": "68",
+   "g": "gallagher",
+   "note": "Space risk as a financial product rather than a technical one: broking and placing launch and in-orbit cover."
+  },
+  {
+   "i": "68",
+   "g": "marsh",
+   "note": ""
+  },
+  {
+   "i": "68",
+   "g": "axaxl",
+   "note": ""
+  },
+  {
+   "i": "69",
+   "g": "tomorrowio",
+   "note": ""
+  },
+  {
+   "i": "69",
+   "g": "climavision",
+   "note": ""
+  },
+  {
+   "i": "69",
+   "g": "climateai",
+   "note": ""
+  },
+  {
+   "i": "70",
+   "g": "ublox",
+   "note": ""
+  },
+  {
+   "i": "70",
+   "g": "trimble",
+   "note": ""
+  },
+  {
+   "i": "70",
+   "g": "satelles",
+   "note": ""
+  },
+  {
+   "i": "71",
+   "g": "exotrail",
+   "note": ""
+  },
+  {
+   "i": "71",
+   "g": "dorbit",
+   "note": ""
+  },
+  {
+   "i": "71",
+   "g": "albedo",
+   "note": ""
+  },
+  {
+   "i": "72",
+   "g": "iceye",
+   "note": ""
+  },
+  {
+   "i": "72",
+   "g": "capella",
+   "note": ""
+  },
+  {
+   "i": "72",
+   "g": "umbra",
+   "note": ""
+  },
+  {
+   "i": "73",
+   "g": "gmv",
+   "note": ""
+  },
+  {
+   "i": "73",
+   "g": "ansys",
+   "note": ""
+  },
+  {
+   "i": "73",
+   "g": "littleplace",
+   "note": ""
+  },
+  {
+   "i": "74",
+   "g": "aethero",
+   "note": ""
+  },
+  {
+   "i": "74",
+   "g": "mercury",
+   "note": ""
+  },
+  {
+   "i": "74",
+   "g": "teledyne",
+   "note": ""
+  },
+  {
+   "i": "75",
+   "g": "regrow",
+   "note": ""
+  },
+  {
+   "i": "75",
+   "g": "gro",
+   "note": ""
+  },
+  {
+   "i": "76",
+   "g": "element",
+   "note": ""
+  },
+  {
+   "i": "76",
+   "g": "beyondgravity",
+   "note": ""
+  },
+  {
+   "i": "77",
+   "g": "honeywell",
+   "note": ""
+  },
+  {
+   "i": "77",
+   "g": "thalesalenia",
+   "note": ""
+  },
+  {
+   "i": "78",
+   "g": "astspacemobile",
+   "note": ""
+  },
+  {
+   "i": "78",
+   "g": "lynk",
+   "note": ""
+  },
+  {
+   "i": "78",
+   "g": "xona",
+   "note": ""
+  },
+  {
+   "i": "79",
+   "g": "satvu",
+   "note": ""
+  },
+  {
+   "i": "79",
+   "g": "hydrosat",
+   "note": ""
+  },
+  {
+   "i": "79",
+   "g": "ororatech",
+   "note": ""
+  },
+  {
+   "i": "80",
+   "g": "maxar",
+   "note": ""
+  },
+  {
+   "i": "80",
+   "g": "earthdaily",
+   "note": ""
+  },
+  {
+   "i": "81",
+   "g": "regrow",
+   "note": ""
+  },
+  {
+   "i": "81",
+   "g": "gro",
+   "note": ""
+  },
+  {
+   "i": "81",
+   "g": "climateai",
+   "note": ""
+  },
+  {
+   "i": "82",
+   "g": "varda",
+   "note": ""
+  },
+  {
+   "i": "82",
+   "g": "spaceforge",
+   "note": ""
+  },
+  {
+   "i": "83",
+   "g": "sener",
+   "note": ""
+  },
+  {
+   "i": "83",
+   "g": "element",
+   "note": ""
+  },
+  {
+   "i": "84",
+   "g": "iceye",
+   "note": ""
+  },
+  {
+   "i": "84",
+   "g": "synspective",
+   "note": ""
+  },
+  {
+   "i": "84",
+   "g": "iqps",
+   "note": ""
+  },
+  {
+   "i": "85",
+   "g": "ubotica",
+   "note": ""
+  },
+  {
+   "i": "85",
+   "g": "littleplace",
+   "note": ""
+  },
+  {
+   "i": "85",
+   "g": "awsgs",
+   "note": ""
+  },
+  {
+   "i": "86",
+   "g": "stoke",
+   "note": ""
+  },
+  {
+   "i": "86",
+   "g": "radian",
+   "note": ""
+  },
+  {
+   "i": "86",
+   "g": "interstellar",
+   "note": ""
+  },
+  {
+   "i": "87",
+   "g": "spaceperspective",
+   "note": "Both sell the view rather than the altitude: a slow pressurised capsule ride instead of a rocket."
+  },
+  {
+   "i": "87",
+   "g": "worldview",
+   "note": ""
+  },
+  {
+   "i": "87",
+   "g": "blueorigin",
+   "note": ""
+  },
+  {
+   "i": "88",
+   "g": "slingshot",
+   "note": ""
+  },
+  {
+   "i": "88",
+   "g": "keplercomms",
+   "note": ""
+  },
+  {
+   "i": "88",
+   "g": "kayhan",
+   "note": ""
+  },
+  {
+   "i": "89",
+   "g": "skyrora",
+   "note": ""
+  },
+  {
+   "i": "89",
+   "g": "interstellar",
+   "note": ""
+  },
+  {
+   "i": "89",
+   "g": "blueorigin",
+   "note": ""
+  },
+  {
+   "i": "90",
+   "g": "ursa",
+   "note": ""
+  },
+  {
+   "i": "90",
+   "g": "blacksky",
+   "note": ""
+  },
+  {
+   "i": "90",
+   "g": "earthdaily",
+   "note": ""
+  },
+  {
+   "i": "91",
+   "g": "kymeta",
+   "note": ""
+  },
+  {
+   "i": "91",
+   "g": "isotropic",
+   "note": ""
+  },
+  {
+   "i": "92",
+   "g": "starcloud",
+   "note": "Both are betting that compute in orbit beats downlinking the data - Starcloud on sunlight-powered data centres, TM2 on orbital data centres from India."
+  },
+  {
+   "i": "93",
+   "g": "ursa",
+   "note": ""
+  },
+  {
+   "i": "93",
+   "g": "orbitalinsight",
+   "note": ""
+  },
+  {
+   "i": "94",
+   "g": "ursamajor",
+   "note": ""
+  },
+  {
+   "i": "94",
+   "g": "ecaps",
+   "note": ""
+  },
+  {
+   "i": "94",
+   "g": "agile",
+   "note": ""
+  },
+  {
+   "i": "95",
+   "g": "ursamajor",
+   "note": ""
+  },
+  {
+   "i": "95",
+   "g": "agile",
+   "note": ""
+  },
+  {
+   "i": "96",
+   "g": "skylo",
+   "note": ""
+  },
+  {
+   "i": "96",
+   "g": "omnispace",
+   "note": ""
+  },
+  {
+   "i": "96",
+   "g": "astspacemobile",
+   "note": ""
+  },
+  {
+   "i": "97",
+   "g": "hawkeye360",
+   "note": ""
+  },
+  {
+   "i": "97",
+   "g": "unseenlabs",
+   "note": ""
+  },
+  {
+   "i": "98",
+   "g": "climateai",
+   "note": ""
+  },
+  {
+   "i": "98",
+   "g": "jupiter",
+   "note": ""
+  },
+  {
+   "i": "98",
+   "g": "tomorrowio",
+   "note": ""
+  },
+  {
+   "i": "99",
+   "g": "earthdaily",
+   "note": ""
+  },
+  {
+   "i": "99",
+   "g": "ursa",
+   "note": ""
+  },
+  {
+   "i": "100",
+   "g": "ubotica",
+   "note": ""
+  },
+  {
+   "i": "100",
+   "g": "aethero",
+   "note": ""
+  },
+  {
+   "i": "100",
+   "g": "unibap",
+   "note": ""
+  },
+  {
+   "i": "101",
+   "g": "explorationco",
+   "note": ""
+  },
+  {
+   "i": "101",
+   "g": "spacex",
+   "note": ""
+  },
+  {
+   "i": "101",
+   "g": "sierra",
+   "note": ""
+  },
+  {
+   "i": "102",
+   "g": "xona",
+   "note": ""
+  },
+  {
+   "i": "102",
+   "g": "trustpoint",
+   "note": ""
+  },
+  {
+   "i": "102",
+   "g": "satelles",
+   "note": ""
+  },
+  {
+   "i": "103",
+   "g": "regrow",
+   "note": ""
+  },
+  {
+   "i": "103",
+   "g": "climateai",
+   "note": ""
+  },
+  {
+   "i": "104",
+   "g": "apex",
+   "note": ""
+  },
+  {
+   "i": "104",
+   "g": "bluecanyon",
+   "note": ""
+  },
+  {
+   "i": "104",
+   "g": "terranorbital",
+   "note": ""
+  },
+  {
+   "i": "105",
+   "g": "myriota",
+   "note": ""
+  },
+  {
+   "i": "105",
+   "g": "astrocast",
+   "note": ""
+  },
+  {
+   "i": "105",
+   "g": "skylo",
+   "note": ""
+  }
+ ]
+}

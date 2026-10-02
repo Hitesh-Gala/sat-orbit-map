@@ -22,6 +22,27 @@
     .is-hero-tag { font-family: var(--mono); font-size: 18px; letter-spacing: .22em; text-transform: uppercase; color: #ff9f6a; }
     .is-hero-title { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(39px, 5vw, 66px); line-height: 1.08; margin: 12px 0 8px; color: #fff; letter-spacing: .01em; }
     .is-hero-title b { background: linear-gradient(100deg, #ff9933, #f4f4f4 45%, #4caf50); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    /* The headline keeps the middle; the two analytical pages sit on either
+       side of it, dropping below the title on a narrow screen. */
+    .is-title-row { display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap; }
+    .is-title-row .is-hero-title { flex: 0 1 auto; margin: 12px 0 8px; }
+    .is-sidebtn { flex: 0 0 auto; display: inline-flex; flex-direction: column; align-items: center; gap: 4px;
+      min-width: 132px; padding: 13px 16px; border-radius: 13px; text-decoration: none;
+      background: rgba(103,200,255,.07); border: 1px solid #2b4663; color: #cbd8e6;
+      transition: background .15s, border-color .15s, transform .15s; }
+    .is-sidebtn:hover { background: rgba(103,200,255,.16); border-color: var(--accent); color: #fff; transform: translateY(-2px); }
+    .is-sidebtn .ic { font-size: 23px; line-height: 1; color: #67c8ff; }
+    .is-sidebtn.right .ic { color: #ffcf5c; }
+    .is-sidebtn .tx { font-family: 'Orbitron', sans-serif; font-size: 15px; letter-spacing: .13em;
+      text-transform: uppercase; }
+    @media (max-width: 760px) { .is-sidebtn { min-width: 118px; padding: 10px 13px; } .is-title-row { gap: 10px; } }
+    /* On a desktop the three stay on one line: the hero widens and the
+       headline wraps inside itself rather than pushing the buttons away. */
+    @media (min-width: 1100px) {
+      .is-hero { max-width: 1400px; }
+      .is-title-row { flex-wrap: nowrap; gap: 26px; }
+      .is-title-row .is-hero-title { flex: 1 1 auto; min-width: 0; }
+    }
     .is-hero-sub { max-width: 720px; margin: 0 auto; font-size: 22.5px; line-height: 1.7; color: #b7c6d8; }
     .is-tricolor { width: 120px; height: 5px; margin: 16px auto 0; border-radius: 3px; background: linear-gradient(90deg, #ff9933 0 33%, #f4f4f4 33% 66%, #138808 66% 100%); box-shadow: 0 0 18px rgba(255,153,51,.35); }
 
@@ -158,7 +179,13 @@
 
   <header class="is-hero">
     <div class="is-hero-tag">NAZAR · Indian Private Space Ecosystem</div>
-    <h1 class="is-hero-title">India’s <b>Private Space</b> Ecosystem</h1>
+    <div class="is-title-row">
+      <a class="is-sidebtn left" href="analogues.html" title="Map each company to the global firms doing the same work">
+        <span class="ic">❉</span><span class="tx">Analogues</span></a>
+      <h1 class="is-hero-title">India’s <b>Private Space</b> Ecosystem</h1>
+      <a class="is-sidebtn right" href="comparatives.html" title="Measured comparison - still being built">
+        <span class="ic">⚖</span><span class="tx">Comparatives</span></a>
+    </div>
     <p class="is-hero-sub">Founder stories and company vignettes — 105 firms turning an engineer’s idea, a student team that refused to disband, or a precision workshop into an industry. Tap any card for the story.</p>
     <div class="is-tricolor"></div>
   </header>

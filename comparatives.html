@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4, viewport-fit=cover">
+  <title>NAZAR · Comparatives</title>
+  <script>
+    /* Same soft gate as Indi-Space: reached only after the password on the main page. */
+    try { if (sessionStorage.getItem('nazar.indispace') !== '1') location.replace('index.html'); } catch (e) {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=52">
+  <style>
+    body.page-comparatives { overflow-y: auto; }
+    .cp-hero { max-width: 1120px; margin: 0 auto; padding: 74px 22px 6px; text-align: center; }
+    .cp-hero-tag { font-family: var(--mono); font-size: 18px; letter-spacing: .22em; text-transform: uppercase; color: #ff9f6a; }
+    .cp-hero-title { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(36px, 4.6vw, 60px);
+      line-height: 1.08; margin: 12px 0 8px; color: #fff; }
+    .cp-hero-title b { background: linear-gradient(100deg, #ffcf5c, #f4f4f4 48%, #ff6f9c); -webkit-background-clip: text;
+      background-clip: text; color: transparent; }
+    .cp-hero-sub { max-width: 760px; margin: 0 auto; font-size: 21px; line-height: 1.65; color: #b7c6d8; }
+    .cp-tricolor { width: 120px; height: 5px; margin: 16px auto 0; border-radius: 3px;
+      background: linear-gradient(90deg, #ff9933 0 33%, #f4f4f4 33% 66%, #138808 66% 100%); box-shadow: 0 0 18px rgba(255,153,51,.35); }
+    .cp-soon { max-width: 760px; margin: 38px auto 60px; padding: 26px 24px; text-align: center;
+      background: var(--panel); border: 1px dashed #3a4a5f; border-radius: 14px; }
+    .cp-soon .k { font-family: 'Orbitron', sans-serif; font-size: 17px; letter-spacing: .14em;
+      text-transform: uppercase; color: #ffcf5c; }
+    .cp-soon .v { margin-top: 10px; font-size: 19px; line-height: 1.65; color: #b7c6d8; }
+    .cp-soon a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body class="page-comparatives">
+  <a class="top-nazar-btn" href="indi-space.html" title="Back to Indi-Space">◉ INDI-SPACE</a>
+  <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
+    <img src="data/nazar-logo.svg?v=5" alt="NAZAR">
+  </a>
+
+  <header class="cp-hero">
+    <div class="cp-hero-tag">NAZAR · Indi-Space · Analytical layer</div>
+    <h1 class="cp-hero-title">How do they <b>compare</b>?</h1>
+    <p class="cp-hero-sub">Side-by-side measurement rather than mapping — what the comparison should be built on is still being decided.</p>
+    <div class="cp-tricolor"></div>
+  </header>
+
+  <section class="cp-soon">
+    <div class="k">Nothing here yet</div>
+    <div class="v">This page is deliberately empty for now. Its neighbour, <a href="analogues.html">Analogues</a>,
+      already maps who does similar work; this one is reserved for the measured comparison — scale, funding, flight heritage,
+      delivery record — once the yardsticks are agreed.</div>
+  </section>
+
+  <script src="site-analytics.js?v=5"></script>
+  <script src="mobile-menu.js?v=26"></script>
+</body>
+</html>

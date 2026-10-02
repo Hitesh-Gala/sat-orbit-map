@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4, viewport-fit=cover">
+  <title>NAZAR · Analogues</title>
+  <script>
+    /* Same soft gate as Indi-Space: reached only after the password on the main page. */
+    try { if (sessionStorage.getItem('nazar.indispace') !== '1') location.replace('index.html'); } catch (e) {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=52">
+  <style>
+    body.page-analogues { overflow-y: auto; }
+    :root { --cat: #67c8ff; }
+    .an-cat-launch { --cat: #ff7a3c; } .an-cat-sat { --cat: #67c8ff; } .an-cat-eo { --cat: #58d68d; }
+    .an-cat-rf { --cat: #c9a0ff; } .an-cat-heavy { --cat: #ffcf5c; } .an-cat-ssa { --cat: #ff6f9c; }
+
+    .an-hero { max-width: 1180px; margin: 0 auto; padding: 74px 22px 6px; text-align: center; }
+    .an-hero-tag { font-family: var(--mono); font-size: 18px; letter-spacing: .22em; text-transform: uppercase; color: #ff9f6a; }
+    .an-hero-title { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(36px, 4.6vw, 60px);
+      line-height: 1.08; margin: 12px 0 8px; color: #fff; }
+    .an-hero-title b { background: linear-gradient(100deg, #67c8ff, #f4f4f4 48%, #58d68d); -webkit-background-clip: text;
+      background-clip: text; color: transparent; }
+    .an-hero-sub { max-width: 820px; margin: 0 auto; font-size: 21px; line-height: 1.65; color: #b7c6d8; }
+    .an-tricolor { width: 120px; height: 5px; margin: 16px auto 0; border-radius: 3px;
+      background: linear-gradient(90deg, #ff9933 0 33%, #f4f4f4 33% 66%, #138808 66% 100%); box-shadow: 0 0 18px rgba(255,153,51,.35); }
+
+    .an-sec { max-width: 1180px; margin: 30px auto 0; padding: 0 22px; }
+    .an-sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; border-bottom: 1px solid #23374d; padding-bottom: 10px; }
+    .an-sec-n { font-family: 'Orbitron', sans-serif; font-size: 15px; letter-spacing: .18em; color: #ff9f6a; }
+    .an-sec-h { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 25px; color: #eaf2fb; margin: 0; }
+    .an-sec-p { flex: 1 1 320px; font-size: 17.5px; line-height: 1.55; color: #93a7bd; margin: 0; }
+
+    /* hub picker + web, side by side on a desktop */
+    .an-wrap { display: grid; grid-template-columns: 330px 1fr; gap: 18px; margin-top: 16px; align-items: start; }
+    .an-pick { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px;
+      max-height: 620px; overflow-y: auto; overflow-x: hidden; }
+    .an-search { width: 100%; box-sizing: border-box; background: rgba(8,16,28,.9); border: 1px solid #23374d; border-radius: 8px;
+      color: #eaf2fb; font-family: var(--mono); font-size: 16px; padding: 9px 11px; margin-bottom: 9px; }
+    .an-search:focus { outline: none; border-color: var(--accent); }
+    .an-opt { display: block; width: 100%; text-align: left; background: none; border: 0; border-left: 3px solid transparent;
+      color: #cbd8e6; font-family: var(--mono); font-size: 16px; line-height: 1.35; padding: 7px 9px; cursor: pointer; border-radius: 0 7px 7px 0; }
+    .an-opt .sub { display: block; font-size: 13.5px; color: #7f94ab; }
+    .an-opt:hover { background: rgba(103,200,255,.07); color: #fff; }
+    .an-opt.on { background: rgba(103,200,255,.13); border-left-color: var(--c, #67c8ff); color: #fff; }
+    .an-opt .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px;
+      background: var(--c, #67c8ff); box-shadow: 0 0 7px var(--c, #67c8ff); }
+
+    .an-webwrap { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 6px 6px 10px; min-height: 420px; }
+    .an-web { display: block; width: 100%; height: auto; }
+    .an-web .edge { fill: none; stroke: var(--cat); stroke-opacity: .42; stroke-width: 1.6; }
+    .an-web .edge.hot { stroke-opacity: 1; stroke-width: 2.6; }
+    .an-web .ring { fill: none; stroke: #23374d; stroke-dasharray: 3 7; }
+    .an-web .node { cursor: pointer; }
+    .an-web .node .bg { fill: #0a141f; stroke: var(--cat); stroke-width: 1.6; }
+    .an-web .node:hover .bg, .an-web .node:focus .bg { fill: #122334; stroke-width: 2.6; }
+    .an-web .node text { font-family: var(--mono); font-size: 13.5px; fill: #dce7f3; pointer-events: none; }
+    .an-web .node .sub { font-size: 11.5px; fill: #8aa0b8; }
+    .an-web .hub .bg { fill: #0d1b2a; stroke-width: 2.6; }
+    .an-web .hub text { font-size: 15.5px; fill: #fff; font-weight: 700; }
+    .an-web .hub .sub { font-size: 12px; fill: #9fb4c9; font-weight: 400; }
+
+    .an-detail { margin-top: 10px; border: 1px solid #23374d; border-radius: 10px; padding: 11px 14px; background: rgba(103,200,255,.04); min-height: 64px; }
+    .an-detail .nm { font-family: 'Orbitron', sans-serif; font-size: 18px; color: #eaf2fb; }
+    .an-detail .nm .flag { font-family: var(--mono); font-size: 14px; color: #8aa0b8; margin-left: 9px; letter-spacing: .06em; }
+    .an-detail .ft { margin-top: 5px; font-size: 17.5px; line-height: 1.55; color: #b7c6d8; }
+    .an-detail .why { margin-top: 7px; font-size: 16.5px; line-height: 1.55; color: #ffcf5c; font-style: italic; }
+    .an-detail .acts { margin-top: 9px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .an-detail a, .an-detail button { font-family: var(--mono); font-size: 15px; color: #b7c6d8; text-decoration: none;
+      background: rgba(103,200,255,.06); border: 1px solid #23374d; border-radius: 7px; padding: 6px 10px; cursor: pointer; }
+    .an-detail a:hover, .an-detail button:hover { color: #fff; border-color: var(--accent); }
+    .an-hint { margin-top: 8px; font-family: var(--mono); font-size: 14.5px; color: #7f94ab; }
+
+    .an-foot { max-width: 1180px; margin: 30px auto 48px; padding: 0 22px; font-size: 16.5px; line-height: 1.65; color: #8aa0b8; text-align: center; }
+
+    @media (max-width: 900px) {
+      .an-wrap { grid-template-columns: 1fr; }
+      .an-pick { max-height: 260px; }
+    }
+  </style>
+</head>
+<body class="page-analogues">
+  <a class="top-nazar-btn" href="indi-space.html" title="Back to Indi-Space">◉ INDI-SPACE</a>
+  <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
+    <img src="data/nazar-logo.svg?v=5" alt="NAZAR">
+  </a>
+
+  <header class="an-hero">
+    <div class="an-hero-tag">NAZAR · Indi-Space · Analytical layer</div>
+    <h1 class="an-hero-title">Who does the <b>same work</b> elsewhere?</h1>
+    <p class="an-hero-sub">Every Indian company on the Indi-Space page set against the global firms solving the same problem —
+      read one way, then the other. Pick a company and its web of counterparts opens; click any node on the web to jump to that company’s own web.</p>
+    <div class="an-tricolor"></div>
+  </header>
+
+  <section class="an-sec" id="sec-g">
+    <div class="an-sec-head">
+      <span class="an-sec-n">SECTION 01</span>
+      <h2 class="an-sec-h">One global company → its Indian counterparts</h2>
+      <p class="an-sec-p">Start from a known name — ICEYE, Rocket Lab, Astroscale — and see which Indian firms are working the same seam.</p>
+    </div>
+    <div class="an-wrap">
+      <div class="an-pick">
+        <input type="search" class="an-search" id="q-g" placeholder="🔍 Search global companies…" autocomplete="off" spellcheck="false">
+        <div id="list-g"></div>
+      </div>
+      <div>
+        <div class="an-webwrap"><svg class="an-web" id="web-g" viewBox="0 0 980 660" role="img" aria-label="Spider web of Indian counterparts"></svg></div>
+        <div class="an-detail" id="det-g"></div>
+        <div class="an-hint">Hover a node to read why they are comparable · click it to open that company’s own web below</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="an-sec" id="sec-i">
+    <div class="an-sec-head">
+      <span class="an-sec-n">SECTION 02</span>
+      <h2 class="an-sec-h">One Indian company → its global counterparts</h2>
+      <p class="an-sec-p">The same map read backwards: for a single Indian firm, every global company doing comparable work.</p>
+    </div>
+    <div class="an-wrap">
+      <div class="an-pick">
+        <input type="search" class="an-search" id="q-i" placeholder="🔍 Search Indian companies…" autocomplete="off" spellcheck="false">
+        <div id="list-i"></div>
+      </div>
+      <div>
+        <div class="an-webwrap"><svg class="an-web" id="web-i" viewBox="0 0 980 660" role="img" aria-label="Spider web of global counterparts"></svg></div>
+        <div class="an-detail" id="det-i"></div>
+        <div class="an-hint">Click a global node to see every Indian company mapped to it in Section 01</div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="an-foot" id="an-foot"></footer>
+
+  <script src="site-analytics.js?v=5"></script>
+  <script src="mobile-menu.js?v=26"></script>
+  <script src="analogues.js?v=1"></script>
+</body>
+</html>
