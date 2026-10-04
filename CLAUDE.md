@@ -142,6 +142,9 @@ Downloaded or authored once and committed under `data/` — distinct from the au
 - `data/indi-space.json` — 105 Indian-company profiles: 36 parsed from the *People Behind India's Private Space Industry* volume, 69 added from the IIC-10 Indian NGEs DataWall deck (June 2026), all enriched with a website check (Indi-Space).
 - `data/launch-map.json` — 46 world launch sites / agency HQs / facilities (Global Launch Sites); `data/countries-110m.geojson` — Natural Earth 110m countries for the political globe.
 - `data/launch-sites/` — China "edcp" relief + political base maps and per-site launch photos (the ChinRepo map).
+- `data/video/` — the **tour film** at the end of the About page (`nazar-explainer.mp4`, its poster and a `.vtt` caption track). Built by `scripts/explainer/`:
+  `capture.sh` and `capture_motion.sh` drive **headless Chrome** against a local copy of the site and write 1280x720 PNGs — `--no-sandbox` is what makes WebGL render, without it the GPU process crashes and the globes come out blank, and a longer `--virtual-time-budget` is how the InstancedMesh pages get far enough to have drawn their satellites. A sequence of frames at increasing budgets is what gives the film real orbital drift.
+  `story.json` is the storyboard (scene, duration, crop rects, annotation boxes in source pixels, caption timings); `make_video.py` composes every frame with PIL and pipes raw RGB into ffmpeg; `make_audio.py` synthesises the ambient bed (a drone, a noise wash and a bell at each section change — nothing sampled). After a UI change, re-run the captures and `make_video.py` rather than editing the MP4.
 - `data/launch-gallery/` and `data/asat/` — freely-licensed photo sets (spaceport gallery; the 2007-ASAT long-read), each with a `_manifest.json` / in-page attribution.
 
 All bundled photos are public-domain or Creative-Commons and credited in-page; the charts/graphs on these pages are **original inline SVG**, not copied figures.

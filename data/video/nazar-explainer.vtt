@@ -1,0 +1,97 @@
+WEBVTT
+
+00:00:01.000 --> 00:00:09.500
+NAZAR - a satellite tracker that runs entirely in a browser tab
+
+00:00:10.300 --> 00:00:13.700
+01. The live globe - what you see when the page opens
+
+00:00:14.600 --> 00:00:20.000
+Every object in the public catalogue, propagated live in your browser. Nothing is pre-rendered - the positions are worked out as you watch.
+
+00:00:20.400 --> 00:00:25.600
+Real Blue Marble imagery, and each satellite drawn at its true altitude.
+
+00:00:26.500 --> 00:00:31.100
+Two clocks, UTC and IST, and a running count of everything tracked.
+
+00:00:31.400 --> 00:00:36.500
+Choose an observer city and the panel answers one question: what is above me, right now?
+
+00:00:37.400 --> 00:00:45.400
+Down the left edge, every other view in the site - one click away.
+
+00:00:46.300 --> 00:00:49.700
+02. God Mode - the entire catalogue, at true altitude
+
+00:00:50.600 --> 00:00:56.600
+Fifteen thousand objects at once, drawn as one instanced mesh so a browser can hold the whole catalogue and still stay smooth.
+
+00:00:57.000 --> 00:01:03.400
+Watch the shell drift. These are real orbits advancing in time, not a looping animation.
+
+00:01:04.500 --> 00:01:09.000
+Colour is altitude: low Earth orbit, medium, geostationary, and the long ellipses.
+
+00:01:09.300 --> 00:01:13.700
+Switch a shell off and the sky empties - the plainest way to see how full LEO is.
+
+00:01:14.400 --> 00:01:22.400
+Or type a name, and the globe swings round to that one satellite.
+
+00:01:23.300 --> 00:01:26.700
+03. Sats by Operator - who owns what, in colour
+
+00:01:27.600 --> 00:01:33.600
+The same catalogue, recoloured by who operates each satellite.
+
+00:01:34.000 --> 00:01:40.400
+Fifty-seven operators and constellations, matched on the names the catalogue really uses - Starlink, Guowang, GLONASS, Cartosat.
+
+00:01:41.500 --> 00:01:45.900
+Tick one operator and only that fleet is left on the globe.
+
+00:01:46.200 --> 00:01:50.700
+The info button opens a dossier: who built it, what flies, what still works.
+
+00:01:51.400 --> 00:01:59.400
+Every dot keeps its operator's colour, so a constellation shows up as a pattern.
+
+00:02:00.300 --> 00:02:03.700
+04. 2D View - one satellite, one ground track
+
+00:02:04.600 --> 00:02:10.600
+Pick a single satellite and the globe gives way to a map.
+
+00:02:11.000 --> 00:02:17.400
+The dotted line is twenty-four hours of ground track - where it has been and where it will go, from the same propagation as the globe.
+
+00:02:18.500 --> 00:02:22.900
+Altitude, period, inclination and the place it is over, updating as it moves.
+
+00:02:23.200 --> 00:02:27.700
+Switch to rev-based and it flies forward at up to a hundred times real speed.
+
+00:02:28.400 --> 00:02:36.600
+Two small globes ride alongside: one locked to the satellite, one left to spin with the Earth - so you see the orbit hold still while the planet turns.
+
+00:02:37.300 --> 00:02:40.700
+05. Debris Tracker - what the break-ups left behind
+
+00:02:41.600 --> 00:02:47.600
+Twelve thousand catalogued fragments, every one of them tracked by radar.
+
+00:02:48.000 --> 00:02:54.400
+Each colour is a single event: a collision, a missile test, a satellite that quietly came apart.
+
+00:02:55.500 --> 00:02:59.900
+Fengyun-1C, Cosmos 2251 and Iridium 33, Cosmos 1408, Yaogan-50, USA 32.
+
+00:03:00.200 --> 00:03:04.700
+Two catalogues are merged behind this, and every disagreement is written down.
+
+00:03:05.400 --> 00:03:13.600
+And the big ones carry their own story - the 2007 ASAT test alone left more tracked debris than any other event in orbit.
+
+00:03:14.500 --> 00:03:27.000
+No server, no account, no cost. Orbits are propagated in your browser from public element sets.

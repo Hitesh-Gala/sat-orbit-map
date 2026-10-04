@@ -1,0 +1,710 @@
+[
+ {
+  "kind": "title",
+  "dur": 10.0
+ },
+ {
+  "kind": "section",
+  "dur": 4.0,
+  "n": "01",
+  "title": "The live globe",
+  "sub": "what you see when the page opens"
+ },
+ {
+  "kind": "page",
+  "dur": 12.0,
+  "shot": "main-a",
+  "from": [
+   150,
+   60,
+   980,
+   551
+  ],
+  "to": [
+   40,
+   10,
+   1200,
+   675
+  ],
+  "caps": [
+   {
+    "at": 0.6,
+    "for": 5.4,
+    "lines": [
+     "Every object in the public catalogue, propagated live in your browser.",
+     "Nothing is pre-rendered - the positions are worked out as you watch."
+    ]
+   },
+   {
+    "at": 6.4,
+    "for": 5.2,
+    "lines": [
+     "Real Blue Marble imagery, and each satellite drawn at its true altitude."
+    ]
+   }
+  ],
+  "notes": [
+   {
+    "at": 2.2,
+    "box": [
+     330,
+     75,
+     620,
+     560
+    ],
+    "label": "live positions",
+    "side": "right"
+   }
+  ]
+ },
+ {
+  "kind": "page",
+  "dur": 11.0,
+  "shot": "main-b",
+  "from": [
+   940,
+   90,
+   340,
+   191
+  ],
+  "to": [
+   900,
+   70,
+   380,
+   214
+  ],
+  "caps": [
+   {
+    "at": 0.5,
+    "for": 4.6,
+    "lines": [
+     "Two clocks, UTC and IST, and a running count of everything tracked."
+    ]
+   },
+   {
+    "at": 5.4,
+    "for": 5.1,
+    "lines": [
+     "Choose an observer city and the panel answers one question:",
+     "what is above me, right now?"
+    ]
+   }
+  ],
+  "notes": [
+   {
+    "at": 1.2,
+    "box": [
+     1010,
+     118,
+     258,
+     104
+    ],
+    "label": "UTC / IST",
+    "side": "left"
+   },
+   {
+    "at": 5.8,
+    "box": [
+     1010,
+     380,
+     258,
+     72
+    ],
+    "label": "observer",
+    "side": "left"
+   },
+   {
+    "at": 7.6,
+    "box": [
+     1010,
+     462,
+     258,
+     70
+    ],
+    "label": "over your horizon",
+    "side": "left"
+   }
+  ]
+ },
+ {
+  "kind": "page",
+  "dur": 9.0,
+  "shot": "main-a",
+  "from": [
+   0,
+   70,
+   560,
+   315
+  ],
+  "to": [
+   0,
+   50,
+   660,
+   371
+  ],
+  "caps": [
+   {
+    "at": 0.4,
+    "for": 8.0,
+    "lines": [
+     "Down the left edge, every other view in the site - one click away."
+    ]
+   }
+  ],
+  "notes": [
+   {
+    "at": 1.0,
+    "box": [
+     14,
+     104,
+     262,
+     300
+    ],
+    "label": "the whole site",
+    "side": "right"
+   }
+  ]
+ },
+ {
+  "kind": "section",
+  "dur": 4.0,
+  "n": "02",
+  "title": "God Mode",
+  "sub": "the entire catalogue, at true altitude"
+ },
+ {
+  "kind": "page",
+  "dur": 14.0,
+  "frames": [
+   "godm-0",
+   "godm-1",
+   "godm-2",
+   "godm-3",
+   "godm-4",
+   "godm-5",
+   "godm-6",
+   "godm-7"
+  ],
+  "shot": "god-b",
+  "from": [
+   330,
+   70,
+   660,
+   371
+  ],
+  "to": [
+   250,
+   30,
+   820,
+   461
+  ],
+  "caps": [
+   {
+    "at": 0.6,
+    "for": 6.0,
+    "lines": [
+     "Fifteen thousand objects at once, drawn as one instanced mesh",
+     "so a browser can hold the whole catalogue and still stay smooth."
+    ]
+   },
+   {
+    "at": 7.0,
+    "for": 6.4,
+    "lines": [
+     "Watch the shell drift. These are real orbits advancing in time,",
+     "not a looping animation."
+    ]
+   }
+  ]
+ },
+ {
+  "kind": "page",
+  "dur": 10.0,
+  "shot": "god-a",
+  "from": [
+   0,
+   60,
+   620,
+   349
+  ],
+  "to": [
+   0,
+   50,
+   700,
+   394
+  ],
+  "caps": [
+   {
+    "at": 0.5,
+    "for": 4.5,
+    "lines": [
+     "Colour is altitude: low Earth orbit, medium, geostationary, and the long ellipses."
+    ]
+   },
+   {
+    "at": 5.3,
+    "for": 4.4,
+    "lines": [
+     "Switch a shell off and the sky empties - the plainest way to see how full LEO is."
+    ]
+   }
+  ],
+  "notes": [
+   {
+    "at": 1.0,
+    "box": [
+     20,
+     95,
+     325,
+     165
+    ],
+    "label": "orbit classes",
+    "side": "right"
+   },
+   {
+    "at": 5.6,
+    "box": [
+     20,
+     275,
+     325,
+     155
+    ],
+    "label": "turn a shell off",
+    "side": "right"
+   }
+  ]
+ },
+ {
+  "kind": "page",
+  "dur": 9.0,
+  "shot": "god-a",
+  "from": [
+   340,
+   400,
+   640,
+   320
+  ],
+  "to": [
+   360,
+   420,
+   580,
+   300
+  ],
+  "caps": [
+   {
+    "at": 0.4,
+    "for": 8.0,
+    "lines": [
+     "Or type a name, and the globe swings round to that one satellite."
+    ]
+   }
+  ],
+  "notes": [
+   {
+    "at": 1.2,
+    "box": [
+     440,
+     645,
+     400,
+     54
+    ],
+    "label": "search",
+    "side": "right"
+   }
+  ]
+ },
+ {
+  "kind": "section",
+  "dur": 4.0,
+  "n": "03",
+  "title": "Sats by Operator",
+  "sub": "who owns what, in colour"
+ },
+ {
+  "kind": "page",
+  "dur": 14.0,
+  "frames": [
+   "ops-a",
+   "ops-b"
+  ],
+  "rate": 1.0,
+  "shot": "ops-b",
+  "from": [
+   330,
+   60,
+   720,
+   405
+  ],
+  "to": [
+   270,
+   30,
+   830,
+   467
+  ],
+  "caps": [
+   {
+    "at": 0.6,
+    "for": 6.0,
+    "lines": [
+     "The same catalogue, recoloured by who operates each satellite."
+    ]
+   },
+   {
+    "at": 7.0,
+    "for": 6.4,
+    "lines": [
+     "Fifty-seven operators and constellations, matched on the names the",
+     "catalogue really uses - Starlink, Guowang, GLONASS, Cartosat."
+    ]
+   }
+  ]
+ },
+ {
+  "kind": "page",
+  "dur": 10.0,
+  "shot": "ops-a",
+  "from": [
+   0,
+   80,
+   620,
+   349
+  ],
+  "to": [
+   0,
+   60,
+   720,
+   405
+  ],
+  "caps": [
+   {
+    "at": 0.5,
+    "for": 4.4,
+    "lines": [
+     "Tick one operator and only that fleet is left on the globe."
+    ]
+   },
+   {
+    "at": 5.2,
+    "for": 4.5,
+    "lines": [
+     "The info button opens a dossier: who built it, what flies, what still works."
+    ]
+   }
+  ],
+  "notes": [
+   {
+    "at": 1.0,
+    "box": [
+     18,
+     120,
+     432,
+     440
+    ],
+    "label": "filter by operator",
+    "side": "right"
+   }
+  ]
+ },
+ {
+  "kind": "page",
+  "dur": 9.0,
+  "shot": "ops-b",
+  "from": [
+   420,
+   80,
+   700,
+   394
+  ],
+  "to": [
+   440,
+   100,
+   640,
+   360
+  ],
+  "caps": [
+   {
+    "at": 0.4,
+    "for": 8.0,
+    "lines": [
+     "Every dot keeps its operator's colour, so a constellation shows up as a pattern."
+    ]
+   }
+  ]
+ },
+ {
+  "kind": "section",
+  "dur": 4.0,
+  "n": "04",
+  "title": "2D View",
+  "sub": "one satellite, one ground track"
+ },
+ {
+  "kind": "page",
+  "dur": 14.0,
+  "shot": "twod-a",
+  "from": [
+   300,
+   120,
+   760,
+   428
+  ],
+  "to": [
+   250,
+   90,
+   900,
+   506
+  ],
+  "caps": [
+   {
+    "at": 0.6,
+    "for": 6.0,
+    "lines": [
+     "Pick a single satellite and the globe gives way to a map."
+    ]
+   },
+   {
+    "at": 7.0,
+    "for": 6.4,
+    "lines": [
+     "The dotted line is twenty-four hours of ground track - where it has been",
+     "and where it will go, from the same propagation as the globe."
+    ]
+   }
+  ]
+ },
+ {
+  "kind": "page",
+  "dur": 10.0,
+  "shot": "twod-a",
+  "from": [
+   10,
+   150,
+   520,
+   293
+  ],
+  "to": [
+   10,
+   140,
+   580,
+   326
+  ],
+  "caps": [
+   {
+    "at": 0.5,
+    "for": 4.4,
+    "lines": [
+     "Altitude, period, inclination and the place it is over, updating as it moves."
+    ]
+   },
+   {
+    "at": 5.2,
+    "for": 4.5,
+    "lines": [
+     "Switch to rev-based and it flies forward at up to a hundred times real speed."
+    ]
+   }
+  ],
+  "notes": [
+   {
+    "at": 1.0,
+    "box": [
+     24,
+     165,
+     292,
+     390
+    ],
+    "label": "live readout",
+    "side": "right"
+   }
+  ]
+ },
+ {
+  "kind": "page",
+  "dur": 9.0,
+  "shot": "twod-b",
+  "from": [
+   940,
+   110,
+   340,
+   191
+  ],
+  "to": [
+   900,
+   100,
+   380,
+   214
+  ],
+  "caps": [
+   {
+    "at": 0.4,
+    "for": 8.2,
+    "lines": [
+     "Two small globes ride alongside: one locked to the satellite, one left to",
+     "spin with the Earth - so you see the orbit hold still while the planet turns."
+    ]
+   }
+  ],
+  "notes": [
+   {
+    "at": 1.2,
+    "box": [
+     1062,
+     130,
+     210,
+     245
+    ],
+    "label": "centred on the sat",
+    "side": "left"
+   },
+   {
+    "at": 4.4,
+    "box": [
+     1062,
+     404,
+     210,
+     192
+    ],
+    "label": "true Earth rotation",
+    "side": "left"
+   }
+  ]
+ },
+ {
+  "kind": "section",
+  "dur": 4.0,
+  "n": "05",
+  "title": "Debris Tracker",
+  "sub": "what the break-ups left behind"
+ },
+ {
+  "kind": "page",
+  "dur": 14.0,
+  "frames": [
+   "debm-0",
+   "debm-1",
+   "debm-2",
+   "debm-3"
+  ],
+  "rate": 1.0,
+  "shot": "debris-b",
+  "from": [
+   400,
+   60,
+   700,
+   394
+  ],
+  "to": [
+   330,
+   30,
+   820,
+   461
+  ],
+  "caps": [
+   {
+    "at": 0.6,
+    "for": 6.0,
+    "lines": [
+     "Twelve thousand catalogued fragments, every one of them tracked by radar."
+    ]
+   },
+   {
+    "at": 7.0,
+    "for": 6.4,
+    "lines": [
+     "Each colour is a single event: a collision, a missile test,",
+     "a satellite that quietly came apart."
+    ]
+   }
+  ]
+ },
+ {
+  "kind": "page",
+  "dur": 10.0,
+  "shot": "debris-a",
+  "from": [
+   0,
+   80,
+   620,
+   349
+  ],
+  "to": [
+   0,
+   60,
+   700,
+   394
+  ],
+  "caps": [
+   {
+    "at": 0.5,
+    "for": 4.4,
+    "lines": [
+     "Fengyun-1C, Cosmos 2251 and Iridium 33, Cosmos 1408, Yaogan-50, USA 32."
+    ]
+   },
+   {
+    "at": 5.2,
+    "for": 4.5,
+    "lines": [
+     "Two catalogues are merged behind this, and every disagreement is written down."
+    ]
+   }
+  ],
+  "notes": [
+   {
+    "at": 1.0,
+    "box": [
+     18,
+     115,
+     377,
+     400
+    ],
+    "label": "one colour per event",
+    "side": "right"
+   }
+  ]
+ },
+ {
+  "kind": "page",
+  "dur": 9.0,
+  "shot": "debris-a",
+  "from": [
+   700,
+   150,
+   580,
+   326
+  ],
+  "to": [
+   720,
+   170,
+   540,
+   304
+  ],
+  "caps": [
+   {
+    "at": 0.4,
+    "for": 8.2,
+    "lines": [
+     "And the big ones carry their own story - the 2007 ASAT test alone",
+     "left more tracked debris than any other event in orbit."
+    ]
+   }
+  ],
+  "notes": [
+   {
+    "at": 1.4,
+    "box": [
+     1046,
+     278,
+     226,
+     88
+    ],
+    "label": "read the event",
+    "side": "left"
+   }
+  ]
+ },
+ {
+  "kind": "outro",
+  "dur": 14.0
+ }
+]

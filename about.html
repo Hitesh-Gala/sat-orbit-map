@@ -40,6 +40,23 @@
     @media (max-width: 720px) {
       .about-credit { font-size: 13px; letter-spacing: 0.12em; }
     }
+    /* ---- The tour video, last thing on the page ------------------------
+       preload="none" so opening About never pulls 20 MB; the poster is a
+       still from the film itself. Captions are burned into the picture, and
+       the .vtt is there as well for anyone who wants selectable text. */
+    .about-video { margin: 70px 0 10px; }
+    .about-video .av-frame {
+      position: relative; margin: 0 0 14px; border: 1px solid var(--line); border-radius: 12px;
+      overflow: hidden; background: #05080e; box-shadow: 0 18px 60px rgba(0, 0, 0, .55);
+    }
+    .about-video video { display: block; width: 100%; height: auto; background: #05080e; }
+    .about-video .av-meta {
+      display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline;
+      font-family: var(--mono); font-size: 13px; letter-spacing: .06em; color: var(--dim);
+    }
+    .about-video .av-meta b { color: var(--accent); font-weight: 400; }
+    .about-video .av-meta a { color: var(--accent); text-decoration: none; }
+    .about-video .av-meta a:hover { text-decoration: underline; }
   </style>
 </head>
 <body class="page-about">
@@ -330,6 +347,35 @@
       </div>
     </footer>
 
+
+    <!-- =========================================================
+         The tour - a short explainer film about the site
+         ========================================================= -->
+    <section class="about-section about-video" id="tour">
+      <h2>Watch the tour</h2>
+      <p>
+        Three and a half minutes through the five views that do most of the work:
+        the live globe, God Mode, Sats by Operator, the 2D ground track and the Debris
+        Tracker. Everything on screen is the site itself - the frames were captured from
+        these pages, not mocked up.
+      </p>
+      <div class="av-frame">
+        <video controls preload="none" playsinline
+               poster="data/video/nazar-explainer-poster.jpg"
+               width="1152" height="648">
+          <source src="data/video/nazar-explainer.mp4" type="video/mp4">
+          <track kind="captions" src="data/video/nazar-explainer.vtt" srclang="en" label="English">
+          Your browser cannot play this video.
+          <a href="data/video/nazar-explainer.mp4">Download it instead</a>.
+        </video>
+      </div>
+      <div class="av-meta">
+        <span><b>3 min 28 s</b> · 1152 x 648 · 12 MB</span>
+        <span>Captions are in the picture; a caption track is there too</span>
+        <span>Ambient bed generated for this film - nothing sampled</span>
+        <span><a href="data/video/nazar-explainer.mp4" download>Download the file</a></span>
+      </div>
+    </section>
   </main>
 
   <script src="nazar-bgm.js?v=4"></script>
