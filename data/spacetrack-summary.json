@@ -1,178 +1,178 @@
 {
  "source": "Space-Track.org",
- "retrieved": "2026-10-07T13:38:41Z",
+ "retrieved": "2026-10-08T13:45:46Z",
  "tle": {
   "label": "On-orbit objects (GP catalogue)",
-  "count": 35221,
+  "count": 35287,
   "latestEpoch": "2026-10-13T18:05:18.892896",
   "note": "Space-Track GP/SATCAT: all catalogued objects still on orbit."
  },
  "satcat": {
   "label": "Active payloads",
-  "count": 19612,
+  "count": 19608,
   "note": "SATCAT payloads with no decay date (CURRENT=Y)."
  },
  "conjunctions": {
   "label": "Public CDMs (conjunction messages)",
-  "count": 38,
-  "messages": 211,
+  "count": 25,
+  "messages": 142,
   "capped": false,
   "window": {
-   "from": "2026-10-07T14:01:06.533000",
-   "to": "2026-10-09T20:51:28.279000"
+   "from": "2026-10-08T14:33:13.075000",
+   "to": "2026-10-10T20:36:44.209000"
   },
   "sample": [
    {
-    "sat1": "FENGYUN 1C DEB",
-    "id1": "29854",
-    "sat2": "CZ-6A DEB",
-    "id2": "54637",
-    "tca": "2026-10-07T14:01:06.533000",
-    "missM": 579,
-    "prob": 0.0001036545,
-    "type1": "DEBRIS",
-    "type2": "DEBRIS",
-    "emergency": true
-   },
-   {
-    "sat1": "ARIANE 2 DEB",
-    "id1": "27033",
-    "sat2": "FREGAT R/B",
-    "id2": "39192",
-    "tca": "2026-10-07T15:00:52.222000",
-    "missM": 891,
-    "prob": 0.0,
-    "type1": "DEBRIS",
-    "type2": "ROCKET BODY",
-    "emergency": true
-   },
-   {
-    "sat1": "LANDSAT 1 (ERTS 1)",
-    "id1": "6126",
-    "sat2": "UNKNOWN",
-    "id2": "270334",
-    "tca": "2026-10-07T15:25:36.667000",
-    "missM": 33,
-    "prob": 0.001229537,
-    "type1": "PAYLOAD",
-    "type2": "UNKNOWN",
-    "emergency": true
-   },
-   {
-    "sat1": "FENGYUN 1C DEB",
-    "id1": "35176",
-    "sat2": "UNKNOWN",
-    "id2": "87071",
-    "tca": "2026-10-07T16:55:49.676000",
-    "missM": 309,
-    "prob": 0.0001512155,
-    "type1": "DEBRIS",
-    "type2": "UNKNOWN",
-    "emergency": true
-   },
-   {
-    "sat1": "COSMOS 2251 DEB",
-    "id1": "35015",
-    "sat2": "NOAA 17 DEB",
-    "id2": "48744",
-    "tca": "2026-10-07T17:17:08.818000",
-    "missM": 285,
-    "prob": 0.000114489,
-    "type1": "DEBRIS",
-    "type2": "DEBRIS",
-    "emergency": true
-   },
-   {
-    "sat1": "COSMOS 1420",
-    "id1": "13648",
-    "sat2": "FENGYUN 1C DEB",
-    "id2": "30941",
-    "tca": "2026-10-07T20:24:20.904000",
-    "missM": 85,
-    "prob": 0.001749753,
-    "type1": "PAYLOAD",
-    "type2": "DEBRIS",
-    "emergency": true
-   },
-   {
-    "sat1": "RESURS O1",
-    "id1": "23342",
-    "sat2": "COSMOS 2251 DEB",
-    "id2": "35614",
-    "tca": "2026-10-07T20:31:01.823000",
-    "missM": 38,
-    "prob": 0.0003961056,
-    "type1": "PAYLOAD",
-    "type2": "DEBRIS",
-    "emergency": true
-   },
-   {
-    "sat1": "RESURS O1",
-    "id1": "23342",
-    "sat2": "COSMOS 2251 DEB",
-    "id2": "35614",
-    "tca": "2026-10-07T20:31:02.017000",
-    "missM": 170,
-    "prob": 0.0003676206,
-    "type1": "PAYLOAD",
-    "type2": "DEBRIS",
-    "emergency": true
-   },
-   {
-    "sat1": "SACI 1",
-    "id1": "25941",
+    "sat1": "TIROS 10",
+    "id1": "1430",
     "sat2": "FENGYUN 1C DEB",
     "id2": "32230",
-    "tca": "2026-10-07T20:32:47.744000",
-    "missM": 567,
-    "prob": 0.0002420332,
+    "tca": "2026-10-08T14:33:13.075000",
+    "missM": 630,
+    "prob": 0.0001969265,
     "type1": "PAYLOAD",
     "type2": "DEBRIS",
     "emergency": true
    },
    {
-    "sat1": "BLOCK DM-SL R/B",
-    "id1": "27826",
-    "sat2": "BREEZE-M R/B",
-    "id2": "37952",
-    "tca": "2026-10-07T21:13:17.049000",
-    "missM": 2508,
+    "sat1": "ATLAS H R/B",
+    "id1": "16592",
+    "sat2": "NOAA 16 DEB",
+    "id2": "41152",
+    "tca": "2026-10-08T15:59:36.765000",
+    "missM": 576,
+    "prob": 0.0005956799,
+    "type1": "ROCKET BODY",
+    "type2": "DEBRIS",
+    "emergency": true
+   },
+   {
+    "sat1": "LAGEOS 1 AKM",
+    "id1": "8822",
+    "sat2": "SL-12 DEB",
+    "id2": "25805",
+    "tca": "2026-10-08T17:30:19.519000",
+    "missM": 4098,
     "prob": 0.0,
     "type1": "ROCKET BODY",
+    "type2": "DEBRIS",
+    "emergency": true
+   },
+   {
+    "sat1": "CZ-6A DEB",
+    "id1": "56273",
+    "sat2": "RITE TARGET 2",
+    "id2": "28455",
+    "tca": "2026-10-08T20:14:27.774000",
+    "missM": 644,
+    "prob": 0.0001672323,
+    "type1": "DEBRIS",
+    "type2": "PAYLOAD",
+    "emergency": true
+   },
+   {
+    "sat1": "CZ-4 DEB",
+    "id1": "26202",
+    "sat2": "SL-8 DEB",
+    "id2": "43117",
+    "tca": "2026-10-08T21:11:30.677000",
+    "missM": 65,
+    "prob": 0.0009764375,
+    "type1": "DEBRIS",
+    "type2": "DEBRIS",
+    "emergency": true
+   },
+   {
+    "sat1": "TITAN 3C TRANSTAGE DEB",
+    "id1": "1684",
+    "sat2": "ELECTRON KICK STAGE R/B",
+    "id2": "44636",
+    "tca": "2026-10-08T22:53:01.877000",
+    "missM": 35,
+    "prob": 0.0002066453,
+    "type1": "DEBRIS",
     "type2": "ROCKET BODY",
     "emergency": true
    },
    {
-    "sat1": "FENGYUN 1C DEB",
-    "id1": "31741",
-    "sat2": "COSMOS 1867 COOLANT",
-    "id2": "39661",
-    "tca": "2026-10-07T21:28:12.667000",
-    "missM": 59,
-    "prob": 0.000218118,
+    "sat1": "COSMOS 2195",
+    "id1": "22006",
+    "sat2": "SL-8 R/B",
+    "id2": "24306",
+    "tca": "2026-10-09T01:57:52.962000",
+    "missM": 84,
+    "prob": 0.0001414719,
+    "type1": "PAYLOAD",
+    "type2": "ROCKET BODY",
+    "emergency": true
+   },
+   {
+    "sat1": "COSMOS 397 DEB *",
+    "id1": "5529",
+    "sat2": "MINOTAUR DEB",
+    "id2": "26079",
+    "tca": "2026-10-09T02:21:52.662000",
+    "missM": 670,
+    "prob": 0.0001077482,
     "type1": "DEBRIS",
     "type2": "DEBRIS",
     "emergency": true
    },
    {
     "sat1": "FENGYUN 1C DEB",
-    "id1": "30768",
-    "sat2": "COSMOS 2251 DEB",
-    "id2": "34634",
-    "tca": "2026-10-07T23:18:48.728000",
-    "missM": 61,
-    "prob": 0.0002242139,
+    "id1": "30200",
+    "sat2": "COSMOS 970 DEB",
+    "id2": "65004",
+    "tca": "2026-10-09T04:38:37.942000",
+    "missM": 346,
+    "prob": 0.0001127617,
     "type1": "DEBRIS",
     "type2": "DEBRIS",
+    "emergency": true
+   },
+   {
+    "sat1": "COSMOS 2056",
+    "id1": "20432",
+    "sat2": "CZ-4 DEB",
+    "id2": "20876",
+    "tca": "2026-10-09T12:27:59.348000",
+    "missM": 148,
+    "prob": 0.002672863,
+    "type1": "PAYLOAD",
+    "type2": "DEBRIS",
+    "emergency": true
+   },
+   {
+    "sat1": "FENGYUN 1C DEB",
+    "id1": "30708",
+    "sat2": "CZ-6A DEB",
+    "id2": "60877",
+    "tca": "2026-10-09T12:40:31.095000",
+    "missM": 332,
+    "prob": 0.0001690195,
+    "type1": "DEBRIS",
+    "type2": "DEBRIS",
+    "emergency": true
+   },
+   {
+    "sat1": "DELTA 1 DEB",
+    "id1": "37638",
+    "sat2": "UNKNOWN",
+    "id2": "270405",
+    "tca": "2026-10-09T15:56:19.800000",
+    "missM": 639,
+    "prob": 0.0002217922,
+    "type1": "DEBRIS",
+    "type2": "UNKNOWN",
     "emergency": true
    }
   ],
   "note": "cdm_public: operator-grade conjunction data messages, upcoming encounters."
  },
  "gpBundle": {
-  "count": 18943
+  "count": 18939
  },
  "otherBundle": {
-  "count": 16455
+  "count": 16454
  }
 }
