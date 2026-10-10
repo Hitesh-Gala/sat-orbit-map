@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4, viewport-fit=cover">
+  <title>NAZAR · Rocket Models</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=52">
+  <style>
+    body.page-rockets { overflow-y: auto; }
+
+    .rk-back {
+      position: absolute; top: 14px; left: 14px; z-index: 60;
+      display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 6px;
+      background: rgba(2, 6, 13, .85); border: 1px solid var(--accent); color: var(--accent);
+      font-family: var(--mono); font-size: 13px; font-weight: 700; letter-spacing: .2em;
+      text-transform: uppercase; text-decoration: none; backdrop-filter: blur(8px);
+    }
+    .rk-back:hover { background: rgba(103, 200, 255, .2); }
+
+    .rk-hero { max-width: 1500px; margin: 0 auto; padding: 74px 20px 4px; text-align: center; }
+    .rk-hero h1 { margin: 0; font-family: 'Orbitron', sans-serif; font-weight: 900;
+      font-size: clamp(30px, 3.6vw, 50px); letter-spacing: .06em; color: #fff; }
+    .rk-hero .sub { font-family: 'Caveat', cursive; font-size: 25px; color: #ff9f6a; margin-top: 2px; }
+    .rk-hero .blurb { max-width: 820px; margin: 10px auto 0; font-size: 18px; line-height: 1.6; color: #93a7bd; }
+
+    .rk-controls { max-width: 1500px; margin: 18px auto 6px; padding: 0 20px;
+      display: flex; flex-wrap: wrap; gap: 9px; align-items: center; justify-content: center; }
+    .rk-search { flex: 0 1 340px; background: rgba(8,16,28,.9); border: 1px solid #23374d; border-radius: 8px;
+      color: #eaf2fb; font-family: var(--mono); font-size: 15px; padding: 9px 12px; }
+    .rk-search:focus { outline: none; border-color: var(--accent); }
+    .rk-chip { cursor: pointer; background: rgba(103,200,255,.07); border: 1px solid var(--line); border-radius: 20px;
+      color: #b7c6d8; font-family: var(--mono); font-size: 13.5px; letter-spacing: .05em; padding: 7px 14px; }
+    .rk-chip:hover { color: #fff; border-color: #3d5d7f; }
+    .rk-chip.on { background: rgba(103,200,255,.2); border-color: var(--accent); color: #fff; }
+    .rk-chip .n { color: var(--accent); margin-left: 6px; font-variant-numeric: tabular-nums; }
+    .rk-count { width: 100%; text-align: center; font-family: var(--mono); font-size: 13.5px; color: var(--dim); }
+
+    /* the deck */
+    .rk-grid { max-width: 1500px; margin: 10px auto 40px; padding: 0 20px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 16px; }
+    .rk-card { position: relative; display: flex; flex-direction: column; text-align: left;
+      background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
+      cursor: pointer; padding: 0; color: inherit; font: inherit;
+      transition: transform .14s, border-color .14s, box-shadow .14s; }
+    .rk-card:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 14px 34px rgba(0,0,0,.5); }
+    .rk-shot { position: relative; aspect-ratio: 4 / 3; background: #060c14; overflow: hidden; }
+    .rk-shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    /* no verified free photograph - a typographic plate rather than a wrong picture */
+    .rk-plate { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(circle at 50% 30%, rgba(103,200,255,.16), rgba(6,12,20,.9) 70%); }
+    .rk-plate span { font-family: 'Orbitron', sans-serif; font-size: 30px; font-weight: 900;
+      letter-spacing: .08em; color: rgba(190,220,250,.5); }
+    .rk-flag { position: absolute; top: 8px; left: 8px; font-family: var(--mono); font-size: 11.5px;
+      letter-spacing: .1em; color: #cfe3f7; background: rgba(4,10,18,.8); border: 1px solid #2a4157;
+      border-radius: 5px; padding: 2px 7px; }
+    .rk-reuse { position: absolute; top: 8px; right: 8px; font-family: var(--mono); font-size: 11px;
+      letter-spacing: .08em; color: #06101a; background: #58d68d; border-radius: 5px; padding: 2px 7px; font-weight: 700; }
+    .rk-body { padding: 11px 13px 13px; }
+    .rk-name { font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 700; color: #eaf2fb; line-height: 1.25; }
+    .rk-maker { margin-top: 5px; font-family: var(--mono); font-size: 13px; color: var(--dim); }
+    .rk-fam { margin-top: 7px; display: inline-block; font-family: var(--mono); font-size: 11.5px;
+      letter-spacing: .07em; text-transform: uppercase; color: #ffcf5c; border: 1px solid rgba(255,207,92,.3);
+      border-radius: 4px; padding: 2px 7px; }
+    .rk-credit { padding: 0 13px 11px; font-family: var(--mono); font-size: 10.5px; line-height: 1.4; color: #6f8498; }
+    .rk-credit a { color: #85a3bf; text-decoration: none; }
+
+    /* detail pop-up */
+    .rk-modal { position: fixed; inset: 0; z-index: 400; display: flex; align-items: center; justify-content: center;
+      padding: 24px; background: rgba(2,5,10,.72); backdrop-filter: blur(4px); }
+    .rk-modal[hidden] { display: none; }
+    .rk-card-big { width: min(680px, 96vw); max-height: 92vh; overflow-y: auto; overflow-x: hidden;
+      background: #070d14; border: 1px solid #23374d; border-radius: 14px; box-shadow: 0 22px 70px rgba(0,0,0,.7); }
+    .rk-card-big img { width: 100%; display: block; max-height: 46vh; object-fit: cover; }
+    .rk-big-body { padding: 18px 22px 22px; }
+    .rk-big-body h2 { margin: 0; font-family: 'Orbitron', sans-serif; font-size: 25px; color: #fff; }
+    .rk-big-body .who { margin-top: 6px; font-family: var(--mono); font-size: 15px; color: var(--accent); }
+    .rk-rows { margin-top: 14px; font-family: var(--mono); font-size: 14.5px; }
+    .rk-rows div { display: flex; justify-content: space-between; gap: 18px; padding: 6px 0;
+      border-bottom: 1px solid rgba(110,200,255,.08); }
+    .rk-rows span { color: var(--dim); }
+    .rk-rows b { color: var(--text); font-weight: 400; text-align: right; }
+    .rk-acts { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 9px; }
+    .rk-acts a, .rk-acts button { font-family: var(--mono); font-size: 14px; color: #b7c6d8; text-decoration: none;
+      background: rgba(103,200,255,.07); border: 1px solid #23374d; border-radius: 8px; padding: 8px 13px; cursor: pointer; }
+    .rk-acts a:hover, .rk-acts button:hover { color: #fff; border-color: var(--accent); }
+
+    .rk-foot { max-width: 1100px; margin: 0 auto 50px; padding: 0 20px; text-align: center;
+      font-size: 15px; line-height: 1.65; color: #8aa0b8; }
+    .rk-foot a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body class="page-rockets">
+  <a class="rk-back" href="launch-map.html" title="Back to the launch-site globe">◉ GLOBE</a>
+  <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
+    <img src="data/nazar-logo.svg?v=5" alt="NAZAR">
+  </a>
+
+  <header class="rk-hero">
+    <h1>ROCKET MODELS</h1>
+    <div class="sub">every launch vehicle in the catalogue, as a deck</div>
+    <p class="blurb">The same catalogue the launch records are drawn from — orbital and suborbital vehicles,
+      flying and long retired. Tap a card for the detail.</p>
+  </header>
+
+  <div class="rk-controls">
+    <input type="search" id="rk-q" class="rk-search" placeholder="🔍 Search a rocket, family or maker…" autocomplete="off" spellcheck="false">
+    <div id="rk-filters" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center"></div>
+    <div class="rk-count" id="rk-count">Loading the catalogue…</div>
+  </div>
+
+  <main class="rk-grid" id="rk-grid"></main>
+
+  <footer class="rk-foot" id="rk-foot"></footer>
+
+  <div class="rk-modal" id="rk-modal" hidden role="dialog" aria-modal="true">
+    <div class="rk-card-big" id="rk-big"></div>
+  </div>
+
+  <script src="site-analytics.js?v=5"></script>
+  <script src="mobile-menu.js?v=26"></script>
+  <script src="rocket-models.js?v=1"></script>
+</body>
+</html>

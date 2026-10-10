@@ -48,6 +48,15 @@
       transition: .14s; text-decoration: none; display: block; text-align: center;
     }
     .lm-gallery-btn:hover { border-color: #ffb37a; box-shadow: 0 0 20px rgba(255,140,80,0.3); transform: translateY(-1px); }
+    .lm-gallery-btn + .lm-gallery-btn { margin-top: 8px; }
+    /* The 2D map and the rocket deck sit under the gallery button, each in
+       its own colour so the three read as separate destinations. */
+    .lm-2d-btn { background: linear-gradient(120deg, rgba(103,200,255,.18), rgba(88,214,141,.14));
+      border-color: #67c8ff; color: #d4ecff; }
+    .lm-2d-btn:hover { border-color: #9adcff; box-shadow: 0 0 20px rgba(103,200,255,.3); }
+    .lm-rk-btn { background: linear-gradient(120deg, rgba(201,160,255,.18), rgba(255,111,156,.14));
+      border-color: #c9a0ff; color: #ecdcff; }
+    .lm-rk-btn:hover { border-color: #dcc0ff; box-shadow: 0 0 20px rgba(201,160,255,.3); }
     .lm-status { font-size: 13px; color: var(--dim); line-height: 1.5; margin-top: 8px; }
 
     /* hover tooltip (globe.gl injects .scene-tooltip) */
@@ -168,6 +177,8 @@
 
     <section class="panel">
       <a href="launch-gallery.html" class="lm-gallery-btn" id="lm-gallery-btn" title="Photo gallery of the world's launch sites">📷 Photo Gallery</a>
+      <a href="launch-map-2d.html" class="lm-gallery-btn lm-2d-btn" title="The same markers on a flat world map">🗺 Sites on 2D Map</a>
+      <a href="rocket-models.html" class="lm-gallery-btn lm-rk-btn" title="Every launch vehicle in the catalogue, as a deck of cards">🚀 Rocket Models</a>
       <div id="lm-status" class="lm-status">Loading globe…</div>
     </section>
   </aside>

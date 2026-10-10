@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4, viewport-fit=cover">
+  <title>NAZAR · Launch Sites on a 2D Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=52">
+  <style>
+    body.page-lm2d { overflow: hidden; }
+
+    /* Back to the globe. Its own class, because mobile-menu.js turns
+       .top-nazar-btn into the NAZAR drop-down and this should just go back. */
+    .lm2-back {
+      position: fixed; top: 14px; left: 14px; z-index: 60;
+      display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 6px;
+      background: rgba(2, 6, 13, .85); border: 1px solid var(--accent); color: var(--accent);
+      font-family: var(--mono); font-size: 13px; font-weight: 700; letter-spacing: .2em;
+      text-transform: uppercase; text-decoration: none; backdrop-filter: blur(8px);
+    }
+    .lm2-back:hover { background: rgba(103, 200, 255, .2); }
+
+    .lm2-head { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 40; text-align: center; pointer-events: none; }
+    .lm2-head h1 { margin: 0; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 25px; letter-spacing: .14em; color: #eaf2fb; }
+    .lm2-head .sub { font-family: 'Caveat', cursive; font-size: 20px; color: #ff9f6a; }
+
+    /* left panel: the same categories as the globe, plus a search */
+    .lm2-shell { position: fixed; top: 86px; left: 14px; width: 310px; max-height: calc(100vh - 104px);
+      display: flex; flex-direction: column; gap: 8px; z-index: 30; overflow: hidden; }
+    .lm2-shell .panel { overflow-y: auto; overflow-x: hidden; }
+    .lm2-search { width: 100%; box-sizing: border-box; background: rgba(8,16,28,.9); border: 1px solid #23374d;
+      border-radius: 7px; color: #eaf2fb; font-family: var(--mono); font-size: 14px; padding: 8px 10px; }
+    .lm2-search:focus { outline: none; border-color: var(--accent); }
+    .lm2-cat { display: flex; align-items: center; gap: 8px; padding: 5px 2px; font-family: var(--mono); font-size: 14px; cursor: pointer; }
+    .lm2-cat input { accent-color: var(--accent); cursor: pointer; }
+    .lm2-cat .sw { width: 11px; height: 11px; border-radius: 50%; box-shadow: 0 0 7px currentColor; flex: 0 0 auto; }
+    .lm2-cat .nm { flex: 1; color: var(--text); }
+    .lm2-cat b { color: var(--accent); font-variant-numeric: tabular-nums; font-size: 13px; }
+    .lm2-btns { display: flex; gap: 6px; margin: 8px 0; }
+    .lm2-btns button { flex: 1; cursor: pointer; background: rgba(103,200,255,.08); border: 1px solid var(--line);
+      border-radius: 5px; color: var(--dim); font-family: var(--mono); font-size: 12px; padding: 4px 9px; }
+    .lm2-btns button:hover { color: var(--text); border-color: #35506f; }
+    .lm2-hint { font-size: 13px; color: var(--dim); line-height: 1.5; margin-top: 8px; }
+
+    /* the map itself */
+    /* The map is 2:1, so the frame follows it rather than leaving a dead band
+       under the world; it never grows past the space available. */
+    .lm2-map { position: fixed; top: 64px; left: 338px; right: 14px;
+      height: min(calc(100vh - 78px), calc((100vw - 352px) / 2));
+      border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #050a12; }
+    .lm2-map svg { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+    .lm2-map svg.dragging { cursor: grabbing; }
+    .lm2-land { fill: #16314a; stroke: #2b4d6b; stroke-width: .5; vector-effect: non-scaling-stroke; }
+    .lm2-grat { fill: none; stroke: rgba(103,200,255,.11); stroke-width: .5; vector-effect: non-scaling-stroke; }
+    .lm2-eq { stroke: rgba(255,207,92,.35); stroke-dasharray: 5 5; }
+    .lm2-pin { cursor: pointer; }
+    .lm2-pin circle.core { stroke: #04101c; stroke-width: .8; vector-effect: non-scaling-stroke; }
+    .lm2-pin circle.halo { fill-opacity: .18; stroke: none; }
+    .lm2-pin:hover circle.core, .lm2-pin.on circle.core { stroke: #fff; stroke-width: 1.4; }
+
+    .lm2-zoom { position: absolute; right: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 6px; z-index: 5; }
+    .lm2-zoom button { width: 34px; height: 34px; border-radius: 8px; cursor: pointer; background: rgba(4,10,18,.9);
+      border: 1px solid var(--line); color: var(--accent); font-family: var(--mono); font-size: 17px; line-height: 1; }
+    .lm2-zoom button:hover { border-color: var(--accent); }
+
+    /* hover card */
+    .lm2-tip { position: absolute; z-index: 8; pointer-events: none; min-width: 210px; max-width: 320px;
+      background: rgba(6,11,18,.97); border: 1px solid #2a4157; border-radius: 9px; padding: 10px 12px;
+      box-shadow: 0 14px 40px rgba(0,0,0,.6); }
+    .lm2-tip .name { font-family: 'Orbitron', sans-serif; font-size: 15px; color: #fff; }
+    .lm2-tip .type { font-family: var(--mono); font-size: 12.5px; margin-top: 3px; }
+    .lm2-tip .rows { margin-top: 7px; font-family: var(--mono); font-size: 12.5px; color: var(--text); }
+    .lm2-tip .rows div { display: flex; justify-content: space-between; gap: 14px; }
+    .lm2-tip .rows span { color: var(--dim); }
+    .lm2-tip .note { margin-top: 7px; font-size: 13px; line-height: 1.45; color: #b7c6d8; }
+
+    .lm2-count { position: absolute; left: 12px; bottom: 12px; font-family: var(--mono); font-size: 13px;
+      color: var(--dim); background: rgba(4,10,18,.82); border: 1px solid var(--line); border-radius: 7px; padding: 5px 10px; }
+
+    @media (max-width: 900px) {
+      .lm2-shell { position: static; width: auto; max-height: none; margin: 86px 14px 10px; }
+      .lm2-map { position: static; margin: 0 14px 14px; height: 60vh; }
+      body.page-lm2d { overflow: auto; }
+      .lm2-head { position: static; transform: none; margin-top: 64px; }
+    }
+  </style>
+</head>
+<body class="page-lm2d">
+  <a class="lm2-back" href="launch-map.html" title="Back to the launch-site globe">◉ GLOBE</a>
+  <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
+    <img src="data/nazar-logo.svg?v=5" alt="NAZAR">
+  </a>
+
+  <header class="lm2-head">
+    <h1>SITES ON A 2D MAP</h1>
+    <div class="sub">every marker from the globe, flattened</div>
+  </header>
+
+  <aside class="lm2-shell">
+    <section class="panel">
+      <input type="search" id="lm2-q" class="lm2-search" placeholder="🔍 Search a site or country…" autocomplete="off" spellcheck="false">
+      <div class="lm2-btns"><button type="button" id="lm2-all">All</button><button type="button" id="lm2-none">None</button></div>
+      <div id="lm2-legend"></div>
+      <div class="lm2-hint">Drag to pan, scroll or use the buttons to zoom. Hover a pin for its details; click one to open it on the globe.</div>
+    </section>
+  </aside>
+
+  <div class="lm2-map" id="lm2-map">
+    <svg id="lm2-svg" viewBox="0 0 360 180" preserveAspectRatio="xMidYMid meet" role="img" aria-label="World map of launch sites"></svg>
+    <div class="lm2-zoom">
+      <button type="button" id="lm2-in" aria-label="Zoom in">+</button>
+      <button type="button" id="lm2-out" aria-label="Zoom out">−</button>
+      <button type="button" id="lm2-reset" aria-label="Reset view" style="font-size:13px">⤢</button>
+    </div>
+    <div class="lm2-count" id="lm2-count">…</div>
+  </div>
+
+  <script src="site-analytics.js?v=5"></script>
+  <script src="mobile-menu.js?v=26"></script>
+  <script src="launch-map-2d.js?v=1"></script>
+</body>
+</html>

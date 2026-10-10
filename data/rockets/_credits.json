@@ -1,0 +1,275 @@
+{
+ "falcon-9": {
+  "file": "data/rockets/falcon-9.jpg",
+  "author": "U.S. Space Force photo by Joshua Conti",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:45th_Space_Wing_Supports_Successful_Falcon_9_SAOCOM_1B_Launch_02.jpg",
+  "title": "File:45th Space Wing Supports Successful Falcon 9 SAOCOM 1B Launch 02.jpg"
+ },
+ "falcon-heavy": {
+  "file": "data/rockets/falcon-heavy.jpg",
+  "author": "Wikideas1",
+  "licence": "CC0",
+  "source": "https://commons.wikimedia.org/wiki/File:Falcon_Heavy_sea_launch_01.webp",
+  "title": "File:Falcon Heavy sea launch 01.webp"
+ },
+ "starship": {
+  "file": "data/rockets/starship.jpg",
+  "author": "SpaceX",
+  "licence": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Starship_-_Flight_13_(Sunset).jpg",
+  "title": "File:Starship - Flight 13 (Sunset).jpg"
+ },
+ "atlas-v": {
+  "file": "data/rockets/atlas-v.jpg",
+  "author": "U.S. Space Force photo by Joshua Conti",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:Atlas_V_Starliner_CFT_Launch_(8452655).jpg",
+  "title": "File:Atlas V Starliner CFT Launch (8452655).jpg"
+ },
+ "delta-iv-heavy": {
+  "file": "data/rockets/delta-iv-heavy.jpg",
+  "author": "U.S. Space Force photo by Senior Airman Dakota Raub",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:Delta_IV_Heavy_NROL-70_Launch_(8340600).jpg",
+  "title": "File:Delta IV Heavy NROL-70 Launch (8340600).jpg"
+ },
+ "vulcan": {
+  "file": "data/rockets/vulcan.jpg",
+  "author": "NASA/Ben Smegelsky",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:Vulcan_Centaur_rollout_(Peregrine)_(cropped).jpg",
+  "title": "File:Vulcan Centaur rollout (Peregrine) (cropped).jpg"
+ },
+ "new-glenn": {
+  "file": "data/rockets/new-glenn.jpg",
+  "author": "U.S. Space Force photo by Gwendolyn Kurzen",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:New_Glenn_-_BlueBird_7_Launch_(9628277)_(cropped).jpg",
+  "title": "File:New Glenn - BlueBird 7 Launch (9628277) (cropped).jpg"
+ },
+ "electron": {
+  "file": "data/rockets/electron.jpg",
+  "author": "NASA Kennedy Space Center / Rocket Lab",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:Rocket_Lab_PREFIRE_and_Ice_Launch_(KSC-20240605-PH-RKL01_0005).jpg",
+  "title": "File:Rocket Lab PREFIRE and Ice Launch (KSC-20240605-PH-RKL01 0005).jpg"
+ },
+ "neutron": {
+  "file": "data/rockets/neutron.jpg",
+  "author": "CaglayanKutay (original), Soumya-8974 (translated work)",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:RocketLab_Neutron_ana_k%C4%B1s%C4%B1mlar_(en).png",
+  "title": "File:RocketLab Neutron ana kısımlar (en).png"
+ },
+ "sls": {
+  "file": "data/rockets/sls.jpg",
+  "author": "https://www.nasa.gov/marshall/",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:Artemis_II_launch_(SLS_MAF_20260401_ArtemisIILaunch_02)_crop.jpg",
+  "title": "File:Artemis II launch (SLS MAF 20260401 ArtemisIILaunch 02) crop.jpg"
+ },
+ "antares": {
+  "file": "data/rockets/antares.jpg",
+  "author": "Bill Ingalls",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:Cropped_NG-11_Launch.jpg",
+  "title": "File:Cropped NG-11 Launch.jpg"
+ },
+ "minotaur": {
+  "file": "data/rockets/minotaur.jpg",
+  "author": "USAF",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:Minotaur-4-Lite_HTV-2a_2.jpg",
+  "title": "File:Minotaur-4-Lite HTV-2a 2.jpg"
+ },
+ "pegasus": {
+  "file": "data/rockets/pegasus.jpg",
+  "author": "NASA/Lori Losey",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:Launch_of_Pegasus_F43_from_Stargazer_(KSC-20161215-PH_LAL02_0005).jpg",
+  "title": "File:Launch of Pegasus F43 from Stargazer (KSC-20161215-PH LAL02 0005).jpg"
+ },
+ "alpha": {
+  "file": "data/rockets/alpha.jpg",
+  "author": "JacobRendon",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Firefly_Alpha_1st_Flight.jpg",
+  "title": "File:Firefly Alpha 1st Flight.jpg"
+ },
+ "ariane-5": {
+  "file": "data/rockets/ariane-5.jpg",
+  "author": "Chris Gunn",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:Ariane_5_with_James_Webb_Space_Telescope_Prelaunch_(51773093465).jpg",
+  "title": "File:Ariane 5 with James Webb Space Telescope Prelaunch (51773093465).jpg"
+ },
+ "ariane-6": {
+  "file": "data/rockets/ariane-6.jpg",
+  "author": "ESA",
+  "licence": "CC BY-SA 3.0 igo",
+  "source": "https://commons.wikimedia.org/wiki/File:Ariane_6_on_pad.jpg",
+  "title": "File:Ariane 6 on pad.jpg"
+ },
+ "soyuz-2": {
+  "file": "data/rockets/soyuz-2.jpg",
+  "author": "Ministry of Defence of the Russian Federation",
+  "licence": "CC BY 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Soyuz_2.1b_GLONASS-K2_13L_launch_01.jpg",
+  "title": "File:Soyuz 2.1b GLONASS-K2 13L launch 01.jpg"
+ },
+ "proton-m": {
+  "file": "data/rockets/proton-m.jpg",
+  "author": "Unknown author",
+  "licence": "CC BY 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Night_start_of_Proton-M_rocket_with_Blagovest_satellite_17.08.2017.jpg",
+  "title": "File:Night start of Proton-M rocket with Blagovest satellite 17.08.2017.jpg"
+ },
+ "angara-a5": {
+  "file": "data/rockets/angara-a5.jpg",
+  "author": "Unknown author",
+  "licence": "CC BY 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Launch_of_the_Angara-A5_from_the_Plesetsk_cosmodrome_(2025-06-19)_05.jpg",
+  "title": "File:Launch of the Angara-A5 from the Plesetsk cosmodrome (2025-06-19) 05.jpg"
+ },
+ "long-march-5": {
+  "file": "data/rockets/long-march-5.jpg",
+  "author": "China News Service",
+  "licence": "CC BY 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Launching_Tianhe_Core_Module.jpg",
+  "title": "File:Launching Tianhe Core Module.jpg"
+ },
+ "long-march-2f": {
+  "file": "data/rockets/long-march-2f.jpg",
+  "author": "China News Service",
+  "licence": "CC BY 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:LM2F-Y13.png",
+  "title": "File:LM2F-Y13.png"
+ },
+ "long-march-3b": {
+  "file": "data/rockets/long-march-3b.jpg",
+  "author": "Shujianyang",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:CZ-3B_rendering.jpg",
+  "title": "File:CZ-3B rendering.jpg"
+ },
+ "kuaizhou": {
+  "file": "data/rockets/kuaizhou.jpg",
+  "author": "中国新闻社",
+  "licence": "CC BY 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Kuaizhou_11_Yao-2_Carrier_Rocket_Launch.png",
+  "title": "File:Kuaizhou 11 Yao-2 Carrier Rocket Launch.png"
+ },
+ "zhuque-2": {
+  "file": "data/rockets/zhuque-2.jpg",
+  "author": "中国新闻社",
+  "licence": "CC BY 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:%E4%B8%96%E7%95%8C%E9%A6%96%E4%B8%AA%E6%88%90%E5%8A%9F%E5%85%A5%E8%BD%A8%E5%8F%91%E5%B0%84%E7%9A%84%E6%B6%B2%E6%B0%A7%E7%94%B2%E7%83%B7%E7%81%AB%E7%AE%AD%E5%8D%87%E7%A9%BA_%E8%93%9D%E7%AE%AD%E8%88%AA%E5%A4%A9CEO%EF%BC%9A%E4%B8%AD%E5%9B%BD%E6%B0%91%E8%90%A5%E8%88%AA%E5%A4%A9%E7%AB%99%E5%88%B0%E4%B8%96%E7%95%8C%E7%AC%AC%E4%B8%80%E6%A2%AF%E9%98%9F2.png",
+  "title": "File:世界首个成功入轨发射的液氧甲烷火箭升空 蓝箭航天CEO：中国民营航天站到世界第一梯队2.png"
+ },
+ "pslv": {
+  "file": "data/rockets/pslv.jpg",
+  "author": "ISRO, Dept. of Space, Govtd of India",
+  "licence": "GODL-India",
+  "source": "https://commons.wikimedia.org/wiki/File:PSLVC62.webp",
+  "title": "File:PSLVC62.webp"
+ },
+ "gslv-mk3": {
+  "file": "data/rockets/gslv-mk3.jpg",
+  "author": "Indian Space Research Organisation",
+  "licence": "GODL-India",
+  "source": "https://commons.wikimedia.org/wiki/File:LVM3_M6_with_BlueBird-6_during_Liftoff_(3).webp",
+  "title": "File:LVM3 M6 with BlueBird-6 during Liftoff (3).webp"
+ },
+ "gslv": {
+  "file": "data/rockets/gslv.jpg",
+  "author": "Indian Space Research Organisation (ISRO)",
+  "licence": "GODL-India",
+  "source": "https://commons.wikimedia.org/wiki/File:GSLV_F16_during_Liftoff_carrying_NISAR.webp",
+  "title": "File:GSLV F16 during Liftoff carrying NISAR.webp"
+ },
+ "sslv": {
+  "file": "data/rockets/sslv.jpg",
+  "author": "Indian Space Research Organisation",
+  "licence": "GODL-India",
+  "source": "https://commons.wikimedia.org/wiki/File:Mrm7669_Launch_of_SSLV-D1_from_Satish_Dhawan_FLP.jpg",
+  "title": "File:Mrm7669 Launch of SSLV-D1 from Satish Dhawan FLP.jpg"
+ },
+ "h-iia": {
+  "file": "data/rockets/h-iia.jpg",
+  "author": "Bill Ingalls",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:H_IIA_No._F23_with_GPM_on_its_way_to_the_launchpad.jpg",
+  "title": "File:H IIA No. F23 with GPM on its way to the launchpad.jpg"
+ },
+ "epsilon": {
+  "file": "data/rockets/epsilon.jpg",
+  "author": "海人",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Epsilon_rocket_F2.jpg",
+  "title": "File:Epsilon rocket F2.jpg"
+ },
+ "nuri": {
+  "file": "data/rockets/nuri.jpg",
+  "author": "한국항공우주연구원 (Korea Aerospace Research Institute)",
+  "licence": "KOGL Type 1",
+  "source": "https://commons.wikimedia.org/wiki/File:KSLV-II_Nuri_Launch_2021-10-21.jpg",
+  "title": "File:KSLV-II Nuri Launch 2021-10-21.jpg"
+ },
+ "saturn-v": {
+  "file": "data/rockets/saturn-v.jpg",
+  "author": "NASA",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:Apollo_11_Launch_-_GPN-2000-000630.jpg",
+  "title": "File:Apollo 11 Launch - GPN-2000-000630.jpg"
+ },
+ "space-shuttle": {
+  "file": "data/rockets/space-shuttle.jpg",
+  "author": "NASA; edited by jjron (tilt corrected)",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:STS120LaunchHiRes-edit1.jpg",
+  "title": "File:STS120LaunchHiRes-edit1.jpg"
+ },
+ "soyuz-fg": {
+  "file": "data/rockets/soyuz-fg.jpg",
+  "author": "Bill Ingalls",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:Soyuz_TMA-3_launch.jpg",
+  "title": "File:Soyuz TMA-3 launch.jpg"
+ },
+ "titan-iiic": {
+  "file": "data/rockets/titan-iiic.jpg",
+  "author": "U.S. DoD",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:DF-SC-84-05192_cropped.jpeg",
+  "title": "File:DF-SC-84-05192 cropped.jpeg"
+ },
+ "miura-5": {
+  "file": "data/rockets/miura-5.jpg",
+  "author": "PLD Space",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Prueba_de_reutilizaci%C3%B3n,_Miura_5,_Huelva,_Espa%C3%B1a,_2019_06.png",
+  "title": "File:Prueba de reutilización, Miura 5, Huelva, España, 2019 06.png"
+ },
+ "eris": {
+  "file": "data/rockets/eris.jpg",
+  "author": "Adam Gilmour",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Rasta_Launch.png",
+  "title": "File:Rasta Launch.png"
+ },
+ "safir": {
+  "file": "data/rockets/safir.jpg",
+  "author": "Mehr News Agency",
+  "licence": "CC BY 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Safir_navid_1.jpg",
+  "title": "File:Safir navid 1.jpg"
+ },
+ "unha": {
+  "file": "data/rockets/unha.jpg",
+  "author": "Sungwon Baik / VOA",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:North_Korean_Unha-3_rocket_at_launch_pad.jpg",
+  "title": "File:North Korean Unha-3 rocket at launch pad.jpg"
+ }
+}
