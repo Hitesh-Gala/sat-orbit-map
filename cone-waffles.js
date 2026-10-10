@@ -971,7 +971,7 @@ const LEAD_MIN       = 60;
 const LEAD_STEP_MS   = 60000;
 const LEAD_TRACK_MIN = 75;                 // hover track: at most this far past T
 const LEAD_R         = 260;                // plot radius in SVG units (viewBox ±300)
-const WORLD_MAP_URL  = 'data/countries-110m.geojson';
+const WORLD_MAP_URL  = 'data/countries-110m.geojson?v=2';
 
 // Purpose from the name: tle-loader's (China-focused) table first, then these.
 const PURPOSE_TYPES = [

@@ -58,10 +58,13 @@
     if (d.est) rows.push(row('Established', d.est));
     if (d.op) rows.push(row('Operator', esc(d.op)));
     return '<div class="lm-tip">' +
+      // the pad as the Launch Library API has it, linked from their servers
+      (d.img ? '<img class="lm-shot" src="' + esc(d.img) + '" alt="" loading="lazy" onerror="this.remove()">' : '') +
       '<div class="name">' + esc(d.n) + '</div>' +
       '<div class="type" style="color:' + t.color + '">' + t.icon + ' ' + t.label + ' · ' + esc(d.cty) + '</div>' +
       '<div class="rows">' + rows.join('') + '</div>' +
       (d.nb ? '<div class="note">' + esc(d.nb) + '</div>' : '') +
+      (d.img && d.imgCredit ? '<div class="cred">📷 ' + esc(d.imgCredit) + '</div>' : '') +
     '</div>';
   }
 
@@ -303,7 +306,7 @@
 
   Promise.all([
     fetch('data/launch-map.json').then(function (r) { return r.json(); }),
-    fetch('data/countries-110m.geojson').then(function (r) { return r.json(); }).catch(function () { return { features: [] }; }),
+    fetch('data/countries-110m.geojson?v=2').then(function (r) { return r.json(); }).catch(function () { return { features: [] }; }),
     fetch('data/globes/credits.json').then(function (r) { return r.json(); }).catch(function () { return []; }),
   ]).then(function (res) { boot(res[0], res[1], res[2]); })
     .catch(function (err) {

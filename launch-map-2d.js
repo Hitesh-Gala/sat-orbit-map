@@ -110,10 +110,13 @@
     if (d.est) rows += row('Established', esc(d.est));
     if (d.op) rows += row('Operator', esc(d.op));
     rows += row('Position', d.lat.toFixed(2) + '°, ' + d.lon.toFixed(2) + '°');
-    return '<div class="name">' + esc(d.n) + '</div>' +
+    var shot = d.img ? '<img class="lm2-shot" src="' + esc(d.img) + '" alt="" loading="lazy" ' +
+                       'onerror="this.remove()">' : '';
+    return shot + '<div class="name">' + esc(d.n) + '</div>' +
       '<div class="type" style="color:' + c.color + '">' + c.icon + ' ' + c.label + ' · ' + esc(d.cty) + '</div>' +
       '<div class="rows">' + rows + '</div>' +
-      (d.nb ? '<div class="note">' + esc(d.nb) + '</div>' : '');
+      (d.nb ? '<div class="note">' + esc(d.nb) + '</div>' : '') +
+      (d.img && d.imgCredit ? '<div class="cred">📷 ' + esc(d.imgCredit) + '</div>' : '');
   }
 
   function showTip(d, ev) {
@@ -217,7 +220,7 @@
   // ---- boot -------------------------------------------------------------
   Promise.all([
     fetch('data/launch-map.json').then(function (r) { return r.json(); }),
-    fetch('data/countries-110m.geojson').then(function (r) { return r.json(); }).catch(function () { return null; }),
+    fetch('data/countries-110m.geojson?v=2').then(function (r) { return r.json(); }).catch(function () { return null; }),
   ]).then(function (res) {
     SITES = res[0] || [];
     ORDER.forEach(function (k) { on[k] = true; });

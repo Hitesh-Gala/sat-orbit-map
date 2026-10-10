@@ -1,6 +1,6 @@
 {
  "compiled": "10 October 2026",
- "note": "Catalogue facts come from the open launch database (The Space Devs Launch Library), the same source behind NextSpaceflight’s rockets page. Photographs are not taken from that site: each one is a public-domain or Creative-Commons file from Wikimedia Commons, credited on the card.",
+ "note": "Catalogue facts come from the open launch database (The Space Devs Launch Library), the same source behind NextSpaceflight’s rockets page. Photographs are not taken from that site: each one is a public-domain or Creative-Commons file from Wikimedia Commons, credited on the card. Where no free photograph could be verified, the card falls back to the image the Launch Library API publishes for that vehicle, linked from their servers rather than copied.",
  "rockets": [
   {
    "name": "Angara 1.2",
@@ -12,7 +12,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Angara_(rocket_family)#Angara_1.2",
-   "slug": "angara-1-2"
+   "slug": "angara-1-2",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/angara25201.2_image_20190224012254.jpeg"
   },
   {
    "name": "Angara A5",
@@ -30,7 +31,8 @@
     "author": "Unknown author",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Launch_of_the_Angara-A5_from_the_Plesetsk_cosmodrome_(2025-06-19)_05.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/angara2520a5_image_20190630234836.jpg"
   },
   {
    "name": "Angara A5/Blok DM-03",
@@ -48,7 +50,8 @@
     "author": "Unknown author",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Launch_of_the_Angara-A5_from_the_Plesetsk_cosmodrome_(2025-06-19)_05.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/angara_a5_on_si_image_20240409071243.jpeg"
   },
   {
    "name": "Angara A5/Briz-M",
@@ -66,7 +69,8 @@
     "author": "Unknown author",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Launch_of_the_Angara-A5_from_the_Plesetsk_cosmodrome_(2025-06-19)_05.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/angara_a52fbri_image_20240102171438.jpg"
   },
   {
    "name": "Angara-1.2pp",
@@ -78,7 +82,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Angara-1.2pp",
-   "slug": "angara-1-2pp"
+   "slug": "angara-1-2pp",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/angara-1.2pp_image_20190630234801.jpg"
   },
   {
    "name": "Antares 110",
@@ -96,7 +101,8 @@
     "author": "Bill Ingalls",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Cropped_NG-11_Launch.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/antares_110_lau_image_20240308082903.jpg"
   },
   {
    "name": "Antares 120",
@@ -114,7 +120,8 @@
     "author": "Bill Ingalls",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Cropped_NG-11_Launch.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/antares_image_20190704015241.jpeg"
   },
   {
    "name": "Antares 130",
@@ -132,7 +139,8 @@
     "author": "Bill Ingalls",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Cropped_NG-11_Launch.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/antares_130_exp_image_20240308083257.jpg"
   },
   {
    "name": "Antares 230",
@@ -150,7 +158,8 @@
     "author": "Bill Ingalls",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Cropped_NG-11_Launch.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/antares_230_lau_image_20240308082345.jpeg"
   },
   {
    "name": "Antares 230+",
@@ -168,7 +177,8 @@
     "author": "Bill Ingalls",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Cropped_NG-11_Launch.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/antares_230252_image_20230801170759.png"
   },
   {
    "name": "Antares 330",
@@ -198,7 +208,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Apollo_Lunar_Module",
-   "slug": "apollo-lm-ascent-stage"
+   "slug": "apollo-lm-ascent-stage",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/apollo_14_lm_on_image_20240813073933.jpg"
   },
   {
    "name": "Ares I-X",
@@ -210,7 +221,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Ares_I",
-   "slug": "ares-i-x"
+   "slug": "ares-i-x",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ares2520i-x_image_20190222030444.jpeg"
   },
   {
    "name": "Ariane 1",
@@ -222,7 +234,8 @@
    "cc": "FRA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Ariane_1",
-   "slug": "ariane-1"
+   "slug": "ariane-1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_1_in_fli_image_20240314094301.jpg"
   },
   {
    "name": "Ariane 2",
@@ -234,7 +247,8 @@
    "cc": "FRA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Ariane_2",
-   "slug": "ariane-2"
+   "slug": "ariane-2",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_2_liftof_image_20240314094631.jpg"
   },
   {
    "name": "Ariane 3",
@@ -246,7 +260,8 @@
    "cc": "FRA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Ariane_3",
-   "slug": "ariane-3"
+   "slug": "ariane-3",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_3_liftof_image_20240314095002.jpg"
   },
   {
    "name": "Ariane 40",
@@ -258,7 +273,8 @@
    "cc": "FRA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Ariane_4",
-   "slug": "ariane-40"
+   "slug": "ariane-40",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_40_at_el_image_20240401084332.png"
   },
   {
    "name": "Ariane 42L",
@@ -270,7 +286,8 @@
    "cc": "FRA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Ariane_4",
-   "slug": "ariane-42l"
+   "slug": "ariane-42l",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_42l_at_e_image_20240401083718.png"
   },
   {
    "name": "Ariane 42P",
@@ -282,7 +299,8 @@
    "cc": "FRA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Ariane_4",
-   "slug": "ariane-42p"
+   "slug": "ariane-42p",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane42p_at_el_image_20240310184548.png"
   },
   {
    "name": "Ariane 44L",
@@ -294,7 +312,8 @@
    "cc": "FRA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Ariane_4",
-   "slug": "ariane-44l"
+   "slug": "ariane-44l",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_44l_at_e_image_20240401082337.jpg"
   },
   {
    "name": "Ariane 44LP",
@@ -306,7 +325,8 @@
    "cc": "FRA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Ariane_4",
-   "slug": "ariane-44lp"
+   "slug": "ariane-44lp",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_44lp_at__image_20240401083402.png"
   },
   {
    "name": "Ariane 44P",
@@ -318,7 +338,8 @@
    "cc": "FRA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Ariane_4",
-   "slug": "ariane-44p"
+   "slug": "ariane-44p",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_44p_at_e_image_20240401083030.png"
   },
   {
    "name": "Ariane 5 ECA",
@@ -336,7 +357,8 @@
     "author": "Chris Gunn",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Ariane_5_with_James_Webb_Space_Telescope_Prelaunch_(51773093465).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane252052520eca_image_20190224012333.jpeg"
   },
   {
    "name": "Ariane 5 ECA+",
@@ -354,7 +376,8 @@
     "author": "Chris Gunn",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Ariane_5_with_James_Webb_Space_Telescope_Prelaunch_(51773093465).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane252052520eca_image_20190224012333.jpeg"
   },
   {
    "name": "Ariane 5 ES",
@@ -372,7 +395,8 @@
     "author": "Chris Gunn",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Ariane_5_with_James_Webb_Space_Telescope_Prelaunch_(51773093465).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane252052520es_image_20190222031145.jpeg"
   },
   {
    "name": "Ariane 5 G",
@@ -390,7 +414,8 @@
     "author": "Chris Gunn",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Ariane_5_with_James_Webb_Space_Telescope_Prelaunch_(51773093465).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane252052520g_image_20190222030331.jpeg"
   },
   {
    "name": "Ariane 5 G+",
@@ -408,7 +433,8 @@
     "author": "Chris Gunn",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Ariane_5_with_James_Webb_Space_Telescope_Prelaunch_(51773093465).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane252052520g252b_image_20190222030334.jpeg"
   },
   {
    "name": "Ariane 5 GS",
@@ -426,7 +452,8 @@
     "author": "Chris Gunn",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Ariane_5_with_James_Webb_Space_Telescope_Prelaunch_(51773093465).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_5_gs_image_20240307183745.jpg"
   },
   {
    "name": "Ariane 6",
@@ -444,7 +471,8 @@
     "author": "ESA",
     "licence": "CC BY-SA 3.0 igo",
     "source": "https://commons.wikimedia.org/wiki/File:Ariane_6_on_pad.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_62_lifto_image_20240711132056.jpeg"
   },
   {
    "name": "Ariane 62",
@@ -462,7 +490,8 @@
     "author": "ESA",
     "licence": "CC BY-SA 3.0 igo",
     "source": "https://commons.wikimedia.org/wiki/File:Ariane_6_on_pad.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_62_lifto_image_20240711132056.jpeg"
   },
   {
    "name": "Ariane 62",
@@ -480,7 +509,8 @@
     "author": "ESA",
     "licence": "CC BY-SA 3.0 igo",
     "source": "https://commons.wikimedia.org/wiki/File:Ariane_6_on_pad.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_62_lifto_image_20240711132056.jpeg"
   },
   {
    "name": "Ariane 64",
@@ -498,7 +528,8 @@
     "author": "ESA",
     "licence": "CC BY-SA 3.0 igo",
     "source": "https://commons.wikimedia.org/wiki/File:Ariane_6_on_pad.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_64_lifto_image_20260618063419.jpg"
   },
   {
    "name": "Ariane 64",
@@ -516,7 +547,8 @@
     "author": "ESA",
     "licence": "CC BY-SA 3.0 igo",
     "source": "https://commons.wikimedia.org/wiki/File:Ariane_6_on_pad.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_64_lifto_image_20260213070745.jpg"
   },
   {
    "name": "ASLV",
@@ -528,7 +560,8 @@
    "cc": "IND",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Augmented_Satellite_Launch_Vehicle",
-   "slug": "aslv"
+   "slug": "aslv",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/aslv_image_20240210153603.png"
   },
   {
    "name": "Astra Rocket 3",
@@ -540,7 +573,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Astra_Space",
-   "slug": "astra-rocket-3"
+   "slug": "astra-rocket-3",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/astra_rocket_3_image_20211012141057.jpg"
   },
   {
    "name": "Astra Rocket 4",
@@ -552,7 +586,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Astra_Rocket#Rocket_4",
-   "slug": "astra-rocket-4"
+   "slug": "astra-rocket-4",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/astra_rocket_4_image_20250918165934.jpg"
   },
   {
    "name": "Athena I",
@@ -564,7 +599,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Athena_I",
-   "slug": "athena-i"
+   "slug": "athena-i",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/athena_1_liftof_image_20240411090356.jpeg"
   },
   {
    "name": "Athena II",
@@ -576,7 +612,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Athena_II",
-   "slug": "athena-ii"
+   "slug": "athena-ii",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/athena_2_with_l_image_20240411091736.jpeg"
   },
   {
    "name": "Atlas Agena A",
@@ -600,7 +637,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "",
-   "slug": "atlas-lv-3-agena-b"
+   "slug": "atlas-lv-3-agena-b",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas-lv3_agena_image_20251111092848.png"
   },
   {
    "name": "Atlas Agena D",
@@ -612,7 +650,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Atlas-Agena",
-   "slug": "atlas-lv-3-agena-d"
+   "slug": "atlas-lv-3-agena-d",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas-lv3_agena_image_20251128090110.png"
   },
   {
    "name": "Atlas B",
@@ -672,7 +711,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/SM-65D_Atlas",
-   "slug": "sm-65d-atlas"
+   "slug": "sm-65d-atlas",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/564th_strategic_image_20251211153200.jpeg"
   },
   {
    "name": "Atlas E",
@@ -828,7 +868,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Atlas_G",
-   "slug": "atlas-g-centaur"
+   "slug": "atlas-g-centaur",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/launch_of_an_at_image_20251205044820.jpg"
   },
   {
    "name": "Atlas H",
@@ -876,7 +917,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Atlas_II",
-   "slug": "atlas-iia"
+   "slug": "atlas-iia",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/launch_of_an_at_image_20251123092831.jpg"
   },
   {
    "name": "Atlas IIAS",
@@ -900,7 +942,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Atlas_III",
-   "slug": "atlas-iiia"
+   "slug": "atlas-iiia",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas_iiia_image_20210901074920.jpg"
   },
   {
    "name": "Atlas IIIB",
@@ -912,7 +955,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Atlas_III",
-   "slug": "atlas-iiib"
+   "slug": "atlas-iiib",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas_iiia_image_20210901074920.jpg"
   },
   {
    "name": "Atlas LV-3B",
@@ -924,7 +968,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Atlas_LV-3B",
-   "slug": "atlas-lv-3b"
+   "slug": "atlas-lv-3b",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas_image_20190222030015.jpeg"
   },
   {
    "name": "Atlas SLV-3",
@@ -960,7 +1005,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Atlas-Agena",
-   "slug": "atlas-slv-3-agena-d"
+   "slug": "atlas-slv-3-agena-d",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas-slv3_agen_image_20251102060811.jpg"
   },
   {
    "name": "Atlas SLV-3A Agena D",
@@ -972,7 +1018,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Atlas-Agena",
-   "slug": "atlas-slv-3a-agena-d"
+   "slug": "atlas-slv-3a-agena-d",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas-slv3a_age_image_20251204210844.jpg"
   },
   {
    "name": "Atlas SLV-3C Centaur",
@@ -984,7 +1031,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Atlas-Centaur",
-   "slug": "atlas-slv-3c-centaur"
+   "slug": "atlas-slv-3c-centaur",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas_slv-3c_li_image_20251103141951.jpeg"
   },
   {
    "name": "Atlas SLV-3D Centaur",
@@ -996,7 +1044,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Atlas-Centaurr",
-   "slug": "atlas-slv-3d-centaur"
+   "slug": "atlas-slv-3d-centaur",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas_slv-3d_li_image_20251103141732.jpeg"
   },
   {
    "name": "Atlas V",
@@ -1014,7 +1063,8 @@
     "author": "U.S. Space Force photo by Joshua Conti",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Atlas_V_Starliner_CFT_Launch_(8452655).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas_v_image_20201212013334.jpeg"
   },
   {
    "name": "Atlas V 401",
@@ -1032,7 +1082,8 @@
     "author": "U.S. Space Force photo by Joshua Conti",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Atlas_V_Starliner_CFT_Launch_(8452655).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas_v_image_20201212013334.jpeg"
   },
   {
    "name": "Atlas V 411",
@@ -1050,7 +1101,8 @@
     "author": "U.S. Space Force photo by Joshua Conti",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Atlas_V_Starliner_CFT_Launch_(8452655).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas2520v2520411_image_20190224012306.jpeg"
   },
   {
    "name": "Atlas V 421",
@@ -1068,7 +1120,8 @@
     "author": "U.S. Space Force photo by Joshua Conti",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Atlas_V_Starliner_CFT_Launch_(8452655).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas_v_421_image_20210519053741.jpeg"
   },
   {
    "name": "Atlas V 431",
@@ -1086,7 +1139,8 @@
     "author": "U.S. Space Force photo by Joshua Conti",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Atlas_V_Starliner_CFT_Launch_(8452655).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas2520v2520431_image_20190222031015.jpeg"
   },
   {
    "name": "Atlas V 501",
@@ -1104,7 +1158,8 @@
     "author": "U.S. Space Force photo by Joshua Conti",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Atlas_V_Starliner_CFT_Launch_(8452655).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas2520v2520501_image_20190222030851.jpeg"
   },
   {
    "name": "Atlas V 511",
@@ -1122,7 +1177,8 @@
     "author": "U.S. Space Force photo by Joshua Conti",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Atlas_V_Starliner_CFT_Launch_(8452655).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas_v_511_image_20220122075706.jpeg"
   },
   {
    "name": "Atlas V 521",
@@ -1140,7 +1196,8 @@
     "author": "U.S. Space Force photo by Joshua Conti",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Atlas_V_Starliner_CFT_Launch_(8452655).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas_v_521_on__image_20240308092535.png"
   },
   {
    "name": "Atlas V 531",
@@ -1158,7 +1215,8 @@
     "author": "U.S. Space Force photo by Joshua Conti",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Atlas_V_Starliner_CFT_Launch_(8452655).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas2520v2520531_image_20190222030726.jpeg"
   },
   {
    "name": "Atlas V 541",
@@ -1176,7 +1234,8 @@
     "author": "U.S. Space Force photo by Joshua Conti",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Atlas_V_Starliner_CFT_Launch_(8452655).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas2520v2520541_image_20190224012314.jpeg"
   },
   {
    "name": "Atlas V 551",
@@ -1194,7 +1253,8 @@
     "author": "U.S. Space Force photo by Joshua Conti",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Atlas_V_Starliner_CFT_Launch_(8452655).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas2520v2520551_image_20190224012316.jpeg"
   },
   {
    "name": "Atlas V N22",
@@ -1212,7 +1272,8 @@
     "author": "U.S. Space Force photo by Joshua Conti",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Atlas_V_Starliner_CFT_Launch_(8452655).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas_v_n22_image_20210813082339.jpeg"
   },
   {
    "name": "Atlas-Able",
@@ -1224,7 +1285,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Atlas-Able",
-   "slug": "atlas-able"
+   "slug": "atlas-able",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/atlas-d_able_on_image_20240411161010.jpeg"
   },
   {
    "name": "Baguette One",
@@ -1236,7 +1298,8 @@
    "cc": "FRA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/HyPrSpace#Rockets",
-   "slug": "baguette-one"
+   "slug": "baguette-one",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/baguette_one_la_image_20251117122603.jpg"
   },
   {
    "name": "Black Arrow",
@@ -1248,7 +1311,8 @@
    "cc": "GBR",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Black_Arrow",
-   "slug": "black-arrow"
+   "slug": "black-arrow",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/black_arrow_in__image_20240314095415.jpg"
   },
   {
    "name": "Black Brant IX",
@@ -1260,7 +1324,8 @@
    "cc": "CAN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Black_Brant_(rocket)#Black_Brant_IX",
-   "slug": "black-brant-ix"
+   "slug": "black-brant-ix",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/black_brant_ix_image_20220625190201.jpg"
   },
   {
    "name": "Blue Scout II",
@@ -1272,7 +1337,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/RM-90_Blue_Scout_II",
-   "slug": "blue-scout-ii"
+   "slug": "blue-scout-ii",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/blue_scout_ii_image_20240411085341.png"
   },
   {
    "name": "Blue Scout Jr",
@@ -1284,7 +1350,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Scout_(rocket_family)",
-   "slug": "blue-scout-jr"
+   "slug": "blue-scout-jr",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/blue_scout_juni_image_20240411084702.png"
   },
   {
    "name": "Callisto",
@@ -1296,7 +1363,8 @@
    "cc": "FRA",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/CALLISTO",
-   "slug": "callisto"
+   "slug": "callisto",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/callisto_render_image_20250916093902.webp"
   },
   {
    "name": "Ceres-1",
@@ -1308,7 +1376,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "",
-   "slug": "ceres-1"
+   "slug": "ceres-1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ceres-1_image_20230722081939.jpeg"
   },
   {
    "name": "Ceres-1S",
@@ -1320,7 +1389,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "",
-   "slug": "ceres-1s"
+   "slug": "ceres-1s",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ceres-1s_image_20230905114324.jpeg"
   },
   {
    "name": "Ceres-2",
@@ -1332,7 +1402,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Galactic_Energy#Ceres-2",
-   "slug": "ceres-2"
+   "slug": "ceres-2",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ceres-2_illustr_image_20251210054657.png"
   },
   {
    "name": "Chang'e",
@@ -1344,7 +1415,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Chinese_Lunar_Exploration_Program",
-   "slug": "chang-e-sample-ascender"
+   "slug": "chang-e-sample-ascender",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/chang2527e_6_o_image_20240813081610.jpg"
   },
   {
    "name": "Conestoga 1620",
@@ -1356,7 +1428,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Conestoga_(rocket)",
-   "slug": "conestoga-1620"
+   "slug": "conestoga-1620",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/conestoga-1620__image_20240411094033.png"
   },
   {
    "name": "Delta 0300",
@@ -1380,7 +1453,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_0100",
-   "slug": "delta-0900"
+   "slug": "delta-0900",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_0900_image_20231231081129.jpg"
   },
   {
    "name": "Delta 1410",
@@ -1464,7 +1538,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_2000",
-   "slug": "delta-2310"
+   "slug": "delta-2310",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta-2310_252_image_20251115100123.png"
   },
   {
    "name": "Delta 2313",
@@ -1476,7 +1551,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_2000",
-   "slug": "delta-2313"
+   "slug": "delta-2313",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta-2313_252_image_20251123090743.png"
   },
   {
    "name": "Delta 2910",
@@ -1488,7 +1564,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_2000",
-   "slug": "delta-2910"
+   "slug": "delta-2910",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_2910_image_20231231105214.jpeg"
   },
   {
    "name": "Delta 2913",
@@ -1500,7 +1577,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_2000",
-   "slug": "delta-2913"
+   "slug": "delta-2913",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_2910_image_20231231105214.jpeg"
   },
   {
    "name": "Delta 2914",
@@ -1512,7 +1590,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_2000",
-   "slug": "delta-2914"
+   "slug": "delta-2914",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_2910_image_20231231105214.jpeg"
   },
   {
    "name": "Delta 3910",
@@ -1524,7 +1603,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_3000",
-   "slug": "delta-3910"
+   "slug": "delta-3910",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_3910_image_20231231105538.jpeg"
   },
   {
    "name": "Delta 3910/PAM",
@@ -1536,7 +1616,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_3000",
-   "slug": "delta-3910-pam"
+   "slug": "delta-3910-pam",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_3910_image_20231231105538.jpeg"
   },
   {
    "name": "Delta 3913",
@@ -1548,7 +1629,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_3000",
-   "slug": "delta-3913"
+   "slug": "delta-3913",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_3910_image_20231231105538.jpeg"
   },
   {
    "name": "Delta 3914",
@@ -1560,7 +1642,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_3000",
-   "slug": "delta-3914"
+   "slug": "delta-3914",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_3910_image_20231231105538.jpeg"
   },
   {
    "name": "Delta 3920",
@@ -1572,7 +1655,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_3000",
-   "slug": "delta-3920"
+   "slug": "delta-3920",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_3910_image_20231231105538.jpeg"
   },
   {
    "name": "Delta 3920-8",
@@ -1584,7 +1668,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_3000",
-   "slug": "delta-3920-8"
+   "slug": "delta-3920-8",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_3910_image_20231231105538.jpeg"
   },
   {
    "name": "Delta 3920/PAM",
@@ -1596,7 +1681,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_3000",
-   "slug": "delta-3920-pam"
+   "slug": "delta-3920-pam",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_3910_image_20231231105538.jpeg"
   },
   {
    "name": "Delta 3924",
@@ -1608,7 +1694,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_3000",
-   "slug": "delta-3924"
+   "slug": "delta-3924",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_3910_image_20231231105538.jpeg"
   },
   {
    "name": "Delta 4925-8",
@@ -1632,7 +1719,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_5000",
-   "slug": "delta-5920-8"
+   "slug": "delta-5920-8",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta-5920_252_image_20251118091454.png"
   },
   {
    "name": "Delta II",
@@ -1656,7 +1744,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_II",
-   "slug": "delta-ii-7925h-9-5"
+   "slug": "delta-ii-7925h-9-5",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta2520ii_image_20190222030358.jpeg"
   },
   {
    "name": "Delta II",
@@ -1668,7 +1757,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_II",
-   "slug": "delta-ii-7925"
+   "slug": "delta-ii-7925",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta2520ii_image_20190222030440.jpeg"
   },
   {
    "name": "Delta II",
@@ -1692,7 +1782,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_II",
-   "slug": "delta-ii-7925-10l"
+   "slug": "delta-ii-7925-10l",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta2520ii25207925-10l_image_20190222030428.jpeg"
   },
   {
    "name": "Delta II",
@@ -1704,7 +1795,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_II",
-   "slug": "delta-ii-7425-9-5"
+   "slug": "delta-ii-7425-9-5",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta-7425_252_image_20251211155111.png"
   },
   {
    "name": "Delta II",
@@ -1752,7 +1844,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_II",
-   "slug": "delta-ii-7420-10c"
+   "slug": "delta-ii-7420-10c",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_ii_7420-1_image_20240312090635.jpg"
   },
   {
    "name": "Delta II",
@@ -1764,7 +1857,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_II",
-   "slug": "delta-ii-7925-9-5"
+   "slug": "delta-ii-7925-9-5",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_ii_7925-9_image_20240312090356.jpeg"
   },
   {
    "name": "Delta II",
@@ -1788,7 +1882,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_II",
-   "slug": "delta-ii-7925-10"
+   "slug": "delta-ii-7925-10",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_7925-10_o_image_20251101171906.jpg"
   },
   {
    "name": "Delta II",
@@ -1800,7 +1895,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_II",
-   "slug": "delta-ii-7925-10c"
+   "slug": "delta-ii-7925-10c",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta2520ii_image_20190222030348.jpeg"
   },
   {
    "name": "Delta II",
@@ -1836,7 +1932,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_II",
-   "slug": "delta-ii-7920-10c"
+   "slug": "delta-ii-7920-10c",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta2520ii_image_20190222030612.jpeg"
   },
   {
    "name": "Delta II",
@@ -1860,7 +1957,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_II",
-   "slug": "delta-ii-7920h-10c"
+   "slug": "delta-ii-7920h-10c",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta2520ii_image_20190222030414.jpeg"
   },
   {
    "name": "Delta II",
@@ -1908,7 +2006,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_II",
-   "slug": "delta-ii-7320-10c"
+   "slug": "delta-ii-7320-10c",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta2520ii_image_20190222030834.jpeg"
   },
   {
    "name": "Delta II",
@@ -1920,7 +2019,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_II",
-   "slug": "delta-ii-7920-10"
+   "slug": "delta-ii-7920-10",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta2520ii_image_20190222030358.jpeg"
   },
   {
    "name": "Delta III",
@@ -1950,7 +2050,8 @@
     "author": "U.S. Space Force photo by Senior Airman Dakota Raub",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Delta_IV_Heavy_NROL-70_Launch_(8340600).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_iv_heavy_image_20210426103838.jpg"
   },
   {
    "name": "Delta IV M",
@@ -1962,7 +2063,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Delta_IV",
-   "slug": "delta-iv-m"
+   "slug": "delta-iv-m",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_iv_m_image_20200605211709.jpg"
   },
   {
    "name": "Delta IV M+(4,2)",
@@ -1974,7 +2076,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "",
-   "slug": "delta-iv-m-4-2"
+   "slug": "delta-iv-m-4-2",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_iv_m252b_image_20220302002926.jpeg"
   },
   {
    "name": "Delta IV M+(5,2)",
@@ -1986,7 +2089,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "",
-   "slug": "delta-iv-m-5-2"
+   "slug": "delta-iv-m-5-2",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_iv_m252b_image_20240308073355.jpeg"
   },
   {
    "name": "Delta IV M+(5,4)",
@@ -1998,7 +2102,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "",
-   "slug": "delta-iv-m-5-4"
+   "slug": "delta-iv-m-5-4",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta_iv_m252b_image_20240308073027.jpeg"
   },
   {
    "name": "Diamant A",
@@ -2010,7 +2115,8 @@
    "cc": "FRA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Diamant",
-   "slug": "diamant-a"
+   "slug": "diamant-a",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/diamant_a_lifto_image_20240411170731.png"
   },
   {
    "name": "Diamant B",
@@ -2022,7 +2128,8 @@
    "cc": "FRA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Diamant",
-   "slug": "diamant-b"
+   "slug": "diamant-b",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/diamant_b_lifto_image_20240411170212.jpg"
   },
   {
    "name": "Diamant BP4",
@@ -2046,7 +2153,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Dnepr-1",
-   "slug": "dnepr-1"
+   "slug": "dnepr-1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/dnepr-1_liftoff_image_20240411092543.jpeg"
   },
   {
    "name": "Electron",
@@ -2064,7 +2172,8 @@
     "author": "NASA Kennedy Space Center / Rocket Lab",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Rocket_Lab_PREFIRE_and_Ice_Launch_(KSC-20240605-PH-RKL01_0005).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/electron_image_20190705175640.jpeg"
   },
   {
    "name": "Energiya",
@@ -2076,7 +2185,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Energia",
-   "slug": "energiya"
+   "slug": "energiya",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/energia_with_po_image_20240411093709.jpg"
   },
   {
    "name": "Energiya/Buran",
@@ -2088,7 +2198,8 @@
    "cc": "RUS",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/Energia",
-   "slug": "energiya-buran"
+   "slug": "energiya-buran",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/energiya2fbura_image_20210903112117.jpg"
   },
   {
    "name": "Epsilon",
@@ -2106,7 +2217,8 @@
     "author": "海人",
     "licence": "CC BY-SA 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Epsilon_rocket_F2.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/epsilon_image_20221009075145.jpg"
   },
   {
    "name": "Epsilon S",
@@ -2124,7 +2236,8 @@
     "author": "海人",
     "licence": "CC BY-SA 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Epsilon_rocket_F2.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/epsilon_image_20190207032600.jpeg"
   },
   {
    "name": "Eris-1",
@@ -2142,7 +2255,8 @@
     "author": "Adam Gilmour",
     "licence": "CC BY-SA 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Rasta_Launch.png"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/eris_on_the_lau_image_20250227073032.jpg"
   },
   {
    "name": "Europa I",
@@ -2154,7 +2268,8 @@
    "cc": "FRA,AUS,ITA,DEU,GBR,BEL,NLD",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Europa_(rocket)",
-   "slug": "europa-i"
+   "slug": "europa-i",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/europa_1_on_the_image_20240411115405.jpg"
   },
   {
    "name": "Europa II",
@@ -2166,7 +2281,8 @@
    "cc": "FRA,AUS,ITA,DEU,GBR,BEL,NLD",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Europa_(rocket)",
-   "slug": "europa-ii"
+   "slug": "europa-ii",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/europa_1_on_the_image_20240411115141.jpg"
   },
   {
    "name": "Falcon 1",
@@ -2178,7 +2294,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Falcon_1",
-   "slug": "falcon-1"
+   "slug": "falcon-1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/falcon_image_20190222030438.jpeg"
   },
   {
    "name": "Falcon 9",
@@ -2196,7 +2313,8 @@
     "author": "U.S. Space Force photo by Joshua Conti",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:45th_Space_Wing_Supports_Successful_Falcon_9_SAOCOM_1B_Launch_02.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/falcon_9_image_20230807133459.jpeg"
   },
   {
    "name": "Falcon 9",
@@ -2214,7 +2332,8 @@
     "author": "U.S. Space Force photo by Joshua Conti",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:45th_Space_Wing_Supports_Successful_Falcon_9_SAOCOM_1B_Launch_02.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/falcon252092520v1.0_image_20190222030703.jpeg"
   },
   {
    "name": "Falcon 9",
@@ -2232,7 +2351,8 @@
     "author": "U.S. Space Force photo by Joshua Conti",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:45th_Space_Wing_Supports_Successful_Falcon_9_SAOCOM_1B_Launch_02.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/falcon252092520block25204_image_20190222031140.jpeg"
   },
   {
    "name": "Falcon 9",
@@ -2250,7 +2370,8 @@
     "author": "U.S. Space Force photo by Joshua Conti",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:45th_Space_Wing_Supports_Successful_Falcon_9_SAOCOM_1B_Launch_02.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/falcon252092520full2520thrust_image_20190222031117.jpeg"
   },
   {
    "name": "Falcon 9",
@@ -2268,7 +2389,8 @@
     "author": "U.S. Space Force photo by Joshua Conti",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:45th_Space_Wing_Supports_Successful_Falcon_9_SAOCOM_1B_Launch_02.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/falcon252092520v1.1_image_20190222030927.jpeg"
   },
   {
    "name": "Falcon Heavy",
@@ -2286,7 +2408,8 @@
     "author": "Wikideas1",
     "licence": "CC0",
     "source": "https://commons.wikimedia.org/wiki/File:Falcon_Heavy_sea_launch_01.webp"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/falcon_heavy_image_20220129192819.jpeg"
   },
   {
    "name": "Feng Bao 1",
@@ -2316,7 +2439,8 @@
     "author": "JacobRendon",
     "licence": "CC BY-SA 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Firefly_Alpha_1st_Flight.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/firefly_alpha_l_image_20240605174156.jpeg"
   },
   {
    "name": "Firefly Alpha Block 2",
@@ -2334,7 +2458,8 @@
     "author": "JacobRendon",
     "licence": "CC BY-SA 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Firefly_Alpha_1st_Flight.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/firefly_alpha_l_image_20240605174156.jpeg"
   },
   {
    "name": "Gaganyaan Abort Test Booster",
@@ -2346,7 +2471,8 @@
    "cc": "IND",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/TV-D1",
-   "slug": "gaganyaan-abort-test-booster"
+   "slug": "gaganyaan-abort-test-booster",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/gaganyaan_abort_image_20231021132156.jpeg"
   },
   {
    "name": "Gravity-1",
@@ -2358,7 +2484,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "",
-   "slug": "gravity-1"
+   "slug": "gravity-1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/gravity-1_image_20240108105446.jpeg"
   },
   {
    "name": "Gravity-2",
@@ -2388,7 +2515,8 @@
     "author": "Indian Space Research Organisation (ISRO)",
     "licence": "GODL-India",
     "source": "https://commons.wikimedia.org/wiki/File:GSLV_F16_during_Liftoff_carrying_NISAR.webp"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/gslv_image_20190604000621.jpg"
   },
   {
    "name": "GSLV Mk II",
@@ -2406,7 +2534,8 @@
     "author": "Indian Space Research Organisation (ISRO)",
     "licence": "GODL-India",
     "source": "https://commons.wikimedia.org/wiki/File:GSLV_F16_during_Liftoff_carrying_NISAR.webp"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/gslv2520mk2520ii_image_20190825171642.jpg"
   },
   {
    "name": "LVM-3 (GSLV Mk III)",
@@ -2424,7 +2553,8 @@
     "author": "Indian Space Research Organisation",
     "licence": "GODL-India",
     "source": "https://commons.wikimedia.org/wiki/File:LVM3_M6_with_BlueBird-6_during_Liftoff_(3).webp"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/gslv2520mk2520iii_image_20190604000938.jpg"
   },
   {
    "name": "H-1",
@@ -2436,7 +2566,8 @@
    "cc": "JPN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/H-I",
-   "slug": "h-i"
+   "slug": "h-i",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/h-1_image_20240210175424.png"
   },
   {
    "name": "H-II",
@@ -2448,7 +2579,8 @@
    "cc": "JPN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/H-II",
-   "slug": "h-ii"
+   "slug": "h-ii",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ground_test_veh_image_20251115100959.jpeg"
   },
   {
    "name": "H-IIA",
@@ -2466,7 +2598,8 @@
     "author": "Bill Ingalls",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:H_IIA_No._F23_with_GPM_on_its_way_to_the_launchpad.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/h-ii_2022_lifto_image_20240411175401.png"
   },
   {
    "name": "H-IIA",
@@ -2484,7 +2617,8 @@
     "author": "Bill Ingalls",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:H_IIA_No._F23_with_GPM_on_its_way_to_the_launchpad.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/h-iia_2024_lift_image_20240411181830.png"
   },
   {
    "name": "H-IIA",
@@ -2502,7 +2636,8 @@
     "author": "Bill Ingalls",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:H_IIA_No._F23_with_GPM_on_its_way_to_the_launchpad.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/h-iia_204_lifto_image_20240325124231.jpg"
   },
   {
    "name": "H-IIA",
@@ -2520,7 +2655,8 @@
     "author": "Bill Ingalls",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:H_IIA_No._F23_with_GPM_on_its_way_to_the_launchpad.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/h-iia_202_lifto_image_20240325123250.jpg"
   },
   {
    "name": "H-IIB",
@@ -2532,7 +2668,8 @@
    "cc": "JPN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/H-IIB",
-   "slug": "h-iib-304"
+   "slug": "h-iib-304",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/h-iib_304_lifto_image_20240325125154.jpg"
   },
   {
    "name": "H3",
@@ -2544,7 +2681,8 @@
    "cc": "JPN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/H3_(rocket)",
-   "slug": "h3"
+   "slug": "h3",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/h-iii_image_20221104084531.jpeg"
   },
   {
    "name": "H3-22",
@@ -2556,7 +2694,8 @@
    "cc": "JPN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/H3_(rocket)",
-   "slug": "h3-22"
+   "slug": "h3-22",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/h3-22_liftoff__image_20251028183835.jpg"
   },
   {
    "name": "H3-24",
@@ -2568,7 +2707,8 @@
    "cc": "JPN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/H3_(rocket)",
-   "slug": "h3-24"
+   "slug": "h3-24",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/h3-24_liftoff__image_20251028184029.jpeg"
   },
   {
    "name": "H3-30",
@@ -2580,7 +2720,8 @@
    "cc": "JPN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/H3_(rocket)",
-   "slug": "h3-30"
+   "slug": "h3-30",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/h3-30_f6_cft_image_20251028183426.jpg"
   },
   {
    "name": "HANBIT-Nano",
@@ -2592,7 +2733,8 @@
    "cc": "KOR",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Innospace_HANBIT-NANO",
-   "slug": "hanbit-nano"
+   "slug": "hanbit-nano",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/hanbit-nano_spa_image_20251224011159.jpg"
   },
   {
    "name": "HANBIT-TLV",
@@ -2604,7 +2746,8 @@
    "cc": "KOR",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Innospace_HANBIT-TLV",
-   "slug": "hanbit-tlv"
+   "slug": "hanbit-tlv",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/hanbit-tlv_laun_image_20251021112914.jpg"
   },
   {
    "name": "Hapith I",
@@ -2616,7 +2759,8 @@
    "cc": "TWN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/TiSPACE#HAPITH_I",
-   "slug": "hapith-i"
+   "slug": "hapith-i",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/hapith_i_image_20210911031658.jpg"
   },
   {
    "name": "Hyperbola-1",
@@ -2628,7 +2772,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/I-Space_(Chinese_company)",
-   "slug": "hyperbola-1"
+   "slug": "hyperbola-1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/hyperbola-1_in__image_20240711064715.jpeg"
   },
   {
    "name": "Hyperbola-3",
@@ -2652,7 +2797,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Juno_II",
-   "slug": "juno-ii"
+   "slug": "juno-ii",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/juno2520ii_image_20191201204701.jpeg"
   },
   {
    "name": "K65M-RB",
@@ -2676,7 +2822,8 @@
    "cc": "JPN",
    "reusable": false,
    "wiki": "",
-   "slug": "kii-based-advanced-instant-rocket-system"
+   "slug": "kii-based-advanced-instant-rocket-system",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/kairos_image_20240216144656.jpeg"
   },
   {
    "name": "Kaituozhe",
@@ -2712,7 +2859,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "",
-   "slug": "kinetica-1"
+   "slug": "kinetica-1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/zhongke-1a_image_20220912002218.png"
   },
   {
    "name": "Kinetica 2",
@@ -2724,7 +2872,8 @@
    "cc": "CHN",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/CAS_Space#Kinetica_2,_and_2H",
-   "slug": "kinetica-2"
+   "slug": "kinetica-2",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/kinetica_2_firs_image_20260330153456.jpg"
   },
   {
    "name": "Kosmos 11K63",
@@ -2736,7 +2885,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Kosmos_(rocket_family)",
-   "slug": "kosmos-11k63"
+   "slug": "kosmos-11k63",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/kosmos_11k63_image_20251104091702.jpg"
   },
   {
    "name": "Kosmos 11K65",
@@ -2748,7 +2898,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Kosmos_(rocket_family)",
-   "slug": "kosmos-11k65"
+   "slug": "kosmos-11k65",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/kosmos-3m_durin_image_20251101171325.jpg"
   },
   {
    "name": "Kosmos 65S3",
@@ -2772,7 +2923,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Kosmos-2I",
-   "slug": "kosmos-2i"
+   "slug": "kosmos-2i",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/kosmos-2i252063s1_image_20191201205435.jpg"
   },
   {
    "name": "Kosmos-3M",
@@ -2784,7 +2936,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Kosmos-3M",
-   "slug": "kosmos-3m-11k65m"
+   "slug": "kosmos-3m-11k65m",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/kosmos-3m_durin_image_20251101171325.jpg"
   },
   {
    "name": "KSLV 2 TLV",
@@ -2802,7 +2955,8 @@
     "author": "한국항공우주연구원 (Korea Aerospace Research Institute)",
     "licence": "KOGL Type 1",
     "source": "https://commons.wikimedia.org/wiki/File:KSLV-II_Nuri_Launch_2021-10-21.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/kslv252022520tlv_image_20190207032613.jpeg"
   },
   {
    "name": "Naro-1",
@@ -2838,7 +2992,8 @@
     "author": "한국항공우주연구원 (Korea Aerospace Research Institute)",
     "licence": "KOGL Type 1",
     "source": "https://commons.wikimedia.org/wiki/File:KSLV-II_Nuri_Launch_2021-10-21.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/nuri_on_the_lau_image_20240307163812.jpeg"
   },
   {
    "name": "Kuaizhou",
@@ -2856,7 +3011,8 @@
     "author": "中国新闻社",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Kuaizhou_11_Yao-2_Carrier_Rocket_Launch.png"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/kuaizhou-1_lift_image_20240411121350.jpg"
   },
   {
    "name": "Kuaizhou 11",
@@ -2874,7 +3030,8 @@
     "author": "中国新闻社",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Kuaizhou_11_Yao-2_Carrier_Rocket_Launch.png"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/kuaizhou_11_lif_image_20240520155835.jpg"
   },
   {
    "name": "Kuaizhou 1A",
@@ -2892,7 +3049,8 @@
     "author": "中国新闻社",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Kuaizhou_11_Yao-2_Carrier_Rocket_Launch.png"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/kuaizhou_1a_lau_image_20251206092920.jpeg"
   },
   {
    "name": "Kwangmyongsong",
@@ -2928,7 +3086,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/LauncherOne",
-   "slug": "launcherone"
+   "slug": "launcherone",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/launcherone_image_20200101110016.jpeg"
   },
   {
    "name": "Little Joe",
@@ -2940,7 +3099,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Little_Joe_(rocket)",
-   "slug": "little-joe"
+   "slug": "little-joe",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/little_joe_image_20210901081353.jpeg"
   },
   {
    "name": "Little Joe II",
@@ -2952,7 +3112,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Little_Joe_II",
-   "slug": "little-joe-ii"
+   "slug": "little-joe-ii",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/little_joe_ii_image_20210901072351.jpeg"
   },
   {
    "name": "Long March",
@@ -2988,7 +3149,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_10",
-   "slug": "long-march-10"
+   "slug": "long-march-10",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_10_m_image_20251202201630.jpg"
   },
   {
    "name": "Long March 10A",
@@ -3012,7 +3174,8 @@
    "cc": "CHN",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_10B",
-   "slug": "long-march-10b"
+   "slug": "long-march-10b",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_10b__image_20260710054044.jpeg"
   },
   {
    "name": "Long March 11",
@@ -3024,7 +3187,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_11",
-   "slug": "long-march-11"
+   "slug": "long-march-11",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long2520march252011_image_20190222031217.jpeg"
   },
   {
    "name": "Long March 12",
@@ -3036,7 +3200,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_12",
-   "slug": "long-march-12"
+   "slug": "long-march-12",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/cz-12_on_its_la_image_20241128132937.jpg"
   },
   {
    "name": "Long March 12A",
@@ -3048,7 +3213,8 @@
    "cc": "CHN",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_12A",
-   "slug": "long-march-12a"
+   "slug": "long-march-12a",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_12a__image_20251224005749.jpg"
   },
   {
    "name": "Long March 12B",
@@ -3060,7 +3226,8 @@
    "cc": "CHN",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_12B",
-   "slug": "long-march-12b"
+   "slug": "long-march-12b",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_12b__image_20260601133855.jpeg"
   },
   {
    "name": "Long March 2A",
@@ -3072,7 +3239,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_2",
-   "slug": "long-march-2a"
+   "slug": "long-march-2a",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/cz-2a_liftoff_image_20251126110148.png"
   },
   {
    "name": "Long March 2C",
@@ -3084,7 +3252,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_2C",
-   "slug": "long-march-2c"
+   "slug": "long-march-2c",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_2_image_20230803100234.jpeg"
   },
   {
    "name": "Long March 2C/SD",
@@ -3096,7 +3265,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_2C",
-   "slug": "long-march-2c-sd"
+   "slug": "long-march-2c-sd",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_2c-i_image_20210908194304.jpeg"
   },
   {
    "name": "Long March 2C/SM",
@@ -3108,7 +3278,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_2C",
-   "slug": "long-march-2c-sm"
+   "slug": "long-march-2c-sm",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_2c2_image_20251128232345.jpeg"
   },
   {
    "name": "Long March 2C/SMA",
@@ -3120,7 +3291,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_2C",
-   "slug": "long-march-2c-sma"
+   "slug": "long-march-2c-sma",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long2520march25202_image_20190222031140.jpeg"
   },
   {
    "name": "Long March 2C/YZ-1S",
@@ -3132,7 +3304,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_2C",
-   "slug": "long-march-2c-yz-1s"
+   "slug": "long-march-2c-yz-1s",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_2c-i_image_20210908194304.jpeg"
   },
   {
    "name": "Long March 2D",
@@ -3144,7 +3317,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_(rocket_family)",
-   "slug": "long-march-2d"
+   "slug": "long-march-2d",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long2520march25202d_image_20190222031211.jpeg"
   },
   {
    "name": "Long March 2D/YZ-3",
@@ -3156,7 +3330,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "",
-   "slug": "long-march-2d-yz-3"
+   "slug": "long-march-2d-yz-3",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_2d2_image_20231123203521.jpeg"
   },
   {
    "name": "Long March 2E",
@@ -3168,7 +3343,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_2",
-   "slug": "long-march-2e"
+   "slug": "long-march-2e",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_2e_image_20251128090436.jpg"
   },
   {
    "name": "Long March 2F",
@@ -3186,7 +3362,8 @@
     "author": "China News Service",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:LM2F-Y13.png"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_2_image_20210908195835.jpeg"
   },
   {
    "name": "Long March 2F/G",
@@ -3204,7 +3381,8 @@
     "author": "China News Service",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:LM2F-Y13.png"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/shenzhou_22_lau_image_20251129175823.jpg"
   },
   {
    "name": "Long March 3",
@@ -3216,7 +3394,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_3",
-   "slug": "long-march-3"
+   "slug": "long-march-3",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_3_image_20251128231505.jpeg"
   },
   {
    "name": "Long March 3A",
@@ -3228,7 +3407,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_3A",
-   "slug": "long-march-3a"
+   "slug": "long-march-3a",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long2520march25203a_image_20190222031143.png"
   },
   {
    "name": "Long March 3B",
@@ -3246,7 +3426,8 @@
     "author": "Shujianyang",
     "licence": "CC BY-SA 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:CZ-3B_rendering.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long2520march25203_image_20200102181012.jpg"
   },
   {
    "name": "Long March 3B/E",
@@ -3264,7 +3445,8 @@
     "author": "Shujianyang",
     "licence": "CC BY-SA 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:CZ-3B_rendering.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long2520march_image_20230907120240.jpeg"
   },
   {
    "name": "Long March 3B/YZ-1",
@@ -3282,7 +3464,8 @@
     "author": "Shujianyang",
     "licence": "CC BY-SA 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:CZ-3B_rendering.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long2520march_image_20231226100006.jpeg"
   },
   {
    "name": "Long March 3C",
@@ -3294,7 +3477,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_3C",
-   "slug": "long-march-3c"
+   "slug": "long-march-3c",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/chang2527e_2_l_image_20250906202038.bmp"
   },
   {
    "name": "Long March 3C/E",
@@ -3306,7 +3490,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_3C",
-   "slug": "long-march-3c-e"
+   "slug": "long-march-3c-e",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_3c2_image_20250906201328.jpg"
   },
   {
    "name": "Long March 3C/YZ-1",
@@ -3318,7 +3503,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_3C",
-   "slug": "long-march-3c-yz-1"
+   "slug": "long-march-3c-yz-1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_20250906192954.jpeg"
   },
   {
    "name": "Long March 4A",
@@ -3342,7 +3528,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_4B",
-   "slug": "long-march-4b"
+   "slug": "long-march-4b",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_4b_l_image_20251209044050.jpeg"
   },
   {
    "name": "Long March 4C",
@@ -3354,7 +3541,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_4C",
-   "slug": "long-march-4c"
+   "slug": "long-march-4c",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_4c_image_20230801172338.jpeg"
   },
   {
    "name": "Long March 5",
@@ -3372,7 +3560,8 @@
     "author": "China News Service",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Launching_Tianhe_Core_Module.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_5_tj_image_20260612043435.jpg"
   },
   {
    "name": "Long March 5/YZ-2",
@@ -3390,7 +3579,8 @@
     "author": "China News Service",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Launching_Tianhe_Core_Module.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_5_yz_image_20251103145739.jpg"
   },
   {
    "name": "Long March 5B",
@@ -3408,7 +3598,8 @@
     "author": "China News Service",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Launching_Tianhe_Core_Module.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_5b__image_20250906200134.jpg"
   },
   {
    "name": "Long March 5B/YZ-2",
@@ -3426,7 +3617,8 @@
     "author": "China News Service",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Launching_Tianhe_Core_Module.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_5b2_image_20250906194017.JPEG"
   },
   {
    "name": "Long March 6",
@@ -3438,7 +3630,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_6",
-   "slug": "long-march-6"
+   "slug": "long-march-6",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_6_image_20210709074933.jpg"
   },
   {
    "name": "Long March 6A",
@@ -3450,7 +3643,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_6",
-   "slug": "long-march-6a"
+   "slug": "long-march-6a",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_6a__image_20251209050223.jpeg"
   },
   {
    "name": "Long March 6C",
@@ -3462,7 +3656,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_6C",
-   "slug": "long-march-6c"
+   "slug": "long-march-6c",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/cz-6c_on_the_la_image_20240507065151.jpg"
   },
   {
    "name": "Long March 7",
@@ -3474,7 +3669,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_7",
-   "slug": "long-march-7"
+   "slug": "long-march-7",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_7_image_20210513083007.jpeg"
   },
   {
    "name": "Long March 7/YZ-1A",
@@ -3498,7 +3694,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "",
-   "slug": "long-march-7a"
+   "slug": "long-march-7a",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/cz-7a_launch_2_image_20251206093324.jpeg"
   },
   {
    "name": "Long March 8",
@@ -3510,7 +3707,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_8",
-   "slug": "long-march-8"
+   "slug": "long-march-8",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/cz-8_liftoff_2_image_20240315183218.jpg"
   },
   {
    "name": "Long March 8 (Core Only)",
@@ -3522,7 +3720,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_8",
-   "slug": "long-march-8-core-only"
+   "slug": "long-march-8-core-only",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/cz-8_2528core-_image_20240315181855.png"
   },
   {
    "name": "Long March 8A",
@@ -3534,7 +3733,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Long_March_8#CZ-8A_variant",
-   "slug": "long-march-8a"
+   "slug": "long-march-8a",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/cz-8a_launch_2_image_20251206093107.jpeg"
   },
   {
    "name": "Luna",
@@ -3546,7 +3746,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Luna_programme",
-   "slug": "luna-ascent-stage"
+   "slug": "luna-ascent-stage",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/luna_16_model_image_20240813075746.jpg"
   },
   {
    "name": "Maia",
@@ -3558,7 +3759,8 @@
    "cc": "FRA",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/Maia_(rocket)",
-   "slug": "maia"
+   "slug": "maia",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/maia_rocket_in__image_20251205133047.jpeg"
   },
   {
    "name": "Minotaur",
@@ -3594,7 +3796,8 @@
     "author": "USAF",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Minotaur-4-Lite_HTV-2a_2.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/minotaur2520i_image_20190224012247.jpeg"
   },
   {
    "name": "Minotaur IV",
@@ -3612,7 +3815,8 @@
     "author": "USAF",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Minotaur-4-Lite_HTV-2a_2.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/minotaur_iv_lau_image_20240307170209.jpeg"
   },
   {
    "name": "Minotaur IV",
@@ -3630,7 +3834,8 @@
     "author": "USAF",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Minotaur-4-Lite_HTV-2a_2.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/minotaur2520iv_image_20190222030607.jpeg"
   },
   {
    "name": "Minotaur IV",
@@ -3648,7 +3853,8 @@
     "author": "USAF",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Minotaur-4-Lite_HTV-2a_2.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/minotaur_iv_lau_image_20240307170209.jpeg"
   },
   {
    "name": "Minotaur V",
@@ -3666,7 +3872,8 @@
     "author": "USAF",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Minotaur-4-Lite_HTV-2a_2.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/orbital2520atk_image_20190207032453.jpeg"
   },
   {
    "name": "Minotaur-C 1110",
@@ -3798,7 +4005,8 @@
     "author": "PLD Space",
     "licence": "CC BY-SA 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Prueba_de_reutilizaci%C3%B3n,_Miura_5,_Huelva,_Espa%C3%B1a,_2019_06.png"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/miura_1_image_20230530100729.png"
   },
   {
    "name": "Miura 5",
@@ -3828,7 +4036,8 @@
    "cc": "JPN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Interstellar_Technologies",
-   "slug": "momo-v0"
+   "slug": "momo-v0",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/momo_image_20190705174455.jpg"
   },
   {
    "name": "MOMO v1",
@@ -3840,7 +4049,8 @@
    "cc": "JPN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Interstellar_Technologies",
-   "slug": "momo-v1"
+   "slug": "momo-v1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/momo_image_20190705174455.jpg"
   },
   {
    "name": "M-V",
@@ -3948,7 +4158,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/N1_(rocket)",
-   "slug": "n1"
+   "slug": "n1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/n1_mockup_on_th_image_20251123084123.jpg"
   },
   {
    "name": "Nebula-1",
@@ -3978,7 +4189,8 @@
     "author": "CaglayanKutay (original), Soumya-8974 (translated work)",
     "licence": "CC BY-SA 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:RocketLab_Neutron_ana_k%C4%B1s%C4%B1mlar_(en).png"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/neutron_image_20230727171443.jpeg"
   },
   {
    "name": "New Glenn",
@@ -3996,7 +4208,8 @@
     "author": "U.S. Space Force photo by Gwendolyn Kurzen",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:New_Glenn_-_BlueBird_7_Launch_(9628277)_(cropped).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/new_glenn_on_lc_image_20240313170026.jpeg"
   },
   {
    "name": "New Glenn 9x4",
@@ -4014,7 +4227,8 @@
     "author": "U.S. Space Force photo by Gwendolyn Kurzen",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:New_Glenn_-_BlueBird_7_Launch_(9628277)_(cropped).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/new_glenn_9x4_i_image_20260104223338.jpg"
   },
   {
    "name": "New Shepard",
@@ -4026,7 +4240,8 @@
    "cc": "USA",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/New_Shepard",
-   "slug": "new-shepard"
+   "slug": "new-shepard",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/new2520shepard_image_20190207032624.jpeg"
   },
   {
    "name": "Nike Cajun",
@@ -4086,7 +4301,8 @@
    "cc": "USA",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/North_American_X-15",
-   "slug": "north-american-x-15"
+   "slug": "north-american-x-15",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/north_american__image_20210813101104.png"
   },
   {
    "name": "Nova",
@@ -4098,7 +4314,8 @@
    "cc": "USA",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/Stoke_Space_Nova",
-   "slug": "nova"
+   "slug": "nova",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/stoke_space_nov_image_20251115203820.jpeg"
   },
   {
    "name": "Orion Abort Test Booster",
@@ -4110,7 +4327,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Orion_Abort_Test_Booster",
-   "slug": "orion-abort-test-booster"
+   "slug": "orion-abort-test-booster",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/orion2520abort2520test2520booster_image_20190701191116.jpeg"
   },
   {
    "name": "OS-M1",
@@ -4146,7 +4364,8 @@
    "cc": "CHN",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/Pallas-1",
-   "slug": "pallas-1"
+   "slug": "pallas-1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/pallas-1_y1_image_20260901030251.jpg"
   },
   {
    "name": "Pegasus",
@@ -4164,7 +4383,8 @@
     "author": "NASA/Lori Losey",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Launch_of_Pegasus_F43_from_Stargazer_(KSC-20161215-PH_LAL02_0005).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/pegasus_image_20190830213841.jpg"
   },
   {
    "name": "Pegasus HAPS",
@@ -4182,7 +4402,8 @@
     "author": "NASA/Lori Losey",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Launch_of_Pegasus_F43_from_Stargazer_(KSC-20161215-PH_LAL02_0005).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/pegasus_image_20190830213841.jpg"
   },
   {
    "name": "Pegasus Hybrid",
@@ -4200,7 +4421,8 @@
     "author": "NASA/Lori Losey",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Launch_of_Pegasus_F43_from_Stargazer_(KSC-20161215-PH_LAL02_0005).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/pegasus_image_20190830213841.jpg"
   },
   {
    "name": "Pegasus XL",
@@ -4218,7 +4440,8 @@
     "author": "NASA/Lori Losey",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Launch_of_Pegasus_F43_from_Stargazer_(KSC-20161215-PH_LAL02_0005).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/pegasus_xl_moun_image_20240307124328.jpeg"
   },
   {
    "name": "Pegasus XL HAPS",
@@ -4236,7 +4459,8 @@
     "author": "NASA/Lori Losey",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Launch_of_Pegasus_F43_from_Stargazer_(KSC-20161215-PH_LAL02_0005).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/pegasus_xl_moun_image_20240307124328.jpeg"
   },
   {
    "name": "Prime",
@@ -4248,7 +4472,8 @@
    "cc": "GBR",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Orbex#Prime",
-   "slug": "orbex-prime"
+   "slug": "orbex-prime",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/prime_image_20220511125637.jpg"
   },
   {
    "name": "Project Pilot",
@@ -4278,7 +4503,8 @@
     "author": "Unknown author",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Night_start_of_Proton-M_rocket_with_Blagovest_satellite_17.08.2017.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/proton_image_20231231095535.jpg"
   },
   {
    "name": "Proton",
@@ -4296,7 +4522,8 @@
     "author": "Unknown author",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Night_start_of_Proton-M_rocket_with_Blagovest_satellite_17.08.2017.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/proton_image_20231231095535.jpg"
   },
   {
    "name": "Proton",
@@ -4314,7 +4541,8 @@
     "author": "Unknown author",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Night_start_of_Proton-M_rocket_with_Blagovest_satellite_17.08.2017.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/proton_image_20190207032625.jpeg"
   },
   {
    "name": "Proton-K/17S40",
@@ -4332,7 +4560,8 @@
     "author": "Unknown author",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Night_start_of_Proton-M_rocket_with_Blagovest_satellite_17.08.2017.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/proton_image_20231231095535.jpg"
   },
   {
    "name": "Proton-K/Briz-M",
@@ -4350,7 +4579,8 @@
     "author": "Unknown author",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Night_start_of_Proton-M_rocket_with_Blagovest_satellite_17.08.2017.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/proton_image_20231231095535.jpg"
   },
   {
    "name": "Proton-K/D-1",
@@ -4368,7 +4598,8 @@
     "author": "Unknown author",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Night_start_of_Proton-M_rocket_with_Blagovest_satellite_17.08.2017.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/proton_image_20231231095535.jpg"
   },
   {
    "name": "Proton-K/D-2",
@@ -4386,7 +4617,8 @@
     "author": "Unknown author",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Night_start_of_Proton-M_rocket_with_Blagovest_satellite_17.08.2017.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/proton_image_20231231095535.jpg"
   },
   {
    "name": "Proton-K/DM",
@@ -4404,7 +4636,8 @@
     "author": "Unknown author",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Night_start_of_Proton-M_rocket_with_Blagovest_satellite_17.08.2017.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/proton_image_20231231095535.jpg"
   },
   {
    "name": "Proton-K/DM-2M",
@@ -4422,7 +4655,8 @@
     "author": "Unknown author",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Night_start_of_Proton-M_rocket_with_Blagovest_satellite_17.08.2017.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/proton_image_20231231095535.jpg"
   },
   {
    "name": "Proton-M",
@@ -4440,7 +4674,8 @@
     "author": "Unknown author",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Night_start_of_Proton-M_rocket_with_Blagovest_satellite_17.08.2017.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/proton-m_image_20191211081456.jpeg"
   },
   {
    "name": "Proton-M",
@@ -4458,7 +4693,8 @@
     "author": "Unknown author",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Night_start_of_Proton-M_rocket_with_Blagovest_satellite_17.08.2017.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/proton-m_image_20201205235758.jpg"
   },
   {
    "name": "Proton-M",
@@ -4476,7 +4712,8 @@
     "author": "Unknown author",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Night_start_of_Proton-M_rocket_with_Blagovest_satellite_17.08.2017.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/proton-m_image_20191211081456.jpeg"
   },
   {
    "name": "Proton-M",
@@ -4494,7 +4731,8 @@
     "author": "Unknown author",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Night_start_of_Proton-M_rocket_with_Blagovest_satellite_17.08.2017.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/proton-m_image_20191211081456.jpeg"
   },
   {
    "name": "Proton-M Briz-M",
@@ -4512,7 +4750,8 @@
     "author": "Unknown author",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Night_start_of_Proton-M_rocket_with_Blagovest_satellite_17.08.2017.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/proton-m2520briz-m_image_20190224012317.jpeg"
   },
   {
    "name": "UR-500",
@@ -4524,7 +4763,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Proton_(rocket_family)",
-   "slug": "ur-500"
+   "slug": "ur-500",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ur-500_image_20251102055727.jpg"
   },
   {
    "name": "PSLV",
@@ -4542,7 +4782,8 @@
     "author": "ISRO, Dept. of Space, Govtd of India",
     "licence": "GODL-India",
     "source": "https://commons.wikimedia.org/wiki/File:PSLVC62.webp"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/pslv_image_20190508083736.jpeg"
   },
   {
    "name": "PSLV",
@@ -4560,7 +4801,8 @@
     "author": "ISRO, Dept. of Space, Govtd of India",
     "licence": "GODL-India",
     "source": "https://commons.wikimedia.org/wiki/File:PSLVC62.webp"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/pslv_image_20230730102956.jpeg"
   },
   {
    "name": "PSLV-DL",
@@ -4578,7 +4820,8 @@
     "author": "ISRO, Dept. of Space, Govtd of India",
     "licence": "GODL-India",
     "source": "https://commons.wikimedia.org/wiki/File:PSLVC62.webp"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/pslv-dl_image_20191201202351.jpeg"
   },
   {
    "name": "PSLV-QL",
@@ -4596,7 +4839,8 @@
     "author": "ISRO, Dept. of Space, Govtd of India",
     "licence": "GODL-India",
     "source": "https://commons.wikimedia.org/wiki/File:PSLVC62.webp"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/pslv_image_20190508083736.jpeg"
   },
   {
    "name": "PSLV-XL",
@@ -4614,7 +4858,8 @@
     "author": "ISRO, Dept. of Space, Govtd of India",
     "licence": "GODL-India",
     "source": "https://commons.wikimedia.org/wiki/File:PSLVC62.webp"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/pslv_image_20190224012254.jpeg"
   },
   {
    "name": "Qaem 100",
@@ -4626,7 +4871,8 @@
    "cc": "IRN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Qaem_100",
-   "slug": "qaem-100"
+   "slug": "qaem-100",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/qaem_100_image_20240123065309.jpg"
   },
   {
    "name": "Qased",
@@ -4638,7 +4884,8 @@
    "cc": "IRN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Qased_(rocket)",
-   "slug": "qased"
+   "slug": "qased",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/qased_image_20220308095543.jpg"
   },
   {
    "name": "R-36O 8K69",
@@ -4650,7 +4897,8 @@
    "cc": "UKR",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Fractional_Orbital_Bombardment_System",
-   "slug": "r-36o-8k69"
+   "slug": "r-36o-8k69",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/r-360_during_fl_image_20251102175933.jpg"
   },
   {
    "name": "R-36O 8K69M",
@@ -4662,7 +4910,8 @@
    "cc": "UKR",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Fractional_Orbital_Bombardment_System",
-   "slug": "r-36o-8k69m"
+   "slug": "r-36o-8k69m",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/r-360_during_fl_image_20251102175933.jpg"
   },
   {
    "name": "Molniya 8K78",
@@ -4674,7 +4923,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Molniya_(rocket)",
-   "slug": "molniya-8k78"
+   "slug": "molniya-8k78",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/molniya25208k78_image_20191201210000.jpg"
   },
   {
    "name": "Molniya 8K78M-PVB",
@@ -4698,7 +4948,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Molniya-M",
-   "slug": "molniya-m-2bl"
+   "slug": "molniya-m-2bl",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/molniya_m_image_20251102061752.jpg"
   },
   {
    "name": "Voskhod",
@@ -4710,7 +4961,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Voskhod_(rocket)",
-   "slug": "voskhod"
+   "slug": "voskhod",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/voskhod_during__image_20251102062248.jpg"
   },
   {
    "name": "Vostok",
@@ -4722,7 +4974,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Vostok-K",
-   "slug": "vostok-k"
+   "slug": "vostok-k",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/vostok_image_20191104130128.jpg"
   },
   {
    "name": "Ravn X",
@@ -4734,7 +4987,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "",
-   "slug": "ravn-x"
+   "slug": "ravn-x",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ravn_x_image_20201203171327.jpg"
   },
   {
    "name": "Juno-I",
@@ -4746,7 +5000,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Juno_I",
-   "slug": "juno-i"
+   "slug": "juno-i",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/juno_i_on_the_p_image_20240411120216.jpeg"
   },
   {
    "name": "Redstone",
@@ -4758,7 +5013,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Mercury-Redstone_Launch_Vehicle",
-   "slug": "redstone-mrlv"
+   "slug": "redstone-mrlv",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/redstone_image_20190207032627.jpeg"
   },
   {
    "name": "RFA One",
@@ -4770,7 +5026,8 @@
    "cc": "DEU",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Rocket_Factory_Augsburg#Launch_vehicle",
-   "slug": "rfa-one"
+   "slug": "rfa-one",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/rfa_one_image_20230117001619.png"
   },
   {
    "name": "Rokot/Briz-K",
@@ -4782,7 +5039,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Rokot",
-   "slug": "rokot-briz-k"
+   "slug": "rokot-briz-k",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/rokot25202f2520briz-km_image_20190224012237.jpeg"
   },
   {
    "name": "Rokot/Briz-KM",
@@ -4794,7 +5052,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Rokot",
-   "slug": "rokot-briz-km"
+   "slug": "rokot-briz-km",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/rokot25202f2520briz-km_image_20190224012237.jpeg"
   },
   {
    "name": "RS1",
@@ -4806,7 +5065,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/ABL_Space_Systems#RS1",
-   "slug": "rs1"
+   "slug": "rs1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/rs1_on_the_pad__image_20240325094914.jpeg"
   },
   {
    "name": "SS-520",
@@ -4842,7 +5102,8 @@
    "cc": "USA",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/Exos_Aerospace#SARGE",
-   "slug": "sarge"
+   "slug": "sarge",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/sarge_image_20191026175316.jpg"
   },
   {
    "name": "Saturn I",
@@ -4854,7 +5115,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Saturn_I",
-   "slug": "saturn-i"
+   "slug": "saturn-i",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/saturn_1_on_lc-_image_20240411095856.jpeg"
   },
   {
    "name": "Saturn IB",
@@ -4866,7 +5128,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Saturn_IB",
-   "slug": "saturn-ib"
+   "slug": "saturn-ib",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/saturn2520ib_image_20190222030046.jpeg"
   },
   {
    "name": "Saturn V",
@@ -4884,7 +5147,8 @@
     "author": "NASA",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Apollo_11_Launch_-_GPN-2000-000630.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/saturn2520v_image_20190222030036.jpeg"
   },
   {
    "name": "Scout A",
@@ -4920,7 +5184,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Scout_(rocket_family)",
-   "slug": "scout-b"
+   "slug": "scout-b",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/scout-b_2528se_image_20251109064911.png"
   },
   {
    "name": "Scout B-1",
@@ -4932,7 +5197,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Scout_(rocket_family)",
-   "slug": "scout-b-1"
+   "slug": "scout-b-1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/scout-b1_2528e_image_20251211153459.jpg"
   },
   {
    "name": "Scout D-1",
@@ -4944,7 +5210,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Scout_(rocket_family)",
-   "slug": "scout-d-1"
+   "slug": "scout-d-1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/scout-d1_2528a_image_20251115095638.png"
   },
   {
    "name": "Scout E-1",
@@ -4992,7 +5259,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Scout_X-1",
-   "slug": "scout-x-1"
+   "slug": "scout-x-1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/scout2520x-1_image_20190324192636.jpeg"
   },
   {
    "name": "Scout X-2",
@@ -5076,7 +5344,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Scout_(rocket_family)",
-   "slug": "scout-x-4"
+   "slug": "scout-x-4",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/scout_x-4_s122__image_20240311075016.jpeg"
   },
   {
    "name": "Scout X-4A",
@@ -5112,7 +5381,8 @@
    "cc": "ISR",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Shavit",
-   "slug": "shavit-2"
+   "slug": "shavit-2",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/shavit-2_liftof_image_20240918164729.jpeg"
   },
   {
    "name": "Shtil'-1",
@@ -5154,7 +5424,8 @@
    "cc": "GBR",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Skyrora#Skyrora_XL",
-   "slug": "skyrora-xl"
+   "slug": "skyrora-xl",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/skyrora_xl_image_20221119120357.png"
   },
   {
    "name": "SL1",
@@ -5166,7 +5437,8 @@
    "cc": "DEU",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/HyImpulse#Rockets",
-   "slug": "sl1"
+   "slug": "sl1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/sl1_artist_impr_image_20251115042045.png"
   },
   {
    "name": "SLV-3",
@@ -5178,7 +5450,8 @@
    "cc": "IND",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Satellite_Launch_Vehicle#Launch_history",
-   "slug": "slv-3"
+   "slug": "slv-3",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/slv-3_image_20240210152959.jpg"
   },
   {
    "name": "Smart Dragon 1",
@@ -5202,7 +5475,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "",
-   "slug": "smart-dragon-3"
+   "slug": "smart-dragon-3",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/smart_dragon_3__image_20240925074606.jpg"
   },
   {
    "name": "Soyuz",
@@ -5226,7 +5500,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Soyuz_(rocket)",
-   "slug": "soyuz-fregat"
+   "slug": "soyuz-fregat",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz_image_20190717035842.jpeg"
   },
   {
    "name": "Soyuz",
@@ -5244,7 +5519,8 @@
     "author": "Ministry of Defence of the Russian Federation",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Soyuz_2.1b_GLONASS-K2_13L_launch_01.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz_image_20190222031122.jpeg"
   },
   {
    "name": "Soyuz",
@@ -5262,7 +5538,8 @@
     "author": "Bill Ingalls",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Soyuz_TMA-3_launch.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz_image_20190717035537.jpg"
   },
   {
    "name": "Soyuz 11A510",
@@ -5328,7 +5605,8 @@
     "author": "Ministry of Defence of the Russian Federation",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Soyuz_2.1b_GLONASS-K2_13L_launch_01.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz_2.1a_image_20230805184309.jpg"
   },
   {
    "name": "Soyuz 2.1a/Fregat",
@@ -5346,7 +5624,8 @@
     "author": "Ministry of Defence of the Russian Federation",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Soyuz_2.1b_GLONASS-K2_13L_launch_01.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz25202.1a_image_20190726062341.png"
   },
   {
    "name": "Soyuz 2.1a/Fregat-M",
@@ -5364,7 +5643,8 @@
     "author": "Ministry of Defence of the Russian Federation",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Soyuz_2.1b_GLONASS-K2_13L_launch_01.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz25202.1a_image_20190726062341.png"
   },
   {
    "name": "Soyuz 2.1a/Volga",
@@ -5382,7 +5662,8 @@
     "author": "Ministry of Defence of the Russian Federation",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Soyuz_2.1b_GLONASS-K2_13L_launch_01.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz_2.1b_bion_image_20260417155828.jpg"
   },
   {
    "name": "Soyuz 2.1b",
@@ -5400,7 +5681,8 @@
     "author": "Ministry of Defence of the Russian Federation",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Soyuz_2.1b_GLONASS-K2_13L_launch_01.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz_2.1b_image_20230802085331.jpg"
   },
   {
    "name": "Soyuz 2.1b/Fregat",
@@ -5418,7 +5700,8 @@
     "author": "Ministry of Defence of the Russian Federation",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Soyuz_2.1b_GLONASS-K2_13L_launch_01.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz_2.1b_image_20230802085331.jpg"
   },
   {
    "name": "Soyuz 2.1b/Fregat-M",
@@ -5436,7 +5719,8 @@
     "author": "Ministry of Defence of the Russian Federation",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Soyuz_2.1b_GLONASS-K2_13L_launch_01.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz_2.1b_image_20230802085331.jpg"
   },
   {
    "name": "Soyuz 2.1b/Volga",
@@ -5454,7 +5738,8 @@
     "author": "Ministry of Defence of the Russian Federation",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Soyuz_2.1b_GLONASS-K2_13L_launch_01.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz_2.1b_bion_image_20260417155828.jpg"
   },
   {
    "name": "Soyuz 2.1v",
@@ -5472,7 +5757,8 @@
     "author": "Ministry of Defence of the Russian Federation",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Soyuz_2.1b_GLONASS-K2_13L_launch_01.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz25202-1v_image_20191122081651.jpg"
   },
   {
    "name": "Soyuz STA",
@@ -5484,7 +5770,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Soyuz-2_(rocket)",
-   "slug": "soyuz-sta-fregat"
+   "slug": "soyuz-sta-fregat",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz2520sta_image_20191210133244.jpg"
   },
   {
    "name": "Soyuz STB",
@@ -5496,7 +5783,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Soyuz-2_(rocket)",
-   "slug": "soyuz-stb-fregat"
+   "slug": "soyuz-stb-fregat",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz_stb_image_20211130181029.jpeg"
   },
   {
    "name": "Soyuz STB",
@@ -5508,7 +5796,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Soyuz-2#Soyuz-2.1b",
-   "slug": "soyuz-stb-fregat-mt"
+   "slug": "soyuz-stb-fregat-mt",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz2520stb_image_20191201201634.jpg"
   },
   {
    "name": "Soyuz U",
@@ -5520,7 +5809,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Soyuz-U",
-   "slug": "soyuz-u"
+   "slug": "soyuz-u",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz2520u_image_20190222031023.jpeg"
   },
   {
    "name": "Soyuz-U-PVB",
@@ -5532,7 +5822,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Soyuz-U",
-   "slug": "soyuz-u-pvb"
+   "slug": "soyuz-u-pvb",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz-u_image_20191229074852.jpg"
   },
   {
    "name": "Soyuz-5",
@@ -5544,7 +5835,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Irtysh_(rocket)",
-   "slug": "soyuz-5"
+   "slug": "soyuz-5",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz-5_at_baik_image_20260501030446.png"
   },
   {
    "name": "Soyuz-FG",
@@ -5562,7 +5854,8 @@
     "author": "Bill Ingalls",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Soyuz_TMA-3_launch.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz_image_20190717035842.jpeg"
   },
   {
    "name": "Soyuz-U",
@@ -5574,7 +5867,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Soyuz-U2",
-   "slug": "soyuz-u2"
+   "slug": "soyuz-u2",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/soyuz-u_image_20191229074852.jpg"
   },
   {
    "name": "Space Launch System (SLS)",
@@ -5592,7 +5886,8 @@
     "author": "https://www.nasa.gov/marshall/",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Artemis_II_launch_(SLS_MAF_20260401_ArtemisIILaunch_02)_crop.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/sls_block_1b_image_20200905100013.jpeg"
   },
   {
    "name": "Space Launch System (SLS)",
@@ -5610,7 +5905,8 @@
     "author": "https://www.nasa.gov/marshall/",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Artemis_II_launch_(SLS_MAF_20260401_ArtemisIILaunch_02)_crop.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/space_launch_sy_image_20260405204639.jpg"
   },
   {
    "name": "Space Shuttle",
@@ -5628,7 +5924,8 @@
     "author": "NASA; edited by jjron (tilt corrected)",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:STS120LaunchHiRes-edit1.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/space_shuttle_image_20230422074810.jpeg"
   },
   {
    "name": "SpaceShipTwo",
@@ -5640,7 +5937,8 @@
    "cc": "USA",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/SpaceShipTwo",
-   "slug": "spaceshiptwo"
+   "slug": "spaceshiptwo",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/spaceshiptwo_image_20210522140909.jpeg"
   },
   {
    "name": "SPARK",
@@ -5652,7 +5950,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/SPARK_%28rocket%29",
-   "slug": "spark"
+   "slug": "spark",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/spark_image_20190222030915.jpeg"
   },
   {
    "name": "SPARTA",
@@ -5664,7 +5963,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Sparta_(rocket)",
-   "slug": "sparta"
+   "slug": "sparta",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/sparta_rocket_o_image_20240411095008.jpeg"
   },
   {
    "name": "Spectrum",
@@ -5676,7 +5976,8 @@
    "cc": "DEU",
    "reusable": false,
    "wiki": "",
-   "slug": "spectrum"
+   "slug": "spectrum",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/spectrum_on_the_image_20250321072643.jpeg"
   },
   {
    "name": "Sputnik 11A59",
@@ -5700,7 +6001,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "",
-   "slug": "sputnik-8a91"
+   "slug": "sputnik-8a91",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/sputnik_8a91_image_20210830171943.png"
   },
   {
    "name": "Sputnik 8K74PS",
@@ -5712,7 +6014,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "",
-   "slug": "sputnik-8k74ps"
+   "slug": "sputnik-8k74ps",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/sputnik_8k74ps_image_20210830185541.jpg"
   },
   {
    "name": "SR75",
@@ -5724,7 +6027,8 @@
    "cc": "DEU",
    "reusable": false,
    "wiki": "",
-   "slug": "sr75"
+   "slug": "sr75",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/sr75_image_20230818080919.jpeg"
   },
   {
    "name": "SSLV",
@@ -5742,7 +6046,8 @@
     "author": "Indian Space Research Organisation",
     "licence": "GODL-India",
     "source": "https://commons.wikimedia.org/wiki/File:Mrm7669_Launch_of_SSLV-D1_from_Satish_Dhawan_FLP.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/sslv_image_20220912001724.jpeg"
   },
   {
    "name": "Starship",
@@ -5760,7 +6065,8 @@
     "author": "SpaceX",
     "licence": "CC BY 2.0",
     "source": "https://commons.wikimedia.org/wiki/File:Starship_-_Flight_13_(Sunset).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/starship_on_the_image_20250111100520.jpg"
   },
   {
    "name": "Starship",
@@ -5778,7 +6084,8 @@
     "author": "SpaceX",
     "licence": "CC BY 2.0",
     "source": "https://commons.wikimedia.org/wiki/File:Starship_-_Flight_13_(Sunset).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/starship_liftof_image_20240314160301.jpg"
   },
   {
    "name": "Starship",
@@ -5796,7 +6103,8 @@
     "author": "SpaceX",
     "licence": "CC BY 2.0",
     "source": "https://commons.wikimedia.org/wiki/File:Starship_-_Flight_13_(Sunset).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/starship_on_the_image_20250111100520.jpg"
   },
   {
    "name": "Starship",
@@ -5814,7 +6122,8 @@
     "author": "SpaceX",
     "licence": "CC BY 2.0",
     "source": "https://commons.wikimedia.org/wiki/File:Starship_-_Flight_13_(Sunset).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/starship_on_the_image_20250111100520.jpg"
   },
   {
    "name": "Starship Prototype",
@@ -5832,7 +6141,8 @@
     "author": "SpaceX",
     "licence": "CC BY 2.0",
     "source": "https://commons.wikimedia.org/wiki/File:Starship_-_Flight_13_(Sunset).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/starship2520sn_image_20210413205503.jpeg"
   },
   {
    "name": "Super Heavy Prototype",
@@ -5844,7 +6154,8 @@
    "cc": "USA",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/SpaceX_Starship",
-   "slug": "super-heavy-prototype"
+   "slug": "super-heavy-prototype",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/super_heavy_pro_image_20210401104735.jpg"
   },
   {
    "name": "Start",
@@ -5868,7 +6179,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Start-1",
-   "slug": "start-1"
+   "slug": "start-1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/start-1_image_20251205043653.jpg"
   },
   {
    "name": "Start-1.2",
@@ -5892,7 +6204,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Strela_(rocket)",
-   "slug": "strela"
+   "slug": "strela",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/a_strela_rocket_image_20251205042752.jpg"
   },
   {
    "name": "Chollima-1",
@@ -5904,7 +6217,8 @@
    "cc": "PRK",
    "reusable": false,
    "wiki": "",
-   "slug": "chollima-1"
+   "slug": "chollima-1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/chollima-1_lift_image_20240919165247.jpeg"
   },
   {
    "name": "Unha",
@@ -5922,7 +6236,8 @@
     "author": "Sungwon Baik / VOA",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:North_Korean_Unha-3_rocket_at_launch_pad.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/unha_image_20190222030930.jpeg"
   },
   {
    "name": "Unha-3",
@@ -5940,7 +6255,8 @@
     "author": "Sungwon Baik / VOA",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:North_Korean_Unha-3_rocket_at_launch_pad.jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/unha_image_20190222030930.jpeg"
   },
   {
    "name": "Terran 1",
@@ -5952,7 +6268,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Terran_1",
-   "slug": "terran-1"
+   "slug": "terran-1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/terran_1_image_20220129191632.jpg"
   },
   {
    "name": "Terran R",
@@ -5964,7 +6281,8 @@
    "cc": "USA",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/Relativity_Space#Terran_R",
-   "slug": "terran-r"
+   "slug": "terran-r",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/terran_r_image_20220912002151.png"
   },
   {
    "name": "Themis Demonstrator",
@@ -5976,7 +6294,8 @@
    "cc": "FRA",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/Themis_programme",
-   "slug": "themis-demonstrator"
+   "slug": "themis-demonstrator",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/themis_demonstr_image_20250916085603.jpg"
   },
   {
    "name": "Delta DM-19",
@@ -6060,7 +6379,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Thor-Agena",
-   "slug": "thor-agena-d"
+   "slug": "thor-agena-d",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/thor-agena_d_2_image_20251204204127.jpg"
   },
   {
    "name": "Thor Burner 1",
@@ -6096,7 +6416,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Thor-Burner",
-   "slug": "thor-burner-2a"
+   "slug": "thor-burner-2a",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/thor-lv2f_burne_image_20251109071855.png"
   },
   {
    "name": "Thor Delta",
@@ -6108,7 +6429,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Thor-Delta",
-   "slug": "thor-delta"
+   "slug": "thor-delta",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/thor-delta_laun_image_20251123094044.jpg"
   },
   {
    "name": "Thor Delta A",
@@ -6144,7 +6466,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Thor-Delta",
-   "slug": "thor-delta-c"
+   "slug": "thor-delta-c",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/launch_of_thor__image_20251127091608.png"
   },
   {
    "name": "Thor Delta C1",
@@ -6180,7 +6503,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Thor-Delta",
-   "slug": "thor-delta-e"
+   "slug": "thor-delta-e",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/thor_delta_e1_image_20251205041725.jpg"
   },
   {
    "name": "Thor Delta E1",
@@ -6192,7 +6516,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Thor-Delta",
-   "slug": "thor-delta-e1"
+   "slug": "thor-delta-e1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/delta-e1_2528i_image_20251205042339.png"
   },
   {
    "name": "Thor Delta G",
@@ -6204,7 +6529,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Thor-Delta",
-   "slug": "thor-delta-g"
+   "slug": "thor-delta-g",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/launch_of_a_del_image_20251214194405.png"
   },
   {
    "name": "Thor Delta J",
@@ -6240,7 +6566,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Thor-Delta",
-   "slug": "thor-delta-m"
+   "slug": "thor-delta-m",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/thor_delta_m_image_20251122093853.jpg"
   },
   {
    "name": "Thor Delta M6",
@@ -6288,7 +6615,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Thor-Ablestar",
-   "slug": "thor-dm-21-ablestar"
+   "slug": "thor-dm-21-ablestar",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/thor2520dm-212520ablestar_image_20191201205131.jpg"
   },
   {
    "name": "Thor DM-21 Agena-B",
@@ -6300,7 +6628,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Thor-Agena",
-   "slug": "thor-dm-21-agena-b"
+   "slug": "thor-dm-21-agena-b",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/thor-dm21_agena_image_20251112153059.png"
   },
   {
    "name": "Thor DSV-2U",
@@ -6348,7 +6677,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Thor-Agena",
-   "slug": "thor-slv-2-agena-d"
+   "slug": "thor-slv-2-agena-d",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/thor-dm21_agena_image_20251109064525.png"
   },
   {
    "name": "Thor SLV-2A Agena B",
@@ -6360,7 +6690,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Thor-Agena",
-   "slug": "thor-slv-2a-agena-b"
+   "slug": "thor-slv-2a-agena-b",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/thor_slv-2a_age_image_20251102055131.jpg"
   },
   {
    "name": "Thor SLV-2A Agena D",
@@ -6372,7 +6703,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Thor-Agena",
-   "slug": "thor-slv-2a-agena-d"
+   "slug": "thor-slv-2a-agena-d",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/thor_slv-2a_age_image_20251102055131.jpg"
   },
   {
    "name": "Thorad SLV-2G Agena D",
@@ -6384,7 +6716,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Thor-Agena",
-   "slug": "thorad-slv-2g-agena-d"
+   "slug": "thorad-slv-2g-agena-d",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/thorad-slv2g_ag_image_20251102061406.jpg"
   },
   {
    "name": "Thorad SLV-2H Agena D",
@@ -6396,7 +6729,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Thor-Agena",
-   "slug": "thorad-slv-2h-agena-d"
+   "slug": "thorad-slv-2h-agena-d",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/thorad-slv2h_ag_image_20251204211604.png"
   },
   {
    "name": "Tianlong-2",
@@ -6408,7 +6742,8 @@
    "cc": "CHN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Space_Pioneer",
-   "slug": "tianlong-2"
+   "slug": "tianlong-2",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/tianlong-2_image_20230325085659.jpeg"
   },
   {
    "name": "Tianlong-3",
@@ -6420,7 +6755,8 @@
    "cc": "CHN",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/Tianlong-3",
-   "slug": "tianlong-3"
+   "slug": "tianlong-3",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/tianlong-3_full_image_20260330045730.jpg"
   },
   {
    "name": "Commercial Titan III",
@@ -6438,7 +6774,8 @@
     "author": "U.S. DoD",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:DF-SC-84-05192_cropped.jpeg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/commercial_tita_image_20240411092244.jpeg"
   },
   {
    "name": "Titan 23B",
@@ -6498,7 +6835,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Titan_34D",
-   "slug": "titan-34d"
+   "slug": "titan-34d",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/titan-34d_2528_image_20251204205731.jpg"
   },
   {
    "name": "Titan 34D IUS",
@@ -6510,7 +6848,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Titan_34D",
-   "slug": "titan-34d-ius"
+   "slug": "titan-34d-ius",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/two_military_co_image_20251204205353.jpg"
   },
   {
    "name": "Titan 34D Transtage",
@@ -6546,7 +6885,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Titan_IV",
-   "slug": "titan-402a-ius"
+   "slug": "titan-402a-ius",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/titan-402a_ius__image_20251113174426.png"
   },
   {
    "name": "Titan 402B IUS",
@@ -6594,7 +6934,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Titan_IV",
-   "slug": "titan-404a"
+   "slug": "titan-404a",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/titan_404a_image_20251128091231.png"
   },
   {
    "name": "Titan 404B",
@@ -6642,7 +6983,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Titan_II_GLV",
-   "slug": "titan-ii-glv"
+   "slug": "titan-ii-glv",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/titan2520ii_image_20190222030027.jpeg"
   },
   {
    "name": "Titan II SLV",
@@ -6654,7 +6996,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Titan_23G",
-   "slug": "titan-ii-slv"
+   "slug": "titan-ii-slv",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/titan_ii_slv_image_20231231110038.jpeg"
   },
   {
    "name": "Titan III",
@@ -6672,7 +7015,8 @@
     "author": "U.S. DoD",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:DF-SC-84-05192_cropped.jpeg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/titan2520iii_image_20190222030055.jpeg"
   },
   {
    "name": "Titan IIIA",
@@ -6708,7 +7052,8 @@
     "author": "U.S. DoD",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:DF-SC-84-05192_cropped.jpeg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/titan_iiib_image_20251204210122.jpg"
   },
   {
    "name": "Titan IIIC",
@@ -6726,7 +7071,8 @@
     "author": "U.S. DoD",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:DF-SC-84-05192_cropped.jpeg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/titan_iii-c_lau_image_20251103140641.jpeg"
   },
   {
    "name": "Titan IIID",
@@ -6744,7 +7090,8 @@
     "author": "U.S. DoD",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:DF-SC-84-05192_cropped.jpeg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/titan_iiid_laun_image_20251117073514.jpg"
   },
   {
    "name": "Titan IVB",
@@ -6756,7 +7103,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Titan_IV",
-   "slug": "titan-ivb-centaur"
+   "slug": "titan-ivb-centaur",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/titan2520ivb_image_20190222030244.jpeg"
   },
   {
    "name": "Trailblazer 1",
@@ -6792,7 +7140,8 @@
    "cc": "UKR",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Tsyklon-2",
-   "slug": "tsiklon-2"
+   "slug": "tsiklon-2",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/tsyklon-2_lifto_image_20240411113159.jpg"
   },
   {
    "name": "Tsiklon-2A",
@@ -6816,7 +7165,8 @@
    "cc": "UKR",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Tsyklon-3",
-   "slug": "tsiklon-3"
+   "slug": "tsiklon-3",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/tsyklon-3_launc_image_20251112153513.png"
   },
   {
    "name": "Unknown Launch Vehicle",
@@ -6840,7 +7190,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Vanguard_(rocket)",
-   "slug": "vanguard"
+   "slug": "vanguard",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/vanguard_1_on_p_image_20240411114304.jpeg"
   },
   {
    "name": "Vector",
@@ -6852,7 +7203,8 @@
    "cc": "USA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Vector-R",
-   "slug": "vector-r"
+   "slug": "vector-r",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/vector_image_20240411113508.jpeg"
   },
   {
    "name": "Vega",
@@ -6864,7 +7216,8 @@
    "cc": "ITA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Vega_(rocket)",
-   "slug": "vega"
+   "slug": "vega",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/vega_image_20201111143622.jpeg"
   },
   {
    "name": "Vega-C",
@@ -6876,7 +7229,8 @@
    "cc": "ITA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Vega_(rocket)",
-   "slug": "vega-c-block-2"
+   "slug": "vega-c-block-2",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/vega-c_image_20220713154437.jpg"
   },
   {
    "name": "Vega-C",
@@ -6888,7 +7242,8 @@
    "cc": "ITA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Vega_(rocket)",
-   "slug": "vega-c"
+   "slug": "vega-c",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/vega-c_image_20220713154437.jpg"
   },
   {
    "name": "Vega-E",
@@ -6900,7 +7255,8 @@
    "cc": "ITA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Vega_(rocket)",
-   "slug": "vega-e"
+   "slug": "vega-e",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/vega-e_render_image_20251225083722.jpg"
   },
   {
    "name": "Vikram-I",
@@ -6912,7 +7268,8 @@
    "cc": "IND",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Vikram_(rocket_family)",
-   "slug": "vikram-i"
+   "slug": "vikram-i",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/vikram-i_on_lau_image_20260717052522.jpg"
   },
   {
    "name": "VLS-1",
@@ -6924,7 +7281,8 @@
    "cc": "BRA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/VLS-1",
-   "slug": "vls-1"
+   "slug": "vls-1",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/vls1-v03_rocket_image_20251102060306.jpg"
   },
   {
    "name": "Volna",
@@ -6948,7 +7306,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Vostok_(rocket_family)",
-   "slug": "vostok-8a92"
+   "slug": "vostok-8a92",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/vostok_launch_v_image_20251119053730.jpg"
   },
   {
    "name": "Vostok 8A92M",
@@ -6960,7 +7319,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Vostok_(rocket_family)",
-   "slug": "vostok-8a92m"
+   "slug": "vostok-8a92m",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/the_full-scale__image_20251127090310.jpg"
   },
   {
    "name": "Vostok 8K72",
@@ -6984,7 +7344,8 @@
    "cc": "RUS",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Vostok-L",
-   "slug": "vostok-l-8k72"
+   "slug": "vostok-l-8k72",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/vostok-l_2528l_image_20251204203918.jpg"
   },
   {
    "name": "Vulcan",
@@ -7002,7 +7363,8 @@
     "author": "NASA/Ben Smegelsky",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Vulcan_Centaur_rollout_(Peregrine)_(cropped).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/vulcan_image_20240107162928.jpeg"
   },
   {
    "name": "Vulcan VC2S",
@@ -7020,7 +7382,8 @@
     "author": "NASA/Ben Smegelsky",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Vulcan_Centaur_rollout_(Peregrine)_(cropped).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/vulcan_image_20240107162928.jpeg"
   },
   {
    "name": "Vulcan VC4L",
@@ -7056,7 +7419,8 @@
     "author": "NASA/Ben Smegelsky",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Vulcan_Centaur_rollout_(Peregrine)_(cropped).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/vulcan_vc4s_v-0_image_20250812014341.jpeg"
   },
   {
    "name": "Vulcan VC6L",
@@ -7074,7 +7438,8 @@
     "author": "NASA/Ben Smegelsky",
     "licence": "Public domain",
     "source": "https://commons.wikimedia.org/wiki/File:Vulcan_Centaur_rollout_(Peregrine)_(cropped).jpg"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/vulcan_vc6l_image_20220406123130.jpg"
   },
   {
    "name": "Zenit",
@@ -7134,7 +7499,8 @@
    "cc": "UKR",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Zenit_(rocket_family)",
-   "slug": "zenit-2"
+   "slug": "zenit-2",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/zenit-2_image_20251104090154.jpg"
   },
   {
    "name": "Zenit-2 11K77.05",
@@ -7170,7 +7536,8 @@
    "cc": "JPN",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Interstellar_Technologies#ZERO_orbital_rocket",
-   "slug": "zero"
+   "slug": "zero",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/zero_image_20230816073713.jpg"
   },
   {
    "name": "Zhuque-1",
@@ -7200,7 +7567,8 @@
     "author": "中国新闻社",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:%E4%B8%96%E7%95%8C%E9%A6%96%E4%B8%AA%E6%88%90%E5%8A%9F%E5%85%A5%E8%BD%A8%E5%8F%91%E5%B0%84%E7%9A%84%E6%B6%B2%E6%B0%A7%E7%94%B2%E7%83%B7%E7%81%AB%E7%AE%AD%E5%8D%87%E7%A9%BA_%E8%93%9D%E7%AE%AD%E8%88%AA%E5%A4%A9CEO%EF%BC%9A%E4%B8%AD%E5%9B%BD%E6%B0%91%E8%90%A5%E8%88%AA%E5%A4%A9%E7%AB%99%E5%88%B0%E4%B8%96%E7%95%8C%E7%AC%AC%E4%B8%80%E6%A2%AF%E9%98%9F2.png"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/zhuque-2_image_20230802052429.jpeg"
   },
   {
    "name": "Zhuque-2E",
@@ -7218,7 +7586,8 @@
     "author": "中国新闻社",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:%E4%B8%96%E7%95%8C%E9%A6%96%E4%B8%AA%E6%88%90%E5%8A%9F%E5%85%A5%E8%BD%A8%E5%8F%91%E5%B0%84%E7%9A%84%E6%B6%B2%E6%B0%A7%E7%94%B2%E7%83%B7%E7%81%AB%E7%AE%AD%E5%8D%87%E7%A9%BA_%E8%93%9D%E7%AE%AD%E8%88%AA%E5%A4%A9CEO%EF%BC%9A%E4%B8%AD%E5%9B%BD%E6%B0%91%E8%90%A5%E8%88%AA%E5%A4%A9%E7%AB%99%E5%88%B0%E4%B8%96%E7%95%8C%E7%AC%AC%E4%B8%80%E6%A2%AF%E9%98%9F2.png"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/zhunque_2e_on_t_image_20241216101643.jpg"
   },
   {
    "name": "Zhuque-2E Block 2",
@@ -7236,7 +7605,8 @@
     "author": "中国新闻社",
     "licence": "CC BY 4.0",
     "source": "https://commons.wikimedia.org/wiki/File:%E4%B8%96%E7%95%8C%E9%A6%96%E4%B8%AA%E6%88%90%E5%8A%9F%E5%85%A5%E8%BD%A8%E5%8F%91%E5%B0%84%E7%9A%84%E6%B6%B2%E6%B0%A7%E7%94%B2%E7%83%B7%E7%81%AB%E7%AE%AD%E5%8D%87%E7%A9%BA_%E8%93%9D%E7%AE%AD%E8%88%AA%E5%A4%A9CEO%EF%BC%9A%E4%B8%AD%E5%9B%BD%E6%B0%91%E8%90%A5%E8%88%AA%E5%A4%A9%E7%AB%99%E5%88%B0%E4%B8%96%E7%95%8C%E7%AC%AC%E4%B8%80%E6%A2%AF%E9%98%9F2.png"
-   }
+   },
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/zhuque-2e_y6_la_image_20260609122825.jpeg"
   },
   {
    "name": "Zhuque-3",
@@ -7248,7 +7618,8 @@
    "cc": "CHN",
    "reusable": true,
    "wiki": "https://en.wikipedia.org/wiki/Zhuque-3",
-   "slug": "zhuque-3"
+   "slug": "zhuque-3",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/zq-3_flight_1_l_image_20251203064230.jpg"
   },
   {
    "name": "Zéphyr",
@@ -7260,7 +7631,8 @@
    "cc": "FRA",
    "reusable": false,
    "wiki": "https://en.wikipedia.org/wiki/Latitude_(company)#Zephyr",
-   "slug": "zephyr"
+   "slug": "zephyr",
+   "imgRemote": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/z25c325a9phyr_image_20251116181217.jpg"
   }
  ]
 }

@@ -70,9 +70,15 @@
   }
 
   function cardHtml(r, i) {
-    var shot = r.img
-      ? '<img src="' + esc(r.img) + '" alt="' + esc(r.full) + '" loading="lazy" decoding="async">'
-      : '<div class="rk-plate"><span>' + esc((r.name || '?').slice(0, 3).toUpperCase()) + '</span></div>';
+    // A verified free photo first; failing that the image the Launch Library
+    // API publishes for the vehicle, linked from their servers.
+    var src = r.img || r.imgRemote;
+    var plate = '<div class="rk-plate"><span>' + esc((r.name || '?').slice(0, 3).toUpperCase()) + '</span></div>';
+    // data-plate lets the delegated error handler swap a dead link for the plate
+    var shot = src
+      ? '<img src="' + esc(src) + '" alt="' + esc(r.full) + '" loading="lazy" decoding="async" ' +
+        'data-plate="' + esc((r.name || '?').slice(0, 3).toUpperCase()) + '">'
+      : plate;
     var fl = flag(r.cc);
     return '<button type="button" class="rk-card" data-i="' + i + '">' +
       '<div class="rk-shot">' + shot +
@@ -84,7 +90,8 @@
         '<div class="rk-maker">' + esc(r.maker || r.makerFull || '—') + '</div>' +
         (r.family && r.family !== r.name ? '<span class="rk-fam">' + esc(r.family) + '</span>' : '') +
       '</div>' +
-      (r.credit ? '<div class="rk-credit">📷 ' + esc(r.credit.author) + ' · ' + esc(r.credit.licence) + '</div>' : '') +
+      (r.credit ? '<div class="rk-credit">📷 ' + esc(r.credit.author) + ' · ' + esc(r.credit.licence) + '</div>'
+        : (r.imgRemote ? '<div class="rk-credit">📷 The Space Devs · Launch Library</div>' : '')) +
     '</button>';
   }
 
@@ -109,11 +116,12 @@
     rows += row('Country', (flag(r.cc) ? flag(r.cc) + ' ' : '') + esc(r.cc || '—'));
     rows += row('Reusable', r.reusable ? 'Yes' : 'No');
     $('rk-big').innerHTML =
-      (r.img ? '<img src="' + esc(r.img) + '" alt="' + esc(r.full) + '">' : '') +
+      ((r.img || r.imgRemote) ? '<img src="' + esc(r.img || r.imgRemote) + '" alt="' + esc(r.full) + '">' : '') +
       '<div class="rk-big-body">' +
         '<h2>' + esc(r.name) + '</h2>' +
         '<div class="who">' + esc(r.makerFull || r.maker || '') + '</div>' +
         '<div class="rk-rows">' + rows + '</div>' +
+        (!r.credit && r.imgRemote ? '<div class="rk-credit" style="padding:12px 0 0">📷 The Space Devs · Launch Library</div>' : '') +
         (r.credit ? '<div class="rk-credit" style="padding:12px 0 0">📷 ' + esc(r.credit.author) +
           ' · ' + esc(r.credit.licence) + ' · <a href="' + esc(r.credit.source) +
           '" target="_blank" rel="noopener noreferrer">Wikimedia Commons ↗</a></div>' : '') +
@@ -143,6 +151,16 @@
       var c = e.target.closest('.rk-card');
       if (c) openCard(+c.dataset.i);
     });
+    // A remote image that 404s leaves an empty frame, so swap in the plate.
+    $('rk-grid').addEventListener('error', function (e) {
+      var img = e.target;
+      if (!img || img.tagName !== 'IMG' || !img.dataset.plate) return;
+      var plate = document.createElement('div');
+      plate.className = 'rk-plate';
+      plate.innerHTML = '<span></span>';
+      plate.firstChild.textContent = img.dataset.plate;
+      img.replaceWith(plate);
+    }, true);
     $('rk-modal').addEventListener('click', function (e) { if (e.target === $('rk-modal')) close(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
   }).catch(function (e) {

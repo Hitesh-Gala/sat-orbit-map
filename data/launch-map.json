@@ -10,7 +10,9 @@
   "la": 950,
   "est": "1949",
   "op": "US Space Force",
-  "nb": "America's busiest range - Atlas, Delta and Falcon 9."
+  "nb": "America's busiest range - Atlas, Delta and Falcon 9.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_space_launch_complex_15_20230308080759.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Kennedy Space Center (LC-39)",
@@ -23,7 +25,9 @@
   "la": 200,
   "est": "1962",
   "op": "NASA",
-  "nb": "The Moonport - Saturn V, Shuttle, Falcon Heavy, Artemis."
+  "nb": "The Moonport - Saturn V, Shuttle, Falcon Heavy, Artemis.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_30_20200803143320.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Vandenberg Space Force Base",
@@ -36,7 +40,9 @@
   "la": 750,
   "est": "1957",
   "op": "US Space Force",
-  "nb": "West-coast range for polar / Sun-synchronous orbits."
+  "nb": "West-coast range for polar / Sun-synchronous orbits.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_62_20200803143441.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Wallops Flight Facility",
@@ -49,7 +55,9 @@
   "la": 50,
   "est": "1945",
   "op": "NASA",
-  "nb": "Antares, Minotaur and thousands of sounding rockets."
+  "nb": "Antares, Minotaur and thousands of sounding rockets.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_177_20200803143406.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Pacific Spaceport Complex - Alaska",
@@ -62,7 +70,9 @@
   "la": 40,
   "est": "1998",
   "op": "Alaska Aerospace",
-  "nb": "Kodiak Island site for polar small-launch."
+  "nb": "Kodiak Island site for polar small-launch.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_57_20200803143509.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Starbase (Boca Chica)",
@@ -75,7 +85,9 @@
   "la": 10,
   "est": "2014",
   "op": "SpaceX (private)",
-  "nb": "SpaceX's Texas test-and-launch site for Starship."
+  "nb": "SpaceX's Texas test-and-launch site for Starship.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_111_20200803143229.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Blue Origin Launch Site One",
@@ -88,7 +100,9 @@
   "la": 30,
   "est": "2015",
   "op": "Blue Origin (private)",
-  "nb": "West Texas site for the suborbital New Shepard."
+  "nb": "West Texas site for the suborbital New Shepard.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_90_20200803143233.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Mojave Air & Space Port",
@@ -101,7 +115,9 @@
   "la": null,
   "est": "1972",
   "op": "Mojave (private)",
-  "nb": "Test site - SpaceShipOne flew from here."
+  "nb": "Test site - SpaceShipOne flew from here.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_53_20200803143612.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Spaceport America",
@@ -114,7 +130,9 @@
   "la": null,
   "est": "2006",
   "op": "New Mexico",
-  "nb": "Virgin Galactic's commercial spaceport."
+  "nb": "Virgin Galactic's commercial spaceport.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_105_20200803143432.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Baikonur Cosmodrome",
@@ -127,7 +145,9 @@
   "la": 1500,
   "est": "1955",
   "op": "Roscosmos",
-  "nb": "World's first & largest spaceport - Sputnik, Gagarin, Soyuz."
+  "nb": "World's first & largest spaceport - Sputnik, Gagarin, Soyuz.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_103_20200803143220.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Plesetsk Cosmodrome",
@@ -140,7 +160,9 @@
   "la": 1600,
   "est": "1957",
   "op": "Russian Aerospace Forces",
-  "nb": "Northern military cosmodrome; most-used site in history."
+  "nb": "Northern military cosmodrome; most-used site in history.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_42_20200803143543.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Vostochny Cosmodrome",
@@ -153,7 +175,9 @@
   "la": 15,
   "est": "2016",
   "op": "Roscosmos",
-  "nb": "Russia's newest spaceport in the Far East."
+  "nb": "Russia's newest spaceport in the Far East.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_108_20200803143525.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Kapustin Yar",
@@ -166,7 +190,9 @@
   "la": 90,
   "est": "1946",
   "op": "Russian Aerospace Forces",
-  "nb": "Russia's oldest rocket range; missiles + small orbital."
+  "nb": "Russia's oldest rocket range; missiles + small orbital.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_139_20200803143345.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Yasny (Dombarovsky) Launch Base",
@@ -179,7 +205,9 @@
   "la": 15,
   "est": "2006",
   "op": "Roscosmos",
-  "nb": "Silo-based Dnepr (converted ICBM) launches."
+  "nb": "Silo-based Dnepr (converted ICBM) launches.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_182_20200803143504.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Jiuquan Satellite Launch Center",
@@ -192,7 +220,9 @@
   "la": 200,
   "est": "1958",
   "op": "CASC / PLA",
-  "nb": "China's oldest base and only crewed-launch site."
+  "nb": "China's oldest base and only crewed-launch site.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_71_20200803143610.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Taiyuan Satellite Launch Center",
@@ -205,7 +235,9 @@
   "la": 120,
   "est": "1968",
   "op": "CASC / PLA",
-  "nb": "High-altitude Shanxi base for polar orbits."
+  "nb": "High-altitude Shanxi base for polar orbits.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_60_20200803143606.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Xichang Satellite Launch Center",
@@ -218,7 +250,9 @@
   "la": 220,
   "est": "1984",
   "op": "CASC / PLA",
-  "nb": "China's gateway to high orbit - Beidou, comms sats."
+  "nb": "China's gateway to high orbit - Beidou, comms sats.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_86_20200803143555.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Wenchang Space Launch Site",
@@ -231,7 +265,9 @@
   "la": 40,
   "est": "2014",
   "op": "CASC",
-  "nb": "Coastal spaceport - Long March 5, lunar & Mars launches."
+  "nb": "Coastal spaceport - Long March 5, lunar & Mars launches.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_175_20200803143424.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Haiyang Eastern Spaceport (Sea)",
@@ -244,7 +280,9 @@
   "la": 15,
   "est": "2019",
   "op": "CASC",
-  "nb": "Yellow Sea launch port - Long March 11 from a barge. Rockets leave from a barge offshore, so launch records place the pad out at sea, not at the port itself."
+  "nb": "Yellow Sea launch port - Long March 11 from a barge. Rockets leave from a barge offshore, so launch records place the pad out at sea, not at the port itself.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_land_launch_pad_1_20260405193202.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Satish Dhawan Space Centre (Sriharikota)",
@@ -257,7 +295,9 @@
   "la": 95,
   "est": "1971",
   "op": "ISRO",
-  "nb": "India's spaceport - PSLV, GSLV, Chandrayaan, Mangalyaan."
+  "nb": "India's spaceport - PSLV, GSLV, Chandrayaan, Mangalyaan.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_82_20200803143602.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Thumba Equatorial Rocket Launching Station",
@@ -283,7 +323,9 @@
   "la": 1,
   "est": "2024",
   "op": "ISRO",
-  "nb": "New southern spaceport for the small SSLV."
+  "nb": "New southern spaceport for the small SSLV.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_sslv_launch_complex_20260920052940.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Guiana Space Centre (Kourou)",
@@ -296,7 +338,9 @@
   "la": 320,
   "est": "1968",
   "op": "ESA / Arianespace",
-  "nb": "Europe's spaceport, 5 deg from the equator - Ariane, Vega."
+  "nb": "Europe's spaceport, 5 deg from the equator - Ariane, Vega.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_77_20200803143458.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Andoya Space",
@@ -309,7 +353,9 @@
   "la": null,
   "est": "1962",
   "op": "Andoya Space",
-  "nb": "Arctic sounding-rocket range, going orbital."
+  "nb": "Arctic sounding-rocket range, going orbital.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_51_20200803143605.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Esrange Space Center",
@@ -322,7 +368,9 @@
   "la": null,
   "est": "1966",
   "op": "SSC",
-  "nb": "Sub-Arctic Swedish range, expanding to orbital launch."
+  "nb": "Sub-Arctic Swedish range, expanding to orbital launch.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_launch_complex_3b_20250916091141.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "SaxaVord Spaceport",
@@ -335,7 +383,9 @@
   "la": null,
   "est": "2023",
   "op": "SaxaVord (private)",
-  "nb": "Shetland - UK's first vertical-launch orbital spaceport."
+  "nb": "Shetland - UK's first vertical-launch orbital spaceport.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_unknown_pad_20241227075133.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Sutherland Spaceport",
@@ -348,7 +398,9 @@
   "la": null,
   "est": "2025",
   "op": "Orbex",
-  "nb": "Scottish Highlands vertical-launch site (in build)."
+  "nb": "Scottish Highlands vertical-launch site (in build).",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_201_20220511181044.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Tanegashima Space Center",
@@ -361,7 +413,9 @@
   "la": 110,
   "est": "1969",
   "op": "JAXA",
-  "nb": "Japan's largest complex - H-IIA, H-IIB, H3."
+  "nb": "Japan's largest complex - H-IIA, H-IIB, H3.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_10_20200803143519.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Uchinoura Space Center",
@@ -374,7 +428,9 @@
   "la": 40,
   "est": "1962",
   "op": "JAXA",
-  "nb": "Solid-rocket site - Japan's first satellite; Epsilon."
+  "nb": "Solid-rocket site - Japan's first satellite; Epsilon.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_43_20200803143309.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Naro Space Center",
@@ -387,7 +443,9 @@
   "la": 8,
   "est": "2009",
   "op": "KARI",
-  "nb": "South Korea's spaceport - the Nuri (KSLV-II) rocket."
+  "nb": "South Korea's spaceport - the Nuri (KSLV-II) rocket.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_lc-2_20210812070305.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Sohae Satellite Launching Station",
@@ -400,7 +458,9 @@
   "la": 7,
   "est": "2012",
   "op": "NADA",
-  "nb": "Tongchang-ri - Unha and Chollima satellite launches."
+  "nb": "Tongchang-ri - Unha and Chollima satellite launches.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_74_20200803143358.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Rocket Lab LC-1, Mahia",
@@ -413,7 +473,9 @@
   "la": 50,
   "est": "2016",
   "op": "Rocket Lab (private)",
-  "nb": "World's first private orbital launch site - Electron."
+  "nb": "World's first private orbital launch site - Electron.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_210_20230819165718.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Woomera Range Complex",
@@ -426,7 +488,9 @@
   "la": 2,
   "est": "1947",
   "op": "Australian Government",
-  "nb": "Vast historic range - Australia's WRESAT launched here (1967)."
+  "nb": "Vast historic range - Australia's WRESAT launched here (1967).",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_179_20200803143455.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Arnhem Space Centre",
@@ -439,7 +503,9 @@
   "la": null,
   "est": "2022",
   "op": "Equatorial Launch Australia (private)",
-  "nb": "Commercial equatorial spaceport; NASA suborbital in 2022."
+  "nb": "Commercial equatorial spaceport; NASA suborbital in 2022.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_suborbital_launch_ramp_20220625184504.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Bowen Orbital Spaceport",
@@ -452,7 +518,9 @@
   "la": null,
   "est": "2024",
   "op": "Gilmour Space (private)",
-  "nb": "Queensland pad for Gilmour's Eris rocket."
+  "nb": "Queensland pad for Gilmour's Eris rocket.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_eris_pad_20250227074117.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Whalers Way Orbital Launch Complex",
@@ -465,7 +533,9 @@
   "la": null,
   "est": "2021",
   "op": "Southern Launch (private)",
-  "nb": "South Australian polar-launch test site."
+  "nb": "South Australian polar-launch test site.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_whalers_way_orbital_launch_complex_20210910042853.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Palmachim Airbase",
@@ -478,7 +548,9 @@
   "la": 11,
   "est": "1988",
   "op": "Israel Space Agency",
-  "nb": "Shavit rockets fly west over the Mediterranean (retrograde)."
+  "nb": "Shavit rockets fly west over the Mediterranean (retrograde).",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_75_20200803143316.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Imam Khomeini Spaceport (Semnan)",
@@ -491,7 +563,9 @@
   "la": 15,
   "est": "2008",
   "op": "Iranian Space Agency",
-  "nb": "Iran's orbital site - Safir and Simorgh rockets."
+  "nb": "Iran's orbital site - Safir and Simorgh rockets.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_58_20200803143301.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Alcantara Launch Center",
@@ -504,7 +578,9 @@
   "la": 5,
   "est": "1990",
   "op": "Brazilian Space Agency",
-  "nb": "Near-equatorial coastal range in northern Brazil."
+  "nb": "Near-equatorial coastal range in northern Brazil.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_146_20200803143337.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Luigi Broglio Space Centre (San Marco)",
@@ -517,7 +593,9 @@
   "la": 27,
   "est": "1964",
   "op": "ASI (Italy)",
-  "nb": "Italian sea-platform site off Malindi (historic)."
+  "nb": "Italian sea-platform site off Malindi (historic).",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_155_20200803143349.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Hammaguir",
@@ -530,7 +608,9 @@
   "la": null,
   "est": "1947",
   "op": "France (historic)",
-  "nb": "Saharan range - France's first satellite (Asterix, 1965)."
+  "nb": "Saharan range - France's first satellite (Asterix, 1965).",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_141_20200803143211.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Overberg Test Range",
@@ -1426,7 +1506,9 @@
   "la": 7,
   "est": "2021 (Taiki test field 1995)",
   "op": "Space Cotan / Interstellar Technologies",
-  "nb": "Japan's private launch base on the Pacific coast of Hokkaido - Interstellar's MOMO flew from here."
+  "nb": "Japan's private launch base on the Pacific coast of Hokkaido - Interstellar's MOMO flew from here.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_106_20200803143453.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Spaceport Kii (Kushimoto)",
@@ -1438,7 +1520,9 @@
   "la": 3,
   "est": "2021",
   "op": "Space One",
-  "nb": "Japan's first privately built orbital pad, on the Kii peninsula; home of the Kairos small launcher."
+  "nb": "Japan's first privately built orbital pad, on the Kii peninsula; home of the Kairos small launcher.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_space_one_launch_pad_20240126074332.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Shahrud Missile Test Site",
@@ -1450,7 +1534,9 @@
   "la": 6,
   "est": "2013",
   "op": "IRGC Aerospace Force",
-  "nb": "Iran's second launch site, run by the Revolutionary Guard rather than the civil space agency - Qased and Qaem fly from here."
+  "nb": "Iran's second launch site, run by the Revolutionary Guard rather than the civil space agency - Qased and Qaem fly from here.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_115_20200803143303.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Reagan Test Site (Kwajalein / Omelek)",
@@ -1462,7 +1548,9 @@
   "la": 5,
   "est": "1960s",
   "op": "US Army Space & Missile Defense Command",
-  "nb": "The atoll where Falcon 1 first reached orbit in 2008, after three failures from the same small pad on Omelek."
+  "nb": "The atoll where Falcon 1 first reached orbit in 2008, after three failures from the same small pad on Omelek.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_107_20200803143450.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Tonghae Satellite Launching Ground",
@@ -1474,7 +1562,9 @@
   "la": 2,
   "est": "1984",
   "op": "NADA (DPRK)",
-  "nb": "The older of North Korea's two launch sites, on the east coast at Musudan-ri; largely superseded by Sohae."
+  "nb": "The older of North Korea's two launch sites, on the east coast at Musudan-ri; largely superseded by Sohae.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_184_20200803143423.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "El Arenosillo Test Centre",
@@ -1486,7 +1576,9 @@
   "la": 1,
   "est": "1966",
   "op": "INTA",
-  "nb": "Spain's sounding-rocket range on the Atlantic coast; PLD Space flew the suborbital Miura 1 from here in 2023."
+  "nb": "Spain's sounding-rocket range on the Atlantic coast; PLD Space flew the suborbital Miura 1 from here in 2023.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_miura_1_pad_20230530101735.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Koonibba Test Range",
@@ -1498,7 +1590,9 @@
   "la": 1,
   "est": "2020",
   "op": "Southern Launch (with the Koonibba Community)",
-  "nb": "A suborbital range on Wirangu land in South Australia, used for recoverable test flights."
+  "nb": "A suborbital range on Wirangu land in South Australia, used for recoverable test flights.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_pad_1_20231114184452.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Pacific Missile Range Facility (Barking Sands)",
@@ -1510,7 +1604,9 @@
   "la": 1,
   "est": "1956",
   "op": "US Navy",
-  "nb": "Kauai's range - mostly missile-defence work, but the Super Strypi orbital attempt flew from here."
+  "nb": "Kauai's range - mostly missile-defence work, but the Super Strypi orbital attempt flew from here.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_63_20200803143308.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  },
  {
   "n": "Etlaq Spaceport",
@@ -1522,6 +1618,8 @@
   "la": 0,
   "est": "2023",
   "op": "Etlaq / National Space Programme of Oman",
-  "nb": "The Arabian peninsula's first spaceport, at Duqm; suborbital so far, with an orbital pad planned."
+  "nb": "The Arabian peninsula's first spaceport, at Duqm; suborbital so far, with an orbital pad planned.",
+  "img": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/map_images/pad_launch_complex_3_20260701130900.jpg",
+  "imgCredit": "The Space Devs · Launch Library"
  }
 ]

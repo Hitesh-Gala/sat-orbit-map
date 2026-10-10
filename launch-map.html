@@ -61,6 +61,10 @@
 
     /* hover tooltip (globe.gl injects .scene-tooltip) */
     .scene-tooltip { pointer-events: none; }
+    /* the pad image the Launch Library API publishes, in the hover card */
+    .lm-tip .lm-shot { width: 100%; height: 104px; object-fit: cover; border-radius: 6px;
+      margin-bottom: 8px; display: block; background: #0a141f; }
+    .lm-tip .cred { margin-top: 6px; font-family: var(--mono); font-size: 10.5px; color: #6f8498; }
     .lm-tip {
       min-width: 210px; max-width: 300px; background: rgba(6,11,18,0.96);
       border: 1px solid #2a4157; border-radius: 10px; padding: 11px 13px;
@@ -218,7 +222,7 @@
   <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="launch-map.js?v=6"></script>
+  <script src="launch-map.js?v=7"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=5"></script>
   <script src="mobile-menu.js?v=26"></script>
