@@ -30,6 +30,7 @@
     /* ---- Sliders ---- */
     .om-slider { margin-bottom: 13px; }
     .om-slider:last-child { margin-bottom: 2px; }
+    .om-sub { display: block; font-size: 10.5px; letter-spacing: .04em; color: #7d93ab; text-transform: none; }
     .om-slider-head { display: flex; align-items: baseline; gap: 8px; }
     .om-sym {
       font-family: 'Cambria Math', 'Times New Roman', serif; font-style: italic;
@@ -144,7 +145,7 @@
           <span class="om-name">Semi-major axis</span>
           <span class="om-val"><span id="om-a-val">10000</span> <span class="u">km</span></span>
         </div>
-        <input type="range" id="om-a" min="6600" max="50000" step="50" value="10000">
+        <input type="range" id="om-a" min="6600" max="100000" step="50" value="10000">
       </div>
 
       <div class="om-slider">
@@ -153,7 +154,7 @@
           <span class="om-name">Eccentricity</span>
           <span class="om-val"><span id="om-e-val">0.20</span></span>
         </div>
-        <input type="range" id="om-e" min="0" max="0.9" step="0.005" value="0.2">
+        <input type="range" id="om-e" min="0" max="0.98" step="0.005" value="0.2">
       </div>
 
       <div class="om-slider">
@@ -162,13 +163,13 @@
           <span class="om-name">Inclination</span>
           <span class="om-val"><span id="om-i-val">45</span><span class="u">°</span></span>
         </div>
-        <input type="range" id="om-i" min="0" max="180" step="0.5" value="45">
+        <input type="range" id="om-i" min="-180" max="180" step="0.5" value="45">
       </div>
 
       <div class="om-slider">
         <div class="om-slider-head">
           <span class="om-sym">Ω</span>
-          <span class="om-name">Long. of ascending node</span>
+          <span class="om-name">Long. of ascending node<span class="om-sub">from ♈, not Greenwich</span></span>
           <span class="om-val"><span id="om-O-val">0</span><span class="u">°</span></span>
         </div>
         <input type="range" id="om-O" min="0" max="360" step="1" value="0">
@@ -244,7 +245,7 @@
 
   <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
   <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
-  <script src="orbit-maker.js?v=3"></script>
+  <script src="orbit-maker.js?v=4"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=5"></script>
   <script src="mobile-menu.js?v=26"></script>

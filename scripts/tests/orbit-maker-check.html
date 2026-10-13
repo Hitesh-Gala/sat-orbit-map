@@ -1,0 +1,47 @@
+<!doctype html><meta charset="utf-8"><title>om test</title>
+<body style="background:#000;color:#9f9;font:13px monospace"><pre id="out">running…</pre>
+<iframe id="f" src="orbit-maker.html" style="width:1200px;height:760px;border:0"></iframe>
+<script>
+const log = [];
+const put = (k, v) => log.push(k + ': ' + JSON.stringify(v));
+window.addEventListener('load', () => setTimeout(run, 7000));
+async function run() {
+  const w = document.getElementById('f').contentWindow, d = w.document;
+  const $ = id => d.getElementById(id);
+  const om = w.__om;
+  put('hook', !!om);
+  put('aMax', $('om-a').max);
+  put('iRange', $('om-i').min + '..' + $('om-i').max);
+  const cap = a => { $('om-a').value = a; $('om-a').dispatchEvent(new Event('input'));
+    $('om-e').value = 0.98; $('om-e').dispatchEvent(new Event('input'));
+    const e = parseFloat($('om-e').value);
+    return { a, eMax: +e.toFixed(3), perigeeAltKm: Math.round(a * (1 - e) - 6371) }; };
+  put('cap7000', cap(7000)); put('cap26000', cap(26000)); put('cap100000', cap(100000));
+  // GEO: does the satellite hold its ground point while the Earth turns?
+  $('om-a').value = 42164; $('om-a').dispatchEvent(new Event('input'));
+  $('om-e').value = 0; $('om-e').dispatchEvent(new Event('input'));
+  $('om-i').value = 0; $('om-i').dispatchEvent(new Event('input'));
+  put('classify', $('om-type').textContent.trim().slice(0, 50));
+  $('om-play').click();
+  const p0 = om.subPoint();
+  for (let k = 0; k < 60; k++) om.step(0.1);   // 6 s of animation, deterministically
+  const p1 = om.subPoint();
+  put('geoSubPointStart', p0 && { lat: +p0.lat.toFixed(2), lon: +p0.lon.toFixed(2) });
+  put('geoSubPointAfter4s', p1 && { lat: +p1.lat.toFixed(2), lon: +p1.lon.toFixed(2) });
+  put('geoLonDriftDeg', p0 && p1 ? +Math.abs(((p1.lon - p0.lon + 540) % 360) - 180).toFixed(2) : null);
+  put('earthSpunDeg', +(om.spin() * 180 / Math.PI).toFixed(1));
+  put('trackPointsWhilePlaying', om.trackPoints());
+  // a LEO orbit should drift west instead
+  $('om-a').value = 7000; $('om-a').dispatchEvent(new Event('input'));
+  const q0 = om.subPoint();
+  for (let k = 0; k < 20; k++) om.step(0.1);
+  const p2 = om.subPoint();
+  put('leoLonMovedDeg', +Math.abs(((p2.lon - q0.lon + 540) % 360) - 180).toFixed(1));
+  put('leoSubPointLon', p2 && +p2.lon.toFixed(1));
+  $('om-play').click();
+  await new Promise(r => setTimeout(r, 300));
+  put('trackPointsAfterPause', om.trackPoints());
+  put('playingAfterPause', om.playing());
+  document.getElementById('out').textContent = log.join('\n');
+}
+</script>

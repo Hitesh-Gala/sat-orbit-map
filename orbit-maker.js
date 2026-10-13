@@ -365,16 +365,38 @@
   // =======================================================================
   // Sliders
   // =======================================================================
+  // An orbit whose perigee is inside the Earth is not an orbit, so the
+  // eccentricity slider's ceiling follows the semi-major axis: the highest e
+  // that still clears the surface by PERI_FLOOR.  Raising a therefore buys a
+  // more extreme ellipse, which is where the shape reads most starkly.
+  const PERI_FLOOR = 120;                      // km of daylight under perigee
+  function maxEccentricity(a) {
+    return Math.max(0, Math.min(0.98, 1 - (RE + PERI_FLOOR) / a));
+  }
+
+  function clampEccentricity() {
+    const cap = maxEccentricity(parseFloat($('om-a').value));
+    const slider = $('om-e');
+    slider.max = cap.toFixed(3);
+    if (parseFloat(slider.value) > cap) slider.value = cap.toFixed(3);
+    return cap;
+  }
+
   function readSliders() {
     el.a  = parseFloat($('om-a').value);
-    el.e  = parseFloat($('om-e').value);
+    const cap = clampEccentricity();
+    el.e  = Math.min(parseFloat($('om-e').value), cap);
     el.i  = parseFloat($('om-i').value);
     el.O  = parseFloat($('om-O').value);
     el.w  = parseFloat($('om-w').value);
     el.nu = parseFloat($('om-nu').value);
     $('om-a-val').textContent  = fmt(el.a, 0);
-    $('om-e-val').textContent  = el.e.toFixed(3);
-    $('om-i-val').textContent  = el.i.toFixed(el.i % 1 ? 1 : 0);
+    $('om-e-val').textContent  = el.e.toFixed(3) +
+      (el.e >= maxEccentricity(el.a) - 1e-6 ? '  (max for this a)' : '');
+    // A negative inclination is the same plane flipped: the conventional
+    // reading is |i| with the node half a turn round, and the panel says so.
+    $('om-i-val').textContent  = el.i.toFixed(el.i % 1 ? 1 : 0) +
+      (el.i < 0 ? '  ≡ ' + Math.abs(el.i).toFixed(0) + '°, Ω+180°' : '');
     $('om-O-val').textContent  = el.O.toFixed(0);
     $('om-w-val').textContent  = el.w.toFixed(0);
     $('om-nu-val').textContent = el.nu.toFixed(0);
@@ -417,6 +439,79 @@
   $('om-fit').addEventListener('click', fitView);
 
   // =======================================================================
+  // The spinning Earth, and the track it writes
+  // =======================================================================
+  // Rotating the planet is what makes a geostationary orbit legible: the
+  // satellite and the ground beneath it turn together and the dot sits still
+  // over one place. The globe is three-globe's own object, found by its
+  // radius-100 sphere, and spun about Y (globe.gl's polar axis).
+  const SID_DAY = 86164;                       // sidereal day, seconds
+  let globeObj = null, baseSpin = 0, spin = 0;
+
+  // three-globe builds its sphere after the textures arrive, so this is asked
+  // again each frame until it answers rather than once at boot.
+  function findGlobeObject() {
+    if (globeObj) return globeObj;
+    let hit = null;
+    scene.traverse(o => {
+      if (hit) return;
+      if (o.constructor && /ThreeGlobe/i.test(o.constructor.name)) { hit = o; return; }
+      const g = o.geometry;
+      if (o.isMesh && g && g.parameters && typeof g.parameters.radius === 'number' &&
+          Math.abs(g.parameters.radius - GLOBE_R) < 2) {
+        hit = (o.parent && o.parent.type !== 'Scene') ? o.parent : o;
+      }
+    });
+    if (!hit) return null;
+    globeObj = hit;
+    // Park 0° longitude under the ♈ reference line, so at t = 0 the node angle
+    // Ω really is measured from the meridian drawn on screen. They only agree
+    // at this instant: Ω is fixed in space, Greenwich turns with the planet.
+    const p = globe.getCoords(0, 0, 0);
+    if (p) {
+      baseSpin = -Math.atan2(p.z, p.x);
+      globeObj.rotation.y = baseSpin;
+    }
+    return globeObj;
+  }
+
+  // Ground track: points are stored in the globe's own frame, so they turn with
+  // the planet exactly as a real track does.
+  const TRACK_MAX = 4000;
+  const trackGeom = new THREE.BufferGeometry();
+  const trackPos = new Float32Array(TRACK_MAX * 3);
+  trackGeom.setAttribute('position', new THREE.BufferAttribute(trackPos, 3));
+  trackGeom.setDrawRange(0, 0);
+  const trackLine = new THREE.Line(trackGeom,
+    new THREE.LineBasicMaterial({ color: 0xffcf5c, transparent: true, opacity: 0.9 }));
+  trackLine.frustumCulled = false;
+  let trackN = 0;
+
+  const _tp = new THREE.Vector3();
+  function pushTrackPoint() {
+    if (!globeObj) return;
+    // sub-satellite point: the satellite's direction, dropped to the surface,
+    // then taken into the globe's rotating frame
+    _tp.copy(satDot.position).normalize().multiplyScalar(GLOBE_R * 1.004);
+    globeObj.worldToLocal(_tp);
+    if (trackN >= TRACK_MAX) {                 // keep the tail bounded
+      trackPos.copyWithin(0, 3);
+      trackN = TRACK_MAX - 1;
+    }
+    const o = trackN * 3;
+    trackPos[o] = _tp.x; trackPos[o + 1] = _tp.y; trackPos[o + 2] = _tp.z;
+    trackN++;
+    trackGeom.setDrawRange(0, trackN);
+    trackGeom.attributes.position.needsUpdate = true;
+  }
+
+  function clearTrack() {
+    trackN = 0;
+    trackGeom.setDrawRange(0, 0);
+    trackGeom.attributes.position.needsUpdate = true;
+  }
+
+  // =======================================================================
   // Animation (advance mean anomaly so speed varies correctly along the orbit)
   // =======================================================================
   let playing = false, meanAnom = 0, lastT = 0;
@@ -426,13 +521,31 @@
     if (!playing) return;
     if (!lastT) lastT = now;
     const dt = Math.min((now - lastT) / 1000, 0.1); lastT = now;
-    meanAnom = (meanAnom + (2 * Math.PI / VISUAL_PERIOD) * dt) % (2 * Math.PI);
+    stepBy(dt);
+    requestAnimationFrame(animateStep);
+  }
+
+  // One tick of the animation, given a time step. Separated from the frame
+  // callback so the motion can be driven deterministically in tests.
+  function stepBy(dt) {
+    const rate = 2 * Math.PI / VISUAL_PERIOD;        // one revolution per VISUAL_PERIOD
+    meanAnom = (meanAnom + rate * dt) % (2 * Math.PI);
     const nu = meanToTrue(meanAnom, el.e);
     let deg = nu / DEG; if (deg < 0) deg += 360;
     el.nu = deg;
     $('om-nu').value = deg; $('om-nu-val').textContent = deg.toFixed(0);
     updateScene();
-    requestAnimationFrame(animateStep);
+
+    // The planet turns on the same clock: one sidereal day takes as long on
+    // screen as the orbit's own period scaled to VISUAL_PERIOD. At
+    // a = 42,164 km the two rates match and the satellite hangs still.
+    const T = 2 * Math.PI * Math.sqrt(el.a * el.a * el.a / MU);
+    spin += rate * (T / SID_DAY) * dt;
+    if (findGlobeObject()) {
+      if (trackLine.parent !== globeObj) globeObj.add(trackLine);
+      globeObj.rotation.y = baseSpin + spin;
+      pushTrackPoint();
+    }
   }
   $('om-play').addEventListener('click', () => {
     playing = !playing;
@@ -445,7 +558,15 @@
       const E = 2 * Math.atan2(Math.sqrt(1 - e) * Math.sin(nu / 2), Math.sqrt(1 + e) * Math.cos(nu / 2));
       meanAnom = E - e * Math.sin(E);
       lastT = 0;
+      findGlobeObject();
+      if (globeObj && trackLine.parent !== globeObj) globeObj.add(trackLine);
+      clearTrack();
       requestAnimationFrame(animateStep);
+    } else {
+      // Pausing wipes the track, as asked: it belongs to the run that drew it.
+      clearTrack();
+      spin = 0;
+      if (globeObj) globeObj.rotation.y = baseSpin;
     }
   });
 
@@ -454,5 +575,24 @@
   // =======================================================================
   readSliders();
   applyToggles();     // also calls updateScene()
+  findGlobeObject();
   fitView();
+
+  // A small read-only handle, so the page can be checked from outside without
+  // reaching into three.js: used by the headless layout tests.
+  window.__om = {
+    el: el,
+    spin: () => (globeObj ? globeObj.rotation.y - baseSpin : 0),
+    trackPoints: () => trackN,
+    step: dt => stepBy(dt),          // test seam: advance without waiting on frames
+    playing: () => playing,
+    // the satellite's position in the globe's own (rotating) frame
+    subPoint: () => {
+      if (!globeObj) return null;
+      const v = satDot.position.clone().normalize();
+      globeObj.worldToLocal(v.multiplyScalar(GLOBE_R));
+      v.normalize();
+      return { lat: Math.asin(v.y) / DEG, lon: Math.atan2(v.z, v.x) / DEG };
+    },
+  };
 })();
