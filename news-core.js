@@ -64,6 +64,25 @@ window.NazarNews = (function () {
     // break-up stories out of its newest-25 window.
     { url: 'https://news.google.com/rss/search?q=(china+OR+chinese)+(astronaut+OR+taikonaut+OR+"space+station"+OR+tiangong+OR+shenzhou+OR+"space+programme"+OR+"space+program")+when:30d&hl=en-US&gl=US&ceid=US:en',
       source: 'Google News · China crewed & programme', cat: 'China', google: true },
+    // Outlets that carried the China/Pakistan astronaut training story when the
+    // trade press did not - Global Times ran it first, the Indian desks and
+    // Technology Org picked it up. Every one checked live before being added.
+    { url: 'https://www.globaltimes.cn/rss/outbrain.xml',    source: 'Global Times',        cat: 'China' },
+    { url: 'https://stratnewsglobal.com/feed/',              source: 'StratNews Global',    cat: 'China', topic: true },
+    { url: 'https://www.thehindu.com/sci-tech/science/feeder/default.rss', source: 'The Hindu · Science', cat: 'Press', topic: true },
+    { url: 'https://www.technology.org/feed/',               source: 'Technology Org',      cat: 'Press', topic: true },
+    // ---- ISR, space domain awareness and military space -------------------
+    // Break-ups, debris and rendezvous work are reported here long before they
+    // reach the general press.
+    { url: 'https://leolabs.space/feed/',                    source: 'LeoLabs',             cat: 'SSA' },
+    { url: 'https://www.esa.int/rssfeed/Our_Activities/Space_Safety', source: 'ESA Space Safety', cat: 'SSA' },
+    { url: 'https://breakingdefense.com/category/space/feed/', source: 'Breaking Defense · Space', cat: 'SSA' },
+    { url: 'https://www.defensenews.com/arc/outboundfeeds/rss/category/space/?outputType=xml',
+      source: 'Defense News · Space', cat: 'SSA' },
+    { url: 'https://www.spaceforce.mil/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=1060&max=20',
+      source: 'US Space Force', cat: 'SSA' },
+    { url: 'https://news.google.com/rss/search?q=(satellite+OR+orbit)+("space+domain+awareness"+OR+"rendezvous+and+proximity"+OR+"space+surveillance"+OR+conjunction+OR+"close+approach")+when:30d&hl=en-US&gl=US&ceid=US:en',
+      source: 'Google News · Space domain awareness', cat: 'SSA', google: true },
     // ---- Orbital events anywhere ----------------------------------------
     { url: 'https://news.google.com/rss/search?q=satellite+(breakup+OR+"break+up"+OR+fragmentation+OR+debris+OR+collision+OR+anomaly)+when:30d&hl=en-US&gl=US&ceid=US:en',
       source: 'Google News · Orbital events', cat: 'Press', google: true },

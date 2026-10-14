@@ -23,12 +23,16 @@
       body.page-news .news-toolbar { position: static; }
     }
 
+    /* Full width bar a 20px gutter: the archive is a list, and the old 920px
+       well wasted most of a desktop screen. */
     .news-shell {
-      max-width: 920px;
+      max-width: none;
       margin: 0 auto;
       padding: 66px 20px 80px;
     }
 
+    /* The shared --dim is too dark against this black for body text. */
+    body.page-news { --dim: #a7bccf; --text: #e4f0fb; }
     .news-head { margin-bottom: 18px; }
     .news-brand {
       font-family: 'Orbitron', var(--display, sans-serif);
@@ -43,7 +47,7 @@
       text-shadow: 0 0 8px rgba(255, 107, 107, 0.3);
     }
     .news-sub {
-      font-family: var(--mono); font-size: 12px; color: var(--dim);
+      font-family: var(--mono); font-size: 14.5px; color: var(--dim);
       letter-spacing: 0.04em; line-height: 1.7;
     }
     .news-sub strong { color: var(--text); font-weight: normal; font-variant-numeric: tabular-nums; }
@@ -58,7 +62,7 @@
     .news-toolbar input[type="search"] {
       flex: 1 1 200px; min-width: 140px;
       background: rgba(0,0,0,0.32); border: 1px solid var(--line); border-radius: 5px;
-      color: var(--text); font-family: var(--mono); font-size: 13px; padding: 7px 10px; outline: none;
+      color: var(--text); font-family: var(--mono); font-size: 15.5px; padding: 8px 12px; outline: none;
     }
     .news-toolbar input[type="search"]:focus { border-color: var(--accent); }
 
@@ -79,30 +83,30 @@
     }
     .news-modal-close:hover { background: #1b3559; border-color: #4ea8ff; }
     .news-modal h2 {
-      margin: 0 0 4px; padding-right: 34px; font-family: 'Orbitron', sans-serif; font-size: 18px;
+      margin: 0 0 4px; padding-right: 34px; font-family: 'Orbitron', sans-serif; font-size: 22px;
       letter-spacing: 0.04em; color: #e6f0fb;
     }
-    .news-modal .sub { font-family: var(--mono); font-size: 11.5px; color: var(--dim); line-height: 1.6; }
+    .news-modal .sub { font-family: var(--mono); font-size: 14px; color: var(--dim); line-height: 1.6; }
     .news-src-group { margin-top: 16px; }
     .news-src-group h3 {
-      margin: 0 0 7px; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em;
+      margin: 0 0 7px; font-family: var(--mono); font-size: 13px; letter-spacing: 0.12em;
       text-transform: uppercase; color: var(--accent);
     }
     .news-src { display: flex; gap: 9px; align-items: baseline; padding: 5px 0; border-top: 1px solid rgba(110, 200, 255, 0.10); }
-    .news-src .nm { flex: 0 0 auto; font-family: var(--mono); font-size: 12.5px; color: var(--text); }
-    .news-src .dsc { flex: 1; min-width: 0; font-size: 12px; line-height: 1.5; color: var(--dim); }
+    .news-src .nm { flex: 0 0 auto; font-family: var(--mono); font-size: 15px; color: var(--text); }
+    .news-src .dsc { flex: 1; min-width: 0; font-size: 15px; line-height: 1.55; color: var(--dim); }
     .news-src a { color: var(--accent); text-decoration: none; word-break: break-word; }
     .news-src a:hover { text-decoration: underline; }
-    .news-src-note { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 10px; font-size: 12px; line-height: 1.6; color: var(--dim); }
+    .news-src-note { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 10px; font-size: 14.5px; line-height: 1.6; color: var(--dim); }
     .news-cn-toggle {
       display: inline-flex; align-items: center; gap: 6px;
-      font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      font-family: var(--mono); font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase;
       color: var(--dim); cursor: pointer; white-space: nowrap;
     }
     .news-cn-toggle input { accent-color: var(--accent2); }
     .news-btn {
       background: rgba(103, 200, 255, 0.1); border: 1px solid var(--line); border-radius: 5px;
-      color: var(--accent); font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+      color: var(--accent); font-family: var(--mono); font-size: 13px; letter-spacing: 0.08em;
       text-transform: uppercase; padding: 7px 12px; cursor: pointer; white-space: nowrap;
       transition: background .15s, border-color .15s, transform .15s;
     }
@@ -111,11 +115,11 @@
     .news-btn.primary { background: rgba(103, 232, 164, 0.16); border-color: var(--green, #67e8a4); color: var(--green, #67e8a4); font-weight: 700; }
     .news-btn.primary:hover:not(:disabled) { background: rgba(103, 232, 164, 0.3); }
 
-    .news-status { font-family: var(--mono); font-size: 12px; color: var(--dim); min-height: 18px; margin: 8px 2px 2px; }
+    .news-status { font-family: var(--mono); font-size: 14.5px; color: var(--dim); min-height: 20px; margin: 8px 2px 2px; }
     .news-status.err { color: var(--accent2); }
 
     .news-day {
-      font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+      font-family: var(--mono); font-size: 14.5px; letter-spacing: 0.14em; text-transform: uppercase;
       color: var(--dim); margin: 22px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line);
     }
     .news-day:first-of-type { margin-top: 12px; }
@@ -128,39 +132,40 @@
     .news-card.cn { border-left-color: var(--accent2, #ff6b6b); }
     .news-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 5px; }
     .news-num {
-      font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--accent);
+      font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--accent);
       background: rgba(103, 200, 255, 0.14); border-radius: 3px; padding: 1px 6px; font-variant-numeric: tabular-nums;
     }
     .news-card.cn .news-num { color: var(--accent2); background: rgba(255, 107, 107, 0.16); }
-    .news-date { font-family: var(--mono); font-size: 11px; color: var(--dim); letter-spacing: 0.06em; font-variant-numeric: tabular-nums; }
+    .news-date { font-family: var(--mono); font-size: 13.5px; color: var(--dim); letter-spacing: 0.06em; font-variant-numeric: tabular-nums; }
     .news-src {
-      font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+      font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
       color: var(--dim); border: 1px solid var(--line); border-radius: 3px; padding: 1px 6px;
     }
     .news-src.cat-China   { color: #ff9c9c; border-color: rgba(255,107,107,0.5); }
     .news-src.cat-Agency  { color: #67e8a4; border-color: rgba(103,232,164,0.4); }
     .news-src.cat-Press   { color: #67c8ff; border-color: rgba(103,200,255,0.4); }
+    .news-src.cat-SSA     { color: #ffcf5c; border-color: rgba(255,207,92,0.45); }
     .news-cn-tag {
-      font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.16em;
+      font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.16em;
       color: #fff; background: var(--accent2, #ff6b6b); border-radius: 3px; padding: 1px 6px;
     }
     .news-title {
-      display: inline-block; font-size: 15.5px; line-height: 1.35; font-weight: 600;
+      display: inline-block; font-size: 19px; line-height: 1.4; font-weight: 600;
       color: var(--text); text-decoration: none; margin: 2px 0 4px;
     }
     .news-title:hover { color: var(--accent); text-decoration: underline; }
-    .news-desc { font-size: 13px; line-height: 1.55; color: var(--dim); margin: 4px 0 8px; }
+    .news-desc { font-size: 16px; line-height: 1.6; color: var(--dim); margin: 5px 0 9px; }
     .news-card-actions { display: flex; gap: 8px; align-items: center; }
-    .news-open { font-family: var(--mono); font-size: 11px; color: var(--accent); text-decoration: none; letter-spacing: 0.04em; }
+    .news-open { font-family: var(--mono); font-size: 13.5px; color: var(--accent); text-decoration: none; letter-spacing: 0.04em; }
     .news-open:hover { text-decoration: underline; }
     .news-pdf-one {
       background: transparent; border: 1px solid var(--line); border-radius: 4px;
-      color: var(--dim); font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--dim); font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
       padding: 3px 8px; cursor: pointer;
     }
     .news-pdf-one:hover { color: var(--accent); border-color: var(--accent); }
 
-    .news-empty { color: var(--dim); font-size: 14px; padding: 40px 10px; text-align: center; }
+    .news-empty { color: var(--dim); font-size: 17px; padding: 40px 10px; text-align: center; }
 
     @media (max-width: 560px) {
       .news-shell { padding: 60px 12px 70px; }
@@ -209,8 +214,8 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="news-core.js?v=7"></script>
-  <script src="news-archive.js?v=2"></script>
+  <script src="news-core.js?v=8"></script>
+  <script src="news-archive.js?v=3"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=5"></script>
   <script src="mobile-menu.js?v=26"></script>

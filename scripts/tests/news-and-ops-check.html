@@ -1,0 +1,41 @@
+<!doctype html><meta charset="utf-8"><body style="background:#000;color:#9f9;font:13px monospace">
+<pre id="out">running…</pre>
+<iframe id="a" src="sats-by-ops.html" style="width:1400px;height:820px;border:0"></iframe>
+<iframe id="b" src="news-archive.html" style="width:1400px;height:820px;border:0"></iframe>
+<script>
+const log = [], put = (k, v) => log.push(k + ': ' + JSON.stringify(v));
+window.addEventListener('load', () => setTimeout(run, 9000));
+async function run() {
+  // --- sats by ops: panel width + search ---
+  const wa = document.getElementById('a').contentWindow, da = wa.document;
+  const shell = da.querySelector('.sbo-shell');
+  put('panelWidthCss', wa.getComputedStyle(shell).width);
+  const rows = () => [...da.querySelectorAll('.sbo-row')].filter(r => !r.classList.contains('sbo-hidden')).length;
+  put('rowsAll', rows());
+  const box = da.getElementById('sbo-search');
+  put('searchPresent', !!box);
+  if (box) {
+    box.value = 'starlink'; box.dispatchEvent(new Event('input'));
+    put('rowsAfterStarlink', rows());
+    put('visibleLabel', (da.querySelector('.sbo-row:not(.sbo-hidden) .lbl') || {}).textContent);
+    put('tierHeadingsShown', [...da.querySelectorAll('.sbo-tier')].filter(h => !h.classList.contains('sbo-hidden')).length);
+    box.value = 'isro'; box.dispatchEvent(new Event('input'));
+    put('rowsAfterIsro', rows());
+    box.value = ''; box.dispatchEvent(new Event('input'));
+    put('rowsCleared', rows());
+  }
+  // --- news archive: width, type, contrast ---
+  const wb = document.getElementById('b').contentWindow, db = wb.document;
+  const shellB = db.querySelector('.news-shell');
+  const r = shellB.getBoundingClientRect();
+  put('archiveLeftGutter', Math.round(r.left));
+  put('archiveWidthVsFrame', Math.round(r.width) + ' / ' + wb.innerWidth);
+  const cs = sel => { const e = db.querySelector(sel); return e ? wb.getComputedStyle(e) : null; };
+  const dimVar = wb.getComputedStyle(db.body).getPropertyValue('--dim').trim();
+  put('dimColour', dimVar);
+  const t = cs('.news-title'), d = cs('.news-desc');
+  put('titleFont', t && t.fontSize); put('descFont', d && d.fontSize);
+  put('srcGroupsInPopup', [...db.querySelectorAll('.news-src')].length);
+  document.getElementById('out').textContent = log.join('\n');
+}
+</script>

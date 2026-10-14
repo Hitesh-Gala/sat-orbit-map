@@ -217,10 +217,14 @@
     ['Jonathan McDowell', 'https://planet4589.org/space/jsr/jsr.html', 'Jonathan’s Space Report and @planet4589 — catalogue analysis; the 43-fragment Yaogan-50 count was his reading of US tracking data.'],
     ['Byron Wan', 'https://x.com/Byron_Wan', '@Byron_Wan — Chinese space documents and orbital data.'],
     ['Space-Track.org / 18th SDS', 'https://www.space-track.org/', 'The US catalogue itself. Not a news feed — it is what NAZAR’s trackers plot, including the Yaogan-50 fragments on the Debris Tracker.'],
+    ['Reuters', 'https://www.reuters.com/science/', 'Ran the China–Pakistan astronaut training story first in the Western press. Reuters withdrew its public RSS, so it reaches the archive through the Google News searches rather than a feed of its own.'],
+    ['COMSPOC · Slingshot · ExoAnalytic', 'https://comspoc.com/', 'Commercial space surveillance. They publish close-approach and break-up analysis in briefings and on social media rather than in a readable feed, so they are watched, not polled.'],
+    ['NASA Orbital Debris Program Office', 'https://orbitaldebris.jsc.nasa.gov/', 'The quarterly debris news is a PDF rather than a feed; it is where fragment counts are finally settled.'],
   ];
 
   const GROUPS = [
     ['China', 'China-focused feeds'],
+    ['SSA', 'ISR, space domain awareness and military space'],
     ['Press', 'Space press'],
     ['Agency', 'Space agencies'],
   ];

@@ -568,8 +568,8 @@ const INFO_EXTRA = {
     note: 'Only the first demonstrator is flying, so expect a single dot until the operational fleet begins launching.' },
 
   'op-starlink': {
-    launched: '~12,000 since 2019', lost: '~1,500 de-orbited or re-entered',
-    inOrbit: '~10,700 catalogued', active: 'most of the catalogued fleet is in service',
+    launched: '~12,500 since 2019', lost: '~1,800 de-orbited or re-entered',
+    inOrbit: '~10,660 catalogued', active: 'most of the catalogued fleet is in service',
     people: [['Elon Musk', 'founder & CEO, SpaceX'], ['Gwynne Shotwell', 'president & COO, SpaceX']],
     links: [
       ['Starlink', 'https://www.starlink.com/', 'Coverage map, service tiers and the current satellite count from the operator.'],
@@ -577,7 +577,7 @@ const INFO_EXTRA = {
     ] },
   'op-oneweb': {
     launched: '~660 first-generation', lost: 'a handful of early failures',
-    inOrbit: '~655 catalogued', active: '~630 in the operational shell',
+    inOrbit: '~651 catalogued', active: '~630 in the operational shell',
     people: [['Greg Wyler', 'founder of OneWeb'], ['Eutelsat Group', 'owner since the 2023 merger']],
     links: [
       ['Eutelsat OneWeb', 'https://oneweb.net/', 'The operator\u2019s service and coverage pages.'],
@@ -593,7 +593,7 @@ const INFO_EXTRA = {
     ] },
   'op-globalstar': {
     launched: '~90 across two generations', lost: 'most first-generation units retired',
-    inOrbit: '~50 catalogued', active: '~31 second-generation',
+    inOrbit: '~28 catalogued', active: '~28 second-generation',
     people: [['Paul E. Jacobs', 'CEO, Globalstar'], ['Loral and Qualcomm', 'the original 1990s partners behind the system']],
     links: [['Globalstar', 'https://www.globalstar.com/', 'Services including the satellite connectivity behind some smartphone emergency features.']] },
   'op-spacemobile': {
@@ -606,16 +606,16 @@ const INFO_EXTRA = {
     ] },
 
   'eo-planet': {
-    launched: '~600+ - the largest Earth-observation fleet ever flown', lost: 'hundreds of early Doves re-entered after roughly three-year lives',
-    inOrbit: '~200 catalogued', active: '~150 imaging daily',
+    launched: '~650+ - the largest Earth-observation fleet ever flown', lost: 'hundreds of early Doves re-entered after roughly three-year lives',
+    inOrbit: '~116 catalogued', active: '~110 imaging daily',
     people: [['Will Marshall', 'co-founder & CEO'], ['Robbie Schingler', 'co-founder & chief strategy officer'], ['Chris Boshuizen', 'co-founder']],
     links: [
       ['Planet constellations', 'https://www.planet.com/our-constellations/', 'How the Dove, SkySat, Pelican and Tanager fleets differ in resolution and revisit.'],
       ['Planet Labs', 'https://en.wikipedia.org/wiki/Planet_Labs', 'The flock model: many cheap satellites replaced continuously rather than a few expensive ones.'],
     ] },
   'eo-spire': {
-    launched: '~200 LEMUR', lost: 'many early LEMURs re-entered',
-    inOrbit: '~120 catalogued', active: '100+ carrying weather, ship- and aircraft-tracking payloads',
+    launched: '~230 LEMUR since 2015', lost: 'many early LEMURs re-entered',
+    inOrbit: '~92 catalogued', active: '~90 carrying weather, ship- and aircraft-tracking payloads',
     people: [['Peter Platzer', 'co-founder & executive chairman'], ['Theresa Condor', 'co-founder & CEO']],
     links: [['Spire Global', 'https://spire.com/', 'Radio-occultation weather data, ship tracking and aircraft tracking sold as subscriptions.']] },
   'eo-blacksky': {
@@ -629,19 +629,19 @@ const INFO_EXTRA = {
     note: 'These are catalogued as "GLOBAL-n" rather than "BlackSky", which is why this row read zero until September 2026.' },
   'eo-capella': {
     launched: '~20', lost: 'early Whitney units retired',
-    inOrbit: '~12 catalogued', active: 'about a dozen radar satellites',
+    inOrbit: '~9 catalogued', active: 'under a dozen radar satellites',
     people: [['Payam Banazadeh', 'founder & CEO'], ['William Woods', 'co-founder']],
     links: [['Capella Space', 'https://www.capellaspace.com/', 'Synthetic-aperture radar imaging that works at night and through cloud.']] },
   'eo-iceye': {
-    launched: '60+ since 2018 - the largest radar constellation', lost: 'earliest X-band units retired',
-    inOrbit: '~52 catalogued', active: '~40 radar satellites',
+    launched: '~60 since 2018 - the largest radar constellation', lost: 'earliest X-band units retired',
+    inOrbit: '~52 catalogued', active: '~45 radar satellites',
     people: [['Rafal Modrzewski', 'co-founder & CEO'], ['Pekka Laurila', 'co-founder & chief strategy officer']],
     links: [
       ['ICEYE', 'https://www.iceye.com/', 'Flood and wildfire monitoring, plus sovereign radar capability sold to governments.'],
       ['ICEYE', 'https://en.wikipedia.org/wiki/ICEYE', 'How a Finnish university spin-out came to fly the largest radar fleet in orbit.'],
     ] },
   'eo-satellogic': {
-    launched: '~45', inOrbit: '~35 catalogued', active: '~30',
+    launched: '~60 ÑuSat/NewSat built since 2014', inOrbit: '~18 catalogued', active: '~18 imaging',
     people: [['Emiliano Kargieman', 'founder & CEO']],
     links: [['Satellogic', 'https://satellogic.com/', 'Vertically integrated manufacturing aimed at cheap, frequent sub-metre imagery.']] },
   'eo-synspective': {
@@ -864,6 +864,34 @@ const _mat   = new THREE.Matrix4();
 // Category panel — built once after categorisation is known
 // =========================================================================
 
+// The search box at the foot of the panel filters the list above it. Rows are
+// hidden rather than rebuilt, so the checkboxes keep their state and the globe
+// is untouched: this narrows what you are reading, not what is drawn.
+function wireSearch(container) {
+  const box = $('sbo-search');
+  if (!box || box.dataset.wired) return;
+  box.dataset.wired = '1';
+  box.addEventListener('input', () => {
+    const q = box.value.trim().toLowerCase();
+    container.querySelectorAll('.sbo-row').forEach(row => {
+      const c = CATEGORIES[parseInt(row.dataset.idx, 10)] || {};
+      const info = COMPANY_INFO[c.id] || {};
+      const hay = ((c.label || '') + ' ' + (c.tier || '') + ' ' +
+                   (info.name || '') + ' ' + (info.operator || '')).toLowerCase();
+      row.classList.toggle('sbo-hidden', !!q && hay.indexOf(q) === -1);
+    });
+    // A tier heading with nothing left under it is just noise.
+    container.querySelectorAll('.sbo-tier').forEach(h => {
+      let n = h.nextElementSibling, any = false;
+      while (n && !n.classList.contains('sbo-tier')) {
+        if (n.classList.contains('sbo-row') && !n.classList.contains('sbo-hidden')) { any = true; break; }
+        n = n.nextElementSibling;
+      }
+      h.classList.toggle('sbo-hidden', !!q && !any);
+    });
+  });
+}
+
 function buildCategoryPanel() {
   const container = $('sbo-categories');
   const html = [];
@@ -885,6 +913,7 @@ function buildCategoryPanel() {
     `);
   }
   container.innerHTML = html.join('');
+  wireSearch(container);
   container.querySelectorAll('input[type=checkbox]').forEach(cb => {
     cb.addEventListener('change', () => {
       const row = cb.closest('.sbo-row');
@@ -1083,7 +1112,7 @@ function openCompany(idx) {
     ${linksHtml}
     ${info.note ? `<div class="sbo-note"><span class="k">Why the globe may show fewer</span> ${escHtml(info.note)}</div>` : ''}
     <p class="sbo-foot">The top figure counts matching satellites in CelesTrak’s active catalogue, refreshed each time this page loads.
-      The other four come from open sources (September 2026) and are approximate: a fleet is rarely all working at once, and
+      The other four come from open sources, last checked against the live catalogue on 14 October 2026, and are approximate: a fleet is rarely all working at once, and
       operators do not always announce retirements.</p>
   `;
   modal.hidden = false;
