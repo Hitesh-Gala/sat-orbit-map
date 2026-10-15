@@ -63,7 +63,10 @@
       '<div class="name">' + esc(d.n) + '</div>' +
       '<div class="type" style="color:' + t.color + '">' + t.icon + ' ' + t.label + ' · ' + esc(d.cty) + '</div>' +
       '<div class="rows">' + rows.join('') + '</div>' +
+      // What the place actually does, and what else is on the site.
+      (d.fn ? '<div class="fn">' + esc(d.fn) + '</div>' : '') +
       (d.nb ? '<div class="note">' + esc(d.nb) + '</div>' : '') +
+      (d.co ? '<div class="co"><b>Shares the site with</b> ' + esc(d.co) + '</div>' : '') +
       (d.img && d.imgCredit ? '<div class="cred">📷 ' + esc(d.imgCredit) + '</div>' : '') +
     '</div>';
   }

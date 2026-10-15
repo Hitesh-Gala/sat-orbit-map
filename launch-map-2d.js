@@ -115,7 +115,9 @@
     return shot + '<div class="name">' + esc(d.n) + '</div>' +
       '<div class="type" style="color:' + c.color + '">' + c.icon + ' ' + c.label + ' · ' + esc(d.cty) + '</div>' +
       '<div class="rows">' + rows + '</div>' +
+      (d.fn ? '<div class="fn">' + esc(d.fn) + '</div>' : '') +
       (d.nb ? '<div class="note">' + esc(d.nb) + '</div>' : '') +
+      (d.co ? '<div class="co"><b>Shares the site with</b> ' + esc(d.co) + '</div>' : '') +
       (d.img && d.imgCredit ? '<div class="cred">📷 ' + esc(d.imgCredit) + '</div>' : '');
   }
 

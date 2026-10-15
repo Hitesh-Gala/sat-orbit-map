@@ -935,7 +935,8 @@
   "la": null,
   "est": "1967",
   "op": "ESA",
-  "nb": "Darmstadt - flies ESA's satellites and deep-space probes."
+  "nb": "Darmstadt - flies ESA's satellites and deep-space probes.",
+  "fn": "Mission control - flies ESA's spacecraft and runs the ESTRACK network."
  },
  {
   "n": "Goldstone Deep Space Complex",
@@ -948,7 +949,9 @@
   "la": null,
   "est": "1958",
   "op": "NASA / JPL",
-  "nb": "Mojave antennas of the Deep Space Network."
+  "nb": "Mojave antennas of the Deep Space Network.",
+  "fn": "Deep-space antenna - tracks spacecraft beyond Earth orbit, where the signal arrives a billion times weaker than from LEO.",
+  "co": "The 70 m dish in the Mojave; the American leg of the DSN ring."
  },
  {
   "n": "Canberra Deep Space Complex",
@@ -961,7 +964,9 @@
   "la": null,
   "est": "1965",
   "op": "NASA / CSIRO",
-  "nb": "DSN station; carried the Apollo 11 broadcast."
+  "nb": "DSN station; carried the Apollo 11 broadcast.",
+  "fn": "Deep-space antenna - tracks spacecraft beyond Earth orbit, where the signal arrives a billion times weaker than from LEO.",
+  "co": "The only DSN complex in the southern hemisphere - some spacecraft can only be heard from here."
  },
  {
   "n": "Madrid Deep Space Complex",
@@ -974,7 +979,9 @@
   "la": null,
   "est": "1964",
   "op": "NASA / INTA",
-  "nb": "Robledo de Chavela - the DSN's European station."
+  "nb": "Robledo de Chavela - the DSN's European station.",
+  "fn": "Deep-space antenna - tracks spacecraft beyond Earth orbit, where the signal arrives a billion times weaker than from LEO.",
+  "co": "The European leg, at Robledo de Chavela; ESA's Cebreros dish is 20 km away."
  },
  {
   "n": "Xi'an Satellite Control Center",
@@ -987,7 +994,8 @@
   "la": null,
   "est": "1967",
   "op": "CASC / PLA",
-  "nb": "Tracks & commands China's satellites in orbit."
+  "nb": "Tracks & commands China's satellites in orbit.",
+  "fn": "Mission control - flies most Chinese spacecraft once they are in orbit."
  },
  {
   "n": "ISTRAC (ISRO Telemetry & Tracking)",
@@ -1000,7 +1008,9 @@
   "la": null,
   "est": "1990",
   "op": "ISRO",
-  "nb": "Bengaluru hub of ISRO's tracking network."
+  "nb": "Bengaluru hub of ISRO's tracking network.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over.",
+  "co": "The network control centre for ISRO's tracking stations."
  },
  {
   "n": "GPS Master Control Station",
@@ -1013,7 +1023,9 @@
   "la": null,
   "est": "1985",
   "op": "US Space Force",
-  "nb": "Schriever SFB, Colorado - commands the GPS constellation."
+  "nb": "Schriever SFB, Colorado - commands the GPS constellation.",
+  "fn": "Master control - works out where the satellites really are, builds the navigation message and keeps system time.",
+  "co": "Schriever SFB, with the 2nd Space Operations Squadron that flies the constellation."
  },
  {
   "n": "GLONASS System Control Centre",
@@ -1026,7 +1038,9 @@
   "la": null,
   "est": "1982",
   "op": "Roscosmos",
-  "nb": "Krasnoznamensk, near Moscow - GLONASS control."
+  "nb": "Krasnoznamensk, near Moscow - GLONASS control.",
+  "fn": "Master control - works out where the satellites really are, builds the navigation message and keeps system time.",
+  "co": "Krasnoznamensk, the main Russian military space control centre."
  },
  {
   "n": "Galileo Control Centre (Oberpfaffenhofen)",
@@ -1039,7 +1053,9 @@
   "la": null,
   "est": "2011",
   "op": "EUSPA / DLR",
-  "nb": "One of two Galileo control centres (Germany)."
+  "nb": "One of two Galileo control centres (Germany).",
+  "fn": "Master control - works out where the satellites really are, builds the navigation message and keeps system time.",
+  "co": "DLR's space operations centre, which also flies other missions."
  },
  {
   "n": "Galileo Control Centre (Fucino)",
@@ -1052,7 +1068,9 @@
   "la": null,
   "est": "2011",
   "op": "EUSPA / Telespazio",
-  "nb": "The second Galileo control centre (Italy)."
+  "nb": "The second Galileo control centre (Italy).",
+  "fn": "Master control - works out where the satellites really are, builds the navigation message and keeps system time.",
+  "co": "The Fucino teleport, one of the largest civil satellite ground stations in the world."
  },
  {
   "n": "BeiDou Master Control",
@@ -1065,7 +1083,9 @@
   "la": null,
   "est": "2000",
   "op": "CSNO",
-  "nb": "Central control for China's BeiDou navigation system."
+  "nb": "Central control for China's BeiDou navigation system.",
+  "fn": "Master control - works out where the satellites really are, builds the navigation message and keeps system time.",
+  "co": "The Xi'an Satellite Control Centre, which flies most Chinese spacecraft."
  },
  {
   "n": "NavIC Master Control Facility",
@@ -1078,7 +1098,9 @@
   "la": null,
   "est": "2013",
   "op": "ISRO",
-  "nb": "Byalalu, Karnataka - controls India's NavIC (IRNSS)."
+  "nb": "Byalalu, Karnataka - controls India's NavIC (IRNSS).",
+  "fn": "Master control - works out where the satellites really are, builds the navigation message and keeps system time.",
+  "co": "Byalalu, which also hosts the Indian Deep Space Network dishes."
  },
  {
   "n": "QZSS Master Control Station",
@@ -1091,7 +1113,9 @@
   "la": null,
   "est": "2010",
   "op": "QSS",
-  "nb": "Hitachi-Ota - controls Japan's Quasi-Zenith 'Michibiki'."
+  "nb": "Hitachi-Ota - controls Japan's Quasi-Zenith 'Michibiki'.",
+  "fn": "Master control - works out where the satellites really are, builds the navigation message and keeps system time.",
+  "co": "Hitachi-Ota, with the main tracking and control antennas."
  },
  {
   "n": "GPS Monitor Station - Ascension",
@@ -1104,7 +1128,9 @@
   "la": null,
   "est": "1985",
   "op": "US Space Force",
-  "nb": "One of the original GPS monitoring stations."
+  "nb": "One of the original GPS monitoring stations.",
+  "fn": "Monitoring station and ground antenna - measures the satellites and uplinks their navigation message.",
+  "co": "The island's airfield and the Eastern Range downrange tracking site."
  },
  {
   "n": "GPS Monitor Station - Diego Garcia",
@@ -1117,7 +1143,9 @@
   "la": null,
   "est": "1985",
   "op": "US Space Force",
-  "nb": "GPS monitoring station in the Indian Ocean."
+  "nb": "GPS monitoring station in the Indian Ocean.",
+  "fn": "Monitoring station and ground antenna - measures the satellites and uplinks their navigation message.",
+  "co": "The joint UK/US base and its Space Surveillance Telescope."
  },
  {
   "n": "GPS Monitor Station - Kwajalein",
@@ -1130,7 +1158,9 @@
   "la": null,
   "est": "1985",
   "op": "US Space Force",
-  "nb": "Pacific GPS monitoring station."
+  "nb": "Pacific GPS monitoring station.",
+  "fn": "Monitoring station and ground antenna - measures the satellites and uplinks their navigation message.",
+  "co": "The Reagan Test Site radars, and the atoll SpaceX launched Falcon 1 from."
  },
  {
   "n": "GPS Monitor Station - Hawaii",
@@ -1143,7 +1173,8 @@
   "la": null,
   "est": "1985",
   "op": "US Space Force",
-  "nb": "Kaena Point GPS monitoring station."
+  "nb": "Kaena Point GPS monitoring station.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "Mauna Kea Observatories",
@@ -1631,9 +1662,11 @@
   "el": 3,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "1980s",
   "op": "US Space Force",
-  "nb": "Air Force monitor station and ground antenna on the Eastern Range."
+  "nb": "Air Force monitor station and ground antenna on the Eastern Range.",
+  "fn": "Monitoring station and ground antenna - measures the satellites and uplinks their navigation message.",
+  "co": "The Eastern Range: launch pads and the Space Force station."
  },
  {
   "n": "GPS Monitor Station - Fairbanks",
@@ -1644,9 +1677,11 @@
   "el": 135,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2005-06 (NGA stations joined the network)",
   "op": "NGA",
-  "nb": "The high-latitude station in the NGA half of the network."
+  "nb": "The high-latitude station in the NGA half of the network.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "The Alaska Satellite Facility's polar ground station."
  },
  {
   "n": "GPS Monitor Station - Washington (USNO)",
@@ -1657,9 +1692,11 @@
   "el": 70,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2005-06",
   "op": "US Naval Observatory",
-  "nb": "Co-located with the Master Clock that GPS time is steered against."
+  "nb": "Co-located with the Master Clock that GPS time is steered against.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "The US Naval Observatory Master Clock, which GPS time is steered against."
  },
  {
   "n": "GPS Monitor Station - Quito",
@@ -1670,9 +1707,10 @@
   "el": 2850,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2005-06",
   "op": "NGA",
-  "nb": "Equatorial station; being on the equator fills a geometry gap in the network."
+  "nb": "Equatorial station; being on the equator fills a geometry gap in the network.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "GPS Monitor Station - Buenos Aires",
@@ -1683,9 +1721,10 @@
   "el": 25,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2005-06",
   "op": "NGA",
-  "nb": "Southern-hemisphere monitor station."
+  "nb": "Southern-hemisphere monitor station.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "GPS Monitor Station - Hermitage",
@@ -1696,9 +1735,10 @@
   "el": 130,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2005-06",
   "op": "NGA",
-  "nb": "The European station in the NGA network."
+  "nb": "The European station in the NGA network.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "GPS Monitor Station - Manama",
@@ -1709,9 +1749,10 @@
   "el": 10,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2005-06",
   "op": "NGA",
-  "nb": "Gulf station, covering the Middle East and Indian Ocean arc."
+  "nb": "Gulf station, covering the Middle East and Indian Ocean arc.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "GPS Monitor Station - Osan",
@@ -1722,9 +1763,11 @@
   "el": 20,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2005-06",
   "op": "NGA",
-  "nb": "East Asian monitor station at Osan Air Base."
+  "nb": "East Asian monitor station at Osan Air Base.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "Osan Air Base."
  },
  {
   "n": "GPS Monitor Station - Adelaide",
@@ -1735,9 +1778,10 @@
   "el": 50,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2005-06",
   "op": "NGA",
-  "nb": "Australian monitor station."
+  "nb": "Australian monitor station.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "GPS Monitor Station - Wellington",
@@ -1748,9 +1792,10 @@
   "el": 20,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2005-06",
   "op": "NGA",
-  "nb": "South Pacific monitor station."
+  "nb": "South Pacific monitor station.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "GPS Monitor Station - Papeete",
@@ -1761,9 +1806,10 @@
   "el": 5,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2005-06",
   "op": "NGA",
-  "nb": "Mid-Pacific station - the ocean gaps are what the network is shaped around."
+  "nb": "Mid-Pacific station - the ocean gaps are what the network is shaped around.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "GPS Monitor Station - Hartebeesthoek",
@@ -1774,9 +1820,11 @@
   "el": 1550,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2005-06",
   "op": "NGA",
-  "nb": "Hosted at the HartRAO radio-astronomy site; the African station."
+  "nb": "Hosted at the HartRAO radio-astronomy site; the African station.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "The HartRAO radio observatory, an SLR station and GLONASS equipment on the same hill."
  },
  {
   "n": "GPS Alternate Master Control Station",
@@ -1787,9 +1835,11 @@
   "el": 100,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "1990s",
   "op": "US Space Force",
-  "nb": "Vandenberg SFB - takes over if Schriever is lost, which is why it sits on the other coast."
+  "nb": "Vandenberg SFB - takes over if Schriever is lost, which is why it sits on the other coast.",
+  "fn": "Alternate master control - takes over the constellation if the primary centre is lost.",
+  "co": "Vandenberg SFB - the launch range is on the same base."
  },
  {
   "n": "GLONASS Station - Schelkovo",
@@ -1802,7 +1852,9 @@
   "la": null,
   "est": null,
   "op": "Roscosmos / RNIIKP",
-  "nb": "Laser ranging and monitoring station near Moscow."
+  "nb": "Laser ranging and monitoring station near Moscow.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "A satellite laser ranging station, which measures the orbits independently of radio."
  },
  {
   "n": "GLONASS Station - St Petersburg",
@@ -1815,7 +1867,8 @@
   "la": null,
   "est": null,
   "op": "Roscosmos",
-  "nb": "Western monitoring and upload station."
+  "nb": "Western monitoring and upload station.",
+  "fn": "Monitoring station and ground antenna - measures the satellites and uplinks their navigation message."
  },
  {
   "n": "GLONASS Station - Yenisejsk",
@@ -1828,7 +1881,9 @@
   "la": null,
   "est": null,
   "op": "Roscosmos",
-  "nb": "Central Siberian station; the network is strung along Russia to keep every satellite in view."
+  "nb": "Central Siberian station; the network is strung along Russia to keep every satellite in view.",
+  "fn": "Monitoring station and ground antenna - measures the satellites and uplinks their navigation message.",
+  "co": "A deep-space and satellite tracking complex."
  },
  {
   "n": "GLONASS Station - Komsomolsk-on-Amur",
@@ -1841,7 +1896,9 @@
   "la": null,
   "est": null,
   "op": "Roscosmos",
-  "nb": "Far-eastern upload station."
+  "nb": "Far-eastern upload station.",
+  "fn": "Monitoring station and ground antenna - measures the satellites and uplinks their navigation message.",
+  "co": "A long-standing Russian tracking station."
  },
  {
   "n": "GLONASS Station - Ussuriysk",
@@ -1854,7 +1911,9 @@
   "la": null,
   "est": null,
   "op": "Roscosmos",
-  "nb": "Pacific-facing tracking station."
+  "nb": "Pacific-facing tracking station.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "A deep-space communications complex."
  },
  {
   "n": "GLONASS Station - Yakutsk",
@@ -1867,7 +1926,8 @@
   "la": null,
   "est": null,
   "op": "Roscosmos",
-  "nb": "Northern monitoring station."
+  "nb": "Northern monitoring station.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "GLONASS Station - Vorkuta",
@@ -1880,7 +1940,8 @@
   "la": null,
   "est": null,
   "op": "Roscosmos",
-  "nb": "Arctic monitoring station."
+  "nb": "Arctic monitoring station.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "GLONASS Station - Nurek (Okno)",
@@ -1891,9 +1952,11 @@
   "el": 2200,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "Roscosmos / Russian MoD",
-  "nb": "The Okno space-surveillance complex also carries GLONASS ground equipment."
+  "nb": "The Okno space-surveillance complex also carries GLONASS ground equipment.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "The Okno optical space-surveillance complex, which watches high orbits."
  },
  {
   "n": "GLONASS Station - Brasilia",
@@ -1904,9 +1967,11 @@
   "el": 1100,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2013",
   "op": "Roscosmos / INPE",
-  "nb": "One of the first GLONASS stations outside Russia, hosted with Brazil."
+  "nb": "One of the first GLONASS stations outside Russia, hosted with Brazil.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "The University of Brasilia campus; the first GLONASS station outside Russia."
  },
  {
   "n": "GLONASS Station - Santa Maria",
@@ -1917,9 +1982,11 @@
   "el": 110,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2014",
   "op": "Roscosmos / UFSM",
-  "nb": "Southern Brazilian monitoring station."
+  "nb": "Southern Brazilian monitoring station.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "The Federal University of Santa Maria."
  },
  {
   "n": "GLONASS Station - Hartebeesthoek",
@@ -1930,9 +1997,11 @@
   "el": 1550,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2014",
   "op": "Roscosmos / SANSA",
-  "nb": "Russian monitoring equipment at the South African site - the same hill as several other networks."
+  "nb": "Russian monitoring equipment at the South African site - the same hill as several other networks.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "HartRAO, alongside the GPS monitor station and an SLR station."
  },
  {
   "n": "GLONASS Station - Novolazarevskaya",
@@ -1943,9 +2012,11 @@
   "el": 100,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2015",
   "op": "Roscosmos / AARI",
-  "nb": "Antarctic station; polar sites see the high-inclination arcs no mid-latitude site can."
+  "nb": "Antarctic station; polar sites see the high-inclination arcs no mid-latitude site can.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "The Russian Antarctic research base."
  },
  {
   "n": "Galileo Uplink Station - Kourou",
@@ -1956,9 +2027,11 @@
   "el": 10,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "EUSPA / ESA",
-  "nb": "Uplink antennas that send the navigation message back to the satellites."
+  "nb": "Uplink antennas that send the navigation message back to the satellites.",
+  "fn": "Uplink station - transmits the navigation message and commands back to the satellites.",
+  "co": "The Guiana Space Centre and ESA's Kourou tracking station."
  },
  {
   "n": "Galileo Uplink Station - Reunion",
@@ -1969,9 +2042,10 @@
   "el": 60,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "EUSPA / ESA",
-  "nb": "Indian Ocean uplink site."
+  "nb": "Indian Ocean uplink site.",
+  "fn": "Uplink station - transmits the navigation message and commands back to the satellites."
  },
  {
   "n": "Galileo Uplink Station - Noumea",
@@ -1982,9 +2056,10 @@
   "el": 20,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "EUSPA / ESA",
-  "nb": "Pacific uplink site."
+  "nb": "Pacific uplink site.",
+  "fn": "Uplink station - transmits the navigation message and commands back to the satellites."
  },
  {
   "n": "Galileo Uplink Station - Papeete",
@@ -1995,9 +2070,11 @@
   "el": 10,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "EUSPA / ESA",
-  "nb": "Mid-Pacific uplink site; the overseas territories are what give Europe global coverage."
+  "nb": "Mid-Pacific uplink site; the overseas territories are what give Europe global coverage.",
+  "fn": "Uplink station - transmits the navigation message and commands back to the satellites.",
+  "co": "The GPS monitor station is on the same island."
  },
  {
   "n": "Galileo Station - Svalbard",
@@ -2008,9 +2085,11 @@
   "el": 450,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "EUSPA / KSAT",
-  "nb": "Sensor station and uplink inside the Arctic circle."
+  "nb": "Sensor station and uplink inside the Arctic circle.",
+  "fn": "Monitoring station and ground antenna - measures the satellites and uplinks their navigation message.",
+  "co": "KSAT's Svalbard ground station, the busiest polar teleport there is."
  },
  {
   "n": "Galileo Sensor Station - Kiruna",
@@ -2021,9 +2100,11 @@
   "el": 390,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "EUSPA / SSC",
-  "nb": "Northern European sensor station."
+  "nb": "Northern European sensor station.",
+  "fn": "Sensor station - a reference receiver whose measurements feed the orbit and clock solution.",
+  "co": "The Esrange complex: a sounding-rocket range and SSC's teleport."
  },
  {
   "n": "Galileo Sensor Station - Jan Mayen",
@@ -2034,9 +2115,10 @@
   "el": 40,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "EUSPA",
-  "nb": "North Atlantic sensor station on a volcanic island."
+  "nb": "North Atlantic sensor station on a volcanic island.",
+  "fn": "Sensor station - a reference receiver whose measurements feed the orbit and clock solution."
  },
  {
   "n": "Galileo Sensor Station - Troll",
@@ -2047,9 +2129,11 @@
   "el": 1270,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2013",
   "op": "EUSPA / Norwegian Polar Institute",
-  "nb": "Antarctic sensor station at the Troll base."
+  "nb": "Antarctic sensor station at the Troll base.",
+  "fn": "Sensor station - a reference receiver whose measurements feed the orbit and clock solution.",
+  "co": "Norway's Troll base and KSAT's Antarctic antennas."
  },
  {
   "n": "Galileo Sensor Station - Azores",
@@ -2060,9 +2144,11 @@
   "el": 110,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "EUSPA",
-  "nb": "Mid-Atlantic sensor station."
+  "nb": "Mid-Atlantic sensor station.",
+  "fn": "Sensor station - a reference receiver whose measurements feed the orbit and clock solution.",
+  "co": "The Santa Maria tracking station, also used by ESA."
  },
  {
   "n": "Galileo Sensor Station - Maspalomas",
@@ -2073,9 +2159,11 @@
   "el": 205,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "EUSPA / INTA",
-  "nb": "Canary Islands station, shared with ESA tracking."
+  "nb": "Canary Islands station, shared with ESA tracking.",
+  "fn": "Sensor station - a reference receiver whose measurements feed the orbit and clock solution.",
+  "co": "INTA's Maspalomas station, which also supports ESA and NASA passes."
  },
  {
   "n": "Galileo Sensor Station - Kerguelen",
@@ -2086,9 +2174,11 @@
   "el": 30,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "EUSPA / CNES",
-  "nb": "Southern Indian Ocean sensor station, about as remote as ground segments get."
+  "nb": "Southern Indian Ocean sensor station, about as remote as ground segments get.",
+  "fn": "Sensor station - a reference receiver whose measurements feed the orbit and clock solution.",
+  "co": "The French sub-Antarctic research base."
  },
  {
   "n": "Galileo In-Orbit Test Site - Redu",
@@ -2099,9 +2189,11 @@
   "el": 385,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2011",
   "op": "ESA",
-  "nb": "Where each Galileo satellite is checked out after launch."
+  "nb": "Where each Galileo satellite is checked out after launch.",
+  "fn": "In-orbit test site - checks each new satellite's signals before it is let into the constellation.",
+  "co": "ESA's Redu centre, which also runs cyber-security and satellite test work."
  },
  {
   "n": "Galileo GNSS Service Centre - Madrid",
@@ -2112,9 +2204,10 @@
   "el": 600,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2013",
   "op": "EUSPA",
-  "nb": "The user-facing side: service status, performance reporting and the help desk."
+  "nb": "The user-facing side: service status, performance reporting and the help desk.",
+  "fn": "Service centre - the user-facing side: performance reporting, service status and the help desk."
  },
  {
   "n": "Galileo Security Monitoring Centre - Saint-Germain",
@@ -2125,9 +2218,10 @@
   "el": 80,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2016",
   "op": "EUSPA",
-  "nb": "Watches the Public Regulated Service and the system’s security posture."
+  "nb": "Watches the Public Regulated Service and the system’s security posture.",
+  "fn": "Security monitoring - watches the encrypted government service and the system's security posture."
  },
  {
   "n": "BeiDou Uplink Station - Kashgar",
@@ -2138,9 +2232,11 @@
   "el": 1290,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2000s",
   "op": "CSNO",
-  "nb": "Western uplink station; with Jiamusi and Sanya it covers the whole Chinese arc."
+  "nb": "Western uplink station; with Jiamusi and Sanya it covers the whole Chinese arc.",
+  "fn": "Uplink station - transmits the navigation message and commands back to the satellites.",
+  "co": "A CLTC tracking station in the far west."
  },
  {
   "n": "BeiDou Uplink Station - Jiamusi",
@@ -2151,9 +2247,11 @@
   "el": 90,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2000s",
   "op": "CSNO",
-  "nb": "North-eastern uplink station, also a deep-space antenna site."
+  "nb": "North-eastern uplink station, also a deep-space antenna site.",
+  "fn": "Uplink station - transmits the navigation message and commands back to the satellites.",
+  "co": "A 66 m deep-space antenna used for lunar and planetary missions."
  },
  {
   "n": "BeiDou Uplink Station - Sanya",
@@ -2164,9 +2262,11 @@
   "el": 10,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2000s",
   "op": "CSNO",
-  "nb": "Southern uplink station on Hainan."
+  "nb": "Southern uplink station on Hainan.",
+  "fn": "Uplink station - transmits the navigation message and commands back to the satellites.",
+  "co": "Hainan tracking facilities near the Wenchang launch site."
  },
  {
   "n": "BeiDou Station - Swakopmund",
@@ -2177,9 +2277,11 @@
   "el": 50,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2001",
   "op": "CSNO / CLTC",
-  "nb": "Chinese tracking station in Namibia, used for both crewed missions and navigation support."
+  "nb": "Chinese tracking station in Namibia, used for both crewed missions and navigation support.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "The CLTC tracking station that supported China's crewed flights."
  },
  {
   "n": "BeiDou Station - Neuquen",
@@ -2190,9 +2292,11 @@
   "el": 1100,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2017",
   "op": "CSNO / CLTC",
-  "nb": "The Espacio Lejano deep-space station in Patagonia; the southern-hemisphere anchor."
+  "nb": "The Espacio Lejano deep-space station in Patagonia; the southern-hemisphere anchor.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "The Espacio Lejano 35 m deep-space antenna."
  },
  {
   "n": "BeiDou Station - Kiruna",
@@ -2203,9 +2307,11 @@
   "el": 390,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "CSNO / SSC",
-  "nb": "Commercial polar coverage bought from the Swedish Space Corporation."
+  "nb": "Commercial polar coverage bought from the Swedish Space Corporation.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "SSC's teleport, shared with Galileo and many other operators."
  },
  {
   "n": "QZSS Tracking Station - Okinawa",
@@ -2216,9 +2322,10 @@
   "el": 100,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "QSS / JAXA",
-  "nb": "Southern tracking and control station."
+  "nb": "Southern tracking and control station.",
+  "fn": "Monitoring station and ground antenna - measures the satellites and uplinks their navigation message."
  },
  {
   "n": "QZSS Tracking Station - Sarobetsu",
@@ -2229,9 +2336,10 @@
   "el": 20,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "QSS / JAXA",
-  "nb": "Northern Hokkaido tracking station."
+  "nb": "Northern Hokkaido tracking station.",
+  "fn": "Monitoring station and ground antenna - measures the satellites and uplinks their navigation message."
  },
  {
   "n": "QZSS Monitoring Station - Guam",
@@ -2242,9 +2350,10 @@
   "el": 100,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "QSS",
-  "nb": "Pacific monitoring station."
+  "nb": "Pacific monitoring station.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "QZSS Monitoring Station - Hawaii",
@@ -2255,9 +2364,10 @@
   "el": 10,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "QSS",
-  "nb": "Eastern Pacific monitoring station."
+  "nb": "Eastern Pacific monitoring station.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "QZSS Monitoring Station - Bangkok",
@@ -2268,9 +2378,10 @@
   "el": 5,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "QSS",
-  "nb": "South-East Asian monitoring station - QZSS is usable well beyond Japan."
+  "nb": "South-East Asian monitoring station - QZSS is usable well beyond Japan.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "QZSS Monitoring Station - Canberra",
@@ -2281,9 +2392,10 @@
   "el": 580,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "QSS",
-  "nb": "Southern monitoring station; the quasi-zenith orbits reach deep into the southern hemisphere."
+  "nb": "Southern monitoring station; the quasi-zenith orbits reach deep into the southern hemisphere.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "QZSS Monitoring Station - Bengaluru",
@@ -2294,9 +2406,10 @@
   "el": 920,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2010s",
   "op": "QSS",
-  "nb": "Western edge of the QZSS monitoring network."
+  "nb": "Western edge of the QZSS monitoring network.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "NavIC IRIMS - Hassan",
@@ -2307,9 +2420,11 @@
   "el": 950,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2013-15",
   "op": "ISRO",
-  "nb": "Ranging and integrity monitoring station, co-located with the Master Control Facility."
+  "nb": "Ranging and integrity monitoring station, co-located with the Master Control Facility.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "ISRO's Master Control Facility for geostationary satellites."
  },
  {
   "n": "NavIC IRIMS - Bhopal",
@@ -2320,9 +2435,10 @@
   "el": 525,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2013-15",
   "op": "ISRO",
-  "nb": "Central Indian ranging and integrity monitoring station."
+  "nb": "Central Indian ranging and integrity monitoring station.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "NavIC IRIMS - Jodhpur",
@@ -2333,9 +2449,10 @@
   "el": 230,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2013-15",
   "op": "ISRO",
-  "nb": "Western desert station."
+  "nb": "Western desert station.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "NavIC IRIMS - Lucknow",
@@ -2346,9 +2463,11 @@
   "el": 125,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2013-15",
   "op": "ISRO",
-  "nb": "Northern plains station."
+  "nb": "Northern plains station.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "An ISTRAC tracking station."
  },
  {
   "n": "NavIC IRIMS - Shillong",
@@ -2359,9 +2478,10 @@
   "el": 1500,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2013-15",
   "op": "ISRO",
-  "nb": "North-eastern station; the spread across India is what fixes the orbits."
+  "nb": "North-eastern station; the spread across India is what fixes the orbits.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control."
  },
  {
   "n": "NavIC IRIMS - Port Blair",
@@ -2372,9 +2492,11 @@
   "el": 20,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2013-15",
   "op": "ISRO",
-  "nb": "Andaman Islands station, the eastern edge of the network."
+  "nb": "Andaman Islands station, the eastern edge of the network.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "An ISTRAC tracking station on the Andamans."
  },
  {
   "n": "NavIC IRIMS - Dehradun",
@@ -2385,9 +2507,11 @@
   "el": 640,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2013-15",
   "op": "ISRO",
-  "nb": "Himalayan foothills station."
+  "nb": "Himalayan foothills station.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "The Indian Institute of Remote Sensing."
  },
  {
   "n": "NavIC IRIMS - Mahendragiri",
@@ -2398,8 +2522,547 @@
   "el": 300,
   "ar": null,
   "la": null,
-  "est": null,
+  "est": "2013-15",
   "op": "ISRO",
-  "nb": "Southern station at the ISRO propulsion complex."
+  "nb": "Southern station at the ISRO propulsion complex.",
+  "fn": "Monitoring station - tracks every satellite in view and sends the raw measurements to master control.",
+  "co": "ISRO's propulsion complex."
+ },
+ {
+  "n": "ESTRACK - New Norcia (DSA 1)",
+  "t": "facility",
+  "lat": -31.048,
+  "lon": 116.191,
+  "cty": "Australia",
+  "el": 252,
+  "ar": null,
+  "la": null,
+  "est": "2002",
+  "op": "ESA",
+  "nb": "ESA's first 35 m deep-space dish, and the southern leg of its ring.",
+  "fn": "Deep-space antenna - tracks spacecraft beyond Earth orbit, where the signal arrives a billion times weaker than from LEO."
+ },
+ {
+  "n": "ESTRACK - Cebreros (DSA 2)",
+  "t": "facility",
+  "lat": 40.453,
+  "lon": -4.368,
+  "cty": "Spain",
+  "el": 794,
+  "ar": null,
+  "la": null,
+  "est": "2005",
+  "op": "ESA",
+  "nb": "The European leg; built for Venus Express and still working the planetary missions.",
+  "fn": "Deep-space antenna - tracks spacecraft beyond Earth orbit, where the signal arrives a billion times weaker than from LEO.",
+  "co": "NASA's Madrid deep-space complex is 20 km away at Robledo."
+ },
+ {
+  "n": "ESTRACK - Malargue (DSA 3)",
+  "t": "facility",
+  "lat": -35.776,
+  "lon": -69.398,
+  "cty": "Argentina",
+  "el": 1550,
+  "ar": null,
+  "la": null,
+  "est": "2012",
+  "op": "ESA",
+  "nb": "The Americas leg, completing ESA's 120-degree spacing.",
+  "fn": "Deep-space antenna - tracks spacecraft beyond Earth orbit, where the signal arrives a billion times weaker than from LEO."
+ },
+ {
+  "n": "ESTRACK - Kourou",
+  "t": "facility",
+  "lat": 5.252,
+  "lon": -52.804,
+  "cty": "French Guiana",
+  "el": 10,
+  "ar": null,
+  "la": null,
+  "est": "1975",
+  "op": "ESA",
+  "nb": "Catches launchers minutes after lift-off from the pads next door.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over.",
+  "co": "The Guiana Space Centre and a Galileo uplink station."
+ },
+ {
+  "n": "ESTRACK - Redu",
+  "t": "facility",
+  "lat": 50.002,
+  "lon": 5.146,
+  "cty": "Belgium",
+  "el": 385,
+  "ar": null,
+  "la": null,
+  "est": "1968",
+  "op": "ESA",
+  "nb": "Satellite checkout and routine passes.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over.",
+  "co": "The Galileo in-orbit test site."
+ },
+ {
+  "n": "ESTRACK - Santa Maria",
+  "t": "facility",
+  "lat": 36.997,
+  "lon": -25.136,
+  "cty": "Portugal",
+  "el": 276,
+  "ar": null,
+  "la": null,
+  "est": "2008",
+  "op": "ESA",
+  "nb": "Azores station, used for launch tracking across the Atlantic.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over.",
+  "co": "A Galileo sensor station."
+ },
+ {
+  "n": "ESTRACK - Kiruna",
+  "t": "facility",
+  "lat": 67.857,
+  "lon": 20.964,
+  "cty": "Sweden",
+  "el": 391,
+  "ar": null,
+  "la": null,
+  "est": "1990",
+  "op": "ESA",
+  "nb": "ESA's Arctic station at Salmijarvi.",
+  "fn": "Polar teleport - a high-latitude site sees a sun-synchronous satellite on almost every one of its orbits, which no mid-latitude station can.",
+  "co": "The Esrange rocket range and SSC's teleport."
+ },
+ {
+  "n": "ESTRACK - Perth",
+  "t": "facility",
+  "lat": -31.803,
+  "lon": 115.885,
+  "cty": "Australia",
+  "el": 22,
+  "ar": null,
+  "la": null,
+  "est": "1980s",
+  "op": "ESA",
+  "nb": "Western Australian station for launch and early-orbit work.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over."
+ },
+ {
+  "n": "Bear Lakes (Medvezhi Ozera)",
+  "t": "facility",
+  "lat": 55.871,
+  "lon": 37.955,
+  "cty": "Russia",
+  "el": 180,
+  "ar": null,
+  "la": null,
+  "est": "1950s",
+  "op": "Roscosmos / RAS",
+  "nb": "A 64 m dish outside Moscow, used for deep-space and radio astronomy.",
+  "fn": "Deep-space antenna - tracks spacecraft beyond Earth orbit, where the signal arrives a billion times weaker than from LEO."
+ },
+ {
+  "n": "Ussuriysk Deep Space Station",
+  "t": "facility",
+  "lat": 44.015,
+  "lon": 131.757,
+  "cty": "Russia",
+  "el": 100,
+  "ar": null,
+  "la": null,
+  "est": "1970s",
+  "op": "Roscosmos",
+  "nb": "The far-eastern 70 m antenna, built for planetary missions.",
+  "fn": "Deep-space antenna - tracks spacecraft beyond Earth orbit, where the signal arrives a billion times weaker than from LEO.",
+  "co": "A GLONASS monitoring station."
+ },
+ {
+  "n": "Kalyazin Radio Astronomy Observatory",
+  "t": "facility",
+  "lat": 57.223,
+  "lon": 37.9,
+  "cty": "Russia",
+  "el": 130,
+  "ar": null,
+  "la": null,
+  "est": "1992",
+  "op": "RAS",
+  "nb": "A 64 m dish shared between astronomy and spacecraft tracking.",
+  "fn": "Deep-space antenna - tracks spacecraft beyond Earth orbit, where the signal arrives a billion times weaker than from LEO."
+ },
+ {
+  "n": "Kashi Deep Space Station",
+  "t": "facility",
+  "lat": 39.504,
+  "lon": 76.734,
+  "cty": "China",
+  "el": 1300,
+  "ar": null,
+  "la": null,
+  "est": "2013",
+  "op": "CLTC",
+  "nb": "A 35 m dish, part of China's deep-space ring with Jiamusi and Neuquen.",
+  "fn": "Deep-space antenna - tracks spacecraft beyond Earth orbit, where the signal arrives a billion times weaker than from LEO.",
+  "co": "A BeiDou uplink station."
+ },
+ {
+  "n": "Jiamusi Deep Space Station",
+  "t": "facility",
+  "lat": 46.494,
+  "lon": 130.77,
+  "cty": "China",
+  "el": 90,
+  "ar": null,
+  "la": null,
+  "est": "2013",
+  "op": "CLTC",
+  "nb": "China's 66 m dish - the biggest in its deep-space network.",
+  "fn": "Deep-space antenna - tracks spacecraft beyond Earth orbit, where the signal arrives a billion times weaker than from LEO.",
+  "co": "A BeiDou uplink station."
+ },
+ {
+  "n": "Beijing Aerospace Control Center",
+  "t": "facility",
+  "lat": 40.08,
+  "lon": 116.27,
+  "cty": "China",
+  "el": 50,
+  "ar": null,
+  "la": null,
+  "est": "1996",
+  "op": "CLTC / PLA",
+  "nb": "Where Shenzhou and Chang'e missions are actually run from.",
+  "fn": "Mission control - flies crewed and deep-space missions minute by minute."
+ },
+ {
+  "n": "Weinan Tracking Station",
+  "t": "facility",
+  "lat": 34.5,
+  "lon": 109.5,
+  "cty": "China",
+  "el": 350,
+  "ar": null,
+  "la": null,
+  "est": "1960s",
+  "op": "CLTC",
+  "nb": "One of the domestic stations that ring the Chinese launch corridors.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over."
+ },
+ {
+  "n": "Qingdao Tracking Station",
+  "t": "facility",
+  "lat": 36.07,
+  "lon": 120.38,
+  "cty": "China",
+  "el": 25,
+  "ar": null,
+  "la": null,
+  "est": "1960s",
+  "op": "CLTC",
+  "nb": "Coastal station covering the eastern approaches.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over."
+ },
+ {
+  "n": "Indian Deep Space Network (Byalalu)",
+  "t": "facility",
+  "lat": 13.034,
+  "lon": 77.37,
+  "cty": "India",
+  "el": 850,
+  "ar": null,
+  "la": null,
+  "est": "2008",
+  "op": "ISRO",
+  "nb": "32 m and 18 m dishes built for Chandrayaan and Mangalyaan.",
+  "fn": "Deep-space antenna - tracks spacecraft beyond Earth orbit, where the signal arrives a billion times weaker than from LEO.",
+  "co": "The NavIC master control facility is on the same campus."
+ },
+ {
+  "n": "ISTRAC - Lucknow",
+  "t": "facility",
+  "lat": 26.912,
+  "lon": 80.956,
+  "cty": "India",
+  "el": 125,
+  "ar": null,
+  "la": null,
+  "est": "1970s",
+  "op": "ISRO",
+  "nb": "Northern tracking station for launch and routine passes.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over.",
+  "co": "A NavIC monitoring station."
+ },
+ {
+  "n": "ISTRAC - Port Blair",
+  "t": "facility",
+  "lat": 11.638,
+  "lon": 92.726,
+  "cty": "India",
+  "el": 20,
+  "ar": null,
+  "la": null,
+  "est": "1980s",
+  "op": "ISRO",
+  "nb": "Andaman station - it watches launches head out over the Bay of Bengal.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over.",
+  "co": "A NavIC monitoring station."
+ },
+ {
+  "n": "ISTRAC - Thiruvananthapuram",
+  "t": "facility",
+  "lat": 8.524,
+  "lon": 76.869,
+  "cty": "India",
+  "el": 15,
+  "ar": null,
+  "la": null,
+  "est": "1960s",
+  "op": "ISRO",
+  "nb": "Southern station beside the sounding-rocket range.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over.",
+  "co": "The Thumba launching station and VSSC."
+ },
+ {
+  "n": "ISTRAC - Brunei",
+  "t": "facility",
+  "lat": 4.903,
+  "lon": 114.94,
+  "cty": "Brunei",
+  "el": 20,
+  "ar": null,
+  "la": null,
+  "est": "2000s",
+  "op": "ISRO",
+  "nb": "Overseas station covering the eastern launch corridor.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over."
+ },
+ {
+  "n": "ISTRAC - Biak",
+  "t": "facility",
+  "lat": -1.18,
+  "lon": 136.11,
+  "cty": "Indonesia",
+  "el": 15,
+  "ar": null,
+  "la": null,
+  "est": "1990s",
+  "op": "ISRO",
+  "nb": "Equatorial Pacific station for early-orbit tracking.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over."
+ },
+ {
+  "n": "ISTRAC - Mauritius",
+  "t": "facility",
+  "lat": -20.23,
+  "lon": 57.48,
+  "cty": "Mauritius",
+  "el": 150,
+  "ar": null,
+  "la": null,
+  "est": "1980s",
+  "op": "ISRO",
+  "nb": "Indian Ocean station, important for PSLV ascent coverage.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over."
+ },
+ {
+  "n": "Usuda Deep Space Center",
+  "t": "facility",
+  "lat": 36.133,
+  "lon": 138.362,
+  "cty": "Japan",
+  "el": 1450,
+  "ar": null,
+  "la": null,
+  "est": "1984",
+  "op": "JAXA",
+  "nb": "The 64 m dish that brought Hayabusa's telemetry home.",
+  "fn": "Deep-space antenna - tracks spacecraft beyond Earth orbit, where the signal arrives a billion times weaker than from LEO."
+ },
+ {
+  "n": "Misasa Deep Space Station",
+  "t": "facility",
+  "lat": 36.129,
+  "lon": 138.363,
+  "cty": "Japan",
+  "el": 1450,
+  "ar": null,
+  "la": null,
+  "est": "2021",
+  "op": "JAXA",
+  "nb": "The 54 m dish built to replace Usuda's ageing antenna.",
+  "fn": "Deep-space antenna - tracks spacecraft beyond Earth orbit, where the signal arrives a billion times weaker than from LEO.",
+  "co": "Usuda, a few hundred metres away."
+ },
+ {
+  "n": "Katsuura Tracking Station",
+  "t": "facility",
+  "lat": 35.2,
+  "lon": 140.31,
+  "cty": "Japan",
+  "el": 60,
+  "ar": null,
+  "la": null,
+  "est": "1960s",
+  "op": "JAXA",
+  "nb": "Pacific-coast station for launch and early orbit.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over."
+ },
+ {
+  "n": "Masuda Tracking Station",
+  "t": "facility",
+  "lat": 30.555,
+  "lon": 130.968,
+  "cty": "Japan",
+  "el": 30,
+  "ar": null,
+  "la": null,
+  "est": "1960s",
+  "op": "JAXA",
+  "nb": "On Tanegashima, watching launches leave the pad.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over.",
+  "co": "The Tanegashima Space Center."
+ },
+ {
+  "n": "Okinawa Tracking Station",
+  "t": "facility",
+  "lat": 26.5,
+  "lon": 127.93,
+  "cty": "Japan",
+  "el": 100,
+  "ar": null,
+  "la": null,
+  "est": "1960s",
+  "op": "JAXA",
+  "nb": "Southern station extending launch coverage.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over.",
+  "co": "A QZSS tracking station."
+ },
+ {
+  "n": "White Sands Complex",
+  "t": "facility",
+  "lat": 32.541,
+  "lon": -106.611,
+  "cty": "United States",
+  "el": 1450,
+  "ar": null,
+  "la": null,
+  "est": "1983",
+  "op": "NASA",
+  "nb": "How the ISS and Hubble talk to the ground almost continuously.",
+  "fn": "Relay ground terminal - the gateway for TDRS, the satellites that relay data from other satellites."
+ },
+ {
+  "n": "Wallops Ground Station",
+  "t": "facility",
+  "lat": 37.925,
+  "lon": -75.475,
+  "cty": "United States",
+  "el": 12,
+  "ar": null,
+  "la": null,
+  "est": "1945",
+  "op": "NASA",
+  "nb": "Near-Earth network station beside the launch range.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over.",
+  "co": "The Wallops Flight Facility launch pads."
+ },
+ {
+  "n": "Alaska Satellite Facility",
+  "t": "facility",
+  "lat": 64.859,
+  "lon": -147.85,
+  "cty": "United States",
+  "el": 180,
+  "ar": null,
+  "la": null,
+  "est": "1991",
+  "op": "NASA / UAF",
+  "nb": "Fairbanks antennas that take most of the polar-orbiting science downlinks.",
+  "fn": "Polar teleport - a high-latitude site sees a sun-synchronous satellite on almost every one of its orbits, which no mid-latitude station can.",
+  "co": "A GPS monitoring station."
+ },
+ {
+  "n": "KSAT Svalbard (SvalSat)",
+  "t": "facility",
+  "lat": 78.229,
+  "lon": 15.389,
+  "cty": "Norway",
+  "el": 458,
+  "ar": null,
+  "la": null,
+  "est": "1997",
+  "op": "KSAT",
+  "nb": "The busiest polar teleport in the world - a sun-synchronous satellite can be met on every orbit.",
+  "fn": "Polar teleport - a high-latitude site sees a sun-synchronous satellite on almost every one of its orbits, which no mid-latitude station can.",
+  "co": "A Galileo sensor and uplink station."
+ },
+ {
+  "n": "KSAT Troll (TrollSat)",
+  "t": "facility",
+  "lat": -72.012,
+  "lon": 2.535,
+  "cty": "Antarctica",
+  "el": 1270,
+  "ar": null,
+  "la": null,
+  "est": "2007",
+  "op": "KSAT",
+  "nb": "The southern half of the polar pair; between them they catch both ends of every orbit.",
+  "fn": "Polar teleport - a high-latitude site sees a sun-synchronous satellite on almost every one of its orbits, which no mid-latitude station can.",
+  "co": "The Galileo Antarctic sensor station and Norway's Troll base."
+ },
+ {
+  "n": "SSC Santiago Station",
+  "t": "facility",
+  "lat": -33.151,
+  "lon": -70.667,
+  "cty": "Chile",
+  "el": 730,
+  "ar": null,
+  "la": null,
+  "est": "1960s",
+  "op": "SSC",
+  "nb": "South American teleport used by many operators.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over."
+ },
+ {
+  "n": "SSC Dongara (Western Australia)",
+  "t": "facility",
+  "lat": -29.046,
+  "lon": 115.349,
+  "cty": "Australia",
+  "el": 50,
+  "ar": null,
+  "la": null,
+  "est": "2000s",
+  "op": "SSC",
+  "nb": "Australian teleport serving launch and routine passes.",
+  "fn": "Near-Earth tracking station - passes with satellites in low orbit, a few minutes at a time as they go over."
+ },
+ {
+  "n": "SSC Inuvik",
+  "t": "facility",
+  "lat": 68.318,
+  "lon": -133.549,
+  "cty": "Canada",
+  "el": 100,
+  "ar": null,
+  "la": null,
+  "est": "2010",
+  "op": "SSC",
+  "nb": "Arctic Canadian station for polar-orbiting missions.",
+  "fn": "Polar teleport - a high-latitude site sees a sun-synchronous satellite on almost every one of its orbits, which no mid-latitude station can."
+ },
+ {
+  "n": "Awarua Ground Station",
+  "t": "facility",
+  "lat": -46.53,
+  "lon": 168.38,
+  "cty": "New Zealand",
+  "el": 10,
+  "ar": null,
+  "la": null,
+  "est": "2008",
+  "op": "SSC / Awarua",
+  "nb": "Southern New Zealand teleport - far enough south to catch descending passes early.",
+  "fn": "Polar teleport - a high-latitude site sees a sun-synchronous satellite on almost every one of its orbits, which no mid-latitude station can."
  }
 ]
