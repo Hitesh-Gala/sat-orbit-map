@@ -42,6 +42,57 @@
     .header-right{margin-left:auto; display:flex; gap:9px}
     .btn{font-family:var(--mono); font-size:13.5px; text-decoration:none; cursor:pointer; padding:7px 13px; border-radius:7px; border:1px solid var(--line); background:var(--card); color:var(--ink); transition:.15s; white-space:nowrap}
     .btn:hover{border-color:var(--accent); color:var(--accent)}
+    .btn-tle{border-color:var(--accent); color:var(--accent); font-weight:600}
+    .btn-tle:hover{background:var(--accent); color:#fff}
+
+    /* ---- Western vs Chinese TLE window ------------------------------
+       A window, not a modal: it can be dragged aside, pulled bigger or
+       rolled up while the page underneath stays usable. */
+    .tlecmp{position:fixed; z-index:500; left:50%; top:90px; width:min(1180px, 94vw); height:min(680px, 78vh);
+      transform:translateX(-50%); display:flex; flex-direction:column; background:var(--card);
+      border:1px solid var(--line); border-radius:12px; box-shadow:0 26px 70px rgba(16,36,60,.28); overflow:hidden}
+    .tlecmp[hidden]{display:none}
+    .tlecmp.min{height:auto !important; resize:none}
+    .tlecmp.min .tlecmp-body, .tlecmp.min .tlecmp-resize{display:none}
+    .tlecmp-head{display:flex; align-items:center; gap:10px; padding:9px 12px; cursor:grab;
+      background:linear-gradient(180deg,#f4f8fd,#e9f1fa); border-bottom:1px solid var(--line); user-select:none; touch-action:none}
+    .tlecmp.dragging .tlecmp-head{cursor:grabbing}
+    .tlecmp-head .t{font-family:var(--mono); font-size:14px; font-weight:700; color:var(--ink); letter-spacing:.04em}
+    .tlecmp-head .sub{flex:1; font-family:var(--mono); font-size:12px; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .tlecmp-head .grip{color:#9fb0c4; font-size:14px}
+    .tlecmp-btn{width:26px; height:24px; border-radius:6px; border:1px solid var(--line); background:#fff;
+      color:var(--ink); font-size:15px; line-height:1; cursor:pointer}
+    .tlecmp-btn:hover{border-color:var(--accent); color:var(--accent)}
+    .tlecmp-body{flex:1; display:flex; flex-direction:column; min-height:0}
+    .tlecmp-bar{display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; padding:9px 12px; border-bottom:1px solid var(--line)}
+    .tlecmp-bar input[type=search]{flex:0 1 300px; padding:6px 10px; border:1px solid var(--line); border-radius:7px;
+      font-family:var(--mono); font-size:13px; color:var(--ink)}
+    .tlecmp-bar label{font-family:var(--mono); font-size:12.5px; color:var(--dim); cursor:pointer}
+    .tlecmp-count{margin-left:auto; font-family:var(--mono); font-size:12.5px; color:var(--dim)}
+    .tlecmp-scroll{flex:1; overflow:auto; min-height:0}
+    .tlecmp-table{width:100%; border-collapse:collapse; font-size:13px}
+    .tlecmp-table th{position:sticky; top:0; z-index:1; background:#f2f7fc; border-bottom:1px solid var(--line);
+      text-align:left; padding:8px 9px; font-family:var(--mono); font-size:11.5px; letter-spacing:.08em;
+      text-transform:uppercase; color:var(--dim); white-space:nowrap}
+    .tlecmp-table td{padding:7px 9px; border-bottom:1px solid #eef3f9; vertical-align:top}
+    .tlecmp-table tbody tr:hover td{background:#f7fbff}
+    .tlecmp-table .nm{font-weight:600; color:var(--ink)}
+    .tlecmp-table .kind{display:block; font-family:var(--mono); font-size:11px; color:var(--dim)}
+    .tlecmp-table .num{font-family:var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap}
+    .tlecmp-table .ep{font-family:var(--mono); font-size:12px; white-space:nowrap}
+    .tlecmp-table .ep b{font-weight:600}
+    .tlecmp-table .tle{display:block; font-family:var(--mono); font-size:10.5px; color:#51637a; white-space:pre;
+      overflow:hidden; text-overflow:ellipsis; max-width:230px}
+    .tlecmp-table .none{color:#9aa8b8; font-style:italic; font-size:12px}
+    .tlecmp-table .rem{font-size:12.5px; line-height:1.45; color:#36506c; max-width:280px}
+    .tlecmp-table .fresh{color:var(--good); font-weight:600}
+    .tlecmp-table .stale{color:var(--accent2); font-weight:600}
+    .tlecmp-table .side-cn{box-shadow:inset 3px 0 0 #e26a2c}
+    .tlecmp-table .side-west{box-shadow:inset 3px 0 0 #1466c9}
+    .tlecmp-foot{padding:9px 12px; border-top:1px solid var(--line); font-size:12.5px; line-height:1.5; color:var(--dim)}
+    .tlecmp-foot a{color:var(--accent)}
+    .tlecmp-resize{position:absolute; right:2px; bottom:2px; width:16px; height:16px; cursor:nwse-resize;
+      background:linear-gradient(135deg, transparent 50%, #b9c7d8 50%, #b9c7d8 60%, transparent 60%, transparent 70%, #b9c7d8 70%, #b9c7d8 80%, transparent 80%)}
 
     .cover{padding:26px 0 6px}
     .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent2)}
@@ -123,6 +174,7 @@
       <a class="top-logo" href="index.html" title="NAZAR — back to the live globe"><img src="data/nazar-logo.svg?v=5" alt="NAZAR"></a>
       <span class="header-title">DATA COMPARISON</span>
       <span class="header-right">
+        <button type="button" class="btn btn-tle" id="tlecmp-open" title="Compare Western and Chinese element sets for ISR and ELINT satellites">⚖ Western vs Chinese TLEs</button>
         <a class="btn" href="space-stuff.html">← Space Stuff</a>
         <a class="btn" href="index.html">NAZAR Home</a>
       </span>
@@ -202,7 +254,43 @@
     </footer>
   </div>
 
+  <!-- Western vs Chinese TLE comparison: a movable, resizable, minimisable
+       window rather than a modal, so it can sit beside the page while reading. -->
+  <div class="tlecmp" id="tlecmp" hidden role="dialog" aria-label="Western versus Chinese TLE comparison">
+    <div class="tlecmp-head" id="tlecmp-head">
+      <span class="t">⚖ Western vs Chinese TLEs</span>
+      <span class="sub" id="tlecmp-sub">…</span>
+      <span class="grip">⠿</span>
+      <button type="button" class="tlecmp-btn" id="tlecmp-min" title="Minimise">–</button>
+      <button type="button" class="tlecmp-btn" id="tlecmp-close" title="Close">×</button>
+    </div>
+    <div class="tlecmp-body" id="tlecmp-body">
+      <div class="tlecmp-bar">
+        <input type="search" id="tlecmp-q" placeholder="🔍 Filter by name, NORAD or type…" autocomplete="off">
+        <label><input type="radio" name="tlecmp-side" value="all" checked> All</label>
+        <label><input type="radio" name="tlecmp-side" value="west"> Western ISR/ELINT</label>
+        <label><input type="radio" name="tlecmp-side" value="cn"> Chinese ISR/ELINT</label>
+        <span class="tlecmp-count" id="tlecmp-count"></span>
+      </div>
+      <div class="tlecmp-scroll">
+        <table class="tlecmp-table">
+          <thead>
+            <tr>
+              <th>Object</th><th>NORAD</th><th>Launched</th>
+              <th>AOE · spacemapper.cn</th><th>Space-Track</th><th>CelesTrak</th>
+              <th>Remarks</th>
+            </tr>
+          </thead>
+          <tbody id="tlecmp-rows"></tbody>
+        </table>
+      </div>
+      <div class="tlecmp-foot" id="tlecmp-foot"></div>
+    </div>
+    <div class="tlecmp-resize" id="tlecmp-resize" title="Drag to resize"></div>
+  </div>
+
   <script src="data-comparison.js?v=3"></script>
+  <script src="tle-compare.js?v=1"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=5"></script>
   <script src="mobile-menu.js?v=26"></script>

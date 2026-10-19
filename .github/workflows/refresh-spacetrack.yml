@@ -64,6 +64,14 @@ jobs:
       - name: Summarize bundled CelesTrak data
         run: python3 scripts/gen_datacompare.py data/celestrak-summary.json
 
+      # ---- Western vs Chinese TLE table ---------------------------------
+      # Rebuilds data/tle-compare.json from whatever element sets are on disk.
+      # The AOE column stays empty unless an export is dropped at
+      # data/aoe-tle.txt - their gateway needs a subscription.
+      - name: Rebuild the TLE comparison table
+        continue-on-error: true
+        run: python3 scripts/gen_tle_compare.py
+
       # ---- Keep dropped objects (Sat-Stats on Steroids) -----------------
       # Anything that just left BOTH catalogues keeps its last TLE in
       # data/tle-archive.json (see the script's docstring).  Non-fatal.
