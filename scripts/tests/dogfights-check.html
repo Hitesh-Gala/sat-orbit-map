@@ -1,0 +1,59 @@
+<!doctype html><meta charset="utf-8"><body style="background:#000;color:#9f9;font:12px monospace">
+<pre id="out">running…</pre><iframe id="f" src="dogfights.html" style="width:1400px;height:880px;border:0"></iframe>
+<script>
+const log=[],put=(k,v)=>log.push(k+': '+JSON.stringify(v));
+window.addEventListener('load',()=>setTimeout(run,12000));
+async function run(){
+  const w=document.getElementById('f').contentWindow,d=w.document;
+  try{ w.sessionStorage.setItem('nazar.spacestuff','1'); }catch(e){}
+  const df=w.__df;
+  put('hook',!!df);
+  put('catalogue',df?df.catalogue():0);
+  put('globeCanvas',!!d.querySelector('#globe canvas'));
+  put('satellitesAtStart',df.picked());
+  // search + add two objects
+  const q=d.getElementById('df-q');
+  q.value='iss'; q.dispatchEvent(new Event('input'));
+  await new Promise(r=>setTimeout(r,200));
+  put('hitsForIss',d.querySelectorAll('.df-hit').length);
+  d.getElementById('df-add').click();
+  q.value='tjs-3'; q.dispatchEvent(new Event('input'));
+  await new Promise(r=>setTimeout(r,200));
+  d.getElementById('df-add').click();
+  await new Promise(r=>setTimeout(r,500));
+  put('picked',df.picked());
+  put('focusOptions',[...d.getElementById('df-focus').options].map(o=>o.text));
+  // speed slider
+  const sp=d.getElementById('df-speed'); sp.value=8; sp.dispatchEvent(new Event('input'));
+  put('rateAtMax',df.rate()); put('rateLabel',d.getElementById('df-speed-val').textContent);
+  // the period inputs
+  const f=d.getElementById('df-from'), t=d.getElementById('df-to');
+  put('fromMin',f.min); put('toMax',t.max);
+  // animate: clock should advance and stop at the end of the window
+  const before=df.simTime();
+  d.getElementById('df-animate').click();
+  await new Promise(r=>setTimeout(r,1500));
+  put('playing',df.playing());
+  put('clockMoved',df.simTime()!==before);
+  d.getElementById('df-animate').click();
+  // the run should stop by itself at the end of the window
+  const t2=d.getElementById('df-to');
+  const soon=new Date(Date.now()+8000);
+  const pad=n=>String(n).padStart(2,'0');
+  t2.value=soon.getFullYear()+'-'+pad(soon.getMonth()+1)+'-'+pad(soon.getDate())+'T'+pad(soon.getHours())+':'+pad(soon.getMinutes());
+  t2.dispatchEvent(new Event('change'));
+  d.getElementById('df-animate').click();
+  put('playingBeforeStep',df.playing());
+  df.step(7200);                       // two hours of sim, past the window end
+  put('stoppedAtWindowEnd',!df.playing());
+  put('clockClampedToEnd',df.simTime().slice(0,16));
+  // focus: the chosen satellite should sit at the centre of the screen
+  const sel=d.getElementById('df-focus');
+  sel.value=sel.options[1].value; sel.dispatchEvent(new Event('change'));
+  df.step(60); df.step(60);
+  await new Promise(r=>setTimeout(r,400));
+  put('focusedOn',sel.options[1].text);
+  put('focusedScreenPos',df.screenPos(sel.value));
+  document.getElementById('out').textContent=log.join('\n');
+}
+</script>
