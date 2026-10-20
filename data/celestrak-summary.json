@@ -1,17 +1,17 @@
 {
  "source": "CelesTrak",
- "retrieved": "2026-10-19T13:42:19Z",
+ "retrieved": "2026-10-20T11:52:59Z",
  "satcat": {
   "label": "Active payloads",
-  "count": 20322,
+  "count": 20335,
   "topOwners": [
    [
     "US",
-    13900
+    13902
    ],
    [
     "CIS",
-    1708
+    1707
    ],
    [
     "PRC",
@@ -30,8 +30,8 @@
  },
  "tle": {
   "label": "Active TLE sets",
-  "count": 15928,
-  "latestEpoch": "2026-10-20T15:59:30Z",
+  "count": 15927,
+  "latestEpoch": "2026-10-22T00:11:19Z",
   "oldestEpoch": "2026-09-21T05:49:13Z",
   "note": "GROUP=active TLE catalogue (gp.php)."
  },
