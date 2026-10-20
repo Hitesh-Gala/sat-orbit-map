@@ -29,19 +29,28 @@ const HUD_LIST_MAX  = 200;          // capped to keep DOM cheap when open
 // Selectable observer cities.  The over-horizon panels, the globe
 // markers, and the custom lookup hint all recompute against whichever
 // of these is active in the #observer-city dropdown.
+// Listed alphabetically because that is how a reader looks a city up; the
+// default is named rather than taken by index, so the order can change without
+// moving the default off New Delhi.
 const CITIES = [
-  { name: 'New Delhi',   lat: 28.6139, lon: 77.2090, alt: 0.216 },
-  { name: 'Mumbai',      lat: 19.0760, lon: 72.8777, alt: 0.014 },
+  { name: 'Ahmedabad',   lat: 23.0225, lon: 72.5714, alt: 0.053 },
   { name: 'Bangalore',   lat: 12.9716, lon: 77.5946, alt: 0.920 },
-  { name: 'Chennai',     lat: 13.0827, lon: 80.2707, alt: 0.006 },
-  { name: 'Srinagar',    lat: 34.0837, lon: 74.7973, alt: 1.585 },
-  { name: 'Guwahati',    lat: 26.1445, lon: 91.7362, alt: 0.055 },
-  { name: 'Jaisalmer',   lat: 26.9157, lon: 70.9083, alt: 0.225 },
+  { name: 'Baroda',      lat: 22.3072, lon: 73.1812, alt: 0.039 },
   { name: 'Bhopal',      lat: 23.2599, lon: 77.4126, alt: 0.527 },
-  { name: 'Kohima',      lat: 25.6751, lon: 94.1086, alt: 1.444 },
   { name: 'Bhubaneswar', lat: 20.2961, lon: 85.8245, alt: 0.045 },
-];
-let observerCity = CITIES[0];
+  { name: 'Chennai',     lat: 13.0827, lon: 80.2707, alt: 0.006 },
+  { name: 'Guwahati',    lat: 26.1445, lon: 91.7362, alt: 0.055 },
+  { name: 'Hyderabad',   lat: 17.3850, lon: 78.4867, alt: 0.542 },
+  { name: 'Jaisalmer',   lat: 26.9157, lon: 70.9083, alt: 0.225 },
+  { name: 'Kohima',      lat: 25.6751, lon: 94.1086, alt: 1.444 },
+  { name: 'Kolkata',     lat: 22.5726, lon: 88.3639, alt: 0.009 },
+  { name: 'Mumbai',      lat: 19.0760, lon: 72.8777, alt: 0.014 },
+  { name: 'New Delhi',   lat: 28.6139, lon: 77.2090, alt: 0.216 },
+  { name: 'Srinagar',    lat: 34.0837, lon: 74.7973, alt: 1.585 },
+].sort((a, b) => a.name.localeCompare(b.name));
+
+const DEFAULT_CITY = CITIES.findIndex(c => c.name === 'New Delhi');
+let observerCity = CITIES[DEFAULT_CITY];
 let observerMode = 'single';   // 'single' = one city · 'all' = union of every city
 let maskNonCN    = false;      // globe markers show only Chinese sats when true
 let flatMode     = false;      // true = 2-D (markers pinned to surface) · false = 3-D (real altitude)
@@ -587,7 +596,7 @@ function renderCNHorizonList(items) {
 (function setupObserverCity() {
   const sel = $('observer-city');
   if (!sel) return;
-  let lastCityValue = '0';   // where to snap back after a mask toggle
+  let lastCityValue = String(DEFAULT_CITY);   // where to snap back after a mask toggle
 
   function rebuildOptions() {
     const cityOpts = CITIES.map((c, i) => `<option value="${i}">${esc(c.name)}</option>`);
@@ -599,6 +608,7 @@ function renderCNHorizonList(items) {
     sel.innerHTML = cityOpts.join('');
   }
   rebuildOptions();
+  sel.value = lastCityValue;   // New Delhi sits mid-list once sorted
 
   sel.addEventListener('change', () => {
     const v = sel.value;
@@ -622,7 +632,7 @@ function renderCNHorizonList(items) {
       globe.pointOfView({ lat: 23, lng: 82, altitude: HOME_ALT + 0.2 }, 1200);
     } else {
       observerMode = 'single';
-      observerCity = CITIES[parseInt(v, 10)] || CITIES[0];
+      observerCity = CITIES[parseInt(v, 10)] || CITIES[DEFAULT_CITY];
       document.querySelectorAll('.obs-city-name').forEach(el => {
         el.textContent = observerCity.name;
       });

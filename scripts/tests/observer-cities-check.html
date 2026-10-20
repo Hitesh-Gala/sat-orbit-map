@@ -1,0 +1,36 @@
+<!doctype html>
+<!-- Drives the live landing page in an iframe and reports on the observer-city
+     dropdown: the four added cities, alphabetical order, and New Delhi still
+     being the selected default now that it is no longer the first option.
+     Serve the repo (python -m http.server 8099) and dump this page's DOM. -->
+<meta charset="utf-8"><pre id="out">running…</pre>
+<iframe id="f" src="http://localhost:8099/index.html" style="width:1400px;height:900px"></iframe>
+<script>
+var out = document.getElementById('out'), f = document.getElementById('f'), n = 0;
+var t = setInterval(function () {
+  n++;
+  var d = f.contentDocument;
+  var sel = d && d.getElementById('observer-city');
+  if (!sel || !sel.options.length) {
+    out.textContent = 'waiting… tick ' + n + ' readyState=' + (d && d.readyState);
+    if (n > 400) clearInterval(t);
+    return;
+  }
+  clearInterval(t);
+  var L = [], opts = [].map.call(sel.options, function (o) { return o.value + '=' + o.textContent; });
+  var cities = opts.filter(function (o) { return /^\d+=/.test(o); }).map(function (o) { return o.split('=')[1]; });
+  var sorted = cities.slice().sort(function (a, b) { return a.localeCompare(b); });
+  var picked = (sel.selectedOptions[0] || {}).textContent;
+  L.push('OPTIONS: ' + opts.join(' | '));
+  L.push('SELECTED: value=' + sel.value + ' text=' + picked);
+  L.push('COUNT: ' + cities.length);
+  L.push('ALPHABETICAL: ' + (cities.join() === sorted.join() ? 'PASS' : 'FAIL want ' + sorted.join()));
+  ['Baroda', 'Ahmedabad', 'Kolkata', 'Hyderabad'].forEach(function (c) {
+    L.push('HAS ' + c + ': ' + (cities.indexOf(c) !== -1 ? 'PASS' : 'FAIL'));
+  });
+  L.push('DEFAULT New Delhi: ' + (picked === 'New Delhi' ? 'PASS' : 'FAIL'));
+  L.push('TAIL ENTRIES: ' + opts.slice(-2).join(' | '));
+  L.push('HINT SPANS: ' + [].map.call(d.querySelectorAll('.obs-city-name'), function (e) { return e.textContent; }).join(' / '));
+  out.textContent = L.join('\n');
+}, 100);
+</script>
