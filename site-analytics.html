@@ -51,6 +51,13 @@
     .va-stat span { display: block; margin-top: 1px; font-family: var(--mono); font-size: 13.2px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
     /* every card carries the same outline; the headline pair is marked by its type, not its border */
     .va-stat.big b { font-size: 36px; color: #ffd166; }
+    /* The date the log starts, tucked into the corner of its card.  Absolute,
+       so it rides along without changing the card's size. */
+    .va-since { position: absolute; right: 10px; bottom: 4px; font-style: normal;
+      font-family: var(--mono); font-size: 12.5px; letter-spacing: .02em; color: var(--accent); }
+    .va-since:empty { display: none; }
+    /* Two cards to a row, the label wraps and takes the band the date sits in. */
+    @media (max-width: 560px) { .va-since { display: none; } }
 
     /* Hover / focus detail on a headline card.  Built from <strong>, <dl>,
        <table> and <p> only — .va-stat b / span above would restyle those tags. */
@@ -185,7 +192,7 @@
         <div class="va-stat big va-hov" tabindex="0" aria-describedby="pop-users"><b id="st-users">–</b><span>Total users to date</span>
           <div class="va-pop" id="pop-users" role="tooltip"></div></div>
         <div class="va-stat big"><b id="st-today">–</b><span>Visitors today</span></div>
-        <div class="va-stat"><b id="st-visits">–</b><span>Visits to date</span></div>
+        <div class="va-stat"><b id="st-visits">–</b><span>Visits to date</span><i id="st-since" class="va-since"></i></div>
         <div class="va-stat"><b id="st-vtoday">–</b><span>Visits today</span></div>
         <div class="va-stat"><b id="st-avg">–</b><span>Avg. time on site</span></div>
         <div class="va-stat va-hov edge-right" tabindex="0" aria-describedby="pop-countries"><b id="st-countries">–</b><span>Countries</span>
@@ -239,7 +246,7 @@
   </main>
 
   <script src="site-analytics.js?v=6"></script>
-  <script src="site-analytics-view.js?v=10"></script>
+  <script src="site-analytics-view.js?v=11"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="mobile-menu.js?v=26"></script>
 </body>

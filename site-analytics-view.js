@@ -87,6 +87,9 @@
     return d.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric',
                                       hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
   }
+  function fmtDay(d) {
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
+  }
   function fmtDur(sec) {
     sec = Math.max(0, Math.round(Number(sec) || 0));
     const h = Math.floor(sec / 3600), m = Math.floor(sec / 60) % 60, s = sec % 60;
@@ -241,6 +244,16 @@
     $('st-vtoday').textContent = today.length.toLocaleString();
     $('st-avg').textContent = fmtDur(avg);
     $('st-countries').textContent = new Set(allVisits.map(v => v.country).filter(Boolean)).size.toLocaleString();
+    // When the backend truncates to the newest rows the oldest one loaded is
+    // not where the log actually starts, so say "newest" rather than imply a
+    // start date that isn't one.
+    const first = allVisits.length ? new Date(allVisits[0].start) : null;
+    const since = $('st-since');
+    since.textContent = first && !isNaN(first)
+      ? (res.truncated ? 'newest since ' : 'since ') + fmtDay(first) : '';
+    since.title = res.truncated
+      ? `Only the newest ${allVisits.length.toLocaleString()} visits were loaded — the log itself starts earlier.`
+      : 'The first visit in the log.';
     renderUsersPop(res);
     renderCountriesPop();
   }
