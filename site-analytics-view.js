@@ -196,7 +196,14 @@
       return setState(`Could not reach the analytics backend — ${e.message}.`, true);
     }
     if (!res.ok) {
-      if (res.error === 'auth') { forgetPw(); return gate('Incorrect password.'); }
+      // The page has already checked this password against its own hash, so a
+      // rejection here means the deployed Apps Script is still on the previous
+      // one.  Asking for the password again cannot fix that, so say what will.
+      if (res.error === 'auth') {
+        return setState('The password is right for this page, but the Apps Script backend still has the previous one. '
+          + 'Update PASSWORD_SHA256 in site-analytics-backend.gs to the hash in site-analytics.js and publish a NEW '
+          + 'deployment version — editing the script alone does not change what the /exec URL runs.', true);
+      }
       return setState(`The analytics backend replied: ${res.error}`, true);
     }
     try { sessionStorage.setItem(NA.PW_KEY, pw); } catch { /* storage blocked */ }
@@ -372,6 +379,10 @@
     if (hash !== NA.CFG.passwordSha256) { $('va-err').textContent = 'Incorrect password.'; $('va-pw').select(); return; }
     try { localStorage.setItem(NA.OWNER_FLAG, '1'); } catch { /* storage blocked */ }
     $('va-err').textContent = '';
+    // Once the password is accepted the card comes down and stays down.  Left
+    // up, a backend complaint would appear underneath it and read as a second
+    // prompt for the same password.  The lock button puts it back.
+    $('va-gate').hidden = true;
     load(pw);
   }
 

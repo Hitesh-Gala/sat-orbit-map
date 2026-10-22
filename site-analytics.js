@@ -220,24 +220,7 @@
     + '-webkit-backdrop-filter:blur(8px);transition:background .15s,transform .15s}'
     + '.va-btn:hover{background:rgba(103,200,255,.22);transform:scale(1.03)}'
     + '.va-btn .ic{font-size:15px;color:#ffd166}'
-    + '@media(max-width:720px){.va-btn{top:52px;left:8px;padding:6px 11px;font-size:11px;letter-spacing:.1em}}'
-    + '.va-modal{position:fixed;inset:0;z-index:1500;display:flex;align-items:center;justify-content:center;padding:20px;'
-    + 'background:rgba(3,7,13,.78);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}'
-    + '.va-modal[hidden]{display:none}'
-    + '.va-card{position:relative;width:min(420px,100%);background:var(--panel);border:1px solid var(--line);border-radius:12px;'
-    + 'box-shadow:0 24px 70px rgba(0,0,0,.6);padding:24px 22px;text-align:center}'
-    + '.va-title{font-family:"Orbitron",sans-serif;font-weight:700;font-size:16px;color:#fff;margin-bottom:12px}'
-    + '.va-x{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:8px;cursor:pointer;'
-    + 'background:rgba(16,32,58,.7);color:#eaf2fb;border:1px solid var(--line);font-size:19px;line-height:1}'
-    + '.va-x:hover{border-color:var(--accent);color:var(--accent)}'
-    + '.va-card label{display:block;font-family:var(--mono);font-size:12px;color:var(--text);margin-bottom:10px}'
-    + '.va-card input{font:14px var(--mono);color:var(--text);background:rgba(103,200,255,.06);border:1px solid var(--line);'
-    + 'border-radius:7px;padding:9px 12px;width:min(240px,80%)}'
-    + '.va-card input:focus{outline:none;border-color:var(--accent)}'
-    + '.va-err{color:#ff6b6b;font-family:var(--mono);font-size:12px;min-height:16px;margin-top:10px}'
-    + '.va-go{font-family:var(--mono);font-size:13px;font-weight:700;border-radius:8px;padding:9px 18px;cursor:pointer;'
-    + 'border:1px solid var(--accent);background:rgba(103,200,255,.14);color:#eaf6ff;margin-top:12px}'
-    + '.va-go:hover{background:rgba(103,200,255,.26)}';
+    + '@media(max-width:720px){.va-btn{top:52px;left:8px;padding:6px 11px;font-size:11px;letter-spacing:.1em}}';
 
   function buildGate() {
     if (document.getElementById('va-open')) return;
@@ -250,38 +233,10 @@
     btn.innerHTML = '<span class="ic">📊</span><span>Site Analytics</span>';
     document.body.appendChild(btn);
 
-    var modal = document.createElement('div');
-    modal.className = 'va-modal'; modal.hidden = true;
-    modal.setAttribute('role', 'dialog'); modal.setAttribute('aria-modal', 'true');
-    modal.innerHTML = '<div class="va-card">'
-      + '<button type="button" class="va-x" aria-label="Close">×</button>'
-      + '<div class="va-title">Site Analytics</div>'
-      + '<label for="va-gate-pw">Enter the owner password to open visitor analytics</label>'
-      + '<input id="va-gate-pw" type="password" autocomplete="off" placeholder="••••••••">'
-      + '<div class="va-err" id="va-gate-err"></div>'
-      + '<button type="button" class="va-go" id="va-gate-go">Unlock</button>'
-      + '</div>';
-    document.body.appendChild(modal);
-
-    var pw = document.getElementById('va-gate-pw'), err = document.getElementById('va-gate-err');
-    function open() { modal.hidden = false; err.textContent = ''; pw.value = ''; setTimeout(function () { pw.focus(); }, 60); }
-    function close() { modal.hidden = true; }
-    function unlock() {
-      var value = pw.value;
-      sha256(value).then(function (hash) {
-        if (hash !== CFG.passwordSha256) { err.textContent = 'Incorrect password.'; pw.select(); return; }
-        setItem('localStorage', OWNER_FLAG, '1');     // this machine → stop logging it
-        setItem('sessionStorage', PW_KEY, value);     // the dashboard re-checks it with the backend
-        location.href = 'site-analytics.html';
-      }, function () { err.textContent = 'This browser can’t check the password here (it needs HTTPS).'; });
-    }
-
-    btn.addEventListener('click', open);
-    modal.querySelector('.va-x').addEventListener('click', close);
-    modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) close(); });
-    document.getElementById('va-gate-go').addEventListener('click', unlock);
-    pw.addEventListener('keydown', function (e) { if (e.key === 'Enter') unlock(); });
+    // One password, asked once, on the dashboard itself.  This button used to
+    // ask too and hand the answer over, so a single password was typed twice -
+    // and typed again whenever the backend disagreed with the page.
+    btn.addEventListener('click', function () { location.href = 'site-analytics.html'; });
   }
 
   // ── init ───────────────────────────────────────────────────────────────

@@ -1,0 +1,51 @@
+<!doctype html><meta charset="utf-8"><body style="background:#000;color:#9f9;font:12px monospace">
+<!-- The Site Analytics password must be asked for exactly once: the About
+     page's button just navigates, and the dashboard is the only thing that
+     asks.  A backend that disagrees must explain itself rather than put the
+     prompt up a second time.
+
+     The password is NOT in this file.  Pass it at run time:
+       analytics-gate-check.html?pw=<urlencoded password> -->
+<pre id="out">running…</pre><iframe id="f" style="width:1200px;height:800px;border:0"></iframe>
+<script>
+const PW=new URLSearchParams(location.search).get('pw')||'';
+const log=[],put=(k,v)=>log.push(k+': '+JSON.stringify(v));
+const f=document.getElementById('f');
+const load=src=>new Promise(r=>{f.onload=()=>setTimeout(r,800);f.src=src;});
+const done=()=>document.getElementById('out').textContent=log.join('\n');
+
+async function run(){
+  // About: one button, and no password box of its own any more
+  await load('../../about.html');
+  let d=f.contentDocument;
+  put('aboutButton',!!d.getElementById('va-open'));
+  put('aboutHasNoOwnPrompt',[!d.querySelector('.va-modal'),!d.getElementById('va-gate-pw')]);
+  d.getElementById('va-open').click();
+  await new Promise(r=>setTimeout(r,600));
+  // the click navigated the frame; re-setting src to the same URL fires no
+  // load event, so carry on with the document we are already looking at
+  await new Promise(r=>setTimeout(r,1500));
+  put('aboutGoesStraightThere',f.contentWindow.location.pathname.endsWith('site-analytics.html'));
+
+  // the dashboard asks, once
+  d=f.contentDocument;
+  const visible=id=>{const e=d.getElementById(id);return !!e&&!e.hidden&&getComputedStyle(e).display!=='none';};
+  put('dashboardAsks',visible('va-gate'));
+  put('promptCount',d.querySelectorAll('input[type=password]').length);
+  if(!PW){ put('passwordChecks','skipped — pass ?pw=… to run them'); return done(); }
+
+  d.getElementById('va-pw').value='wrong-one';
+  d.getElementById('va-unlock').click();
+  await new Promise(r=>setTimeout(r,400));
+  put('wrongRefused',[d.getElementById('va-err').textContent,visible('va-gate')]);
+
+  d.getElementById('va-pw').value=PW;
+  d.getElementById('va-unlock').click();
+  await new Promise(r=>setTimeout(r,2500));
+  put('acceptedByThePage',!d.getElementById('va-err').textContent);
+  put('gateStaysDown',!visible('va-gate'));          // never a second prompt
+  put('whatItSaysNow',(d.getElementById('va-state')||{}).textContent||'(loaded)');
+  done();
+}
+run().catch(e=>{put('ERROR',e.message);done();});
+</script>
