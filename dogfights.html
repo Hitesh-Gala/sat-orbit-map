@@ -6,19 +6,23 @@
   <meta name="mobile-web-app-capable" content="yes">
   <title>NAZAR · Space Dog-Fights</title>
   <!-- Space Stuff is password protected: the page stays hidden until the password is entered (nazar-gate.js). -->
-  <script src="nazar-gate.js?v=2" data-section="spacestuff"></script>
+  <script src="nazar-gate.js?v=3" data-section="spacestuff"></script>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=52">
   <style>
-    body.page-dogfight { overflow: hidden; }
+    /* Against black, the site's grey was too dark to read at a glance and the
+       near-white sat names sat too close to it.  The grey is lifted almost to
+       white and the whites are warmed to a wheat yellow, so the two ranks are
+       told apart by hue rather than by brightness alone. */
+    body.page-dogfight { overflow: hidden; --text: #ffe6a4; --dim: #c9dced; }
     #globe { position: fixed; inset: 0; }
 
     .df-head { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 20; text-align: center; pointer-events: none; }
     .df-head h1 { margin: 0; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 23px;
-      letter-spacing: .16em; color: #eaf2fb; }
+      letter-spacing: .16em; color: #ffe6a4; }
     .df-head .sub { font-family: 'Caveat', cursive; font-size: 19px; color: #ff9f6a; }
 
     /* Both side panels share the HUD idiom used across the site, and both run
@@ -28,8 +32,14 @@
     .df-shell { position: fixed; top: 71.7px; width: 300px; z-index: 12; zoom: 1.2;
       display: flex; flex-direction: column; gap: 7px; max-height: calc((100vh - 104px) / 1.2);
       overflow-y: auto; overflow-x: hidden; }
-    .df-left { left: 11.7px; }
+    .df-left { left: 11.7px; width: 252px; }
     .df-right { right: 11.7px; }
+    /* The left column is the narrow one: it buys the width back from the
+       padding, not from the type. */
+    .df-left .panel { padding: 8px 8px; }
+    .df-left .df-input { padding: 6px 7px; }
+    .df-left .df-btn { padding: 7px 4px; letter-spacing: .02em; }
+    .df-left .df-hit { padding: 5px 6px; }
     .df-shell .panel { overflow: visible; }
     .df-label { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
       color: var(--dim); margin-bottom: 7px; }
@@ -43,7 +53,7 @@
       border-radius: 6px; color: var(--text); font-family: var(--mono); font-size: 13px;
       letter-spacing: .06em; padding: 7px 10px; transition: .14s; }
     .df-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .df-btn.primary { background: rgba(103,200,255,.18); border-color: var(--accent); color: #eaf6ff; font-weight: 700; }
+    .df-btn.primary { background: rgba(103,200,255,.18); border-color: var(--accent); color: #fff2cc; font-weight: 700; }
     .df-btn.on { background: var(--accent); color: #04101c; font-weight: 700; }
     .df-btn:disabled { opacity: .45; cursor: default; }
 
@@ -116,7 +126,7 @@
     .df-pick-foot button { cursor: pointer; background: rgba(103,200,255,.1); border: 1px solid var(--line);
       border-radius: 6px; color: var(--text); font-family: var(--mono); font-size: 13px; padding: 6px 13px; }
     .df-pick-foot button:hover { border-color: var(--accent); color: var(--accent); }
-    .df-pick-foot button.ok { background: rgba(103,200,255,.2); border-color: var(--accent); color: #eaf6ff;
+    .df-pick-foot button.ok { background: rgba(103,200,255,.2); border-color: var(--accent); color: #fff2cc;
       font-weight: 700; }
     .df-note { font-size: 12.5px; line-height: 1.5; color: var(--dim); margin-top: 8px; }
     .df-clock { font-family: var(--mono); font-size: 14px; color: var(--accent); margin-top: 8px;
@@ -156,7 +166,7 @@
       <input type="search" id="df-q" class="df-input" placeholder="🔍 Name or NORAD number…" autocomplete="off" spellcheck="false">
       <div id="df-results" class="df-results"></div>
       <div class="df-row">
-        <button type="button" class="df-btn primary" id="df-add">+ Add to globe</button>
+        <button type="button" class="df-btn primary" id="df-add">+ Add To Globe</button>
         <button type="button" class="df-btn" id="df-clear">Clear all</button>
       </div>
       <div class="df-note" id="df-hint">Search the catalogue, pick a result, then add it. Add two and you can watch them close on each other.</div>
@@ -202,10 +212,10 @@
       <select class="df-select" id="df-focus" aria-label="Satellite to keep centred">
         <option value="">— free camera —</option>
       </select>
-      <div class="df-note">Lock the camera to one satellite and it stays in the middle of the screen while the Earth and everything else move around it — which is the only way a proximity operation reads properly.</div>
+      <div class="df-note">Lock the camera to the Earth or to a Satellite.</div>
       <div class="df-row">
         <button type="button" class="df-btn" id="df-trails">Trails: on</button>
-        <button type="button" class="df-btn" id="df-reset">Reset view</button>
+        <button type="button" class="df-btn" id="df-reset" title="Ctrl + drag slides the globe across the view; this puts it back">Reset view</button>
       </div>
     </section>
 
@@ -219,7 +229,6 @@
         <div class="row"><span>Sat size</span><b><span id="df-size-val">1.0</span>×</b></div>
         <input type="range" id="df-size" min="0.3" max="3" step="0.1" value="1" aria-label="Satellite size">
       </div>
-      <div class="df-note">Altitude scale lifts the orbits off the surface so two objects a few hundred kilometres up are not lost against the Earth; sat size is the dot and its halo. Neither touches the propagation — the clock and the geometry stay as they are, and the trails are redrawn to match.</div>
     </section>
   </aside>
 
@@ -229,6 +238,6 @@
   <script src="tle-loader.js?v=11"></script>
   <script src="site-analytics.js?v=5"></script>
   <script src="mobile-menu.js?v=26"></script>
-  <script src="dogfights.js?v=2"></script>
+  <script src="dogfights.js?v=3"></script>
 </body>
 </html>

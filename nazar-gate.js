@@ -6,6 +6,10 @@
 //                password card until the password has been entered once in
 //                this tab (sessionStorage); after that every Space Stuff page
 //                opens straight away.
+//   Launch atlas the same, with data-section="launchsites" — the globe, the
+//                2D map, the gallery and the rocket models.  All four carry
+//                it: gating only the entry page would leave the rest open to
+//                anyone who typed the sub-page's own URL.
 //   One control  NazarGate.ask() puts the same card in front of a single
 //                button — the Debris Tracker's Source purification report.
 //
@@ -15,9 +19,10 @@
 // here, in site-analytics.js (passwordSha256) and in the deployed Apps Script
 // (PASSWORD_SHA256 in site-analytics-backend.gs).
 (function () {
-  var SHA256 = '073c5d092744e265c7726e0ab4c911c0295a91f022eb8d98fa8391b64769dbd1';
+  var SHA256 = '6805b3729c5fc9e4f9758d7f40284484c93db2214cf16c2a7f17c7e6315162d3';
   var SECTIONS = {
     spacestuff: { key: 'nazar.spacestuff', icon: '🛰', title: 'Space Stuff', sub: 'Facts, figures, trackers & tools — password protected' },
+    launchsites: { key: 'nazar.launchsites', icon: '🚀', title: 'Global Launch Sites', sub: 'The launch atlas, its 2D map, gallery and rocket models — password protected' },
   };
 
   function sha256(text) {

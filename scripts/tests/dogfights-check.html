@@ -107,6 +107,30 @@ async function run(){
   put('daysEnabledAtEdge',grid().filter(b=>!b.disabled).map(b=>b.textContent).join(','));
   put('nextArrowSpent',d.querySelector('[data-mv="1"]').disabled);
   d.querySelector('[data-act="cancel"]').click();
+  // panel widths, the button label and the two colour ranks
+  const css=(sel,prop)=>w.getComputedStyle(d.querySelector(sel)).getPropertyValue(prop);
+  put('addLabel',d.getElementById('df-add').textContent);
+  put('panelWidths',[d.querySelector('.df-left').offsetWidth,d.querySelector('.df-right').offsetWidth]);
+  const add=d.getElementById('df-add');
+  put('addButtonFits',add.scrollWidth<=add.clientWidth+1);
+  put('leftPanelPadding',css('.df-left .panel','padding'));
+  put('dimColour',css('.df-note','color'));
+  put('textColour',css('.df-item .nm','color'));
+  put('headColour',css('.df-head h1','color'));
+  const notes=[...d.querySelectorAll('.df-note')].map(n=>n.textContent);
+  put('altNoteGone',!notes.some(t=>t.startsWith('Altitude scale')));
+  put('focusNote',notes.filter(t=>t.startsWith('Lock')));
+  // Ctrl swaps the left button from turning the globe to sliding it
+  put('panBeforeCtrl',df.panMode());
+  w.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Control'}));
+  put('panWithCtrl',df.panMode());
+  w.dispatchEvent(new w.KeyboardEvent('keyup',{key:'Control'}));
+  put('panAfterRelease',df.panMode());
+  // trails keep far more history now, and compact in quarters
+  put('trailMax',df.trailMax());
+  const n0=df.trailLen(0);
+  for(let i=0;i<1200;i++) df.step(1);
+  put('trailGrewPast900',[n0,df.trailLen(0),df.trailLen(0)>900]);
   // focus: the chosen satellite should sit at the centre of the screen
   const sel=d.getElementById('df-focus');
   sel.value=sel.options[1].value; sel.dispatchEvent(new Event('change'));

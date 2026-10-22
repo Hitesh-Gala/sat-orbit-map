@@ -1,0 +1,69 @@
+<!doctype html><meta charset="utf-8"><body style="background:#000;color:#9f9;font:12px monospace">
+<!-- Checks the shared password gate: that every gated page comes up locked,
+     that the owner password unlocks it and a wrong one does not, that one
+     unlock covers a whole section but not another, and that all three files
+     carry the same hash and none of them the plaintext.
+
+     The password is NOT in this file and must never be committed to one.
+     Pass it at run time:  gate-check.html?pw=<urlencoded password>
+     Without it the lock checks still run and the rest is skipped. -->
+<pre id="out">running…</pre><iframe id="f" style="width:1200px;height:760px;border:0"></iframe>
+<script>
+const PW=new URLSearchParams(location.search).get('pw')||'';
+const log=[],put=(k,v)=>log.push(k+': '+JSON.stringify(v));
+const f=document.getElementById('f');
+const load=src=>new Promise(r=>{f.onload=()=>setTimeout(r,900);f.src=src;});
+const done=()=>document.getElementById('out').textContent=log.join('\n');
+const sha=t=>crypto.subtle.digest('SHA-256',new TextEncoder().encode(t))
+  .then(b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''));
+
+async function run(){
+  // Which pages carry a section gate is settled by the tag in their <head>,
+  // so that part is read from the source rather than by loading a dozen globe
+  // pages; the behaviour is then driven on three of them below.
+  const SECTIONS={
+    spacestuff:['space-stuff','space-launched','traffic-conjunctions','data-comparison',
+                'mirror-globe','sat-steroids','cone-waffles','dogfights'],
+    launchsites:['launch-map','launch-map-2d','launch-gallery','rocket-models'],
+  };
+  const INDISPACE=['indi-space','analogues','comparatives'];
+  for(const [sec,pages] of Object.entries(SECTIONS)){
+    const got=await Promise.all(pages.map(p=>fetch('../../'+p+'.html').then(r=>r.text())
+      .then(t=>new RegExp('nazar-gate\\.js[^>]*data-section="'+sec+'"').test(t))));
+    put('tagged:'+sec,[pages.length,got.every(Boolean)]);
+  }
+  put('indispaceBounce',(await Promise.all(INDISPACE.map(p=>fetch('../../'+p+'.html').then(r=>r.text())
+    .then(t=>t.includes("sessionStorage.getItem('nazar.indispace')"))))).every(Boolean));
+  put('gatedPageCount',SECTIONS.spacestuff.length+SECTIONS.launchsites.length+INDISPACE.length+1);
+  // the three files must agree on one hash, and hold no plaintext
+  const names=['nazar-gate.js','site-analytics.js','site-analytics-backend.gs'];
+  const files=await Promise.all(names.map(n=>fetch('../../'+n).then(r=>r.text())));
+  put('oldHashGone',files.map(t=>!t.includes('073c5d092744e265c7726e0ab4c911c0295a91f022eb8d98fa8391b64769dbd1')));
+  if(!PW){ put('passwordChecks','skipped — pass ?pw=… to run them'); return done(); }
+  const h=await sha(PW);
+  put('hashInAllThree',files.map(t=>t.includes(h)));
+  put('plaintextInNone',files.map(t=>!t.includes(PW)));
+  // the card names the section it guards
+  await load('../../launch-map.html');
+  let d=f.contentDocument;
+  put('cardTitle',d.querySelector('#nz-gate .nz-title').textContent);
+  const type=v=>{d.getElementById('nz-pw').value=v;d.getElementById('nz-go').click();};
+  type('not-the-password');
+  await new Promise(r=>setTimeout(r,400));
+  put('wrongRefused',[!d.getElementById('nz-err').hidden,d.documentElement.classList.contains('nz-locked')]);
+  type(PW);
+  await new Promise(r=>setTimeout(r,500));
+  put('rightUnlocks',[!d.documentElement.classList.contains('nz-locked'),!d.getElementById('nz-gate')]);
+  // one unlock carries across its own section, but not into another
+  await load('../../rocket-models.html');
+  put('sectionCarries',!f.contentDocument.getElementById('nz-gate'));
+  await load('../../dogfights.html');
+  d=f.contentDocument;
+  put('otherSectionStillLocked',!!d.getElementById('nz-gate'));
+  type(PW);
+  await new Promise(r=>setTimeout(r,500));
+  put('samePasswordForSpaceStuff',!d.documentElement.classList.contains('nz-locked'));
+  done();
+}
+run().catch(e=>{put('ERROR',e.message);done();});
+</script>

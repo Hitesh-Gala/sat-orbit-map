@@ -41,7 +41,7 @@
  * @OnlyCurrentDoc
  */
 
-var PASSWORD_SHA256 = '073c5d092744e265c7726e0ab4c911c0295a91f022eb8d98fa8391b64769dbd1';
+var PASSWORD_SHA256 = '6805b3729c5fc9e4f9758d7f40284484c93db2214cf16c2a7f17c7e6315162d3';
 var SHEET_NAME = 'Visits';
 var MAX_READ   = 5000;   // newest visits returned to the dashboard
 

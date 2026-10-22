@@ -22,7 +22,7 @@
   var EARTH_R = 6371, GLOBE_R = 100, SCALE = GLOBE_R / EARTH_R;
   var RATES = [0.5, 1, 10, 50, 100, 500, 1000, 2000, 5000, 10000];
   var COLOURS = ['#67c8ff', '#ff7a3c', '#58d68d', '#c9a0ff', '#ffcf5c', '#ff6f9c', '#4dd0e1', '#ffffff'];
-  var TRAIL_MAX = 900;
+  var TRAIL_MAX = 6000;      // one point per frame, so ~100 s of drawing at 1x
   var DOT_R = 1.5, HALO_R = 3.4;
 
   var catalogue = [];        // every satrec we can search
@@ -42,6 +42,17 @@
 
   var scene = globe.scene(), camera = globe.camera(), controls = globe.controls();
   controls.enableDamping = true;
+
+  // Hold Ctrl and the left button slides the globe across the view instead of
+  // turning it.  Focus mode re-centres the camera every frame, so this is a
+  // free-camera move; the Reset view button puts it back.
+  controls.enablePan = true;
+  function setPan(on) {
+    controls.mouseButtons.LEFT = on ? THREE.MOUSE.PAN : THREE.MOUSE.ROTATE;
+  }
+  window.addEventListener('keydown', function (e) { if (e.key === 'Control') setPan(true); });
+  window.addEventListener('keyup', function (e) { if (e.key === 'Control') setPan(false); });
+  window.addEventListener('blur', function () { setPan(false); });   // Ctrl+Tab away, key never released
 
   function resize() {
     globe.width(window.innerWidth).height(window.innerHeight);
@@ -98,15 +109,30 @@
 
   function pushTrail(sat, pos) {
     if (!trails) return;
-    var vis = sat.vis, arr = vis.geom.attributes.position.array;
-    if (vis.n >= TRAIL_MAX) { arr.copyWithin(0, 3); vis.raw.copyWithin(0, 3); vis.n = TRAIL_MAX - 1; }
+    var vis = sat.vis, attr = vis.geom.attributes.position, arr = attr.array;
+    var whole = false;
+    if (vis.n >= TRAIL_MAX) {
+      // Dropping a quarter at a time rather than one point keeps the memmove
+      // off the frame loop - it runs once every TRAIL_MAX/4 frames instead of
+      // every frame, at the price of the trail breathing between three
+      // quarters of its length and all of it.
+      var drop = (TRAIL_MAX >> 2) * 3;
+      arr.copyWithin(0, drop); vis.raw.copyWithin(0, drop);
+      vis.n -= TRAIL_MAX >> 2;
+      whole = true;
+    }
     var o = vis.n * 3;
     vis.raw[o] = pos.x; vis.raw[o + 1] = pos.y; vis.raw[o + 2] = pos.z;
     var d = stretch(pos.clone());
     arr[o] = d.x; arr[o + 1] = d.y; arr[o + 2] = d.z;
     vis.n++;
     vis.geom.setDrawRange(0, vis.n);
-    vis.geom.attributes.position.needsUpdate = true;
+    // Only the three floats just written go to the GPU; sending the whole
+    // 6,000-point buffer every frame is what would make a long trail
+    // expensive.  three resets count to -1 after each upload, so the compaction
+    // frame - where everything moved - simply leaves it alone.
+    if (!whole) { attr.updateRange.offset = o; attr.updateRange.count = 3; }
+    attr.needsUpdate = true;
   }
 
   function clearTrail(sat) {
@@ -118,13 +144,14 @@
   var _r = new THREE.Vector3();
   function rescaleTrails() {
     picked.forEach(function (sat) {
-      var vis = sat.vis, arr = vis.geom.attributes.position.array;
+      var vis = sat.vis, attr = vis.geom.attributes.position, arr = attr.array;
       for (var i = 0; i < vis.n * 3; i += 3) {
         _r.set(vis.raw[i], vis.raw[i + 1], vis.raw[i + 2]);
         stretch(_r);
         arr[i] = _r.x; arr[i + 1] = _r.y; arr[i + 2] = _r.z;
       }
-      vis.geom.attributes.position.needsUpdate = true;
+      attr.updateRange.count = -1;   // the whole history changed, not one point
+      attr.needsUpdate = true;
     });
   }
 
@@ -455,8 +482,11 @@
   $('df-alt').addEventListener('input', function (e) {
     altScale = parseFloat(e.target.value) || 1;
     $('df-alt-val').textContent = altScale.toFixed(1);
-    rescaleTrails();
+    // draw() first: it appends a point and asks for a partial upload, and the
+    // rescale that follows must be the last word on what reaches the GPU
+    // before the next render, or the redrawn history would never arrive.
     draw();
+    rescaleTrails();
   });
   $('df-size').addEventListener('input', function (e) {
     sizeMul = parseFloat(e.target.value) || 1;
@@ -524,6 +554,9 @@
     altScale: function () { return altScale; },
     sizeMul: function () { return sizeMul; },
     radius: function (i) { return picked[i] && picked[i].pos ? picked[i].pos.length() : 0; },
+    trailLen: function (i) { return picked[i] ? picked[i].vis.n : 0; },
+    trailMax: function () { return TRAIL_MAX; },
+    panMode: function () { return controls.enablePan && controls.mouseButtons.LEFT === THREE.MOUSE.PAN; },
     meshScale: function (i) { return picked[i] ? picked[i].vis.group.scale.x : 0; },
     trailRadius: function (i) {
       var vis = picked[i] && picked[i].vis;
