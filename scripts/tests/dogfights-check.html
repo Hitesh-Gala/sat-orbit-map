@@ -1,11 +1,15 @@
 <!doctype html><meta charset="utf-8"><body style="background:#000;color:#9f9;font:12px monospace">
-<pre id="out">running…</pre><iframe id="f" src="dogfights.html" style="width:1400px;height:880px;border:0"></iframe>
+<pre id="out">running…</pre><iframe id="f" style="width:1400px;height:880px;border:0"></iframe>
 <script>
 const log=[],put=(k,v)=>log.push(k+': '+JSON.stringify(v));
+// Space Stuff is gated. sessionStorage is shared across same-origin frames in
+// one tab, so unlocking it here — before the frame is given its src — means
+// nazar-gate.js finds the flag already set and the page is never hidden.
+try{ sessionStorage.setItem('nazar.spacestuff','1'); }catch(e){}
+document.getElementById('f').src='../../dogfights.html';
 window.addEventListener('load',()=>setTimeout(run,12000));
 async function run(){
   const w=document.getElementById('f').contentWindow,d=w.document;
-  try{ w.sessionStorage.setItem('nazar.spacestuff','1'); }catch(e){}
   const df=w.__df;
   put('hook',!!df);
   put('catalogue',df?df.catalogue():0);
@@ -23,12 +27,17 @@ async function run(){
   await new Promise(r=>setTimeout(r,500));
   put('picked',df.picked());
   put('focusOptions',[...d.getElementById('df-focus').options].map(o=>o.text));
-  // speed slider
-  const sp=d.getElementById('df-speed'); sp.value=8; sp.dispatchEvent(new Event('input'));
+  // speed slider — the top stop is now 10,000×
+  const sp=d.getElementById('df-speed');
+  put('rateStops',df.rates());
+  put('sliderMax',sp.max);
+  sp.value=sp.max; sp.dispatchEvent(new Event('input'));
   put('rateAtMax',df.rate()); put('rateLabel',d.getElementById('df-speed-val').textContent);
-  // the period inputs
+  // the period fields are read-only text the calendar writes
   const f=d.getElementById('df-from'), t=d.getElementById('df-to');
-  put('fromMin',f.min); put('toMax',t.max);
+  put('fieldType',[f.type,f.readOnly]);
+  put('windowText',df.window());
+  put('limits',df.limits());
   // animate: clock should advance and stop at the end of the window
   const before=df.simTime();
   d.getElementById('df-animate').click();
@@ -37,16 +46,67 @@ async function run(){
   put('clockMoved',df.simTime()!==before);
   d.getElementById('df-animate').click();
   // the run should stop by itself at the end of the window
-  const t2=d.getElementById('df-to');
   const soon=new Date(Date.now()+8000);
   const pad=n=>String(n).padStart(2,'0');
-  t2.value=soon.getFullYear()+'-'+pad(soon.getMonth()+1)+'-'+pad(soon.getDate())+'T'+pad(soon.getHours())+':'+pad(soon.getMinutes());
-  t2.dispatchEvent(new Event('change'));
+  df.setWindow(null,soon.getFullYear()+'-'+pad(soon.getMonth()+1)+'-'+pad(soon.getDate())+' '+pad(soon.getHours())+':'+pad(soon.getMinutes()));
   d.getElementById('df-animate').click();
   put('playingBeforeStep',df.playing());
   df.step(7200);                       // two hours of sim, past the window end
   put('stoppedAtWindowEnd',!df.playing());
   put('clockClampedToEnd',df.simTime().slice(0,16));
+  // view-scale sliders: altitude pushes the dot out, size scales the mesh
+  const r0=df.radius(0);
+  const alt=d.getElementById('df-alt'); alt.value='3'; alt.dispatchEvent(new Event('input'));
+  put('altScale',df.altScale());
+  put('altLabel',d.getElementById('df-alt-val').textContent);
+  put('radiusGrew',df.radius(0)>r0+1);
+  put('radiusMath',[+r0.toFixed(2),+df.radius(0).toFixed(2)]);
+  put('trailFollowed',df.trailRadius(0));
+  alt.value='1'; alt.dispatchEvent(new Event('input'));
+  put('radiusBack',Math.abs(df.radius(0)-r0)<0.01);
+  const size=d.getElementById('df-size'); size.value='2.5'; size.dispatchEvent(new Event('input'));
+  put('sizeMul',df.sizeMul());
+  put('meshScale',df.meshScale(0));
+  put('sizeLabel',d.getElementById('df-size-val').textContent);
+  // the calendar: a day + OK writes the field, Cancel leaves it alone
+  const was=df.window()[0];
+  d.querySelector('.df-cal[data-pick="df-from"]').click();
+  await new Promise(r=>setTimeout(r,120));
+  put('pickOpen',df.pickOpen());
+  const card=d.querySelector('.df-pick');
+  put('pickHasOkCancel',[...card.querySelectorAll('.df-pick-foot button')].map(b=>b.textContent));
+  put('pickDays',card.querySelectorAll('.df-pick-grid button').length);
+  put('pickDisabledDays',card.querySelectorAll('.df-pick-grid button[disabled]').length);
+  // pick the 9th, then cancel — the field must not move
+  [...card.querySelectorAll('.df-pick-grid button')].find(b=>b.textContent==='9'&&!b.disabled).click();
+  put('previewAfterDayClick',card.querySelector('.df-pick-foot .now').textContent);
+  card.querySelector('[data-act="cancel"]').click();
+  put('closedOnCancel',!df.pickOpen());
+  put('unchangedOnCancel',df.window()[0]===was);
+  // reopen, pick the 9th + a time, then OK
+  d.getElementById('df-from').click();
+  await new Promise(r=>setTimeout(r,120));
+  const card2=d.querySelector('.df-pick');
+  [...card2.querySelectorAll('.df-pick-grid button')].find(b=>b.textContent==='9'&&!b.disabled).click();
+  const tin=card2.querySelector('#df-pick-t'); tin.value='04:05'; tin.dispatchEvent(new Event('input',{bubbles:true}));
+  card2.querySelector('[data-act="ok"]').click();
+  put('closedOnOk',!df.pickOpen());
+  put('fieldAfterOk',df.window()[0]);
+  put('windowParsed',df.windowDates());
+  // walk to the far end of the range: the days past it must be unpickable and
+  // the "next month" arrow must run out
+  d.getElementById('df-to').click();
+  await new Promise(r=>setTimeout(r,120));
+  const card3=d.querySelector('.df-pick');
+  const next=()=>card3.querySelector('[data-mv="1"]');
+  let hops=0;
+  while(next()&&!next().disabled&&hops<40){ next().click(); hops++; }
+  put('monthsForward',hops);
+  put('lastMonth',d.querySelector('.df-pick-head b').textContent);
+  const grid=()=>[...d.querySelectorAll('.df-pick-grid button')];
+  put('daysEnabledAtEdge',grid().filter(b=>!b.disabled).map(b=>b.textContent).join(','));
+  put('nextArrowSpent',d.querySelector('[data-mv="1"]').disabled);
+  d.querySelector('[data-act="cancel"]').click();
   // focus: the chosen satellite should sit at the centre of the screen
   const sel=d.getElementById('df-focus');
   sel.value=sel.options[1].value; sel.dispatchEvent(new Event('change'));

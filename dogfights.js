@@ -20,15 +20,17 @@
   }
 
   var EARTH_R = 6371, GLOBE_R = 100, SCALE = GLOBE_R / EARTH_R;
-  var RATES = [0.5, 1, 10, 50, 100, 500, 1000, 2000, 5000];
+  var RATES = [0.5, 1, 10, 50, 100, 500, 1000, 2000, 5000, 10000];
   var COLOURS = ['#67c8ff', '#ff7a3c', '#58d68d', '#c9a0ff', '#ffcf5c', '#ff6f9c', '#4dd0e1', '#ffffff'];
   var TRAIL_MAX = 900;
+  var DOT_R = 1.5, HALO_R = 3.4;
 
   var catalogue = [];        // every satrec we can search
   var picked = [];           // what is on the globe
   var hits = [], selIdx = -1;
   var rate = 1, playing = false, simTime = new Date(), lastFrame = 0;
   var fromT = null, toT = null, focusId = '', trails = true;
+  var altScale = 1, sizeMul = 1;   // view-only exaggeration, never fed back into SGP4
 
   // ---- globe ------------------------------------------------------------
   var globe = Globe()($('globe'))
@@ -50,18 +52,22 @@
   // ---- the objects we draw ----------------------------------------------
   function makeMarker(colour) {
     var g = new THREE.Group();
-    var dot = new THREE.Mesh(new THREE.SphereGeometry(1.5, 14, 14),
+    var dot = new THREE.Mesh(new THREE.SphereGeometry(DOT_R, 14, 14),
       new THREE.MeshBasicMaterial({ color: colour }));
-    var halo = new THREE.Mesh(new THREE.SphereGeometry(3.4, 10, 10),
+    var halo = new THREE.Mesh(new THREE.SphereGeometry(HALO_R, 10, 10),
       new THREE.MeshBasicMaterial({ color: colour, transparent: true, opacity: 0.16, depthWrite: false }));
     g.add(dot); g.add(halo);
+    g.scale.setScalar(sizeMul);
     var geom = new THREE.BufferGeometry();
     geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(TRAIL_MAX * 3), 3));
     geom.setDrawRange(0, 0);
     var trail = new THREE.Line(geom, new THREE.LineBasicMaterial({ color: colour, transparent: true, opacity: 0.75 }));
     trail.frustumCulled = false;
     scene.add(g); scene.add(trail);
-    return { group: g, trail: trail, geom: geom, n: 0 };
+    // The trail keeps the true positions alongside the drawn ones, so moving
+    // the altitude slider mid-run redraws the history at the new scale rather
+    // than leaving a kinked line or wiping the run.
+    return { group: g, trail: trail, geom: geom, raw: new Float32Array(TRAIL_MAX * 3), n: 0 };
   }
 
   // ECI kilometres -> globe units, in globe.gl's Y-up frame.
@@ -80,21 +86,46 @@
     return eciToScene(pv.position, gmst, _v).clone();
   }
 
+  // Push the orbit radially away from the surface for display only.  A few
+  // hundred kilometres is 1.6 globe units out of 100, so without this two
+  // objects in a close approach sit on the skin of the Earth.
+  function stretch(v) {
+    if (altScale === 1) return v;
+    var m = v.length();
+    if (m <= GLOBE_R) return v;
+    return v.multiplyScalar((GLOBE_R + (m - GLOBE_R) * altScale) / m);
+  }
+
   function pushTrail(sat, pos) {
     if (!trails) return;
-    var arr = sat.vis.geom.attributes.position.array;
-    if (sat.vis.n >= TRAIL_MAX) { arr.copyWithin(0, 3); sat.vis.n = TRAIL_MAX - 1; }
-    var o = sat.vis.n * 3;
-    arr[o] = pos.x; arr[o + 1] = pos.y; arr[o + 2] = pos.z;
-    sat.vis.n++;
-    sat.vis.geom.setDrawRange(0, sat.vis.n);
-    sat.vis.geom.attributes.position.needsUpdate = true;
+    var vis = sat.vis, arr = vis.geom.attributes.position.array;
+    if (vis.n >= TRAIL_MAX) { arr.copyWithin(0, 3); vis.raw.copyWithin(0, 3); vis.n = TRAIL_MAX - 1; }
+    var o = vis.n * 3;
+    vis.raw[o] = pos.x; vis.raw[o + 1] = pos.y; vis.raw[o + 2] = pos.z;
+    var d = stretch(pos.clone());
+    arr[o] = d.x; arr[o + 1] = d.y; arr[o + 2] = d.z;
+    vis.n++;
+    vis.geom.setDrawRange(0, vis.n);
+    vis.geom.attributes.position.needsUpdate = true;
   }
 
   function clearTrail(sat) {
     sat.vis.n = 0;
     sat.vis.geom.setDrawRange(0, 0);
     sat.vis.geom.attributes.position.needsUpdate = true;
+  }
+
+  var _r = new THREE.Vector3();
+  function rescaleTrails() {
+    picked.forEach(function (sat) {
+      var vis = sat.vis, arr = vis.geom.attributes.position.array;
+      for (var i = 0; i < vis.n * 3; i += 3) {
+        _r.set(vis.raw[i], vis.raw[i + 1], vis.raw[i + 2]);
+        stretch(_r);
+        arr[i] = _r.x; arr[i + 1] = _r.y; arr[i + 2] = _r.z;
+      }
+      vis.geom.attributes.position.needsUpdate = true;
+    });
   }
 
   // ---- drawing one frame -------------------------------------------------
@@ -105,9 +136,10 @@
       var p = positionAt(sat, simTime);
       if (!p) { sat.vis.group.visible = false; return; }
       sat.vis.group.visible = true;
+      pushTrail(sat, p);          // records the true position, before the stretch
+      stretch(p);                 // in place: from here p is where it is drawn
       sat.vis.group.position.copy(p);
       sat.pos = p;
-      pushTrail(sat, p);
       any = true;
     });
 
@@ -215,29 +247,173 @@
   }
 
   // ---- time window -------------------------------------------------------
-  function localISO(d) {
-    var p = function (n) { return String(n).padStart(2, '0'); };
-    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
-      'T' + p(d.getHours()) + ':' + p(d.getMinutes());
+  var winMin = null, winMax = null;    // the ends of what may be chosen
+
+  function pad2(n) { return String(n).padStart(2, '0'); }
+
+  // The two fields are read-only text holding a local "YYYY-MM-DD HH:MM" that
+  // the calendar below writes - not the browser's own datetime-local mask.
+  function fieldText(d) {
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) +
+      ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+  }
+
+  function parseField(s) {
+    var m = /^(\d{4})-(\d\d)-(\d\d)[T ](\d\d):(\d\d)$/.exec(String(s || '').trim());
+    return m ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]) : null;
   }
 
   function setupWindow() {
     var now = new Date();
-    var back = new Date(now.getTime() - 365 * 864e5);
-    var fwd = new Date(now.getTime() + 15 * 864e5);
-    var f = $('df-from'), t = $('df-to');
-    f.min = t.min = localISO(back);
-    f.max = t.max = localISO(fwd);
-    f.value = localISO(new Date(now.getTime() - 3600e3));   // an hour back
-    t.value = localISO(new Date(now.getTime() + 6 * 3600e3));
+    winMin = new Date(now.getTime() - 365 * 864e5);
+    winMax = new Date(now.getTime() + 15 * 864e5);
+    $('df-from').value = fieldText(new Date(now.getTime() - 3600e3));   // an hour back
+    $('df-to').value = fieldText(new Date(now.getTime() + 6 * 3600e3));
     readWindow();
   }
 
   function readWindow() {
-    var f = new Date($('df-from').value), t = new Date($('df-to').value);
-    fromT = isNaN(f) ? null : f;
-    toT = isNaN(t) ? null : t;
-    if (fromT && toT && toT <= fromT) toT = new Date(fromT.getTime() + 3600e3);
+    fromT = parseField($('df-from').value);
+    toT = parseField($('df-to').value);
+    if (fromT && toT && toT <= fromT) {
+      // An end before the start is pushed an hour past it, and the field is
+      // rewritten so the correction is on screen rather than only in the run.
+      toT = new Date(fromT.getTime() + 3600e3);
+      $('df-to').value = fieldText(toT);
+    }
+  }
+
+  // ---- the calendar ------------------------------------------------------
+  // The browser's own datetime-local popup commits the moment a day is
+  // clicked and offers no way back, so these fields open this instead: it
+  // writes the field only when OK is pressed, and Cancel leaves it alone.
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+  var DOW = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  var pickEl = null;
+
+  function midnight(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+  function closePicker() {
+    if (!pickEl) return;
+    pickEl.remove();
+    pickEl = null;
+    document.removeEventListener('pointerdown', onPickAway, true);
+    document.removeEventListener('keydown', onPickKey, true);
+    document.removeEventListener('scroll', onPickMove, true);
+    window.removeEventListener('resize', onPickMove);
+  }
+
+  // The panel it hangs off scrolls, and the card is fixed to the viewport, so
+  // it is re-placed rather than left pointing at nothing.
+  function onPickMove() { if (pickEl) pickEl._place(); }
+
+  function onPickAway(e) {
+    // A click on either field is left to that field's own handler, which
+    // reopens the calendar there.
+    if (!pickEl || pickEl.contains(e.target) || e.target.closest('.df-field')) return;
+    closePicker();
+  }
+
+  function onPickKey(e) {
+    if (e.key === 'Escape') { closePicker(); e.preventDefault(); }
+  }
+
+  function openPicker(id) {
+    var field = $(id).closest('.df-field');
+    if (pickEl && pickEl.dataset.pickFor === id) { closePicker(); return; }   // same field: toggle shut
+    closePicker();
+
+    var sel = parseField($(id).value) || new Date();
+    var view = new Date(sel.getFullYear(), sel.getMonth(), 1);
+    var today = midnight(new Date());
+    var lo = winMin ? midnight(winMin) : null, hi = winMax ? midnight(winMax) : null;
+
+    pickEl = document.createElement('div');
+    pickEl.className = 'df-pick';
+    pickEl.dataset.pickFor = id;
+    document.body.appendChild(pickEl);
+
+    function monthStep(n) {
+      var m = new Date(view.getFullYear(), view.getMonth() + n, 1);
+      // A month is reachable if any of its days is inside the range.
+      if (hi && m > hi) return null;
+      if (lo && new Date(m.getFullYear(), m.getMonth() + 1, 0) < lo) return null;
+      return m;
+    }
+
+    function paint() {
+      var first = view.getDay(), days = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+      var cells = DOW.map(function (d) { return '<span>' + d + '</span>'; });
+      for (var i = 0; i < first; i++) cells.push('<i></i>');
+      for (var d = 1; d <= days; d++) {
+        var day = new Date(view.getFullYear(), view.getMonth(), d);
+        var out = (lo && day < lo) || (hi && day > hi);
+        var cls = [];
+        if (!out && day.getTime() === midnight(sel).getTime()) cls.push('sel');
+        if (day.getTime() === today.getTime()) cls.push('today');
+        cells.push('<button type="button" data-d="' + d + '"' + (out ? ' disabled' : '') +
+          (cls.length ? ' class="' + cls.join(' ') + '"' : '') + '>' + d + '</button>');
+      }
+      pickEl.innerHTML =
+        '<div class="df-pick-head">' +
+          '<button type="button" data-mv="-1"' + (monthStep(-1) ? '' : ' disabled') + '>‹</button>' +
+          '<b>' + MONTHS[view.getMonth()] + ' ' + view.getFullYear() + '</b>' +
+          '<button type="button" data-mv="1"' + (monthStep(1) ? '' : ' disabled') + '>›</button>' +
+        '</div>' +
+        '<div class="df-pick-grid">' + cells.join('') + '</div>' +
+        '<div class="df-pick-time"><label for="df-pick-t">Time</label>' +
+          '<input type="time" id="df-pick-t" value="' + pad2(sel.getHours()) + ':' + pad2(sel.getMinutes()) + '"></div>' +
+        '<div class="df-pick-foot"><span class="now">' + esc(fieldText(sel)) + '</span>' +
+          '<button type="button" data-act="cancel">Cancel</button>' +
+          '<button type="button" class="ok" data-act="ok">OK</button></div>';
+    }
+
+    function place() {
+      var r = field.getBoundingClientRect(), h = pickEl.offsetHeight, w = pickEl.offsetWidth;
+      var top = r.bottom + 6;
+      if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 6);
+      pickEl.style.top = top + 'px';
+      pickEl.style.left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8)) + 'px';
+    }
+
+    pickEl.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (!b) return;
+      if (b.dataset.mv) {
+        var m = monthStep(+b.dataset.mv);
+        if (m) { view = m; paint(); }
+        return;
+      }
+      if (b.dataset.d) {
+        sel = new Date(view.getFullYear(), view.getMonth(), +b.dataset.d, sel.getHours(), sel.getMinutes());
+        paint();
+        return;
+      }
+      if (b.dataset.act === 'cancel') { closePicker(); return; }
+      if (b.dataset.act === 'ok') {
+        if (winMin && sel < winMin) sel = new Date(winMin);
+        if (winMax && sel > winMax) sel = new Date(winMax);
+        $(id).value = fieldText(sel);
+        readWindow();
+        closePicker();
+      }
+    });
+
+    pickEl.addEventListener('input', function (e) {
+      var t = /^(\d\d):(\d\d)/.exec(e.target.value);
+      if (!t) return;
+      sel = new Date(sel.getFullYear(), sel.getMonth(), sel.getDate(), +t[1], +t[2]);
+      pickEl.querySelector('.df-pick-foot .now').textContent = fieldText(sel);
+    });
+
+    pickEl._place = place;
+    paint();
+    place();
+    document.addEventListener('pointerdown', onPickAway, true);
+    document.addEventListener('keydown', onPickKey, true);
+    document.addEventListener('scroll', onPickMove, true);
+    window.addEventListener('resize', onPickMove);
   }
 
   function setPlaying(on) {
@@ -276,6 +452,18 @@
     $('df-speed-val').textContent = (rate < 1 ? rate : rate.toLocaleString()) + '×';
   });
 
+  $('df-alt').addEventListener('input', function (e) {
+    altScale = parseFloat(e.target.value) || 1;
+    $('df-alt-val').textContent = altScale.toFixed(1);
+    rescaleTrails();
+    draw();
+  });
+  $('df-size').addEventListener('input', function (e) {
+    sizeMul = parseFloat(e.target.value) || 1;
+    $('df-size-val').textContent = sizeMul.toFixed(1);
+    picked.forEach(function (s) { s.vis.group.scale.setScalar(sizeMul); });
+  });
+
   $('df-animate').addEventListener('click', function () {
     readWindow();
     if (!playing) {
@@ -293,11 +481,18 @@
     simTime = new Date();
     picked.forEach(clearTrail);
     var now = new Date();
-    $('df-from').value = localISO(new Date(now.getTime() - 3600e3));
-    $('df-to').value = localISO(new Date(now.getTime() + 6 * 3600e3));
+    $('df-from').value = fieldText(new Date(now.getTime() - 3600e3));
+    $('df-to').value = fieldText(new Date(now.getTime() + 6 * 3600e3));
     readWindow();
+    closePicker();
   });
-  ['df-from', 'df-to'].forEach(function (id) { $(id).addEventListener('change', readWindow); });
+  ['df-from', 'df-to'].forEach(function (id) {
+    $(id).addEventListener('click', function () { openPicker(id); });
+  });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('.df-cal');
+    if (b) openPicker(b.dataset.pick);
+  });
 
   $('df-focus').addEventListener('change', function (e) {
     focusId = e.target.value;
@@ -325,6 +520,29 @@
     catalogue: function () { return catalogue.length; },
     picked: function () { return picked.map(function (p) { return p.name; }); },
     rate: function () { return rate; },
+    rates: function () { return RATES.slice(); },
+    altScale: function () { return altScale; },
+    sizeMul: function () { return sizeMul; },
+    radius: function (i) { return picked[i] && picked[i].pos ? picked[i].pos.length() : 0; },
+    meshScale: function (i) { return picked[i] ? picked[i].vis.group.scale.x : 0; },
+    trailRadius: function (i) {
+      var vis = picked[i] && picked[i].vis;
+      if (!vis || !vis.n) return 0;
+      var a = vis.geom.attributes.position.array, o = (vis.n - 1) * 3;
+      return +Math.hypot(a[o], a[o + 1], a[o + 2]).toFixed(2);
+    },
+    window: function () { return [$('df-from').value, $('df-to').value]; },
+    limits: function () { return [fieldText(winMin), fieldText(winMax)]; },
+    windowDates: function () {
+      return [fromT ? fromT.toISOString() : null, toT ? toT.toISOString() : null];
+    },
+    setWindow: function (from, to) {
+      if (from != null) $('df-from').value = from;
+      if (to != null) $('df-to').value = to;
+      readWindow();
+    },
+    openPicker: openPicker,
+    pickOpen: function () { return !!pickEl; },
     simTime: function () { return simTime.toISOString(); },
     playing: function () { return playing; },
     focus: function () { return focusId; },

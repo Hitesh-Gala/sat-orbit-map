@@ -21,12 +21,15 @@
       letter-spacing: .16em; color: #eaf2fb; }
     .df-head .sub { font-family: 'Caveat', cursive; font-size: 19px; color: #ff9f6a; }
 
-    /* both side panels share the HUD idiom used across the site */
-    .df-shell { position: fixed; top: 86px; width: 318px; z-index: 12;
-      display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 104px);
+    /* Both side panels share the HUD idiom used across the site, and both run
+       their type 20% larger for readability.  zoom scales the boxes as well as
+       the text, so the fixed offsets and the height budget are divided back by
+       1.2 to land where they did before. */
+    .df-shell { position: fixed; top: 71.7px; width: 300px; z-index: 12; zoom: 1.2;
+      display: flex; flex-direction: column; gap: 7px; max-height: calc((100vh - 104px) / 1.2);
       overflow-y: auto; overflow-x: hidden; }
-    .df-left { left: 14px; }
-    .df-right { right: 14px; }
+    .df-left { left: 11.7px; }
+    .df-right { right: 11.7px; }
     .df-shell .panel { overflow: visible; }
     .df-label { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
       color: var(--dim); margin-bottom: 7px; }
@@ -66,10 +69,55 @@
     .df-speed input[type=range] { width: 100%; accent-color: var(--accent); }
     .df-speed .val { font-family: var(--mono); font-size: 13.5px; color: var(--accent); float: right; }
 
+    .df-slider { margin-bottom: 9px; }
+    .df-slider:last-of-type { margin-bottom: 2px; }
+    .df-slider input[type=range] { width: 100%; accent-color: var(--accent); }
+    .df-slider .row { display: flex; justify-content: space-between; align-items: baseline;
+      font-family: var(--mono); font-size: 12.5px; color: var(--dim); margin-bottom: 3px; }
+    .df-slider .row b { color: var(--accent); font-weight: 400; }
+
     .df-when { display: flex; flex-direction: column; gap: 5px; margin-bottom: 9px; }
-    .df-when input { width: 100%; box-sizing: border-box; background: rgba(8,16,28,.9); border: 1px solid var(--line);
-      border-radius: 6px; color: var(--text); font-family: var(--mono); font-size: 13px; padding: 6px 8px;
-      color-scheme: dark; }
+    .df-field { display: flex; gap: 5px; }
+    .df-when input { flex: 1; min-width: 0; box-sizing: border-box; background: rgba(8,16,28,.9);
+      border: 1px solid var(--line); border-radius: 6px; color: var(--text); font-family: var(--mono);
+      font-size: 13px; padding: 6px 8px; color-scheme: dark; cursor: pointer; }
+    .df-when input:focus { outline: none; border-color: var(--accent); }
+    .df-cal { flex: 0 0 auto; cursor: pointer; background: rgba(103,200,255,.1); border: 1px solid var(--line);
+      border-radius: 6px; color: var(--text); font-size: 13px; line-height: 1; padding: 6px 8px; }
+    .df-cal:hover { border-color: var(--accent); }
+
+    /* The calendar is appended to <body>, outside the panels' zoom, so it
+       carries its own type sizes rather than inheriting a scale. */
+    .df-pick { position: fixed; z-index: 60; width: 306px; box-sizing: border-box;
+      background: rgba(6,13,24,.98); border: 1px solid rgba(110,200,255,.3); border-radius: 10px;
+      box-shadow: 0 18px 46px rgba(0,0,0,.6); padding: 11px; font-family: var(--mono); color: var(--text); }
+    .df-pick-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+    .df-pick-head b { font-size: 14.5px; letter-spacing: .04em; }
+    .df-pick-head button { cursor: pointer; background: rgba(103,200,255,.1); border: 1px solid var(--line);
+      border-radius: 6px; color: var(--text); font-size: 15px; line-height: 1; padding: 3px 10px; }
+    .df-pick-head button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+    .df-pick-head button:disabled { opacity: .3; cursor: default; }
+    .df-pick-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .df-pick-grid span { text-align: center; font-size: 11px; color: var(--dim); letter-spacing: .06em;
+      padding-bottom: 3px; }
+    .df-pick-grid button { cursor: pointer; background: none; border: 1px solid transparent; border-radius: 5px;
+      color: var(--text); font-family: var(--mono); font-size: 13px; padding: 5px 0; }
+    .df-pick-grid button:hover:not(:disabled) { background: rgba(103,200,255,.16); }
+    .df-pick-grid button:disabled { color: rgba(140,165,190,.3); cursor: default; }
+    .df-pick-grid button.sel { background: var(--accent); color: #04101c; font-weight: 700; }
+    .df-pick-grid button.today { border-color: rgba(255,159,106,.75); }
+    .df-pick-time { display: flex; align-items: center; gap: 8px; margin: 10px 0 9px;
+      font-size: 12.5px; color: var(--dim); }
+    .df-pick-time input { background: rgba(8,16,28,.9); border: 1px solid var(--line); border-radius: 6px;
+      color: var(--text); font-family: var(--mono); font-size: 13.5px; padding: 5px 7px; color-scheme: dark; }
+    .df-pick-foot { display: flex; align-items: center; gap: 6px; border-top: 1px solid rgba(110,200,255,.14);
+      padding-top: 9px; }
+    .df-pick-foot .now { flex: 1; min-width: 0; font-size: 12px; color: var(--accent); }
+    .df-pick-foot button { cursor: pointer; background: rgba(103,200,255,.1); border: 1px solid var(--line);
+      border-radius: 6px; color: var(--text); font-family: var(--mono); font-size: 13px; padding: 6px 13px; }
+    .df-pick-foot button:hover { border-color: var(--accent); color: var(--accent); }
+    .df-pick-foot button.ok { background: rgba(103,200,255,.2); border-color: var(--accent); color: #eaf6ff;
+      font-weight: 700; }
     .df-note { font-size: 12.5px; line-height: 1.5; color: var(--dim); margin-top: 8px; }
     .df-clock { font-family: var(--mono); font-size: 14px; color: var(--accent); margin-top: 8px;
       font-variant-numeric: tabular-nums; }
@@ -78,8 +126,10 @@
     .df-status { font-size: 12.5px; color: var(--dim); line-height: 1.5; }
 
     @media (max-width: 950px) {
-      .df-shell { position: static; width: auto; max-height: none; margin: 0 12px 10px; }
-      .df-left { margin-top: 74px; }
+      /* Width is divided back as well: a zoomed static block resolves "auto"
+         against the unzoomed parent and would then overflow by 20%. */
+      .df-shell { position: static; width: calc((100% - 24px) / 1.2); max-height: none; margin: 0 auto 10px; }
+      .df-left { margin-top: 61.7px; }
       body.page-dogfight { overflow: auto; }
       #globe { position: relative; height: 62vh; inset: auto; }
       .df-head { position: static; transform: none; margin-top: 70px; }
@@ -116,9 +166,9 @@
     <section class="panel">
       <div class="df-label">Time rate <span class="val" id="df-speed-val">1×</span></div>
       <div class="df-speed">
-        <input type="range" id="df-speed" min="0" max="8" step="1" value="1" aria-label="Time rate">
+        <input type="range" id="df-speed" min="0" max="9" step="1" value="1" aria-label="Time rate">
       </div>
-      <div class="df-note">0.5× to 5,000×. At 1× the clock is real time; a close approach that takes an hour plays in under a second at 5,000×.</div>
+      <div class="df-note">0.5× to 10,000×. At 1× the clock is real time; an hour-long approach plays in under a second at 5,000×, and a whole day passes in under nine seconds at 10,000×.</div>
       <div class="df-status" id="df-status">Loading the catalogue…</div>
     </section>
   </aside>
@@ -129,9 +179,15 @@
       <div class="df-label">Period</div>
       <div class="df-when">
         <label class="df-note" for="df-from" style="margin:0">From</label>
-        <input type="datetime-local" id="df-from">
+        <div class="df-field">
+          <input type="text" id="df-from" readonly autocomplete="off" aria-label="Start of the window">
+          <button type="button" class="df-cal" data-pick="df-from" aria-label="Pick the start date and time">📅</button>
+        </div>
         <label class="df-note" for="df-to" style="margin:0">To</label>
-        <input type="datetime-local" id="df-to">
+        <div class="df-field">
+          <input type="text" id="df-to" readonly autocomplete="off" aria-label="End of the window">
+          <button type="button" class="df-cal" data-pick="df-to" aria-label="Pick the end date and time">📅</button>
+        </div>
       </div>
       <div class="df-row">
         <button type="button" class="df-btn primary" id="df-animate">▶ Animate</button>
@@ -152,6 +208,19 @@
         <button type="button" class="df-btn" id="df-reset">Reset view</button>
       </div>
     </section>
+
+    <section class="panel">
+      <div class="df-label">View scale</div>
+      <div class="df-slider">
+        <div class="row"><span>Altitude scale</span><b><span id="df-alt-val">1.0</span>×</b></div>
+        <input type="range" id="df-alt" min="0.2" max="3" step="0.1" value="1" aria-label="Altitude scale">
+      </div>
+      <div class="df-slider">
+        <div class="row"><span>Sat size</span><b><span id="df-size-val">1.0</span>×</b></div>
+        <input type="range" id="df-size" min="0.3" max="3" step="0.1" value="1" aria-label="Satellite size">
+      </div>
+      <div class="df-note">Altitude scale lifts the orbits off the surface so two objects a few hundred kilometres up are not lost against the Earth; sat size is the dot and its halo. Neither touches the propagation — the clock and the geometry stay as they are, and the trails are redrawn to match.</div>
+    </section>
   </aside>
 
   <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
@@ -160,6 +229,6 @@
   <script src="tle-loader.js?v=11"></script>
   <script src="site-analytics.js?v=5"></script>
   <script src="mobile-menu.js?v=26"></script>
-  <script src="dogfights.js?v=1"></script>
+  <script src="dogfights.js?v=2"></script>
 </body>
 </html>
