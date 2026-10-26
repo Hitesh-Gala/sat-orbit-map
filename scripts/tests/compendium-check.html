@@ -1,0 +1,83 @@
+<!doctype html><meta charset="utf-8"><body style="background:#000;color:#9f9;font:12px monospace">
+<!-- Drives the PRC Orbital Catalog: that it loads the generated catalogue,
+     that the columns are in the asked-for order and widths, that the three
+     numeric sorts actually order numerically, and that the status filter's
+     other-country option selects on the owner. Serve the repo and dump. -->
+<pre id="out">running…</pre><iframe id="f" src="../../compendium.html" style="width:1600px;height:900px;border:0"></iframe>
+<script>
+const log=[],put=(k,v)=>log.push(k+': '+JSON.stringify(v));
+const f=document.getElementById('f');
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+f.onload=()=>setTimeout(run,1800);
+
+const rows=d=>[...d.querySelectorAll('#table-body tr')];
+const cell=(tr,i)=>tr.children[i].textContent.trim();
+const num=v=>{const m=String(v).replace(/,/g,'').match(/-?\d+(\.\d+)?/);return m?parseFloat(m[0]):null;};
+
+async function run(){
+  const d=f.contentDocument,w=f.contentWindow,C=w.__cat;
+  const SATS=C.sats();
+  put('loaded',!!SATS.length);
+  put('total',SATS.length);
+  put('maxRows',C.maxRows());
+  put('headerStats',['hdr-total','hdr-inorbit','hdr-decayed','hdr-built'].map(i=>d.getElementById(i).textContent));
+  put('noSourcesLineAtTop',!d.querySelector('.header-stats').textContent.includes('Sources:'));
+  put('aiQueryGone',[!d.getElementById('ai-query'),!w.runAI]);
+
+  // column order and the two width asks
+  put('headers',[...d.querySelectorAll('thead th')].map(t=>t.textContent.trim()));
+  const tr=rows(d)[0];
+  const w0=tr.children[0].getBoundingClientRect().width, w8=tr.children[8].getBoundingClientRect().width;
+  put('nameColWidth',Math.round(w0));
+  put('notesColWidth',Math.round(w8));
+  put('notesFontSize',w.getComputedStyle(tr.children[8]).fontSize);
+  put('rowsRendered',rows(d).length);
+
+  // the series the user named
+  const by=s=>SATS.filter(x=>x.s.startsWith(s)).length;
+  put('counts',{beidou:SATS.filter(x=>x.n.startsWith('BEIDOU')).length,
+                tjs:by('TJS'),guowang:by('Guowang (SatNet)'),gaofen:by('Gaofen'),
+                qianfan:by('Qianfan'),yaogan:by('Yaogan')});
+  const fy=SATS.find(x=>x.n==='FENGYUN 1C');
+  put('fengyun1cKept',!!fy&&fy.r.includes('anti-satellite'));
+  const tjs21=SATS.find(x=>x.n==='TJS-21');
+  put('tjs21Remark',tjs21?tjs21.r.replace(/<[^>]+>/g,'').slice(0,110):null);
+  put('avgRemarkChars',Math.round(SATS.reduce((t,x)=>t+x.r.length,0)/SATS.length));
+
+  // sorting — click the header, read the column back
+  async function sorted(idx,key){
+    const th=[...d.querySelectorAll('th.sortable')].find(t=>t.dataset.sort===key);
+    th.click(); await wait(150);
+    let a=rows(d).slice(0,60).map(r=>num(cell(r,idx))).filter(v=>v!==null);
+    const asc=a.every((v,i)=>i===0||a[i-1]<=v);
+    th.click(); await wait(150);
+    let b=rows(d).slice(0,60).map(r=>num(cell(r,idx))).filter(v=>v!==null);
+    const desc=b.every((v,i)=>i===0||b[i-1]>=v);
+    return [asc,desc,a.slice(0,3),b.slice(0,3)];
+  }
+  put('sortAltitude',await sorted(4,'a'));
+  put('sortInclination',await sorted(5,'i'));
+  // Launch is the one column that starts newest-first - a catalogue is read
+  // from the present backwards - so the first click is descending.
+  const lth=[...d.querySelectorAll('th.sortable')].find(t=>t.dataset.sort==='l');
+  lth.click(); await wait(150);
+  let dates=rows(d).slice(0,40).map(r=>cell(r,6)).filter(x=>x&&x!=='—');
+  put('sortLaunchFirstClickDesc',[dates.every((v,i)=>i===0||dates[i-1]>=v),dates.slice(0,2)]);
+  lth.click(); await wait(150);
+  dates=rows(d).slice(0,40).map(r=>cell(r,6)).filter(x=>x&&x!=='—');
+  put('sortLaunchSecondClickAsc',[dates.every((v,i)=>i===0||dates[i-1]<=v),dates.slice(0,2)]);
+
+  // the new status option
+  const sel=d.getElementById('status-filter');
+  put('statusOptions',[...sel.options].map(o=>o.value));
+  sel.value='FOR'; sel.dispatchEvent(new Event('change')); await wait(200);
+  const shown=rows(d);
+  put('otherCountryRows',shown.length);
+  put('otherCountrySample',shown.slice(0,4).map(r=>[cell(r,0).split('\n')[0],cell(r,7)]));
+  put('allHaveAnOwner',shown.every(r=>r.children[7].querySelector('.owner-tag')));
+  sel.value='ALL'; sel.dispatchEvent(new Event('change')); await wait(150);
+  put('backToAll',rows(d).length);
+
+  document.getElementById('out').textContent=log.join('\n');
+}
+</script>
