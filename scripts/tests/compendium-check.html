@@ -27,10 +27,10 @@ async function run(){
   // column order and the two width asks
   put('headers',[...d.querySelectorAll('thead th')].map(t=>t.textContent.trim()));
   const tr=rows(d)[0];
-  const w0=tr.children[0].getBoundingClientRect().width, w8=tr.children[8].getBoundingClientRect().width;
+  const w0=tr.children[1].getBoundingClientRect().width, w8=tr.children[9].getBoundingClientRect().width;
   put('nameColWidth',Math.round(w0));
   put('notesColWidth',Math.round(w8));
-  put('notesFontSize',w.getComputedStyle(tr.children[8]).fontSize);
+  put('notesFontSize',w.getComputedStyle(tr.children[9]).fontSize);
   put('rowsRendered',rows(d).length);
 
   // the series the user named
@@ -55,16 +55,16 @@ async function run(){
     const desc=b.every((v,i)=>i===0||b[i-1]>=v);
     return [asc,desc,a.slice(0,3),b.slice(0,3)];
   }
-  put('sortAltitude',await sorted(4,'a'));
-  put('sortInclination',await sorted(5,'i'));
+  put('sortAltitude',await sorted(5,'a'));
+  put('sortInclination',await sorted(6,'i'));
   // Launch is the one column that starts newest-first - a catalogue is read
   // from the present backwards - so the first click is descending.
   const lth=[...d.querySelectorAll('th.sortable')].find(t=>t.dataset.sort==='l');
   lth.click(); await wait(150);
-  let dates=rows(d).slice(0,40).map(r=>cell(r,6)).filter(x=>x&&x!=='—');
+  let dates=rows(d).slice(0,40).map(r=>cell(r,7)).filter(x=>x&&x!=='—');
   put('sortLaunchFirstClickDesc',[dates.every((v,i)=>i===0||dates[i-1]>=v),dates.slice(0,2)]);
   lth.click(); await wait(150);
-  dates=rows(d).slice(0,40).map(r=>cell(r,6)).filter(x=>x&&x!=='—');
+  dates=rows(d).slice(0,40).map(r=>cell(r,7)).filter(x=>x&&x!=='—');
   put('sortLaunchSecondClickAsc',[dates.every((v,i)=>i===0||dates[i-1]<=v),dates.slice(0,2)]);
 
   // the new status option
@@ -73,10 +73,57 @@ async function run(){
   sel.value='FOR'; sel.dispatchEvent(new Event('change')); await wait(200);
   const shown=rows(d);
   put('otherCountryRows',shown.length);
-  put('otherCountrySample',shown.slice(0,4).map(r=>[cell(r,0).split('\n')[0],cell(r,7)]));
-  put('allHaveAnOwner',shown.every(r=>r.children[7].querySelector('.owner-tag')));
+  put('otherCountrySample',shown.slice(0,4).map(r=>[cell(r,1).split('\n')[0],cell(r,8)]));
+  put('allHaveAnOwner',shown.every(r=>r.children[8].querySelector('.owner-tag')));
   sel.value='ALL'; sel.dispatchEvent(new Event('change')); await wait(150);
   put('backToAll',rows(d).length);
+
+  // ---- header, serial column, repeat collapsing, country grouping ----
+  put('liveLabelGone',!d.querySelector('.live-label'));
+  put('headerOrder',[...d.querySelector('.header-inner').children].map(e=>e.className));
+  const brand=d.querySelector('.hdr-brand');
+  const logoBox=brand.querySelector('.top-logo').getBoundingClientRect();
+  const credit=brand.querySelector('.logo-credit');
+  put('creditLeftOfLogo',credit?credit.getBoundingClientRect().right<=logoBox.left+1:'no credit');
+  put('nazarLeftOfBrand',d.querySelector('.hdr-nazar').getBoundingClientRect().right<brand.getBoundingClientRect().left);
+  const st=d.querySelector('.hdr-stat');
+  put('statLabelAboveFigure',st.querySelector('.k').getBoundingClientRect().bottom<=st.querySelector('b').getBoundingClientRect().top+1);
+  put('statFontSizes',[w.getComputedStyle(st.querySelector('.k')).fontSize,w.getComputedStyle(st.querySelector('b')).fontSize]);
+  const boxes=[...d.querySelectorAll('.hdr-nazar,.header-title,.header-stats,.hdr-brand')].map(e=>e.getBoundingClientRect());
+  let clash=false;
+  for(let i=0;i<boxes.length;i++)for(let j=i+1;j<boxes.length;j++){
+    const A=boxes[i],B=boxes[j];
+    if(A.left<B.right-1&&A.right>B.left+1&&A.top<B.bottom-1&&A.bottom>B.top+1) clash=true;
+  }
+  put('headerNoOverlap',!clash);
+
+  put('serialColumn',rows(d).slice(0,3).map(r=>cell(r,0)));
+  put('firstColWordBreak',w.getComputedStyle(d.querySelector('.sat-name')).wordBreak);
+  put('navIsBeidouOnly',SATS.filter(x=>x.f==='NAV').length);
+  put('leoPntSplitOut',[SATS.filter(x=>x.f==='PNT').length,!!d.getElementById('cnt-PNT')]);
+
+  // the repeated unnamed-object note: full twice, referred to after that
+  const long='Catalogued by the US Space Force without a name';
+  const box=d.getElementById('search-box');
+  box.value='unnamed catalogue object'; box.dispatchEvent(new Event('input')); await wait(300);
+  let cells=[...d.querySelectorAll('.notes-cell')];
+  put('unnamedRowsShown',cells.length);
+  put('fullCopiesOfTheLongNote',cells.filter(c=>c.textContent.includes(long)).length);
+  put('rowsReferringBack',cells.filter(c=>c.querySelector('.note-ditto')).length);
+  const btn=d.querySelector('.note-more');
+  put('hasShowButton',!!btn);
+  if(btn){ const cellOf=btn.closest('.notes-cell'); btn.click(); await wait(200);
+           put('showButtonExpandsInPlace',cellOf.textContent.includes(long)); }
+  box.value=''; box.dispatchEvent(new Event('input')); await wait(250);
+
+  // other-country view: grouped by country, each country its own colour
+  sel.value='FOR'; sel.dispatchEvent(new Event('change')); await wait(300);
+  const names=[...d.querySelectorAll('#table-body tr .ctry')].map(e=>e.textContent);
+  // compare the way the sort does - localeCompare and code-point order
+  // disagree, so a raw <= here would fail a correctly grouped list
+  put('countryGrouped',[names.every((v,i)=>i===0||names[i-1].localeCompare(v)<=0),names.slice(0,3),names.slice(-2)]);
+  put('distinctCountryColours',new Set([...d.querySelectorAll('#table-body tr .ctry')].map(e=>e.style.color)).size);
+  sel.value='ALL'; sel.dispatchEvent(new Event('change')); await wait(250);
 
   document.getElementById('out').textContent=log.join('\n');
 }

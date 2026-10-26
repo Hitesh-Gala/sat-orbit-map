@@ -189,7 +189,10 @@ SERIES = [
         "launches have continued past the 2020 completion date, so the catalogue count runs well "
         "above the 30-satellite nominal constellation.")),
 
-    dict(pattern=r"^CENTISPACE", series="CentiSpace", func="NAV", note=(
+    # LEO-PNT is its own category: BeiDou is a MEO/IGSO/GEO timing-and-
+    # ranging system, CentiSpace is a low-orbit augmentation layer that rides
+    # on top of it.  Grouping them hid the difference.
+    dict(pattern=r"^CENTISPACE", series="CentiSpace (LEO-PNT)", func="PNT", note=(
         COM_ + "CentiSpace — a commercial LEO navigation-augmentation constellation from Beijing "
         "Future Navigation. LEO augmentation sharpens GNSS convergence time and accuracy, and a "
         "LEO signal is far harder to jam than a MEO one because it arrives much stronger.")),
@@ -284,6 +287,59 @@ SERIES = [
         "HXMT, Einstein Probe), gamma-ray burst work with France (SVOM) and the Micius quantum-"
         "communications experiment, which demonstrated satellite-relayed quantum key distribution "
         "for the first time.")),
+
+    # ---- the unclassified rows that turned out to have a story ----------
+    dict(pattern=r"^PRC TEST SPACECRAFT", series="Reusable experimental spacecraft", func="RPO",
+         note=(
+        MIL + "China's <b>reusable experimental spacecraft</b> — an uncrewed spaceplane, launched "
+        "on a Long March 2F from Jiuquan and landed horizontally, and the closest analogue to the "
+        "US X-37B. Catalogued only as a test spacecraft because China announces nothing beyond "
+        "verifying reusable technology and conducting space experiments. The third flight stayed up "
+        "<b>267 days</b> (14 December 2023 to September 2024) and raised itself from about 300 km "
+        "to 600 km in January. US tracking picked up an object alongside it, which Jonathan "
+        "McDowell noted could be a deployed subsatellite or simply hardware ejected before de-orbit "
+        "— no source settles which. A fourth flight launched on 7 February 2026. "
+        "<a href='https://spacenews.com/chinas-secretive-reusable-spaceplane-lands-after-267-days-in-orbit/' "
+        "target='_blank' rel='noopener noreferrer'>SpaceNews</a>")),
+
+    dict(pattern=r"^DRO-", series="DRO (Earth-Moon navigation)", func="SCI", note=(
+        CIV + "The Chinese Academy of Sciences' <b>distant retrograde orbit</b> experiment: DRO-A "
+        "and DRO-B far beyond the Moon, with DRO-L in low Earth orbit as the third node, testing "
+        "autonomous navigation across cislunar space by inter-satellite ranging rather than from "
+        "the ground. It nearly did not happen — the Yuanzheng-1S upper stage failed on 13 March "
+        "2024 and left the pair tumbling in the wrong orbit. Controllers stopped the spin using "
+        "DRO-B's attitude thrusters, then flew a series of perigee kicks over four months; by "
+        "August 2024 tracking showed both in the intended orbit. CAS reported the three-satellite "
+        "network operating in March 2026. The salvage is the most impressive piece of flying in "
+        "this catalogue. "
+        "<a href='https://spacenews.com/mission-team-details-complex-rescue-of-chinese-lunar-spacecraft/' "
+        "target='_blank' rel='noopener noreferrer'>SpaceNews</a>")),
+
+    dict(pattern=r"^LONGJIANG", series="Longjiang (HIT)", func="SCI", note=(
+        CIV + "Harbin Institute of Technology microsatellites. Longjiang-1 and -2 rode with the "
+        "Queqiao lunar relay in May 2018 as a radio-astronomy and amateur-radio pair bound for "
+        "lunar orbit; Longjiang-1 was lost on the way, Longjiang-2 reached the Moon and returned "
+        "amateur-received imagery before being de-orbited onto the surface. Longjiang-3 (2023) is "
+        "a separate Earth-orbiting technology satellite that shares only the name.")),
+
+    dict(pattern=r"^LKW", series="LKW (Ludi Kance)", func="ISR", note=(
+        MIL + "<i>Ludi Kance Weixing</i> (陆地勘查卫星, 'land survey satellite') — a short optical "
+        "reconnaissance series flown to sun-synchronous orbit in 2017–18 and announced only as land "
+        "survey. Treated in Western analysis as military imaging under a civil label, the same "
+        "pattern as the higher Gaofen numbers.")),
+
+    dict(pattern=r"^(XW-|CAS-\d)", series="XW / CAS (CAMSAT amateur radio)", func="SCI", note=(
+        CIV + "CAMSAT's amateur-radio satellites, carrying linear transponders and telemetry "
+        "beacons open to licensed operators worldwide. Each also holds an international OSCAR "
+        "designation (CAS-n / XW-n). Genuinely open hardware in a catalogue where most of the "
+        "interesting objects are not.")),
+
+    dict(pattern=r"^(TIANYAN|XINGSHIDAI|HONGHU|DONGPO|SCS-|GJZ)", series="Commercial smallsat",
+         func="OTH", note=(
+        COM_ + "A Chinese commercial smallsat — the Tianyan, Xingshidai, Honghu, Dongpo, SCS and "
+        "GJZ names belong to private and provincially-backed operators flying remote sensing, IoT "
+        "relay and technology demonstrations. Little is published about any individual spacecraft; "
+        "they are catalogued and tracked, and that is most of what is known.")),
 
     dict(pattern=r"^XJS", series="XJS (new-technology test)", func="RPO", note=(
         MIL + "<i>Xinjishu Shiyan</i> (新技术试验, 'new technology test') — a second cover line "

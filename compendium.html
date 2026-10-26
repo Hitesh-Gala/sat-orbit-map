@@ -53,11 +53,34 @@
   .header-inner {
     display: flex;
     align-items: center;
-    gap: 20px;
-    height: 52px;
+    gap: 18px;
+    height: 64px;              /* the stats are two lines now */
     max-width: 1600px;
     margin: 0 auto;
   }
+  /* The lighthouse and the Takshashila credit ride together at the right,
+     the way they do on the main page, with the NAZAR button opposite them.
+     mobile-menu.js inserts the credit directly after the logo, so the pair
+     is reversed here rather than reordered in the DOM. */
+  .hdr-brand {
+    margin-left: auto;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .hdr-nazar {
+    flex: 0 0 auto;
+    padding: 7px 15px; border-radius: 4px;
+    border: 1px solid var(--accent);
+    background: rgba(21,101,192,.08);
+    color: var(--accent); text-decoration: none;
+    font-family: var(--mono); font-size: 12px; font-weight: 700;
+    letter-spacing: .22em; text-transform: uppercase;
+    transition: background .12s;
+  }
+  .hdr-nazar:hover { background: rgba(21,101,192,.18); }
   .header-title {
     font-family: var(--mono);
     font-size: 11px;
@@ -68,25 +91,23 @@
     white-space: nowrap;
   }
   .header-sep { width: 1px; height: 20px; background: var(--border2); }
-  .header-stats {
-    display: flex;
-    gap: 16px;
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text3);
+  /* Label above, figure below, so the four readings line up as a row of
+     small stats instead of one run-on sentence.  Type is 10% up on the old
+     10px and both ranks are darkened for contrast on the light bar. */
+  .header-stats { display: flex; gap: 22px; align-items: flex-start; }
+  .hdr-stat { display: flex; flex-direction: column; line-height: 1.25; }
+  .hdr-stat .k {
+    font-family: var(--mono); font-size: 11px; color: var(--text2);
+    letter-spacing: .07em; text-transform: uppercase; white-space: nowrap;
   }
-  .header-stats span { color: var(--gold); }
-  .header-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
-  .live-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: #15803d;
-    animation: pulse 2s infinite;
+  .hdr-stat b {
+    font-family: var(--mono); font-size: 14px; font-weight: 700;
+    color: var(--gold); letter-spacing: .02em; white-space: nowrap;
   }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-  .live-label { font-family: var(--mono); font-size: 10px; color: #15803d; }
+  @media (max-width: 1100px) { .header-stats { display: none; } }
 
   /* LAYOUT */
-  .layout { display: flex; max-width: 1600px; margin: 0 auto; min-height: calc(100vh - 52px); }
+  .layout { display: flex; max-width: 1600px; margin: 0 auto; min-height: calc(100vh - 64px); }
 
   /* SIDEBAR */
   .sidebar {
@@ -340,6 +361,7 @@
   /* Column widths. The satellite column was taking roughly a fifth of the
      table on its own; at 9% it is about half that, and the space goes to the
      notes. */
+  col.c-sn     { width: 3%; }
   col.c-name   { width: 9%; }
   col.c-norad  { width: 7%; }
   col.c-func   { width: 7%; }
@@ -349,7 +371,10 @@
   col.c-launch { width: 7%; }
   col.c-status { width: 8%; }
   col.c-notes  { width: 45%; }
-  .sat-name { word-break: break-word; }
+  /* break-word was splitting "GUOWANG 28 OBJECT D" mid-word and leaving a
+     single letter on its own line.  Wrap at spaces, and only break inside a
+     word when a single word genuinely cannot fit. */
+  .sat-name { word-break: normal; overflow-wrap: break-word; hyphens: none; }
 
   /* Sort state, shown on the header that owns it. */
   th.sortable::after { content: " \2195"; opacity: .25; }
@@ -359,6 +384,19 @@
 
   .owner-tag { font-family: var(--mono); font-size: 9px; color: #5b21b6;
     background: #f5f3ff; border-radius: 2px; padding: 1px 4px; display: inline-block; margin-top: 2px; }
+  td.sn { font-family: var(--mono); font-size: 10px; color: var(--text3); text-align: right;
+    padding-right: 10px; }
+  .c-sn-th { text-align: right !important; }
+  .notes-cell a { color: var(--accent); }
+  /* A series note is printed in full the first couple of times it appears and
+     referred back to after that - Qianfan alone would otherwise repeat the
+     same paragraph 257 times down the page. */
+  .note-ditto { color: var(--text3); font-style: italic; }
+  .note-more { font-family: var(--mono); font-size: 10px; cursor: pointer; margin-left: 6px;
+    border: 1px solid var(--border2); background: none; color: var(--accent);
+    border-radius: 3px; padding: 1px 6px; font-style: normal; }
+  .note-more:hover { background: rgba(21,101,192,.08); }
+  .ctry { font-weight: 700; }
   .cat-loading { padding: 28px 12px; text-align: center; color: var(--text3); font-family: var(--mono); font-size: 12px; }
 
   /* SPACETRACK GUIDE */
@@ -472,6 +510,7 @@
   /* Injected right after the logo, inside the header row — a compact two-line
      credit hugging the mark. */
   .logo-credit {
+    position: static; text-align: right; white-space: nowrap;
     flex: 0 0 auto; align-self: center; margin-left: -6px; white-space: nowrap; text-align: center;
     font-family: var(--mono); font-size: 11px; line-height: 1.3; letter-spacing: .01em;
     color: var(--text3, #7a8aa0);
@@ -485,21 +524,19 @@
 
 <div class="header">
   <div class="header-inner">
-    <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
-      <img src="data/nazar-logo.svg?v=5" alt="NAZAR">
-    </a>
+    <a class="hdr-nazar" href="index.html" title="Back to the NAZAR main view">NAZAR</a>
     <div class="header-title">// PRC Orbital Catalog</div>
     <div class="header-sep"></div>
     <div class="header-stats">
-      Satellites: <span id="hdr-total">—</span> &nbsp;|&nbsp;
-      In orbit: <span id="hdr-inorbit">—</span> &nbsp;|&nbsp;
-      Decayed / destroyed: <span id="hdr-decayed">—</span> &nbsp;|&nbsp;
-      Built from the catalogue: <span id="hdr-built">—</span>
+      <div class="hdr-stat"><span class="k">Satellites</span><b id="hdr-total">—</b></div>
+      <div class="hdr-stat"><span class="k">In orbit</span><b id="hdr-inorbit">—</b></div>
+      <div class="hdr-stat"><span class="k">Decayed / destroyed</span><b id="hdr-decayed">—</b></div>
+      <div class="hdr-stat"><span class="k">Built from catalogue</span><b id="hdr-built">—</b></div>
     </div>
-    <div class="header-right">
-      <a href="index.html" title="Back to the NAZAR main view" style="padding: 6px 14px; border-radius: 4px; border: 1px solid #2563eb; background: rgba(37, 99, 235, 0.10); color: #2563eb; text-decoration: none; font-size: 12px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; transition: all .12s;">NAZAR</a>
-      <div class="live-dot"></div>
-      <div class="live-label">TLE data live via Space-Track</div>
+    <div class="hdr-brand">
+      <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
+        <img src="data/nazar-logo.svg?v=5" alt="NAZAR">
+      </a>
     </div>
   </div>
 </div>
@@ -510,7 +547,8 @@
       <div class="sidebar-label">Function</div>
       <button class="nav-item active" onclick="filterCat('ALL')">All satellites <span class="count" id="cnt-all">210+</span></button>
       <button class="nav-item" onclick="filterCat('ISR')">ISR / Reconnaissance <span class="count" id="cnt-ISR">0</span></button>
-      <button class="nav-item" onclick="filterCat('NAV')">Navigation (BeiDou) <span class="count" id="cnt-NAV">0</span></button>
+      <button class="nav-item" onclick="filterCat('NAV')">Navigation — BeiDou (MEO/IGSO/GEO) <span class="count" id="cnt-NAV">0</span></button>
+      <button class="nav-item" onclick="filterCat('PNT')">LEO-PNT augmentation <span class="count" id="cnt-PNT">0</span></button>
       <button class="nav-item" onclick="filterCat('COM')">Communications <span class="count" id="cnt-COM">0</span></button>
       <button class="nav-item" onclick="filterCat('MET')">Meteorology <span class="count" id="cnt-MET">0</span></button>
       <button class="nav-item" onclick="filterCat('RPO')">RPO / Tech Demo <span class="count" id="cnt-RPO">0</span></button>
@@ -623,12 +661,13 @@
       <div class="table-wrap">
         <table id="main-table">
           <colgroup>
-            <col class="c-name"><col class="c-norad"><col class="c-func"><col class="c-orbit">
+            <col class="c-sn"><col class="c-name"><col class="c-norad"><col class="c-func"><col class="c-orbit">
             <col class="c-alt"><col class="c-inc"><col class="c-launch"><col class="c-status">
             <col class="c-notes">
           </colgroup>
           <thead>
             <tr>
+              <th class="c-sn-th">#</th>
               <th class="sortable" data-sort="n">Satellite / Series</th>
               <th class="sortable" data-sort="d">NORAD / COSPAR</th>
               <th class="sortable" data-sort="f">Function</th>
@@ -640,7 +679,7 @@
               <th>Notes</th>
             </tr>
           </thead>
-          <tbody id="table-body"><tr><td colspan="9" class="cat-loading">Loading the catalogue…</td></tr></tbody>
+          <tbody id="table-body"><tr><td colspan="10" class="cat-loading">Loading the catalogue…</td></tr></tbody>
         </table>
       </div>
     </div><!-- /page-catalog -->
@@ -833,8 +872,24 @@ function cmp(a, b, key) {
   return x < y ? -1 : x > y ? 1 : 0;
 }
 
-const FUNC_BAD = {ISR:'b-isr',NAV:'b-nav',COM:'b-com',MET:'b-met',RPO:'b-rpo',SCI:'b-sci',EW:'b-ew',OCN:'b-ocean',ENV:'b-env',BRD:'b-brd',OTH:'b-rpo'};
-const FUNC_LBL = {ISR:'ISR',NAV:'Navigation',COM:'Communications',MET:'Meteorology',RPO:'RPO/Tech',SCI:'Science',EW:'EW/SIGINT',OCN:'Ocean',ENV:'Env/Mapping',BRD:'Broadband',OTH:'Unclassified'};
+const FUNC_BAD = {ISR:'b-isr',NAV:'b-nav',COM:'b-com',MET:'b-met',RPO:'b-rpo',SCI:'b-sci',EW:'b-ew',OCN:'b-ocean',ENV:'b-env',BRD:'b-brd',OTH:'b-rpo',PNT:'b-nav'};
+const FUNC_LBL = {ISR:'ISR',NAV:'Navigation',COM:'Communications',MET:'Meteorology',RPO:'RPO/Tech',SCI:'Science',EW:'EW/SIGINT',OCN:'Ocean',ENV:'Env/Mapping',BRD:'Broadband',OTH:'Unclassified',PNT:'LEO-PNT'};
+
+// One colour per country for the other-country view, so a reader can group
+// them by eye down the column.  Fixed for the countries that appear most,
+// hashed for the long tail, and never red or green - those read as a status.
+const CTRY_FIXED = {PAKI:'#b91c1c',ALG:'#047857',EGYP:'#a16207',VENZ:'#7c3aed',
+  TURK:'#be123c',SAUD:'#0f766e',GER:'#1d4ed8',SWED:'#0369a1',ECU:'#c2410c',
+  ARGN:'#0e7490',UAE:'#9333ea',BRAZ:'#15803d',NIG:'#854d0e',US:'#1e3a8a',
+  UK:'#312e81',ITSO:'#4338ca',EUTE:'#6d28d9',CHBZ:'#0d9488',AUS:'#b45309'};
+const CTRY_POOL = ['#1d4ed8','#7c3aed','#be123c','#0f766e','#a16207','#4338ca',
+  '#c2410c','#0e7490','#9333ea','#854d0e','#0369a1','#b91c1c'];
+function ctryColour(code) {
+  if (CTRY_FIXED[code]) return CTRY_FIXED[code];
+  let h = 0;
+  for (let i = 0; i < (code || '').length; i++) h = (h * 31 + code.charCodeAt(i)) >>> 0;
+  return CTRY_POOL[h % CTRY_POOL.length];
+}
 const ORB_CLASS = {SSO:'o-sso',LEO:'o-leo',MEO:'o-meo',GEO:'o-geo',IGSO:'o-igso',HEO:'o-heo',GTO:'o-gto'};
 const STATUS_LBL = {OP:'<span class="status-op">Operational</span>',DEC:'<span class="status-dec">Retired/Decayed</span>',UNK:'<span class="status-unk">Status unknown</span>',LOS:'<span class="status-los">Lost</span>'};
 
@@ -856,10 +911,19 @@ function renderTable() {
     return true;
   });
 
-  data.sort((a, b) => cmp(a, b, sortKey) * sortDir);
+  // The other-country view is read country by country, so it groups by owner
+  // first and only then applies the chosen column sort within each country.
+  if (currentStatus === 'FOR') {
+    data.sort((a, b) => (a.fo || '').localeCompare(b.fo || '') || cmp(a, b, sortKey) * sortDir);
+  } else {
+    data.sort((a, b) => cmp(a, b, sortKey) * sortDir);
+  }
 
   const page = data.slice(0, MAX_ROWS);
-  tbody.innerHTML = page.map(s => `<tr>
+  lastPage = page;
+  const seenNote = new Map();
+  tbody.innerHTML = page.map((s, i) => `<tr>
+    <td class="sn">${i + 1}</td>
     <td><div class="sat-name">${s.n}</div><div class="sat-series">${s.s}</div></td>
     <td><div class="norad">${s.d}</div><div class="norad" style="margin-top:2px">${s.c}</div></td>
     <td><span class="badge ${FUNC_BAD[s.f]||'b-isr'}">${FUNC_LBL[s.f]||s.f}</span></td>
@@ -868,10 +932,10 @@ function renderTable() {
     <td style="font-family:var(--mono);font-size:11px;color:var(--text2)">${s.i}</td>
     <td style="font-family:var(--mono);font-size:11px;">${s.l || '—'}</td>
     <td>${STATUS_LBL[s.t]||'—'}${s.e ? `<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px">${s.e}</div>` : ''}${s.fo ? `<div class="owner-tag">${s.fo}</div>` : ''}</td>
-    <td class="notes-cell">${s.r}</td>
+    <td class="notes-cell" data-row="${i}">${noteFor(s, i, seenNote)}</td>
   </tr>`).join('');
   if (data.length > MAX_ROWS) {
-    tbody.insertAdjacentHTML('beforeend', `<tr><td colspan="9" class="cat-loading">`
+    tbody.insertAdjacentHTML('beforeend', `<tr><td colspan="10" class="cat-loading">`
       + `Showing the first ${MAX_ROWS.toLocaleString()} of ${data.length.toLocaleString()} matching `
       + `satellites, in the current sort order. Narrow with the search box, the function and orbit `
       + `filters, or the status list to see the rest.</td></tr>`);
@@ -885,11 +949,28 @@ function renderTable() {
     if (th.dataset.sort === sortKey) th.classList.add(sortDir > 0 ? 'sorted-asc' : 'sorted-desc');
   });
 
-  ['ISR','NAV','COM','MET','RPO','SCI','EW','OCN','ENV','BRD','OTH'].forEach(c => {
+  ['ISR','NAV','PNT','COM','MET','RPO','SCI','EW','OCN','ENV','BRD','OTH'].forEach(c => {
     const el = document.getElementById('cnt-' + c);
     if (el) el.textContent = SATS.filter(s => s.f === c).length.toLocaleString();
   });
   document.getElementById('cnt-all').textContent = SATS.length.toLocaleString();
+}
+
+let lastPage = [];
+
+// A satellite with its own remark always shows it.  A shared series note is
+// printed in full the first two times it appears in the current view and
+// referred back to after that, with the full text one click away.
+function noteFor(s, i, seen) {
+  const k = s.rk || s.r.slice(0, 24);
+  const n = (seen.get(k) || 0) + 1;
+  seen.set(k, n);
+  const country = s.fo
+    ? `<span class="ctry" style="color:${ctryColour(s.fc || s.fo)}">${s.fo}</span> · ` : '';
+  if (n <= 2 || s.r.length < 220) return country + s.r;
+  return country + `<span class="note-ditto">Series note for <b>${s.s}</b> — printed in full `
+    + `on its first appearance above.<button type="button" class="note-more" data-row="${i}">`
+    + `show it here</button></span>`;
 }
 
 function sortBy(key) {
@@ -906,7 +987,7 @@ async function loadCatalog() {
     META = doc;
     SATS = doc.sats || [];
   } catch (e) {
-    tbody.innerHTML = '<tr><td colspan="9" class="cat-loading">Could not load the catalogue: '
+    tbody.innerHTML = '<tr><td colspan="10" class="cat-loading">Could not load the catalogue: '
       + e.message + '</td></tr>';
     return;
   }
@@ -920,7 +1001,17 @@ async function loadCatalog() {
 
 document.addEventListener('click', e => {
   const th = e.target.closest('th.sortable');
-  if (th) sortBy(th.dataset.sort);
+  if (th) { sortBy(th.dataset.sort); return; }
+  const more = e.target.closest('.note-more');
+  if (more) {
+    const s = lastPage[+more.dataset.row];
+    const cell = more.closest('.notes-cell');
+    if (s && cell) {
+      const country = s.fo
+        ? `<span class="ctry" style="color:${ctryColour(s.fc || s.fo)}">${s.fo}</span> · ` : '';
+      cell.innerHTML = country + s.r;
+    }
+  }
 });
 
 // Read-only handle for scripts/tests/compendium-check.html.  `let` bindings

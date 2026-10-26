@@ -21,6 +21,7 @@ Run:  python scripts/gen_compendium.py [path/to/satcat.csv]
 Without an argument it downloads a fresh copy.
 """
 import csv
+import hashlib
 import io
 import json
 import os
@@ -52,7 +53,7 @@ OWNER_NAME = {
     "EUTE": "Eutelsat", "ABS": "ABS", "AC": "Asia-Pacific", "CHBZ": "China/Brazil",
     "USBZ": "US/Brazil", "IM": "Inmarsat", "ISRA": "Israel", "AUS": "Australia",
     "ITA": "Italy", "FR": "France", "NETH": "Netherlands", "SPN": "Spain",
-    "UK": "United Kingdom", "US": "United States", "TBD": "unassigned",
+    "UK": "United Kingdom", "US": "United States", "TBD": "Unassigned",
     "DEN": "Denmark", "LUXE": "Luxembourg", "CZCH": "Czechia", "POL": "Poland",
     "RWA": "Rwanda", "SING": "Singapore", "MALA": "Malaysia", "SKOR": "South Korea",
 }
@@ -189,6 +190,7 @@ def main():
         }
         if foreign:
             rec["fo"] = OWNER_NAME.get(owner, owner)
+            rec["fc"] = owner            # raw code, so the page can colour by country
             rec["ls"] = SITE_NAME.get(site, site)
             if not rec["r"]:
                 rec["r"] = ("<span class='flag flag-for'>FOREIGN</span>Launched by China for "
@@ -199,6 +201,10 @@ def main():
                         "and the COSPAR launch id are the available evidence.")
         if norad in ALWAYS_KEEP:
             rec["keep"] = 1
+        # A series note is identical across every member, and Qianfan alone has
+        # 257 of them.  The key lets the page print the note once and refer
+        # back to it afterwards instead of repeating a paragraph 257 times.
+        rec["rk"] = hashlib.sha1(rec["r"].encode("utf-8")).hexdigest()[:8]
         counts[rec["f"]] = counts.get(rec["f"], 0) + 1
         out.append(rec)
 
