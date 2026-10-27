@@ -16,12 +16,15 @@
     --bg3:     #eef0f4;
     --border:  #dde1e8;
     --border2: #c8cdd8;
-    --text:    #1a2030;
-    --text2:   #3d4d66;
-    --text3:   #7a8aa0;
-    --accent:  #1565c0;
-    --accent2: #1976d2;
-    --gold:    #b45309;
+    /* Darkened for contrast on the near-white background: text3 in
+       particular was ~3.9:1 against #fff, which is below the readable
+       threshold for the small mono type it is used for. */
+    --text:    #0c111d;
+    --text2:   #1f2a3d;
+    --text3:   #45556e;
+    --accent:  #0d4a94;
+    --accent2: #10549f;
+    --gold:    #8a3d05;
     --red:     #c62828;
     --green:   #1b7a4a;
     --orange:  #c75000;
@@ -55,8 +58,9 @@
     align-items: center;
     gap: 18px;
     height: 64px;              /* the stats are two lines now */
-    max-width: 1600px;
+    max-width: 1454.5px;       /* 1600 / 1.1, so it still reads 1600 wide */
     margin: 0 auto;
+    zoom: 1.1;
   }
   /* The lighthouse and the Takshashila credit ride together at the right,
      the way they do on the main page, with the NAZAR button opposite them.
@@ -107,7 +111,12 @@
   @media (max-width: 1100px) { .header-stats { display: none; } }
 
   /* LAYOUT */
-  .layout { display: flex; max-width: 1600px; margin: 0 auto; min-height: calc(100vh - 64px); }
+  /* Page type runs 10% up.  zoom on these two blocks rather than on <body>
+     keeps the sticky header sticking to the real viewport, and every length
+     inside is divided by 1.1 so the layout lands where it did.  vh is not
+     scaled by zoom, so a raw 100vh in here would overshoot by 10%. */
+  .layout { display: flex; max-width: 1454.5px; margin: 0 auto;
+    min-height: calc((100vh - 70.4px) / 1.1); zoom: 1.1; }
 
   /* SIDEBAR */
   .sidebar {
@@ -117,8 +126,8 @@
     border-right: 1px solid var(--border);
     padding: 16px 0;
     position: sticky;
-    top: 52px;
-    height: calc(100vh - 52px);
+    top: 64px;                           /* 70.4px on screen: the header */
+    height: calc((100vh - 70.4px) / 1.1);
     overflow-y: auto;
   }
   .sidebar::-webkit-scrollbar { width: 4px; }
@@ -251,6 +260,10 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 11.5px;
+    /* Under auto layout the <col> percentages are only hints, and the long
+       remarks were pulling width away from the columns that asked for it.
+       Fixed layout makes them the actual widths. */
+    table-layout: fixed;
   }
   thead tr {
     background: var(--bg3);
@@ -294,11 +307,15 @@
 
   /* BADGES */
   .badge {
+    /* The badge grows with its own padding, so widening the column chased it
+       instead of fixing it: cap it at the cell and trim the padding. */
     display: inline-block;
+    max-width: 100%;
+    box-sizing: border-box;
     font-family: var(--mono);
     font-size: 9px;
     font-weight: 600;
-    padding: 2px 6px;
+    padding: 2px 4px;
     border-radius: 3px;
     letter-spacing: .05em;
     white-space: nowrap;
@@ -333,7 +350,7 @@
   .o-gto   { background: #f1f5f9; color: #334155; }
 
   .status-op  { color: #15803d; font-family: var(--mono); font-size: 10px; font-weight: 600; }
-  .status-dec { color: #64748b; font-family: var(--mono); font-size: 10px; }
+  .status-dec { color: #3f4a5a; font-family: var(--mono); font-size: 10px; }
   .status-unk { color: #b45309; font-family: var(--mono); font-size: 10px; }
   .status-los { color: #dc2626; font-family: var(--mono); font-size: 10px; }
 
@@ -361,20 +378,28 @@
   /* Column widths. The satellite column was taking roughly a fifth of the
      table on its own; at 9% it is about half that, and the space goes to the
      notes. */
-  col.c-sn     { width: 3%; }
-  col.c-name   { width: 9%; }
-  col.c-norad  { width: 7%; }
-  col.c-func   { width: 7%; }
-  col.c-orbit  { width: 5%; }
-  col.c-alt    { width: 7%; }
-  col.c-inc    { width: 5%; }
-  col.c-launch { width: 7%; }
-  col.c-status { width: 8%; }
-  col.c-notes  { width: 45%; }
+  /* Under fixed layout these are the real widths, so they must add up to
+     100 - at 106 the browser scaled every column down and the satellite
+     names went back to wrapping. */
+  col.c-sn     { width: 2.5%; }
+  col.c-name   { width: 13.5%; }
+  col.c-norad  { width: 6.5%; }
+  col.c-func   { width: 8%; }
+  col.c-orbit  { width: 4.5%; }
+  col.c-alt    { width: 6.5%; }
+  col.c-inc    { width: 4.5%; }
+  col.c-launch { width: 6.5%; }
+  col.c-status { width: 7.5%; }
+  col.c-notes  { width: 40%; }
   /* break-word was splitting "GUOWANG 28 OBJECT D" mid-word and leaving a
      single letter on its own line.  Wrap at spaces, and only break inside a
      word when a single word genuinely cannot fit. */
-  .sat-name { word-break: normal; overflow-wrap: break-word; hyphens: none; }
+  /* text-wrap: balance evens the lines out, so "GUOWANG 28 OBJECT D" breaks
+     as "GUOWANG 28 / OBJECT D" instead of pushing a lone "D" down. */
+  .sat-name { word-break: normal; overflow-wrap: break-word; hyphens: none;
+    text-wrap: balance; }
+  td.nm { padding-left: 6px; padding-right: 6px; }
+  .sat-series { text-wrap: balance; }
 
   /* Sort state, shown on the header that owns it. */
   th.sortable::after { content: " \2195"; opacity: .25; }
@@ -924,7 +949,7 @@ function renderTable() {
   const seenNote = new Map();
   tbody.innerHTML = page.map((s, i) => `<tr>
     <td class="sn">${i + 1}</td>
-    <td><div class="sat-name">${s.n}</div><div class="sat-series">${s.s}</div></td>
+    <td class="nm"><div class="sat-name">${s.n}</div><div class="sat-series">${s.s}</div></td>
     <td><div class="norad">${s.d}</div><div class="norad" style="margin-top:2px">${s.c}</div></td>
     <td><span class="badge ${FUNC_BAD[s.f]||'b-isr'}">${FUNC_LBL[s.f]||s.f}</span></td>
     <td><span class="orbit-pill ${ORB_CLASS[s.o]||'o-leo'}">${s.o}</span></td>
