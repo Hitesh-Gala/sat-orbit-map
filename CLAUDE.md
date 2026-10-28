@@ -115,11 +115,11 @@ Loaded on every page. Besides the phone drawer, it: (1) injects the **Takshashil
 
 ## Password gates (`nazar-gate.js`)
 
-One owner password protects **16 pages** across four groups, plus one control; public files hold only its SHA-256 — in `nazar-gate.js` (`SHA256`), `site-analytics.js` (`CFG.passwordSha256`) and the deployed Apps Script (`PASSWORD_SHA256` in `site-analytics-backend.gs`, which needs a new deployment version). Change all three together, never commit the plaintext — **including into a test harness**: `scripts/tests/gate-check.html` takes it as a `?pw=` parameter at run time and skips those cases without one.
+One owner password protects **17 pages** across four groups, plus one control; public files hold only its SHA-256 — in `nazar-gate.js` (`SHA256`), `site-analytics.js` (`CFG.passwordSha256`) and the deployed Apps Script (`PASSWORD_SHA256` in `site-analytics-backend.gs`, which needs a new deployment version). Change all three together, never commit the plaintext — **including into a test harness**: `scripts/tests/gate-check.html` takes it as a `?pw=` parameter at run time and skips those cases without one.
 
 | Group | Pages | How |
 |---|---|---|
-| **Space Stuff** (8) | `space-stuff`, `space-launched`, `traffic-conjunctions`, `data-comparison`, `mirror-globe`, `sat-steroids`, `cone-waffles`, `dogfights` | `<script src="nazar-gate.js" data-section="spacestuff">` right after `<title>` |
+| **Space Stuff** (9) | `space-stuff`, `space-launched`, `traffic-conjunctions`, `data-comparison`, `mirror-globe`, `sat-steroids`, `cone-waffles`, `dogfights`, `rocket-gallery` | `<script src="nazar-gate.js" data-section="spacestuff">` right after `<title>` |
 | **Global Launch Sites** (4) | `launch-map`, `launch-map-2d`, `launch-gallery`, `rocket-models` | the same, `data-section="launchsites"` |
 | **Indi-Space** (3) | `indi-space`, `analogues`, `comparatives` | a soft gate: index.html's 🔒 button calls `NazarGate.check` and sets `sessionStorage['nazar.indispace']`; each page bounces a direct hit back to index |
 | **Site Analytics** (1) | `site-analytics` | its own `CFG.passwordSha256` check, re-verified by the backend |
