@@ -150,6 +150,63 @@
       color:#b8860b !important; border-color:#e0a83a !important;
       box-shadow:0 0 15px rgba(224,168,58,.5),0 4px 16px rgba(20,45,80,.18) !important;
     }
+    /* ---- rocket photo gallery -------------------------------------- */
+    .rg-open{display:inline-flex; align-items:center; gap:9px; margin-top:16px; cursor:pointer;
+      font-family:var(--disp); font-size:14px; font-weight:600; letter-spacing:.02em;
+      padding:10px 18px; border-radius:9px; border:1px solid var(--line);
+      background:var(--card); color:var(--ink); box-shadow:var(--shadow); transition:all .15s}
+    .rg-open:hover{border-color:var(--accent); color:var(--accent); transform:translateY(-1px)}
+    .rg-open .n{font-family:var(--mono,monospace); font-size:12px; color:var(--dim)}
+
+    .rg-modal{position:fixed; inset:0; z-index:4000; display:flex; flex-direction:column;
+      background:rgba(8,16,28,.74); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px);
+      padding:26px clamp(12px,4vw,56px) 22px}
+    .rg-modal[hidden]{display:none}
+    .rg-card{flex:1; min-height:0; display:flex; flex-direction:column; background:var(--paper);
+      border-radius:16px; box-shadow:0 30px 80px rgba(0,0,0,.5); overflow:hidden}
+    .rg-head{display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+      padding:16px 20px; border-bottom:1px solid var(--line); background:var(--card)}
+    .rg-head h2{margin:0; font-family:var(--disp); font-size:19px; color:var(--ink); letter-spacing:.01em}
+    .rg-head .sub{font-size:12px; color:var(--dim); max-width:62ch; line-height:1.5}
+    .rg-search{margin-left:auto; display:flex; gap:8px; align-items:center}
+    .rg-search input{width:230px; padding:8px 11px; border-radius:8px; border:1px solid var(--line);
+      background:var(--paper); color:var(--ink); font-size:13px}
+    .rg-search input:focus{outline:none; border-color:var(--accent)}
+    .rg-x{cursor:pointer; width:34px; height:34px; border-radius:8px; border:1px solid var(--line);
+      background:var(--paper); color:var(--ink); font-size:19px; line-height:1}
+    .rg-x:hover{border-color:var(--accent); color:var(--accent)}
+
+    .rg-grid{flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; padding:18px 20px 24px;
+      display:grid; gap:16px; grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+    .rg-item{background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden;
+      cursor:pointer; display:flex; flex-direction:column; transition:transform .13s, box-shadow .13s}
+    .rg-item:hover{transform:translateY(-2px); box-shadow:var(--shadow); border-color:var(--accent)}
+    .rg-thumb{aspect-ratio:4/3; background:#0d1726 center/cover no-repeat; position:relative}
+    .rg-thumb{overflow:hidden}
+    .rg-thumb img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block}
+    .rg-thumb .ph{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      font-family:var(--disp); font-size:13px; color:#6f8bb0; letter-spacing:.08em; text-align:center; padding:8px}
+    .rg-meta{padding:9px 11px 11px}
+    .rg-name{font-family:var(--disp); font-weight:600; font-size:13.5px; color:var(--ink); line-height:1.3}
+    .rg-sub{font-size:11px; color:var(--dim); margin-top:3px}
+    .rg-lic{display:inline-block; margin-top:6px; font-size:10px; letter-spacing:.05em;
+      border-radius:3px; padding:1px 6px; background:var(--chip); color:var(--dim)}
+    .rg-lic.free{background:#e8f5ec; color:#1b6b3a}
+    .rg-lic.ref{background:#eef2fb; color:#2d4a86}
+    .rg-empty{grid-column:1/-1; text-align:center; color:var(--dim); padding:40px 0; font-size:13px}
+
+    /* full photo */
+    .rg-full{position:fixed; inset:0; z-index:4100; display:flex; align-items:center; justify-content:center;
+      flex-direction:column; gap:14px; background:rgba(4,9,16,.93); padding:26px}
+    .rg-full[hidden]{display:none}
+    .rg-full img{max-width:min(1200px,92vw); max-height:72vh; border-radius:10px; box-shadow:0 24px 70px rgba(0,0,0,.6)}
+    .rg-cap{max-width:min(1200px,92vw); color:#dbe6f4; font-size:13px; line-height:1.6; text-align:center}
+    .rg-cap .t{font-family:var(--disp); font-size:17px; color:#fff; display:block; margin-bottom:5px}
+    .rg-cap a{color:#8ec5ff}
+    .rg-full .rg-x{position:absolute; top:18px; right:20px; background:rgba(255,255,255,.1);
+      border-color:rgba(255,255,255,.25); color:#fff}
+    @media (max-width:640px){ .rg-search input{width:140px} .rg-head h2{font-size:17px} }
+
 </style>
 </head>
 <body class="page-spacelaunched">
@@ -177,6 +234,7 @@
           what went up is still up there. A picture-first tour of everything now circling Earth: the working,
           the dead, and the millions of shards in between.</p>
         <span class="src-chip"><span class="dot"></span> Data · <b>ESA DISCOS — Space Environment Statistics</b> · snapshot 31 Jul 2026</span>
+        <div><button type="button" class="rg-open" id="rg-launch">🚀 Rocket Gallery <span class="n">photographs &amp; credits</span></button></div>
       </div>
       <div class="hero-art" aria-label="Illustration of Earth ringed by orbital debris">
         <svg viewBox="0 0 400 330" preserveAspectRatio="xMidYMid slice">
@@ -412,6 +470,166 @@
       });
     })();
   </script>
+
+<!-- ================= ROCKET PHOTO GALLERY ================= -->
+<div class="rg-modal" id="rg-modal" hidden role="dialog" aria-modal="true" aria-labelledby="rg-title">
+  <div class="rg-card">
+    <div class="rg-head">
+      <div>
+        <h2 id="rg-title">Rocket Gallery</h2>
+        <div class="sub">The launch vehicles behind everything above. Photographs are public-domain or
+          Creative-Commons files held here with their author and licence, or the open launch database's own
+          images shown from source — click any card for the full photograph and its credit.</div>
+      </div>
+      <div class="rg-search">
+        <input type="search" id="rg-q" placeholder="Find a rocket…" autocomplete="off" aria-label="Search rockets">
+        <button type="button" class="rg-x" id="rg-close" aria-label="Close">×</button>
+      </div>
+    </div>
+    <div class="rg-grid" id="rg-grid"></div>
+  </div>
+</div>
+
+<div class="rg-full" id="rg-full" hidden role="dialog" aria-modal="true">
+  <button type="button" class="rg-x" id="rg-full-x" aria-label="Close">×</button>
+  <img id="rg-full-img" alt="">
+  <div class="rg-cap" id="rg-cap"></div>
+</div>
+
+<script>
+// Rocket gallery.  Local files first - those are the ones this site actually
+// holds, each with its author and licence - then the open launch database's
+// images by reference for the vehicles with no free photograph.  A vehicle
+// with neither gets a typographic plate rather than a borrowed picture.
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(t) {
+    return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  var shots = [], credits = {}, loaded = false;
+
+  function load() {
+    if (loaded) return Promise.resolve();
+    return Promise.all([
+      fetch('data/rockets.json').then(function (r) { return r.json(); }),
+      fetch('data/rockets/_credits.json').then(function (r) { return r.json(); }).catch(function () { return {}; })
+    ]).then(function (res) {
+      credits = res[1] || {};
+      var seen = {};
+      (res[0].rockets || []).forEach(function (r) {
+        var src = r.img || r.imgRemote;
+        if (!src) return;
+        // One card per photograph: families share a file, and 531 vehicles
+        // against 148 files would otherwise repeat the same picture.
+        if (seen[src]) return;
+        seen[src] = 1;
+        shots.push({
+          name: r.full || r.name,
+          family: r.family || '',
+          maker: r.makerFull || r.maker || '',
+          cc: r.cc || '',
+          wiki: r.wiki || '',
+          src: src,
+          own: !!r.img
+        });
+      });
+      shots.sort(function (a, b) { return a.name.localeCompare(b.name); });
+      loaded = true;
+    });
+  }
+
+  function render(q) {
+    var grid = $('rg-grid');
+    q = (q || '').trim().toLowerCase();
+    var list = shots.filter(function (s) {
+      return !q || (s.name + ' ' + s.family + ' ' + s.maker + ' ' + s.cc).toLowerCase().indexOf(q) !== -1;
+    });
+    if (!list.length) {
+      grid.innerHTML = '<div class="rg-empty">No rocket matches that.</div>';
+      return;
+    }
+    grid.innerHTML = list.map(function (s, i) {
+      return '<div class="rg-item" data-i="' + i + '" tabindex="0">' +
+        '<div class="rg-thumb"><div class="ph">' + esc(s.name) + '</div>' +
+          '<img loading="lazy" alt="" src="' + encodeURI(s.src) + '"></div>' +
+        '<div class="rg-meta"><div class="rg-name">' + esc(s.name) + '</div>' +
+        '<div class="rg-sub">' + esc([s.maker, s.cc].filter(Boolean).join(' · ')) + '</div>' +
+        '<span class="rg-lic ' + (s.own ? 'free' : 'ref') + '">' +
+        (s.own ? 'held here · credited' : 'shown from source') + '</span></div></div>';
+    }).join('');
+    grid._list = list;
+  }
+
+  function openFull(s) {
+    var c = credits[s.src] || {};
+    $('rg-full-img').src = s.src;
+    $('rg-full-img').alt = s.name;
+    var bits = [];
+    if (c.author) bits.push('Photograph: ' + esc(c.author));
+    if (c.licence) bits.push(esc(c.licence));
+    if (c.source) bits.push('<a href="' + esc(c.source) + '" target="_blank" rel="noopener noreferrer">source</a>');
+    if (!s.own && !bits.length) {
+      bits.push('Image served from the open launch database (The Space Devs Launch Library), ' +
+                'shown from their CDN rather than copied here.');
+    }
+    if (s.wiki) bits.push('<a href="' + esc(s.wiki) + '" target="_blank" rel="noopener noreferrer">about this vehicle</a>');
+    $('rg-cap').innerHTML = '<span class="t">' + esc(s.name) + '</span>' +
+      esc([s.maker, s.cc].filter(Boolean).join(' · ')) + (bits.length ? '<br>' + bits.join(' · ') : '');
+    $('rg-full').hidden = false;
+  }
+
+  function open() {
+    $('rg-modal').hidden = false;
+    load().then(function () {
+      render($('rg-q').value);
+      $('rg-count') && ($('rg-count').textContent = shots.length);
+    }).catch(function (e) {
+      $('rg-grid').innerHTML = '<div class="rg-empty">Could not load the gallery: ' + esc(e.message) + '</div>';
+    });
+    setTimeout(function () { $('rg-q').focus(); }, 60);
+  }
+  function close() { $('rg-modal').hidden = true; }
+
+  $('rg-launch').addEventListener('click', open);
+  $('rg-close').addEventListener('click', close);
+  $('rg-modal').addEventListener('click', function (e) { if (e.target === $('rg-modal')) close(); });
+  $('rg-q').addEventListener('input', function (e) { render(e.target.value); });
+  $('rg-grid').addEventListener('click', function (e) {
+    var it = e.target.closest('.rg-item');
+    if (it) openFull($('rg-grid')._list[+it.dataset.i]);
+  });
+  $('rg-grid').addEventListener('keydown', function (e) {
+    var it = e.target.closest('.rg-item');
+    if (it && (e.key === 'Enter' || e.key === ' ')) { openFull($('rg-grid')._list[+it.dataset.i]); e.preventDefault(); }
+  });
+  $('rg-full-x').addEventListener('click', function () { $('rg-full').hidden = true; });
+  $('rg-full').addEventListener('click', function (e) { if (e.target === $('rg-full')) $('rg-full').hidden = true; });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (!$('rg-full').hidden) { $('rg-full').hidden = true; return; }
+    if (!$('rg-modal').hidden) close();
+  });
+
+  // A thumbnail that fails falls back to the vehicle's name underneath it
+  // rather than an empty frame - the remote images are somebody else's CDN
+  // and can go away.  error does not bubble, so this listens in capture.
+  $('rg-grid').addEventListener('error', function (e) {
+    if (e.target && e.target.tagName === 'IMG') e.target.style.display = 'none';
+  }, true);
+
+  // Read-only handle for scripts/tests/launchy-gallery-check.html.
+  window.__rg = {
+    count: function () { return shots.length; },
+    own: function () { return shots.filter(function (s) { return s.own; }).length; },
+    shown: function () { return document.querySelectorAll('.rg-item').length; },
+    open: open, close: close,
+    credits: function () { return credits; },
+  };
+})();
+</script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=6"></script>
   <script src="mobile-menu.js?v=26"></script>

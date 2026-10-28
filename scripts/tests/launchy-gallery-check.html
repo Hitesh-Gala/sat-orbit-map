@@ -1,0 +1,56 @@
+<!doctype html><meta charset="utf-8"><body style="background:#000;color:#9f9;font:12px monospace">
+<!-- Drives the Launchy-Stuff rocket gallery: the button opens it, the cards
+     carry a name and a thumbnail, a click opens the full photograph with its
+     credit, and every locally-held file is attributed.  Serve the repo and
+     dump this page's DOM. -->
+<pre id="out">running…</pre><iframe id="f" style="width:1500px;height:900px;border:0"></iframe>
+<script>
+const log=[],put=(k,v)=>log.push(k+': '+JSON.stringify(v));
+try{ sessionStorage.setItem('nazar.spacestuff','1'); }catch(e){}
+const f=document.getElementById('f');
+f.src='../../space-launched.html';
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+window.addEventListener('load',()=>setTimeout(run,2500));
+async function run(){
+  const d=f.contentDocument,w=f.contentWindow;
+  const btn=d.getElementById('rg-launch');
+  put('buttonExists',!!btn);
+  put('buttonLabel',btn?btn.textContent.replace(/\s+/g,' ').trim():null);
+  const head=d.querySelector('.cover h1');
+  put('buttonIsBelowTheHeadline',btn.getBoundingClientRect().top>head.getBoundingClientRect().bottom);
+  put('modalClosedAtFirst',d.getElementById('rg-modal').hidden);
+  btn.click(); await wait(1800);
+  put('modalOpen',!d.getElementById('rg-modal').hidden);
+  put('photosInRepository',w.__rg.count());
+  put('heldHereWithCredit',w.__rg.own());
+  put('cardsRendered',w.__rg.shown());
+  const card=d.querySelector('.rg-item');
+  put('cardHasNameAndThumb',[!!card.querySelector('.rg-name'),!!card.querySelector('.rg-thumb img'),
+                             card.querySelector('.rg-name').textContent.trim()]);
+  put('licenceTags',[...new Set([...d.querySelectorAll('.rg-lic')].map(e=>e.textContent))]);
+  // search
+  d.getElementById('rg-q').value='falcon';
+  d.getElementById('rg-q').dispatchEvent(new Event('input')); await wait(300);
+  put('searchFalcon',[w.__rg.shown(),[...d.querySelectorAll('.rg-name')].slice(0,3).map(e=>e.textContent.trim())]);
+  d.getElementById('rg-q').value=''; d.getElementById('rg-q').dispatchEvent(new Event('input')); await wait(300);
+  // click a thumbnail -> full photo with credit
+  const first=d.querySelector('.rg-item');
+  const name=first.querySelector('.rg-name').textContent.trim();
+  first.click(); await wait(500);
+  put('fullPhotoOpened',!d.getElementById('rg-full').hidden);
+  put('fullPhotoSrc',d.getElementById('rg-full-img').getAttribute('src'));
+  put('captionNamesIt',d.getElementById('rg-cap').textContent.includes(name));
+  put('captionText',d.getElementById('rg-cap').textContent.replace(/\s+/g,' ').trim().slice(0,150));
+  // every locally-held photo must carry an author and a licence
+  const cr=w.__rg.credits();
+  const own=Object.keys(cr);
+  put('creditedFiles',own.length);
+  put('everyLocalFileHasAuthorAndLicence',own.every(k=>cr[k].author&&cr[k].licence&&cr[k].source));
+  // nothing may be served from nextspaceflight
+  put('noNextspaceflightAssets',!d.documentElement.innerHTML.includes('nextspaceflight.com'));
+  d.getElementById('rg-full-x').click(); await wait(200);
+  d.getElementById('rg-close').click(); await wait(200);
+  put('closesCleanly',[d.getElementById('rg-full').hidden,d.getElementById('rg-modal').hidden]);
+  document.getElementById('out').textContent=log.join('\n');
+}
+</script>
