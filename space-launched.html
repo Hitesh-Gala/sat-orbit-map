@@ -176,14 +176,21 @@
       background:var(--paper); color:var(--ink); font-size:19px; line-height:1}
     .rg-x:hover{border-color:var(--accent); color:var(--accent)}
 
+    /* align-content defaults to stretch on a grid with spare room, which
+       pulled every card down to fill the panel when a search matched only a
+       handful - start keeps them the height of their own content. */
     .rg-grid{flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; padding:18px 20px 24px;
-      display:grid; gap:16px; grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+      display:grid; gap:16px; grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+      align-content:start; align-items:start}
     .rg-item{background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden;
       cursor:pointer; display:flex; flex-direction:column; transition:transform .13s, box-shadow .13s}
     .rg-item:hover{transform:translateY(-2px); box-shadow:var(--shadow); border-color:var(--accent)}
-    .rg-thumb{aspect-ratio:4/3; background:#0d1726 center/cover no-repeat; position:relative}
-    .rg-thumb{overflow:hidden}
-    .rg-thumb img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block}
+    /* A definite height, not aspect-ratio: the thumb is a flex item in a
+       column flex container, where the main size comes from the content, and
+       both children were absolutely positioned - so the box resolved to 204
+       x 0 and nothing was visible whether the photograph loaded or not. */
+    .rg-thumb{height:148px; flex:0 0 148px; position:relative; overflow:hidden; background:#0d1726}
+    .rg-thumb img{width:100%; height:100%; object-fit:cover; display:block; position:relative; z-index:1}
     .rg-thumb .ph{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
       font-family:var(--disp); font-size:13px; color:#6f8bb0; letter-spacing:.08em; text-align:center; padding:8px}
     .rg-meta{padding:9px 11px 11px}
@@ -193,6 +200,8 @@
       border-radius:3px; padding:1px 6px; background:var(--chip); color:var(--dim)}
     .rg-lic.free{background:#e8f5ec; color:#1b6b3a}
     .rg-lic.ref{background:#eef2fb; color:#2d4a86}
+    .rg-lic.none{background:#f4f4f6; color:#6a6a74}
+    .rg-item.plate{cursor:default}
     .rg-empty{grid-column:1/-1; text-align:center; color:var(--dim); padding:40px 0; font-size:13px}
 
     /* full photo */
@@ -518,14 +527,12 @@
       fetch('data/rockets/_credits.json').then(function (r) { return r.json(); }).catch(function () { return {}; })
     ]).then(function (res) {
       credits = res[1] || {};
-      var seen = {};
+      // One card per launch vehicle, which is how the source catalogue lists
+      // them - not one per photograph.  Families share a picture, so
+      // de-duplicating on the image would have collapsed 531 vehicles into
+      // 258 cards and dropped names the reader came looking for.
       (res[0].rockets || []).forEach(function (r) {
-        var src = r.img || r.imgRemote;
-        if (!src) return;
-        // One card per photograph: families share a file, and 531 vehicles
-        // against 148 files would otherwise repeat the same picture.
-        if (seen[src]) return;
-        seen[src] = 1;
+        var src = r.img || r.imgRemote || '';
         shots.push({
           name: r.full || r.name,
           family: r.family || '',
@@ -552,18 +559,20 @@
       return;
     }
     grid.innerHTML = list.map(function (s, i) {
-      return '<div class="rg-item" data-i="' + i + '" tabindex="0">' +
+      return '<div class="rg-item' + (s.src ? '' : ' plate') + '" data-i="' + i + '" tabindex="0">' +
         '<div class="rg-thumb"><div class="ph">' + esc(s.name) + '</div>' +
-          '<img loading="lazy" alt="" src="' + encodeURI(s.src) + '"></div>' +
+          (s.src ? '<img loading="lazy" alt="" src="' + encodeURI(s.src) + '">' : '') + '</div>' +
         '<div class="rg-meta"><div class="rg-name">' + esc(s.name) + '</div>' +
         '<div class="rg-sub">' + esc([s.maker, s.cc].filter(Boolean).join(' · ')) + '</div>' +
-        '<span class="rg-lic ' + (s.own ? 'free' : 'ref') + '">' +
-        (s.own ? 'held here · credited' : 'shown from source') + '</span></div></div>';
+        '<span class="rg-lic ' + (s.own ? 'free' : s.src ? 'ref' : 'none') + '">' +
+        (s.own ? 'held here · credited' : s.src ? 'shown from source' : 'no free photograph') +
+        '</span></div></div>';
     }).join('');
     grid._list = list;
   }
 
   function openFull(s) {
+    if (!s.src) return;                      // a name plate has nothing to open
     var c = credits[s.src] || {};
     $('rg-full-img').src = s.src;
     $('rg-full-img').alt = s.name;
@@ -617,13 +626,24 @@
   // rather than an empty frame - the remote images are somebody else's CDN
   // and can go away.  error does not bubble, so this listens in capture.
   $('rg-grid').addEventListener('error', function (e) {
-    if (e.target && e.target.tagName === 'IMG') e.target.style.display = 'none';
+    var img = e.target;
+    if (!img || img.tagName !== 'IMG') return;
+    // One retry first: a burst of 250 requests can drop a connection, and a
+    // blanked thumbnail would otherwise be permanent.
+    if (!img.dataset.retried) {
+      img.dataset.retried = '1';
+      var src = img.src;
+      setTimeout(function () { img.src = src; }, 400);
+      return;
+    }
+    img.style.display = 'none';
   }, true);
 
   // Read-only handle for scripts/tests/launchy-gallery-check.html.
   window.__rg = {
     count: function () { return shots.length; },
     own: function () { return shots.filter(function (s) { return s.own; }).length; },
+    withPhoto: function () { return shots.filter(function (s) { return !!s.src; }).length; },
     shown: function () { return document.querySelectorAll('.rg-item').length; },
     open: open, close: close,
     credits: function () { return credits; },
