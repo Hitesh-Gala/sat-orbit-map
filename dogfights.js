@@ -164,6 +164,7 @@
       if (!p) { sat.vis.group.visible = false; return; }
       sat.vis.group.visible = true;
       pushTrail(sat, p);          // records the true position, before the stretch
+      sat.posTrue = p.clone();    // the geometry the separation box measures
       stretch(p);                 // in place: from here p is where it is drawn
       sat.vis.group.position.copy(p);
       sat.pos = p;
@@ -180,6 +181,7 @@
         camera.position.copy(f.pos).add(focusOffset);
       }
     }
+    drawSepBox();
     controls.update();
     $('df-clock').innerHTML = esc(simTime.toISOString().replace('T', ' ').slice(0, 19)) + '<span> UTC</span>';
     return any;
@@ -207,6 +209,125 @@
     draw();
   }
   requestAnimationFrame(tick);
+
+  // ---- separation box ----------------------------------------------------
+  // A translucent rectangle with one satellite on each corner.  The frame is
+  // built from the local vertical at the midpoint, so one edge is genuinely
+  // radial and the other genuinely horizontal - that is what makes "vertical"
+  // and "lateral" mean something, rather than being components along whichever
+  // way the scene axes happen to point.
+  var sepA = '', sepB = '', sepOn = false, sepGroup = null;
+  var _up = new THREE.Vector3(), _d = new THREE.Vector3(), _hor = new THREE.Vector3(),
+      _mid = new THREE.Vector3(), _z = new THREE.Vector3(), _m = new THREE.Matrix4();
+  var KM = EARTH_R / GLOBE_R;            // globe units back to kilometres
+
+  function buildSepBox() {
+    var g = new THREE.Group();
+    var face = new THREE.Mesh(
+      new THREE.PlaneGeometry(1, 1),
+      new THREE.MeshBasicMaterial({ color: 0x67c8ff, transparent: true, opacity: 0.16,
+                                    side: THREE.DoubleSide, depthWrite: false }));
+    var edge = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.PlaneGeometry(1, 1)),
+      new THREE.LineBasicMaterial({ color: 0x9adcff, transparent: true, opacity: 0.85 }));
+    // The two legs the readout names, drawn so it is obvious which is which.
+    var legV = new THREE.Line(new THREE.BufferGeometry().setFromPoints(
+      [new THREE.Vector3(), new THREE.Vector3()]),
+      new THREE.LineBasicMaterial({ color: 0xffcf5c }));
+    var legH = new THREE.Line(new THREE.BufferGeometry().setFromPoints(
+      [new THREE.Vector3(), new THREE.Vector3()]),
+      new THREE.LineBasicMaterial({ color: 0x58d68d }));
+    legV.frustumCulled = legH.frustumCulled = false;
+    g.add(face); g.add(edge);
+    scene.add(g); scene.add(legV); scene.add(legH);
+    return { group: g, face: face, edge: edge, legV: legV, legH: legH };
+  }
+
+  function sepPair() {
+    if (!sepOn || !sepA || !sepB || sepA === sepB) return null;
+    var a = picked.find(function (p) { return String(p.noradId) === String(sepA); });
+    var b = picked.find(function (p) { return String(p.noradId) === String(sepB); });
+    return (a && b && a.posTrue && b.posTrue && a.pos && b.pos) ? [a, b] : null;
+  }
+
+  function setLine(line, p1, p2) {
+    var arr = line.geometry.attributes.position.array;
+    arr[0] = p1.x; arr[1] = p1.y; arr[2] = p1.z;
+    arr[3] = p2.x; arr[4] = p2.y; arr[5] = p2.z;
+    line.geometry.attributes.position.needsUpdate = true;
+    line.geometry.computeBoundingSphere();
+  }
+
+  function drawSepBox() {
+    var pair = sepPair();
+    if (!pair) {
+      if (sepGroup) sepGroup.group.visible = sepGroup.legV.visible = sepGroup.legH.visible = false;
+      return;
+    }
+    if (!sepGroup) sepGroup = buildSepBox();
+    sepGroup.group.visible = sepGroup.legV.visible = sepGroup.legH.visible = true;
+
+    var a = pair[0], b = pair[1];
+    // Numbers from the true positions, drawing from the displayed ones, so the
+    // box still lines up with the dots when the altitude slider is off 1x.
+    _mid.copy(a.posTrue).add(b.posTrue).multiplyScalar(0.5);
+    _up.copy(_mid).normalize();
+    _d.copy(b.posTrue).sub(a.posTrue);
+    var vert = _d.dot(_up);
+    _hor.copy(_d).addScaledVector(_up, -vert);
+    var lat = _hor.length(), range = _d.length();
+
+    $('df-sep-r').textContent = (range * KM).toFixed(1) + ' km';
+    $('df-sep-v').textContent = (Math.abs(vert) * KM).toFixed(1) + ' km';
+    $('df-sep-h').textContent = (lat * KM).toFixed(1) + ' km';
+    // Plain height difference as well: the radial/transverse split is the
+    // right frame for proximity work, but at large separations its "vertical"
+    // stops matching the two altitudes printed underneath, which reads wrong.
+    $('df-sep-da').textContent =
+      (Math.abs(b.posTrue.length() - a.posTrue.length()) * KM).toFixed(1) + ' km';
+    $('df-sep-alt').innerHTML = esc(a.name) + ' ' + ((a.posTrue.length() - GLOBE_R) * KM).toFixed(0) +
+      ' km &middot; ' + esc(b.name) + ' ' + ((b.posTrue.length() - GLOBE_R) * KM).toFixed(0) + ' km' +
+      (altScale !== 1 ? '<br>Altitude scale is ' + altScale.toFixed(1) +
+       'x, so the box is drawn taller than the figures.' : '');
+
+    // Now the drawing frame, from the displayed positions.
+    var da = a.pos, db = b.pos;
+    _mid.copy(da).add(db).multiplyScalar(0.5);
+    _up.copy(_mid).normalize();
+    _d.copy(db).sub(da);
+    var dv = _d.dot(_up);
+    _hor.copy(_d).addScaledVector(_up, -dv);
+    var dl = _hor.length();
+    if (dl < 1e-6) { _hor.set(1, 0, 0).cross(_up).normalize(); dl = 1e-6; }
+    else { _hor.normalize(); }
+    _z.copy(_hor).cross(_up).normalize();
+
+    // PlaneGeometry lies in XY, so X maps to the horizontal leg and Y to the
+    // vertical one; the plane's own normal becomes the frame's Z.
+    _m.makeBasis(_hor, _up, _z);
+    sepGroup.group.position.copy(_mid);
+    sepGroup.group.quaternion.setFromRotationMatrix(_m);
+    sepGroup.group.scale.set(Math.max(dl, 1e-4), Math.max(Math.abs(dv), 1e-4), 1);
+
+    // The two legs meet at the corner under whichever satellite is higher.
+    var lower = dv >= 0 ? da : db, upper = dv >= 0 ? db : da;
+    var corner = lower.clone().addScaledVector(_up, Math.abs(dv));
+    setLine(sepGroup.legV, lower, corner);
+    setLine(sepGroup.legH, corner, upper);
+  }
+
+  function renderSepOptions() {
+    ['df-sep-a', 'df-sep-b'].forEach(function (id, n) {
+      var sel = $(id), keep = sel.value;
+      sel.innerHTML = '<option value="">&mdash; ' + (n ? 'second' : 'first') + ' satellite &mdash;</option>' +
+        picked.map(function (s) {
+          return '<option value="' + esc(s.noradId) + '">' + esc(s.name) + '</option>';
+        }).join('');
+      sel.value = keep;
+      if (sel.value !== keep) { if (n) { sepB = ''; } else { sepA = ''; } }
+    });
+    $('df-sep-on').disabled = picked.length < 2;
+  }
 
   // ---- catalogue + search ------------------------------------------------
   function loadCatalogue() {
@@ -271,6 +392,7 @@
     sel.value = keep;
     if (sel.value !== keep) { focusId = ''; focusOffset = null; }
     $('df-animate').disabled = !picked.length;
+    renderSepOptions();
   }
 
   // ---- time window -------------------------------------------------------
@@ -479,6 +601,26 @@
     $('df-speed-val').textContent = (rate < 1 ? rate : rate.toLocaleString()) + '×';
   });
 
+  $('df-sep-a').addEventListener('change', function (e) { sepA = e.target.value; draw(); });
+  $('df-sep-b').addEventListener('change', function (e) { sepB = e.target.value; draw(); });
+  $('df-sep-swap').addEventListener('click', function () {
+    var t = sepA; sepA = sepB; sepB = t;
+    $('df-sep-a').value = sepA; $('df-sep-b').value = sepB;
+    draw();
+  });
+  $('df-sep-on').addEventListener('click', function () {
+    sepOn = !sepOn;
+    $('df-sep-on').classList.toggle('on', sepOn);
+    $('df-sep-on').textContent = sepOn ? 'Hide box' : 'Show box';
+    $('df-sep-out').hidden = !sepOn;
+    // Nothing chosen yet: the first two on the globe are the obvious pair.
+    if (sepOn && (!sepA || !sepB) && picked.length >= 2) {
+      sepA = String(picked[0].noradId); sepB = String(picked[1].noradId);
+      $('df-sep-a').value = sepA; $('df-sep-b').value = sepB;
+    }
+    draw();
+  });
+
   $('df-alt').addEventListener('input', function (e) {
     altScale = parseFloat(e.target.value) || 1;
     $('df-alt-val').textContent = altScale.toFixed(1);
@@ -557,6 +699,37 @@
     trailLen: function (i) { return picked[i] ? picked[i].vis.n : 0; },
     trailMax: function () { return TRAIL_MAX; },
     panMode: function () { return controls.enablePan && controls.mouseButtons.LEFT === THREE.MOUSE.PAN; },
+    sep: function () {
+      var pair = sepPair();
+      if (!pair) return null;
+      var num = function (t) { return +String(t).replace(/[^0-9.]/g, ''); };
+      return {
+        a: pair[0].name, b: pair[1].name,
+        range: num($('df-sep-r').textContent),
+        vertical: num($('df-sep-v').textContent),
+        lateral: num($('df-sep-h').textContent),
+        boxVisible: !!(sepGroup && sepGroup.group.visible),
+      };
+    },
+    // Recomputed from the satellites' own positions rather than read back
+    // off the panel, so the check is independent of what drawSepBox wrote.
+    sepCheck: function () {
+      var pair = sepPair();
+      if (!pair) return null;
+      var p = pair[0].posTrue, qv = pair[1].posTrue;
+      var mid = p.clone().add(qv).multiplyScalar(0.5).normalize();
+      var dd = qv.clone().sub(p);
+      var v = dd.dot(mid);
+      var h = dd.clone().addScaledVector(mid, -v).length();
+      return { range: +(dd.length() * KM).toFixed(1),
+               vertical: +(Math.abs(v) * KM).toFixed(1),
+               lateral: +(h * KM).toFixed(1) };
+    },
+    setSep: function (a, b) {
+      sepA = String(a); sepB = String(b);
+      $('df-sep-a').value = sepA; $('df-sep-b').value = sepB;
+      if (!sepOn) { $('df-sep-on').click(); } else { draw(); }
+    },
     meshScale: function (i) { return picked[i] ? picked[i].vis.group.scale.x : 0; },
     trailRadius: function (i) {
       var vis = picked[i] && picked[i].vis;

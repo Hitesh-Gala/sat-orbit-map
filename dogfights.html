@@ -86,6 +86,13 @@
       font-family: var(--mono); font-size: 12.5px; color: var(--dim); margin-bottom: 3px; }
     .df-slider .row b { color: var(--accent); font-weight: 400; }
 
+    .df-sep { margin-top: 9px; border-top: 1px solid rgba(110,200,255,.14); padding-top: 8px; }
+    .df-sep[hidden] { display: none; }
+    .df-sep .row { display: flex; justify-content: space-between; align-items: baseline;
+      font-family: var(--mono); font-size: 13px; color: var(--dim); padding: 2px 0; }
+    .df-sep .row b { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .df-sep .alt { font-family: var(--mono); font-size: 11.5px; color: var(--dim); margin-top: 5px; line-height: 1.45; }
+
     .df-when { display: flex; flex-direction: column; gap: 5px; margin-bottom: 9px; }
     .df-field { display: flex; gap: 5px; }
     .df-when input { flex: 1; min-width: 0; box-sizing: border-box; background: rgba(8,16,28,.9);
@@ -174,6 +181,29 @@
     </section>
 
     <section class="panel">
+      <div class="df-label">Separation box</div>
+      <select class="df-select" id="df-sep-a" aria-label="First satellite"><option value="">— first satellite —</option></select>
+      <select class="df-select" id="df-sep-b" style="margin-top:6px" aria-label="Second satellite"><option value="">— second satellite —</option></select>
+      <div class="df-row">
+        <button type="button" class="df-btn primary" id="df-sep-on">Show box</button>
+        <button type="button" class="df-btn" id="df-sep-swap" title="Swap the two">⇅</button>
+      </div>
+      <div class="df-sep" id="df-sep-out" hidden>
+        <div class="row"><span>Slant range</span><b id="df-sep-r">—</b></div>
+        <div class="row"><span>Vertical</span><b id="df-sep-v">—</b></div>
+        <div class="row"><span>Lateral</span><b id="df-sep-h">—</b></div>
+        <div class="row"><span>Δ altitude</span><b id="df-sep-da">—</b></div>
+        <div class="alt" id="df-sep-alt">—</div>
+      </div>
+      <div class="df-note" id="df-sep-note">Pick two satellites and a translucent box is drawn with one on each
+        corner. <b>Vertical</b> and <b>lateral</b> split the separation along and across the local vertical at the
+        midpoint — the radial/transverse frame an operator works in — so they square back to the <b>slant range</b>
+        exactly. For two satellites close together vertical is the height difference; far apart it diverges from
+        plain <b>Δ altitude</b>, which is why both are shown. The figures are the real geometry, unaffected by the
+        altitude-scale slider, and keep updating while the clock runs.</div>
+    </section>
+
+    <section class="panel">
       <div class="df-label">Time rate <span class="val" id="df-speed-val">1×</span></div>
       <div class="df-speed">
         <input type="range" id="df-speed" min="0" max="9" step="1" value="1" aria-label="Time rate">
@@ -238,6 +268,6 @@
   <script src="tle-loader.js?v=11"></script>
   <script src="site-analytics.js?v=6"></script>
   <script src="mobile-menu.js?v=26"></script>
-  <script src="dogfights.js?v=3"></script>
+  <script src="dogfights.js?v=4"></script>
 </body>
 </html>

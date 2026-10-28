@@ -1,0 +1,75 @@
+<!doctype html><meta charset="utf-8"><body style="background:#000;color:#9f9;font:12px monospace">
+<!-- Drives the Dog-Fights separation box: that it appears for a chosen pair,
+     that its three figures agree with an independent calculation from the
+     satellites' own positions, that vertical and lateral compose back to the
+     slant range, and that it keeps up while the clock runs. -->
+<pre id="out">running…</pre><iframe id="f" style="width:1400px;height:880px;border:0"></iframe>
+<script>
+const log=[],put=(k,v)=>log.push(k+': '+JSON.stringify(v));
+const done=()=>{document.getElementById('out').textContent=log.join('\n');};
+try{ sessionStorage.setItem('nazar.spacestuff','1'); }catch(e){}
+const f=document.getElementById('f');
+f.src='../../dogfights.html';
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+window.addEventListener('load',()=>setTimeout(run,11000));
+
+async function run(){
+ try{
+  const d=f.contentDocument,w=f.contentWindow,df=w.__df;
+  put('hook',!!df);
+  // two satellites on the globe
+  const q=d.getElementById('df-q');
+  for(const name of ['iss','tjs-3']){
+    q.value=name; q.dispatchEvent(new Event('input')); await wait(250);
+    d.getElementById('df-add').click(); await wait(250);
+  }
+  put('picked',df.picked());
+  put('controlsExist',['df-sep-a','df-sep-b','df-sep-on','df-sep-swap'].map(i=>!!d.getElementById(i)));
+  put('boxOffBeforeAnyPick',df.sep());
+  put('optionsOfferThePicked',[...d.getElementById('df-sep-a').options].map(o=>o.text));
+
+  d.getElementById('df-sep-on').click(); await wait(600);
+  const s=df.sep();
+  put('boxOn',!!s);
+  put('readout',s);
+  put('readoutPanelVisible',!d.getElementById('df-sep-out').hidden);
+  // plain height difference, shown alongside because the radial/transverse
+  // vertical diverges from it once the two are far apart
+  const alts=[...d.querySelectorAll('.df-sep .row b')].map(e=>e.textContent);
+  put('allFourRows',alts);
+  const dAlt=+d.getElementById('df-sep-da').textContent.replace(/[^0-9.]/g,'');
+  put('deltaAltitudeShown',dAlt);
+
+  // independent check: recompute from the satellites' own true positions
+  const chk=w.__df.sepCheck ? w.__df.sepCheck() : null;
+  put('independentCheck',chk);
+  if(s&&chk){
+    const near=(a,b,tol)=>Math.abs(a-b)<=tol;
+    put('rangeAgrees',near(s.range,chk.range,0.2));
+    put('verticalAgrees',near(s.vertical,chk.vertical,0.2));
+    put('lateralAgrees',near(s.lateral,chk.lateral,0.2));
+    // the two legs must compose back to the hypotenuse
+    put('pythagoras',[+Math.hypot(s.vertical,s.lateral).toFixed(1),s.range,
+                      near(Math.hypot(s.vertical,s.lateral),s.range,0.3)]);
+  }
+
+  // it has to keep up while the clock runs
+  const before=df.sep();
+  for(let i=0;i<40;i++) df.step(30);
+  await wait(300);
+  const after=df.sep();
+  put('updatesWithTheClock',[before.range,after.range,before.range!==after.range]);
+  put('stillVisibleAfterStepping',after.boxVisible);
+
+  // swap must not change the geometry, only the order
+  d.getElementById('df-sep-swap').click(); await wait(300);
+  const sw=df.sep();
+  put('swapKeepsTheNumbers',[sw.a,sw.b,Math.abs(sw.range-after.range)<0.6]);
+
+  // and turn off cleanly
+  d.getElementById('df-sep-on').click(); await wait(300);
+  put('offAgain',[df.sep(),d.getElementById('df-sep-out').hidden]);
+ }catch(e){ put('ERROR',e.message); }
+ done();
+}
+</script>
