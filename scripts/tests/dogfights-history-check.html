@@ -1,0 +1,72 @@
+<!doctype html><meta charset="utf-8"><body style="background:#000;color:#9f9;font:12px monospace">
+<!-- Drives the one thing the Dog-Fights page could not do: reconstruct a
+     rendezvous that happened before the catalogue's only element set was
+     issued.  With data/tle-history.json loaded, each instant must be
+     propagated from the freshest set that precedes it, the readout must say
+     which sets those were, and the Cosmos 2612 / ICEYE-X36 pass of 18 Oct 2026
+     must come out sub-kilometre instead of the 471 km the single newest set
+     gives.  The reference figure is scripts/conjunction_scan.py --history,
+     which is an independent Python sgp4 implementation of the same idea. -->
+<pre id="out">running…</pre><iframe id="f" style="width:1400px;height:880px;border:0"></iframe>
+<script>
+const log=[],put=(k,v)=>log.push(k+': '+JSON.stringify(v));
+const done=()=>{document.getElementById('out').textContent=log.join('\n');};
+try{ sessionStorage.setItem('nazar.spacestuff','1'); }catch(e){}
+const f=document.getElementById('f');
+f.src='../../dogfights.html';
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+window.addEventListener('load',()=>setTimeout(run,12000));
+
+async function run(){
+ try{
+  const d=f.contentDocument,w=f.contentWindow,df=w.__df;
+  put('hook',!!df);
+  put('historyHeld',df.history());
+
+  const q=d.getElementById('df-q');
+  for(const name of ['cosmos 2612','iceye-x36']){
+    q.value=name; q.dispatchEvent(new Event('input')); await wait(300);
+    d.getElementById('df-add').click(); await wait(300);
+  }
+  put('picked',df.picked());
+
+  // the element set chosen for an instant must be the freshest one before it
+  put('setBeforeTheEvent',[df.epochUsed(0,'2026-10-18T06:33:14Z'),
+                           df.epochUsed(1,'2026-10-18T06:33:14Z')]);
+  put('setWellBeforeTheHistory',[df.epochUsed(0,'2026-01-01T00:00:00Z'),
+                                 df.epochUsed(1,'2026-01-01T00:00:00Z')]);
+  put('pastTheHeldWindowFallsBackToTheCatalogue',
+      [df.epochUsed(0,'2026-10-28T12:00:00Z'),df.epochUsed(1,'2026-10-28T12:00:00Z')]);
+
+  df.setSep(68762,59103); await wait(600);
+  put('boxOn',!!df.sep());
+  // the clock still reads now, which is past the held window, so the readout
+  // must NOT claim held elements yet
+  put('noHeldNoteOutsideTheWindow',!/Held elements/.test(d.getElementById('df-sep-alt').innerHTML));
+
+  // --- the scan -----------------------------------------------------------
+  df.setWindow('2026-10-14 00:00','2026-10-21 00:00'); await wait(400);
+  put('window',df.window());
+  d.getElementById('df-sep-find').click();
+  for(let i=0;i<400 && df.scanning();i++) await wait(100);
+  put('stillScanning',df.scanning());
+  const txt=df.cpaText();
+  put('closestApproach',txt);
+  const km=parseFloat((txt.match(/([\d.]+) km/)||[])[1]);
+  put('kmParsed',km);
+  put('subKilometre',km<1);
+  put('matchesThePythonScan',Math.abs(km-0.039)<0.05);
+  put('namesTheSetsItUsed',/held element sets/i.test(txt));
+
+  // jump the clock onto the conjunction: now the readout must say which sets
+  // the globe and the figures are coming from
+  d.getElementById('df-sep-goto').click(); await wait(700);
+  const alt=d.getElementById('df-sep-alt').innerHTML;
+  put('heldNoteShownAtTheConjunction',/Held elements/.test(alt));
+  put('heldNote',alt.replace(/<[^>]*>/g,' | ').trim());
+  const s2=df.sep();
+  put('separationThere',s2&&[s2.range,s2.vertical,s2.alongTrack,s2.crossTrack]);
+ }catch(e){ put('ERROR',e.message+' @ '+(e.stack||'').split('\n')[1]); }
+ done();
+}
+</script>

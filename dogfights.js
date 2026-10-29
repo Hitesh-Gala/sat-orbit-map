@@ -88,10 +88,68 @@
     return out.set(x * SCALE, p.z * SCALE, -y * SCALE);
   }
 
+  // ---- held element sets -------------------------------------------------
+  // The catalogue carries ONE element set per object - the newest - and one
+  // set describes one unperturbed orbit.  Propagating it back through a
+  // manoeuvre therefore gives where the satellite WOULD have been had it never
+  // burned, which is how the Cosmos 2612 / ICEYE-X36 rendezvous of 18 Oct 2026
+  // came out as a 471 km miss: the only set on disk was ten days past it and
+  // described the orbit Cosmos left on.  data/tle-history.json holds every set
+  // Space-Track published for a few objects across a window, and where a
+  // history is held each instant is propagated from the freshest set that
+  // PRECEDES it.  That is the only way public data follows a manoeuvring
+  // object; the discontinuities it steps over are the burns.
+  var history = {};            // noradId -> [{ t: epoch ms, rec }], oldest first
+
+  function loadHistory() {
+    return fetch('data/tle-history.json').then(function (r) {
+      return r.ok ? r.json() : null;
+    }).then(function (doc) {
+      if (!doc || !doc.sats) return;
+      Object.keys(doc.sats).forEach(function (nid) {
+        var sets = (doc.sats[nid].tles || []).map(function (e) {
+          var rec;
+          try { rec = satellite.twoline2satrec(e.t[0], e.t[1]); } catch (err) { return null; }
+          return rec && !rec.error ? { t: Date.parse(e.ep + 'Z'), rec: rec } : null;
+        }).filter(function (x) { return x && isFinite(x.t); });
+        sets.sort(function (x, y) { return x.t - y.t; });
+        if (sets.length) history[String(nid)] = sets;
+      });
+    }).catch(function () { /* no history held is the normal case */ });
+  }
+
+  // The set to propagate `sat` from at `when`: `t` is its epoch, or null when
+  // it is the catalogue's own (which is the fresher one past the held window).
+  function setAt(sat, when) {
+    var h = history[String(sat.noradId)], live = { rec: sat.rec, t: null };
+    if (!h) return live;
+    var ms = +when;
+    if (ms > h[h.length - 1].t) return live;
+    if (ms <= h[0].t) return h[0];
+    var lo = 0, hi = h.length - 1;
+    while (lo < hi) {
+      var mid = (lo + hi + 1) >> 1;
+      if (h[mid].t <= ms) lo = mid; else hi = mid - 1;
+    }
+    return h[lo];
+  }
+
+  function recAt(sat, when) { return setAt(sat, when).rec; }
+
+  var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+             'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function epochLabel(sat, when) {
+    var e = setAt(sat, when);
+    if (e.t == null) return null;                    // the catalogue's own set
+    var d = new Date(e.t), p = function (n) { return (n < 10 ? '0' : '') + n; };
+    return p(d.getUTCDate()) + ' ' + MON[d.getUTCMonth()] + ' ' +
+           p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) + 'Z';
+  }
+
   var _v = new THREE.Vector3(), _vv = new THREE.Vector3();
   function positionAt(sat, when) {
     var pv;
-    try { pv = satellite.propagate(sat.rec, when); } catch (e) { return null; }
+    try { pv = satellite.propagate(recAt(sat, when), when); } catch (e) { return null; }
     if (!pv || !pv.position) return null;
     var gmst = satellite.gstime(when);
     // The velocity is carried through the same rotation so the separation
@@ -277,6 +335,13 @@
     return out;
   }
 
+  // Proximity operations happen inside a kilometre, where one decimal place of
+  // a kilometre reads "0.0" for everything from touching to half a mile apart.
+  function dist(km) {
+    var a = Math.abs(km);
+    return a < 1 ? (a * 1000).toFixed(a < 0.1 ? 1 : 0) + ' m' : a.toFixed(1) + ' km';
+  }
+
   function newFrame() {
     return { mid: new THREE.Vector3(), up: new THREE.Vector3(), d: new THREE.Vector3(),
              fwd: new THREE.Vector3(), side: new THREE.Vector3(),
@@ -299,17 +364,17 @@
     var t = sepFrame(a.posTrue, b.posTrue, a.velTrue, _fTrue);
     var horiz = Math.hypot(t.along, t.cross);
 
-    $('df-sep-r').textContent = (t.range * KM).toFixed(1) + ' km';
-    $('df-sep-v').textContent = (Math.abs(t.radial) * KM).toFixed(1) + ' km';
-    $('df-sep-h').textContent = (horiz * KM).toFixed(1) + ' km';
-    $('df-sep-at').textContent = (Math.abs(t.along) * KM).toFixed(1) + ' km';
-    $('df-sep-ct').textContent = (Math.abs(t.cross) * KM).toFixed(1) + ' km';
-    $('df-sep-da').textContent =
-      (Math.abs(b.posTrue.length() - a.posTrue.length()) * KM).toFixed(1) + ' km';
+    $('df-sep-r').textContent = dist(t.range * KM);
+    $('df-sep-v').textContent = dist(t.radial * KM);
+    $('df-sep-h').textContent = dist(horiz * KM);
+    $('df-sep-at').textContent = dist(t.along * KM);
+    $('df-sep-ct').textContent = dist(t.cross * KM);
+    $('df-sep-da').textContent = dist((b.posTrue.length() - a.posTrue.length()) * KM);
     $('df-sep-alt').innerHTML = esc(a.name) + ' ' + ((a.posTrue.length() - GLOBE_R) * KM).toFixed(0) +
       ' km &middot; ' + esc(b.name) + ' ' + ((b.posTrue.length() - GLOBE_R) * KM).toFixed(0) + ' km' +
       (altScale !== 1 ? '<br>Altitude scale is ' + altScale.toFixed(1) +
-       'x, so the cuboid is drawn taller than the figures.' : '');
+       'x, so the cuboid is drawn taller than the figures.' : '') +
+      heldNote(a, b, simTime);
 
     // Place it from the displayed positions.  BoxGeometry is built on its own
     // axes, so the basis maps X to along-track, Y to the local vertical and Z
@@ -337,6 +402,15 @@
     $('df-sep-on').disabled = picked.length < 2;
   }
 
+  // Both figures and globe change meaning when a held set is in play, so say
+  // which one each satellite is being propagated from.
+  function heldNote(a, b, when) {
+    var ea = epochLabel(a, when), eb = epochLabel(b, when);
+    if (!ea && !eb) return '';
+    return '<br>Held elements: ' + esc(a.name) + ' ' + (ea || 'catalogue') +
+           ' &middot; ' + esc(b.name) + ' ' + (eb || 'catalogue');
+  }
+
   // ---- closest approach --------------------------------------------------
   // Watching the readout while the clock runs cannot find a conjunction: a
   // frame advances dt x rate, so at 1,000x each frame covers ~17 s of orbit
@@ -348,8 +422,8 @@
   function rawSep(a, b, when) {
     var pa, pb;
     try {
-      pa = satellite.propagate(a.rec, when);
-      pb = satellite.propagate(b.rec, when);
+      pa = satellite.propagate(recAt(a, when), when);
+      pb = satellite.propagate(recAt(b, when), when);
     } catch (e) { return null; }
     if (!pa || !pa.position || !pb || !pb.position) return null;
     var dx = pa.position.x - pb.position.x,
@@ -416,8 +490,12 @@
       scanning = false;
       $('df-sep-find').disabled = false;
       if (best.d == null) { out.textContent = 'No element set covers that window.'; return; }
+      var bt = new Date(best.t), ea = epochLabel(a, bt), eb = epochLabel(b, bt);
       out.innerHTML = '<b>' + best.d.toFixed(3) + ' km</b> at ' +
-        new Date(best.t).toISOString().replace('T', ' ').slice(0, 19) + ' UTC' +
+        bt.toISOString().replace('T', ' ').slice(0, 19) + ' UTC' +
+        (ea || eb ? '<span class="held">propagated from held element sets &mdash; ' +
+          esc(a.name) + ' ' + (ea || 'catalogue') + ', ' +
+          esc(b.name) + ' ' + (eb || 'catalogue') + '</span>' : '') +
         '<button type="button" class="df-goto" id="df-sep-goto">go there</button>' +
         '<span class="warn">Public element sets carry about a kilometre of along-track ' +
         'error near epoch, more as they are propagated, and SGP4 cannot represent a ' +
@@ -792,6 +870,7 @@
   setupWindow();
   renderPicked();
   loadCatalogue();
+  loadHistory();
 
   // Read-only handle for the headless checks.
   window.__df = {
@@ -808,7 +887,12 @@
     sep: function () {
       var pair = sepPair();
       if (!pair) return null;
-      var num = function (t) { return +String(t).replace(/[^0-9.]/g, ''); };
+      // dist() switches to metres inside a kilometre, so the handle converts
+      // back - every figure it reports stays in km, as the checks assume.
+      var num = function (t) {
+        var v = +String(t).replace(/[^0-9.]/g, '');
+        return / m$/.test(String(t).trim()) ? v / 1000 : v;
+      };
       var sc = sepGroup ? sepGroup.group.scale : null;
       return {
         a: pair[0].name, b: pair[1].name,
@@ -857,6 +941,15 @@
       });
     },
     findClosest: findClosest,
+    history: function () {
+      var out = {};
+      Object.keys(history).forEach(function (k) { out[k] = history[k].length; });
+      return out;
+    },
+    epochUsed: function (i, iso) {
+      var p = picked[i];
+      return p ? epochLabel(p, new Date(iso)) : null;
+    },
     scanning: function () { return scanning; },
     cpaText: function () { return $('df-sep-cpa').textContent; },
     setSep: function (a, b) {
