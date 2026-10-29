@@ -337,6 +337,103 @@
     $('df-sep-on').disabled = picked.length < 2;
   }
 
+  // ---- closest approach --------------------------------------------------
+  // Watching the readout while the clock runs cannot find a conjunction: a
+  // frame advances dt x rate, so at 1,000x each frame covers ~17 s of orbit
+  // and a pass that spends seconds inside a kilometre falls between samples.
+  // This walks the window on a grid of its own and refines every local
+  // minimum, which makes the answer independent of the frame rate.
+  var scanning = false;
+
+  function rawSep(a, b, when) {
+    var pa, pb;
+    try {
+      pa = satellite.propagate(a.rec, when);
+      pb = satellite.propagate(b.rec, when);
+    } catch (e) { return null; }
+    if (!pa || !pa.position || !pb || !pb.position) return null;
+    var dx = pa.position.x - pb.position.x,
+        dy = pa.position.y - pb.position.y,
+        dz = pa.position.z - pb.position.z;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);   // already kilometres
+  }
+
+  // Ternary search inside a bracket known to hold one minimum.
+  function refineMin(a, b, lo, hi) {
+    for (var i = 0; i < 50; i++) {
+      var third = (hi - lo) / 3;
+      var m1 = lo + third, m2 = hi - third;
+      var d1 = rawSep(a, b, new Date(m1)), d2 = rawSep(a, b, new Date(m2));
+      if (d1 == null || d2 == null) break;
+      if (d1 < d2) hi = m2; else lo = m1;
+    }
+    var mid = (lo + hi) / 2;
+    return { t: mid, d: rawSep(a, b, new Date(mid)) };
+  }
+
+  function findClosest() {
+    var pair = sepPair();
+    if (!pair || scanning) return;
+    readWindow();
+    if (!fromT || !toT) return;
+    var a = pair[0], b = pair[1], t0 = fromT.getTime(), t1 = toT.getTime();
+    // At 7.5 km/s a 10 s step is 75 km of travel, fine enough that no minimum
+    // hides between samples; the cap keeps a year-long window answerable.
+    var MAX = 60000;
+    var step = Math.max(10000, (t1 - t0) / MAX);
+    var out = $('df-sep-cpa');
+    scanning = true;
+    $('df-sep-find').disabled = true;
+
+    var best = null, prev2 = null, prev = null, prevT = null, prev2T = null;
+    var t = t0, done = 0;
+
+    function chunk() {
+      var started = Date.now();
+      while (t <= t1) {
+        var d = rawSep(a, b, new Date(t));
+        if (d != null) {
+          if (prev2 != null && prev < prev2 && prev <= d) {
+            var r = refineMin(a, b, prev2T, t);
+            if (r.d != null && (!best || r.d < best.d)) best = r;
+          }
+          prev2 = prev; prev = d; prev2T = prevT; prevT = t;
+        }
+        t += step;
+        done++;
+        if (Date.now() - started > 25) break;          // keep the frame alive
+      }
+      if (t <= t1) {
+        out.innerHTML = 'Scanning… ' + Math.round(100 * (t - t0) / (t1 - t0)) + '%';
+        setTimeout(chunk, 0);
+        return;
+      }
+      // The window may hold no turning point at all - a steady drift apart.
+      if (!best) {
+        var da = rawSep(a, b, new Date(t0)), db = rawSep(a, b, new Date(t1));
+        best = (da != null && (db == null || da <= db)) ? { t: t0, d: da } : { t: t1, d: db };
+      }
+      scanning = false;
+      $('df-sep-find').disabled = false;
+      if (best.d == null) { out.textContent = 'No element set covers that window.'; return; }
+      out.innerHTML = '<b>' + best.d.toFixed(3) + ' km</b> at ' +
+        new Date(best.t).toISOString().replace('T', ' ').slice(0, 19) + ' UTC' +
+        '<button type="button" class="df-goto" id="df-sep-goto">go there</button>' +
+        '<span class="warn">Public element sets carry about a kilometre of along-track ' +
+        'error near epoch, more as they are propagated, and SGP4 cannot represent a ' +
+        'manoeuvre at all — so a figure under a few kilometres is inside the uncertainty ' +
+        'of its own input, and a window spanning a burn is not a prediction.</span>';
+      $('df-sep-goto').addEventListener('click', function () {
+        setPlaying(false);
+        simTime = new Date(best.t);
+        picked.forEach(clearTrail);
+        draw();
+      });
+    }
+    out.textContent = 'Scanning…';
+    chunk();
+  }
+
   // ---- catalogue + search ------------------------------------------------
   function loadCatalogue() {
     return A.fetchTLEs().then(function (res) {
@@ -616,6 +713,7 @@
     $('df-sep-a').value = sepA; $('df-sep-b').value = sepB;
     draw();
   });
+  $('df-sep-find').addEventListener('click', findClosest);
   $('df-sep-on').addEventListener('click', function () {
     sepOn = !sepOn;
     $('df-sep-on').classList.toggle('on', sepOn);
@@ -758,6 +856,9 @@
         return [+l.x.toFixed(3), +l.y.toFixed(3), +l.z.toFixed(3)];
       });
     },
+    findClosest: findClosest,
+    scanning: function () { return scanning; },
+    cpaText: function () { return $('df-sep-cpa').textContent; },
     setSep: function (a, b) {
       sepA = String(a); sepB = String(b);
       $('df-sep-a').value = sepA; $('df-sep-b').value = sepB;

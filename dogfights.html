@@ -93,6 +93,14 @@
     .df-sep .row b { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
     .df-sep .row.sub { font-size: 11.5px; padding-left: 8px; }
     .df-sep .row.sub b { font-weight: 400; color: #7bffb0; }
+    .df-sep .cpa { font-family: var(--mono); font-size: 12px; color: var(--dim); margin-top: 7px; line-height: 1.5; }
+    .df-sep .cpa:empty { display: none; }
+    .df-sep .cpa b { color: #7bffb0; font-size: 14px; }
+    .df-sep .cpa .warn { display: block; margin-top: 6px; font-size: 11px; color: #ffb782; line-height: 1.45; }
+    .df-goto { display: block; margin-top: 6px; cursor: pointer; font-family: var(--mono); font-size: 11.5px;
+      background: rgba(103,200,255,.12); border: 1px solid var(--line); border-radius: 5px;
+      color: var(--accent); padding: 4px 10px; }
+    .df-goto:hover { border-color: var(--accent); }
     .df-sep .alt { font-family: var(--mono); font-size: 11.5px; color: var(--dim); margin-top: 5px; line-height: 1.45; }
 
     .df-when { display: flex; flex-direction: column; gap: 5px; margin-bottom: 9px; }
@@ -198,14 +206,9 @@
         <div class="row sub"><span>· cross track</span><b id="df-sep-ct">—</b></div>
         <div class="row"><span>Δ altitude</span><b id="df-sep-da">—</b></div>
         <div class="alt" id="df-sep-alt">—</div>
+        <button type="button" class="df-btn" id="df-sep-find" style="margin-top:8px;width:100%">Find closest approach in window</button>
+        <div class="cpa" id="df-sep-cpa"></div>
       </div>
-      <div class="df-note" id="df-sep-note">Pick two satellites and a translucent box is drawn with one on each
-        of two opposite corners. Its three edges are the frame an operator works in: <b>vertical</b> is the height
-        between them, and the two horizontal edges are how far apart they are <b>along the orbit</b> and
-        <b>to the side</b> of it. Squared together the three edges give the <b>slant range</b> exactly. For two
-        satellites close together vertical is the height difference; far apart it diverges from plain
-        <b>Δ altitude</b>, which is why both are shown. The figures are the real geometry, unaffected by the
-        altitude-scale slider, and the cuboid rides along with the pair while the clock runs.</div>
     </section>
 
     <section class="panel">
@@ -273,6 +276,6 @@
   <script src="tle-loader.js?v=11"></script>
   <script src="site-analytics.js?v=6"></script>
   <script src="mobile-menu.js?v=26"></script>
-  <script src="dogfights.js?v=5"></script>
+  <script src="dogfights.js?v=6"></script>
 </body>
 </html>
