@@ -246,14 +246,32 @@ try:
     # ---- 4) TLE history for the 2D View's "ENABLE HISTORY" timeline ------
     # gp_history is Space-Track's heaviest class, so only a short list of
     # objects, bounded by launch date.  A failure here must not cost the rest.
-    HISTORY_IDS = [100607]                        # EOS-5 (orbit raising)
+    # (NORAD id, epoch from, epoch to) - None means from launch, no upper bound.
+    # A bounded window is how an event is kept: the daily bundles only ever
+    # carry the newest element set, so by the time anyone looks, the set that
+    # could have shown the Cosmos 2612 / ICEYE-X36 rendezvous of 18 Oct 2026 is
+    # ten days past it and describes the orbit Cosmos left on, not the one it
+    # flew. SGP4 cannot propagate back through a manoeuvre, so the only fix is
+    # to hold the elements from before it.
+    HISTORY_IDS = [
+        (100607, None, None),                    # EOS-5 (orbit raising)
+        (68762, '2026-10-10', '2026-10-27'),     # COSMOS 2612 - shadowed ICEYE-X36
+        (59103, '2026-10-10', '2026-10-27'),     # ICEYE-X36 - the object it shadowed
+    ]
     try:
         launch = {str(g.get('NORAD_CAT_ID')): (g.get('LAUNCH_DATE') or '')[:10] for g in gp_all}
+        held = {}
+        try:
+            with open('data/tle-history.json', encoding='utf-8') as f:
+                held = json.load(f).get('sats', {})
+        except (FileNotFoundError, ValueError):
+            pass
         hist = {}
-        for nid in HISTORY_IDS:
-            ld = launch.get(str(nid)) or '1957-10-04'
+        for nid, efrom, eto in HISTORY_IDS:
+            ld = efrom or launch.get(str(nid)) or '1957-10-04'
+            span = f'{ld}--{eto}' if eto else f'%3E{ld}'
             rows = query(f'/basicspacedata/query/class/gp_history/NORAD_CAT_ID/{nid}'
-                         f'/EPOCH/%3E{ld}/orderby/EPOCH%20asc/format/json')
+                         f'/EPOCH/{span}/orderby/EPOCH%20asc/format/json')
             # Re-issued element sets share an epoch — keep the newest GP_ID.
             by_epoch = {}
             for g in rows:
@@ -271,6 +289,8 @@ try:
                 hist[str(nid)] = {'name': (rows[-1].get('OBJECT_NAME') or '').strip(),
                                   'launch': launch.get(str(nid), ''), 'tles': tles}
         if hist:
+            # A failed query must not drop an object the file already holds.
+            hist = dict(held, **hist)
             with open('data/tle-history.json', 'w', encoding='utf-8') as f:
                 json.dump({'source': 'Space-Track.org (gp_history)', 'retrieved': out['retrieved'],
                            'sats': hist}, f, separators=(',', ':'))

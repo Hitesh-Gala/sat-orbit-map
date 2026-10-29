@@ -21,6 +21,11 @@ on:
   schedule:
     - cron: '27 6 * * *'      # daily, staggered off the hour
   workflow_dispatch:
+    inputs:
+      backfill:
+        description: 'gp_history objects to backfill into the TLE vault (API-heavy; keep it modest)'
+        required: false
+        default: '40'
 
 permissions:
   contents: write
@@ -71,6 +76,21 @@ jobs:
       - name: Rebuild the TLE comparison table
         continue-on-error: true
         run: python3 scripts/gen_tle_compare.py
+
+      # ---- Rolling TLE history (TLE Vault page) -------------------------
+      # Appends each watched object's newest element set to data/tle-vault.json,
+      # stamped with the time this run obtained it, keeping the last 20.  The
+      # append itself costs no Space-Track queries - it reads the bundles the
+      # steps above already pulled.  --backfill asks gp_history for the last 20
+      # of the thinnest few objects, which is the only part that hits the API,
+      # and it is deliberately small: gp_history is their heaviest class, so
+      # the vault fills over a couple of weeks rather than in one sitting.
+      - name: Append to the rolling TLE vault
+        continue-on-error: true
+        env:
+          SPACETRACK_USER: ${{ secrets.SPACETRACK_USER }}
+          SPACETRACK_PASSWORD: ${{ secrets.SPACETRACK_PASSWORD }}
+        run: python3 scripts/update_tle_vault.py --backfill ${{ inputs.backfill || 40 }}
 
       # ---- Keep dropped objects (Sat-Stats on Steroids) -----------------
       # Anything that just left BOTH catalogues keeps its last TLE in

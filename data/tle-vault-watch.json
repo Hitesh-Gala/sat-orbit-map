@@ -1,0 +1,7 @@
+{
+  "note": "Hand-added objects for the TLE Vault, on top of the ISR/ELINT list in data/tle-compare.json. Add an entry and it starts accreting element sets on the next refresh; the vault holds the 20 most recent per object. Check the NORAD id against data/spacetrack-gp.json before adding - a wrong id silently collects another object's history.",
+  "watch": [
+    { "c": 68762, "n": "COSMOS 2612", "why": "shadowed ICEYE-X36 and closed to within a few hundred metres, 18 Oct 2026" },
+    { "c": 59773, "n": "COSMOS 2576", "why": "2024 inspector; reported close approaches to USA 314" }
+  ]
+}
