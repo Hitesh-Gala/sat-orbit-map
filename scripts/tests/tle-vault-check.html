@@ -1,0 +1,121 @@
+<!doctype html><meta charset="utf-8"><body style="background:#111;color:#9f9;font:12px monospace">
+<!-- Drives the TLE Vault page: that the present column really holds the newest
+     element set and the second column the ones before it in reverse order,
+     that the retrieval stamp is the time NAZAR obtained the set (not its
+     epoch, which is the mistake the whole page exists to correct) and is drawn
+     in its own colour, that a full history cell actually scrolls, and that
+     search / sort / show-more agree with the data behind them. -->
+<pre id="out">running…</pre><iframe id="f" style="width:1500px;height:900px;border:0"></iframe>
+<script>
+const log=[],put=(k,v)=>log.push(k+': '+JSON.stringify(v));
+const done=()=>{document.getElementById('out').textContent=log.join('\n');};
+try{ sessionStorage.setItem('nazar.spacestuff','1'); }catch(e){}
+const f=document.getElementById('f');
+f.src='../../tle-vault.html';
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+window.addEventListener('load',()=>setTimeout(run,6000));
+
+async function run(){
+ try{
+  const d=f.contentDocument,w=f.contentWindow,tv=w.__tv;
+  put('hook',!!tv);
+  const doc=tv.doc(), rows=tv.rows();
+  put('loaded',!!doc);
+  put('objects',rows.length);
+  put('setsHeld',rows.reduce((t,s)=>t+s.t.length,0));
+  put('keep',doc.keep);
+  put('stamps',doc.stamps.length);
+
+  // the readings across the top must agree with the file
+  const reads=[...d.querySelectorAll('#reads .read')].map(e=>e.querySelector('i').textContent+'='+e.querySelector('b').textContent);
+  put('readings',reads);
+
+  // every row's sets must be stored oldest-first (that is what keeps the git delta small)
+  put('storedOldestFirst',rows.every(s=>s.t.every((x,i)=>!i||x.e>=s.t[i-1].e)));
+
+  // --- the two TLE columns ------------------------------------------------
+  tv.sortBy('most');
+  await wait(300);
+  const view=tv.view(), top=view[0];
+  put('deepestObject',[top.c,top.n,top.t.length]);
+  const tr=d.querySelectorAll('#rows tr')[0];
+  const cells=tr.querySelectorAll('td');
+  put('columns',cells.length);
+  put('serialIsPositionInView',cells[0].textContent.trim());
+
+  const newest=top.t[top.t.length-1];
+  const present=cells[2].querySelectorAll('.set');
+  put('presentHoldsOneSet',present.length===1);
+  put('presentIsTheNewestSet',[present[0].querySelector('.l').textContent===newest.l[0],
+                               newest.e]);
+
+  // the coloured stamp must be the RETRIEVAL time from doc.stamps, not the epoch
+  const gotTxt=present[0].querySelector('.got').textContent.trim();
+  const epTxt=present[0].querySelector('.ep').textContent.trim();
+  put('stampShown',gotTxt);
+  put('epochShown',epTxt);
+  put('stampIsTheRetrievalTime',doc.stamps[newest.r].slice(0,16).replace('T',' ')===gotTxt.slice(0,16));
+  put('stampIsNotTheEpoch',gotTxt.replace(' UTC','')!==newest.e.slice(0,16).replace('T',' '));
+
+  // and it must be a different colour from the element lines
+  const cs=w.getComputedStyle, gotC=cs(present[0].querySelector('.got')).color,
+        lineC=cs(present[0].querySelector('.l')).color, epC=cs(present[0].querySelector('.ep')).color;
+  put('stampColourDiffersFromTheLines',[gotC,lineC,gotC!==lineC]);
+  put('epochColourDiffersFromBoth',[epC,epC!==gotC&&epC!==lineC]);
+
+  // --- the history cell ---------------------------------------------------
+  const hist=cells[3].querySelector('.hist');
+  const prev=hist?hist.querySelectorAll('.set'):[];
+  put('previousCount',[prev.length,top.t.length-1,prev.length===top.t.length-1]);
+  put('previousNewestFirst',prev.length<2||
+      prev[0].querySelector('.ep').textContent>prev[1].querySelector('.ep').textContent);
+  put('presentIsNotRepeatedInHistory',![...prev].some(e=>e.querySelector('.l').textContent===newest.l[0]));
+  put('historyCellScrolls',hist?[hist.scrollHeight>hist.clientHeight,hist.clientHeight,
+      hist.scrollHeight,getComputedStyle(hist).overflowY,getComputedStyle(hist).overflowX]:null);
+
+  // --- controls -----------------------------------------------------------
+  const first=d.querySelectorAll('#rows tr').length;
+  put('pagedNotAllAtOnce',[first,view.length,first<=60]);
+  tv.more(); await wait(300);
+  put('showMoreAdds',d.querySelectorAll('#rows tr').length>first);
+
+  tv.search(String(top.c)); await wait(300);
+  put('searchByNorad',[tv.view().length,tv.view()[0]&&tv.view()[0].c===top.c]);
+  tv.search('iceye'); await wait(300);
+  put('searchByName',[tv.view().length,tv.view().every(s=>/iceye/i.test(s.n))]);
+  tv.search(''); tv.sortBy('norad'); await wait(300);
+  const ids=tv.view().map(s=>s.c);
+  put('sortByNorad',ids.every((c,i)=>!i||c>=ids[i-1]));
+  tv.sortBy('fresh'); await wait(300);
+  const fresh=tv.view().map(s=>s.t[s.t.length-1].e);
+  put('sortByNewestEpoch',fresh.every((e,i)=>!i||e<=fresh[i-1]));
+
+  // nothing may overflow the page sideways
+  put('noHorizontalPageScroll',d.documentElement.scrollWidth<=d.documentElement.clientWidth+1);
+
+  // --- the sticky header -------------------------------------------------
+  // A scroll container becomes the sticky header's scrollport, so an overflow
+  // rule on .tbl-wrap makes `top: 52px` measure from the top of the TABLE and
+  // the header lands on the first row.  Measured, both sides of the breakpoint.
+  const rect=e=>e.getBoundingClientRect();
+  const hdr=()=>d.querySelector('thead th'), cell=()=>d.querySelector('#rows tr td:nth-child(2)');
+  put('wideHeaderClearsTheFirstRow',
+      [Math.round(rect(hdr()).bottom),Math.round(rect(cell()).top),
+       rect(hdr()).bottom<=rect(cell()).top+1]);
+  w.scrollTo(0,1200); await wait(250);
+  put('wideHeaderSticksWhenScrolled',
+      [Math.round(rect(hdr()).top),Math.round(rect(d.querySelector('.head')).bottom),
+       Math.abs(rect(hdr()).top-rect(d.querySelector('.head')).bottom)<2]);
+  w.scrollTo(0,0); await wait(250);
+
+  f.style.width='1100px'; await wait(400);
+  put('narrowHeaderClearsTheFirstRow',
+      [Math.round(rect(hdr()).bottom),Math.round(rect(cell()).top),
+       rect(hdr()).bottom<=rect(cell()).top+1]);
+  const wrap=d.querySelector('.tbl-wrap'), ws=w.getComputedStyle(wrap);
+  put('narrowTableScrollsSideways',[ws.overflowX,ws.overflowY,wrap.scrollWidth>wrap.clientWidth]);
+  f.style.width='1500px';
+ }catch(e){ put('ERROR',e.message); }
+ done();
+}
+</script>

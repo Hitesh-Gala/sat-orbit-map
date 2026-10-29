@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>NAZAR · TLE Vault</title>
+  <!-- Space Stuff is password protected: the page stays hidden until the password is entered (nazar-gate.js). -->
+  <script src="nazar-gate.js?v=3" data-section="spacestuff"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Light and self-contained, like the compendium: sixty-nine characters of
+       monospace per line is as dense as text on this site gets, and it reads
+       better dark-on-paper.  Styles stay inline so there is no ?v= bookkeeping
+       on a page whose data file changes under it every day. */
+    :root{
+      --paper:#eceff4; --card:#ffffff; --ink:#15263a; --dim:#45556e; --line:#d9e1ec;
+      --chip:#eef3f9; --accent:#1565c0;
+      --got:#a2501a;        /* when NAZAR obtained the set — the one coloured field */
+      --epoch:#1b6b5a;      /* what moment the set describes */
+      --shadow:0 2px 10px rgba(20,45,80,.07);
+      --disp:'Orbitron',sans-serif; --mono:'IBM Plex Mono',monospace; --sans:'IBM Plex Sans',sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); font-size:14px}
+
+    .head{position:sticky; top:0; z-index:40; background:rgba(236,239,244,.96);
+      backdrop-filter:blur(8px); border-bottom:1px solid var(--line)}
+    .head-in{max-width:1680px; margin:0 auto; display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+      padding:11px clamp(12px,3vw,26px)}
+    .back{display:inline-flex; align-items:center; gap:7px; text-decoration:none; padding:8px 14px;
+      border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--accent);
+      font-family:var(--mono); font-size:12px; letter-spacing:.06em; box-shadow:var(--shadow)}
+    .back:hover{border-color:var(--accent)}
+    h1{font-family:var(--disp); font-size:19px; letter-spacing:.1em; margin:0; white-space:nowrap}
+    .lede{flex:1 1 320px; min-width:260px; color:var(--dim); font-size:12.5px; line-height:1.5}
+    .tools{display:flex; gap:9px; align-items:center; flex-wrap:wrap; margin-left:auto}
+    .tools input,.tools select{font-family:var(--mono); font-size:12.5px; padding:7px 10px;
+      border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--ink)}
+    .tools input{width:215px}
+    .tools input:focus,.tools select:focus{outline:none; border-color:var(--accent)}
+
+    .reads{display:flex; gap:7px; flex-wrap:wrap; max-width:1680px; margin:0 auto;
+      padding:12px clamp(12px,3vw,26px) 0}
+    .read{background:var(--card); border:1px solid var(--line); border-radius:9px; padding:7px 13px;
+      box-shadow:var(--shadow); min-width:116px}
+    .read i{display:block; font-style:normal; font-family:var(--mono); font-size:10.5px;
+      letter-spacing:.11em; text-transform:uppercase; color:var(--dim)}
+    .read b{font-family:var(--disp); font-size:15px; letter-spacing:.03em}
+    .fill{flex:1 1 230px; min-width:200px}
+    .bar{height:7px; border-radius:4px; background:var(--chip); overflow:hidden; margin-top:6px}
+    .bar span{display:block; height:100%; background:var(--accent)}
+
+    .wrap{max-width:1680px; margin:0 auto; padding:14px clamp(12px,3vw,26px) 60px}
+    .why{background:var(--card); border:1px solid var(--line); border-left:3px solid var(--accent);
+      border-radius:9px; padding:11px 15px; margin-bottom:14px; font-size:13px; line-height:1.65;
+      color:var(--dim); box-shadow:var(--shadow)}
+    .why b{color:var(--ink)}
+    .key{display:inline-flex; gap:5px; align-items:baseline; margin-right:14px; white-space:nowrap}
+    .key em{font-style:normal; font-family:var(--mono); font-size:12px}
+
+    /* The element lines are 69 characters of monospace, so below 1240px the
+       table gets its own horizontal scroller rather than wrapping them.  That
+       scroller is why the overflow rule is in a media query and not on the box
+       itself: a scroll container becomes the sticky header's scrollport, and
+       `top: 52px` then measures from the top of the TABLE, not the viewport,
+       which pushed the header down over the first row. */
+    .tbl-wrap{background:var(--card); border:1px solid var(--line); border-radius:10px;
+      box-shadow:var(--shadow)}
+    table{width:100%; min-width:1180px; border-collapse:collapse; table-layout:fixed}
+    thead th{position:sticky; top:var(--headh,52px); z-index:5; background:#f4f7fb; text-align:left;
+      font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+      color:var(--dim); padding:9px 10px; border-bottom:1px solid var(--line); white-space:normal}
+    tbody td{padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top}
+    tbody tr:last-child td{border-bottom:0}
+    tbody tr:hover{background:#f8fafd}
+    .sn{font-family:var(--mono); font-size:12px; color:var(--dim); text-align:right}
+    .nm{font-family:var(--sans); font-weight:700; font-size:13.5px; line-height:1.3;
+      word-break:normal; overflow-wrap:break-word}
+    .id{font-family:var(--mono); font-size:11.5px; color:var(--dim); margin-top:3px}
+    .tag{display:inline-block; font-family:var(--mono); font-size:10px; letter-spacing:.06em;
+      text-transform:uppercase; background:var(--chip); border:1px solid var(--line);
+      border-radius:4px; padding:1px 5px; margin-top:5px; color:var(--dim)}
+    .wtag{display:block; font-size:11px; line-height:1.45; color:var(--dim); margin-top:5px}
+
+    /* One element set: the retrieval stamp, then the two lines verbatim. */
+    .set{font-family:var(--mono); font-size:11.5px; line-height:1.45; padding:4px 0}
+    .set + .set{border-top:1px dashed var(--line)}
+    .set .got{color:var(--got); font-weight:600}
+    .set .ep{color:var(--epoch)}
+    .set .bf{color:var(--dim)}
+    .set .l{display:block; white-space:pre; color:var(--ink)}
+    .hist{max-height:168px; overflow-y:auto; overflow-x:hidden; padding-right:5px}
+    .hist.empty,.none{color:var(--dim); font-family:var(--mono); font-size:11.5px}
+    .more{display:block; width:100%; margin:16px auto 0; max-width:420px; cursor:pointer;
+      font-family:var(--mono); font-size:13px; letter-spacing:.07em; padding:11px;
+      border:1px solid var(--line); border-radius:9px; background:var(--card); color:var(--accent);
+      box-shadow:var(--shadow)}
+    .more:hover{border-color:var(--accent)}
+    .msg{padding:26px; text-align:center; color:var(--dim); font-family:var(--mono); font-size:13px}
+
+    /* Narrow enough that the table needs its scroller: the header then sticks
+       to the top of that box instead of to the page. */
+    @media (max-width:1240px){
+      .tbl-wrap{overflow-x:auto; overflow-y:hidden}
+      thead th{top:0}
+    }
+    @media (max-width:780px){
+      h1{font-size:16px}
+      .tools{margin-left:0}
+      .tools input{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <header class="head">
+    <div class="head-in">
+      <a class="back" href="dogfights.html">← Space Dog-Fights</a>
+      <h1>TLE Vault</h1>
+      <div class="lede">Every element set NAZAR has held onto, newest first — with the moment it was
+        obtained from Space-Track above each one.</div>
+      <div class="tools">
+        <input type="search" id="q" placeholder="Name or NORAD number…" autocomplete="off"
+               spellcheck="false" aria-label="Search the vault">
+        <select id="sort" aria-label="Sort order">
+          <option value="name">Satellite A → Z</option>
+          <option value="norad">NORAD number</option>
+          <option value="most">Most sets held</option>
+          <option value="few">Fewest sets held</option>
+          <option value="fresh">Newest element set</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <div class="reads" id="reads"></div>
+
+  <div class="wrap">
+    <div class="why">
+      <b>Every other file on this site keeps the newest element set and throws the previous one away.</b>
+      That is why the Cosmos 2612 / ICEYE-X36 rendezvous of 18 October could not be reconstructed here:
+      by the time anyone asked, the only elements on disk were ten days past it and described the orbit
+      Cosmos&nbsp;2612 left on, not the one it flew. This is the store that fixes it. One element set per
+      object is appended on each daily Space-Track pull, so a newly watched object starts with one row
+      and <b>fills to twenty over about three weeks</b>; where Space-Track's history service allows, the
+      last twenty are also backfilled a few objects at a time.
+      <div style="margin-top:9px">
+        <span class="key"><em style="color:var(--got);font-weight:600">2026-10-28 13:15 UTC</em>
+          when NAZAR obtained it</span>
+        <span class="key"><em style="color:var(--epoch)">epoch 2026-10-27 22:36</em>
+          the moment it describes</span>
+        <span class="key"><em style="color:var(--dim)">backfilled</em>
+          pulled from history in one go, not captured that day</span>
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <colgroup>
+          <col style="width:3.5%"><col style="width:14.5%"><col style="width:41%"><col style="width:41%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Satellite</th>
+            <th>Present element set</th>
+            <th id="h-prev">Previous element sets — scroll within the cell</th>
+          </tr>
+        </thead>
+        <tbody id="rows"><tr><td colspan="4" class="msg">Loading the vault…</td></tr></tbody>
+      </table>
+    </div>
+    <button type="button" class="more" id="more" hidden></button>
+  </div>
+
+  <script src="mobile-menu.js?v=26"></script>
+  <script>
+  (function () {
+    'use strict';
+    // Rendered a screenful of rows at a time.  A full vault is 431 objects of
+    // twenty element sets - 26,000 lines of monospace - and building that DOM
+    // at once is what ran the old rocket pop-up out of memory.
+    var PAGE = 60;
+    var doc = null, rows = [], view = [], shown = 0;
+
+    var $ = function (id) { return document.getElementById(id); };
+    var esc = function (s) {
+      return String(s == null ? '' : s).replace(/[&<>"]/g,
+        function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; });
+    };
+    var fmt = function (n) { return Number(n).toLocaleString('en-US'); };
+
+    // '2026-10-28T13:15:50Z' and '2026-10-29T06:53Z' both come out as
+    // '... 06:53 UTC'; epochs carry no Z and need the same cut.
+    var stamp = function (s) {
+      var m = String(s == null ? '' : s).match(/^(\d{4}-\d\d-\d\d)[T ](\d\d:\d\d)/);
+      return m ? m[1] + ' ' + m[2] + ' UTC' : (s ? String(s) : '—');
+    };
+
+    function setHtml(s) {
+      var got = stamp(doc.stamps[s.r] || '');
+      return '<div class="set">' +
+        '<span class="got">' + esc(got) + '</span>  ' +
+        '<span class="ep">epoch ' + esc(stamp(s.e).replace(' UTC', '')) + '</span>' +
+        (s.h ? '  <span class="bf">· backfilled</span>' : '') +
+        '<span class="l">' + esc(s.l[0]) + '</span>' +
+        '<span class="l">' + esc(s.l[1]) + '</span>' +
+        '</div>';
+    }
+
+    function rowHtml(sat, n) {
+      var sets = sat.t.slice().reverse();              // stored oldest-first
+      var rest = sets.slice(1);
+      return '<tr><td class="sn">' + n + '</td>' +
+        '<td><div class="nm">' + esc(sat.n || '—') + '</div>' +
+        '<div class="id">' + esc(sat.c) + (sat.o ? ' · ' + esc(sat.o) : '') + '</div>' +
+        (sat.off ? '<span class="tag">no longer watched</span>' : '') +
+        (sat.w ? '<span class="wtag">' + esc(sat.w) + '</span>' : '') + '</td>' +
+        '<td>' + (sets.length ? setHtml(sets[0]) : '<span class="none">none held yet</span>') + '</td>' +
+        '<td>' + (rest.length
+          ? '<div class="hist">' + rest.map(setHtml).join('') + '</div>'
+          : '<span class="none">nothing earlier held yet — it fills on the next pulls</span>') +
+        '</td></tr>';
+    }
+
+    function draw(reset) {
+      var body = $('rows');
+      if (reset) { body.innerHTML = ''; shown = 0; }
+      if (!view.length) {
+        body.innerHTML = '<tr><td colspan="4" class="msg">Nothing matches that.</td></tr>';
+        $('more').hidden = true;
+        return;
+      }
+      var to = Math.min(shown + PAGE, view.length), html = '';
+      for (var i = shown; i < to; i++) html += rowHtml(view[i], i + 1);
+      body.insertAdjacentHTML('beforeend', html);
+      shown = to;
+      var left = view.length - shown;
+      $('more').hidden = !left;
+      $('more').textContent = left ? 'Show ' + Math.min(PAGE, left) + ' more of ' + fmt(left) + ' remaining' : '';
+    }
+
+    function newest(sat) { return sat.t.length ? sat.t[sat.t.length - 1].e : ''; }
+
+    function apply() {
+      var q = $('q').value.trim().toLowerCase();
+      view = rows.filter(function (s) {
+        return !q || String(s.c).indexOf(q) === 0 || (s.n || '').toLowerCase().indexOf(q) >= 0;
+      });
+      var by = $('sort').value;
+      view.sort(function (a, b) {
+        if (by === 'norad') return a.c - b.c;
+        if (by === 'most') return b.t.length - a.t.length || a.c - b.c;
+        if (by === 'few') return a.t.length - b.t.length || a.c - b.c;
+        if (by === 'fresh') return newest(b).localeCompare(newest(a)) || a.c - b.c;
+        return (a.n || '').localeCompare(b.n || '') || a.c - b.c;
+      });
+      draw(true);
+    }
+
+    function reads() {
+      var sets = rows.reduce(function (t, s) { return t + s.t.length; }, 0);
+      var room = rows.length * (doc.keep || 20);
+      var full = Math.max(0, Math.min(100, room ? sets * 100 / room : 0));
+      var deep = rows.filter(function (s) { return s.t.length >= (doc.keep || 20); }).length;
+      $('reads').innerHTML =
+        read('objects watched', fmt(rows.length)) +
+        read('element sets held', fmt(sets)) +
+        read('at the full ' + (doc.keep || 20), fmt(deep)) +
+        read('last appended', stamp(doc.updated).replace(' UTC', '')) +
+        '<div class="read fill"><i>vault filled</i><b>' + full.toFixed(1) + '%</b>' +
+        '<div class="bar"><span style="width:' + full.toFixed(1) + '%"></span></div></div>';
+    }
+    function read(label, value) {
+      return '<div class="read"><i>' + esc(label) + '</i><b>' + esc(value) + '</b></div>';
+    }
+
+    fetch('data/tle-vault.json').then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function (d) {
+      doc = d;
+      doc.stamps = doc.stamps || [];
+      rows = (doc.sats || []).filter(function (s) { return s && s.t; });
+      reads();
+      $('h-prev').textContent = 'Previous element sets (up to ' + ((doc.keep || 20) - 1) +
+        ') — scroll within the cell';
+      apply();
+    }).catch(function (e) {
+      $('rows').innerHTML = '<tr><td colspan="4" class="msg">Could not load data/tle-vault.json — ' +
+        esc(e.message) + '</td></tr>';
+    });
+
+    // The page header wraps, so its height is not a constant to hard-code:
+    // watch it and let the table header stick exactly below it.  A one-shot
+    // measurement at boot is 6px short - the display face has not loaded yet
+    // and the header grows when it does - so this observes instead.
+    (function () {
+      var head = document.querySelector('.head');
+      var sync = function () {
+        document.documentElement.style.setProperty('--headh', head.offsetHeight + 'px');
+      };
+      sync();
+      if (window.ResizeObserver) new ResizeObserver(sync).observe(head);
+      else addEventListener('resize', sync);
+    })();
+
+    $('q').addEventListener('input', apply);
+    $('sort').addEventListener('change', apply);
+    $('more').addEventListener('click', function () { draw(false); });
+
+    // Read-only handle for scripts/tests/tle-vault-check.html.  `var` inside
+    // this IIFE never reaches window on its own.
+    window.__tv = {
+      doc: function () { return doc; },
+      rows: function () { return rows; },
+      view: function () { return view; },
+      shown: function () { return shown; },
+      setHtml: setHtml,
+      search: function (s) { $('q').value = s; apply(); },
+      sortBy: function (s) { $('sort').value = s; apply(); },
+      more: function () { $('more').click(); }
+    };
+  })();
+  </script>
+</body>
+</html>
