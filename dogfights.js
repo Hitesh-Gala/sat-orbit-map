@@ -88,12 +88,17 @@
     return out.set(x * SCALE, p.z * SCALE, -y * SCALE);
   }
 
-  var _v = new THREE.Vector3();
+  var _v = new THREE.Vector3(), _vv = new THREE.Vector3();
   function positionAt(sat, when) {
     var pv;
     try { pv = satellite.propagate(sat.rec, when); } catch (e) { return null; }
     if (!pv || !pv.position) return null;
     var gmst = satellite.gstime(when);
+    // The velocity is carried through the same rotation so the separation
+    // cuboid has an along-track axis to sit on.  Only its direction is used,
+    // so the rotating-frame correction term does not matter here.
+    sat.velTrue = pv.velocity
+      ? eciToScene(pv.velocity, gmst, _vv).clone().normalize() : null;
     return eciToScene(pv.position, gmst, _v).clone();
   }
 
@@ -223,24 +228,16 @@
 
   function buildSepBox() {
     var g = new THREE.Group();
-    var face = new THREE.Mesh(
-      new THREE.PlaneGeometry(1, 1),
-      new THREE.MeshBasicMaterial({ color: 0x67c8ff, transparent: true, opacity: 0.16,
+    var box = new THREE.Mesh(
+      new THREE.BoxGeometry(1, 1, 1),
+      new THREE.MeshBasicMaterial({ color: 0x3ddc84, transparent: true, opacity: 0.17,
                                     side: THREE.DoubleSide, depthWrite: false }));
     var edge = new THREE.LineSegments(
-      new THREE.EdgesGeometry(new THREE.PlaneGeometry(1, 1)),
-      new THREE.LineBasicMaterial({ color: 0x9adcff, transparent: true, opacity: 0.85 }));
-    // The two legs the readout names, drawn so it is obvious which is which.
-    var legV = new THREE.Line(new THREE.BufferGeometry().setFromPoints(
-      [new THREE.Vector3(), new THREE.Vector3()]),
-      new THREE.LineBasicMaterial({ color: 0xffcf5c }));
-    var legH = new THREE.Line(new THREE.BufferGeometry().setFromPoints(
-      [new THREE.Vector3(), new THREE.Vector3()]),
-      new THREE.LineBasicMaterial({ color: 0x58d68d }));
-    legV.frustumCulled = legH.frustumCulled = false;
-    g.add(face); g.add(edge);
-    scene.add(g); scene.add(legV); scene.add(legH);
-    return { group: g, face: face, edge: edge, legV: legV, legH: legH };
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)),
+      new THREE.LineBasicMaterial({ color: 0x7bffb0, transparent: true, opacity: 0.9 }));
+    g.add(box); g.add(edge);
+    scene.add(g);
+    return { group: g, box: box, edge: edge };
   }
 
   function sepPair() {
@@ -250,70 +247,81 @@
     return (a && b && a.posTrue && b.posTrue && a.pos && b.pos) ? [a, b] : null;
   }
 
-  function setLine(line, p1, p2) {
-    var arr = line.geometry.attributes.position.array;
-    arr[0] = p1.x; arr[1] = p1.y; arr[2] = p1.z;
-    arr[3] = p2.x; arr[4] = p2.y; arr[5] = p2.z;
-    line.geometry.attributes.position.needsUpdate = true;
-    line.geometry.computeBoundingSphere();
+  // The cuboid's three edges are the radial / along-track / cross-track split
+  // an operator works in: height is the difference in altitude, and the two
+  // horizontal edges are how far apart they are along the orbit and to the
+  // side of it.  Opposite corners sit exactly on the two satellites.
+  function sepFrame(pa, pb, vel, out) {
+    out.mid.copy(pa).add(pb).multiplyScalar(0.5);
+    out.up.copy(out.mid).normalize();
+    out.d.copy(pb).sub(pa);
+    // Along-track: the satellite's own velocity, flattened into the local
+    // horizontal plane.  With no velocity to hand, fall back to whichever way
+    // the separation itself points horizontally.
+    if (vel) out.fwd.copy(vel);
+    else out.fwd.copy(out.d);
+    out.fwd.addScaledVector(out.up, -out.fwd.dot(out.up));
+    if (out.fwd.lengthSq() < 1e-12) {
+      out.fwd.set(1, 0, 0).addScaledVector(out.up, -out.up.x);
+      if (out.fwd.lengthSq() < 1e-12) out.fwd.set(0, 0, 1);
+    }
+    out.fwd.normalize();
+    // fwd x up, not up x fwd: makeBasis(X, Y, Z) needs Z = X x Y or the
+    // matrix has determinant -1 and the quaternion taken from it is not a
+    // rotation at all - which put the satellites nowhere near the corners.
+    out.side.copy(out.fwd).cross(out.up).normalize();
+    out.radial = out.d.dot(out.up);
+    out.along = out.d.dot(out.fwd);
+    out.cross = out.d.dot(out.side);
+    out.range = out.d.length();
+    return out;
   }
+
+  function newFrame() {
+    return { mid: new THREE.Vector3(), up: new THREE.Vector3(), d: new THREE.Vector3(),
+             fwd: new THREE.Vector3(), side: new THREE.Vector3(),
+             radial: 0, along: 0, cross: 0, range: 0 };
+  }
+  var _fTrue = newFrame(), _fDraw = newFrame();
 
   function drawSepBox() {
     var pair = sepPair();
     if (!pair) {
-      if (sepGroup) sepGroup.group.visible = sepGroup.legV.visible = sepGroup.legH.visible = false;
+      if (sepGroup) sepGroup.group.visible = false;
       return;
     }
     if (!sepGroup) sepGroup = buildSepBox();
-    sepGroup.group.visible = sepGroup.legV.visible = sepGroup.legH.visible = true;
+    sepGroup.group.visible = true;
 
     var a = pair[0], b = pair[1];
-    // Numbers from the true positions, drawing from the displayed ones, so the
-    // box still lines up with the dots when the altitude slider is off 1x.
-    _mid.copy(a.posTrue).add(b.posTrue).multiplyScalar(0.5);
-    _up.copy(_mid).normalize();
-    _d.copy(b.posTrue).sub(a.posTrue);
-    var vert = _d.dot(_up);
-    _hor.copy(_d).addScaledVector(_up, -vert);
-    var lat = _hor.length(), range = _d.length();
+    // Numbers off the true positions, drawing off the displayed ones, so the
+    // cuboid still sits on the dots when the altitude slider is away from 1x.
+    var t = sepFrame(a.posTrue, b.posTrue, a.velTrue, _fTrue);
+    var horiz = Math.hypot(t.along, t.cross);
 
-    $('df-sep-r').textContent = (range * KM).toFixed(1) + ' km';
-    $('df-sep-v').textContent = (Math.abs(vert) * KM).toFixed(1) + ' km';
-    $('df-sep-h').textContent = (lat * KM).toFixed(1) + ' km';
-    // Plain height difference as well: the radial/transverse split is the
-    // right frame for proximity work, but at large separations its "vertical"
-    // stops matching the two altitudes printed underneath, which reads wrong.
+    $('df-sep-r').textContent = (t.range * KM).toFixed(1) + ' km';
+    $('df-sep-v').textContent = (Math.abs(t.radial) * KM).toFixed(1) + ' km';
+    $('df-sep-h').textContent = (horiz * KM).toFixed(1) + ' km';
+    $('df-sep-at').textContent = (Math.abs(t.along) * KM).toFixed(1) + ' km';
+    $('df-sep-ct').textContent = (Math.abs(t.cross) * KM).toFixed(1) + ' km';
     $('df-sep-da').textContent =
       (Math.abs(b.posTrue.length() - a.posTrue.length()) * KM).toFixed(1) + ' km';
     $('df-sep-alt').innerHTML = esc(a.name) + ' ' + ((a.posTrue.length() - GLOBE_R) * KM).toFixed(0) +
       ' km &middot; ' + esc(b.name) + ' ' + ((b.posTrue.length() - GLOBE_R) * KM).toFixed(0) + ' km' +
       (altScale !== 1 ? '<br>Altitude scale is ' + altScale.toFixed(1) +
-       'x, so the box is drawn taller than the figures.' : '');
+       'x, so the cuboid is drawn taller than the figures.' : '');
 
-    // Now the drawing frame, from the displayed positions.
-    var da = a.pos, db = b.pos;
-    _mid.copy(da).add(db).multiplyScalar(0.5);
-    _up.copy(_mid).normalize();
-    _d.copy(db).sub(da);
-    var dv = _d.dot(_up);
-    _hor.copy(_d).addScaledVector(_up, -dv);
-    var dl = _hor.length();
-    if (dl < 1e-6) { _hor.set(1, 0, 0).cross(_up).normalize(); dl = 1e-6; }
-    else { _hor.normalize(); }
-    _z.copy(_hor).cross(_up).normalize();
-
-    // PlaneGeometry lies in XY, so X maps to the horizontal leg and Y to the
-    // vertical one; the plane's own normal becomes the frame's Z.
-    _m.makeBasis(_hor, _up, _z);
-    sepGroup.group.position.copy(_mid);
+    // Place it from the displayed positions.  BoxGeometry is built on its own
+    // axes, so the basis maps X to along-track, Y to the local vertical and Z
+    // to cross-track; scaling by each component puts a satellite on each of
+    // two opposite corners.
+    var g = sepFrame(a.pos, b.pos, a.velTrue, _fDraw);
+    _m.makeBasis(g.fwd, g.up, g.side);
+    sepGroup.group.position.copy(g.mid);
     sepGroup.group.quaternion.setFromRotationMatrix(_m);
-    sepGroup.group.scale.set(Math.max(dl, 1e-4), Math.max(Math.abs(dv), 1e-4), 1);
-
-    // The two legs meet at the corner under whichever satellite is higher.
-    var lower = dv >= 0 ? da : db, upper = dv >= 0 ? db : da;
-    var corner = lower.clone().addScaledVector(_up, Math.abs(dv));
-    setLine(sepGroup.legV, lower, corner);
-    setLine(sepGroup.legH, corner, upper);
+    sepGroup.group.scale.set(Math.max(Math.abs(g.along), 1e-3),
+                             Math.max(Math.abs(g.radial), 1e-3),
+                             Math.max(Math.abs(g.cross), 1e-3));
   }
 
   function renderSepOptions() {
@@ -703,12 +711,17 @@
       var pair = sepPair();
       if (!pair) return null;
       var num = function (t) { return +String(t).replace(/[^0-9.]/g, ''); };
+      var sc = sepGroup ? sepGroup.group.scale : null;
       return {
         a: pair[0].name, b: pair[1].name,
         range: num($('df-sep-r').textContent),
         vertical: num($('df-sep-v').textContent),
-        lateral: num($('df-sep-h').textContent),
+        horizontal: num($('df-sep-h').textContent),
+        alongTrack: num($('df-sep-at').textContent),
+        crossTrack: num($('df-sep-ct').textContent),
         boxVisible: !!(sepGroup && sepGroup.group.visible),
+        // the drawn cuboid's own edge lengths, in km
+        boxEdgesKm: sc ? [+(sc.x * KM).toFixed(1), +(sc.y * KM).toFixed(1), +(sc.z * KM).toFixed(1)] : null,
       };
     },
     // Recomputed from the satellites' own positions rather than read back
@@ -716,14 +729,34 @@
     sepCheck: function () {
       var pair = sepPair();
       if (!pair) return null;
-      var p = pair[0].posTrue, qv = pair[1].posTrue;
-      var mid = p.clone().add(qv).multiplyScalar(0.5).normalize();
-      var dd = qv.clone().sub(p);
-      var v = dd.dot(mid);
-      var h = dd.clone().addScaledVector(mid, -v).length();
-      return { range: +(dd.length() * KM).toFixed(1),
-               vertical: +(Math.abs(v) * KM).toFixed(1),
-               lateral: +(h * KM).toFixed(1) };
+      var f = sepFrame(pair[0].posTrue, pair[1].posTrue, pair[0].velTrue, newFrame());
+      return { range: +(f.range * KM).toFixed(1),
+               vertical: +(Math.abs(f.radial) * KM).toFixed(1),
+               horizontal: +(Math.hypot(f.along, f.cross) * KM).toFixed(1),
+               alongTrack: +(Math.abs(f.along) * KM).toFixed(1),
+               crossTrack: +(Math.abs(f.cross) * KM).toFixed(1) };
+    },
+    // What the box actually is, for the headless check.
+    boxInfo: function () {
+      if (!sepGroup) return null;
+      var m = sepGroup.box.material, gm = sepGroup.box.geometry;
+      return { geometry: gm.type, transparent: m.transparent, opacity: m.opacity,
+               colour: '#' + m.color.getHexString(),
+               edgeColour: '#' + sepGroup.edge.material.color.getHexString(),
+               visible: sepGroup.group.visible };
+    },
+    // Both satellites must land on corners of the drawn box: take each one
+    // into the box's own space and it should sit at a half-extent in all
+    // three axes, i.e. (+/-0.5, +/-0.5, +/-0.5).
+    cornerCheck: function () {
+      var pair = sepPair();
+      if (!pair || !sepGroup) return null;
+      sepGroup.group.updateMatrixWorld(true);
+      var inv = new THREE.Matrix4().copy(sepGroup.group.matrixWorld).invert();
+      return pair.map(function (p) {
+        var l = p.pos.clone().applyMatrix4(inv);
+        return [+l.x.toFixed(3), +l.y.toFixed(3), +l.z.toFixed(3)];
+      });
     },
     setSep: function (a, b) {
       sepA = String(a); sepB = String(b);
