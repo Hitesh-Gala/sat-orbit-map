@@ -56,6 +56,18 @@ jobs:
           fi
           python3 scripts/fetch_spacetrack.py data/spacetrack-summary.json
 
+      # ---- Name the just-launched payloads ------------------------------
+      # Space-Track enters a new object as `OBJECT A` with OBJECT_TYPE unset,
+      # and data/spacetrack-gp.json is built by filtering on that type - so a
+      # satellite is missing from every payload page until the typing catches
+      # up.  NVS-03 launched 30 Oct 2026 and was still OBJECT A three days
+      # later.  Where CelesTrak's SATCAT already names it and calls it an
+      # active payload, this moves it across under that name, flagged so the
+      # page can say which catalogue it came from.
+      - name: Promote newly catalogued payloads
+        continue-on-error: true
+        run: python3 scripts/promote_new_launches.py
+
       # ---- Debris TLEs for the Debris Tracker ---------------------------
       # Flattens the debris half of the Space-Track non-payload bundle into
       # data/spacetrack-debris.tle (~12 k fragments) — every catalogued piece,

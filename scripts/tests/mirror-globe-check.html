@@ -1,0 +1,63 @@
+<!doctype html><meta charset="utf-8"><body style="background:#000;color:#9f9;font:12px monospace">
+<!-- Drives the thing that was missing: a payload Space-Track has catalogued
+     but not yet named or typed never reached the Mirror Globe, because the
+     page reads the payload bundle and the bundle is built by filtering on
+     that type.  NVS-03 launched 30 Oct 2026 and was still `OBJECT A` three
+     days later.  So: it must be in the catalogue the page loads, carry the
+     SATCAT's name, type as Navigation, classify as HEO from its transfer
+     orbit, actually plot, and say where the name came from. -->
+<pre id="out">running…</pre><iframe id="f" style="width:1500px;height:900px;border:0"></iframe>
+<script>
+const log=[],put=(k,v)=>log.push(k+': '+JSON.stringify(v));
+const done=()=>{document.getElementById('out').textContent=log.join('\n');};
+try{ sessionStorage.setItem('nazar.spacestuff','1'); }catch(e){}
+const f=document.getElementById('f');
+f.src='../../mirror-globe.html';
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+window.addEventListener('load',()=>setTimeout(run,14000));
+
+async function run(){
+ try{
+  const d=f.contentDocument,w=f.contentWindow,mg=w.__mg;
+  put('hook',!!mg);
+  put('cataloguePlotted',mg.count());
+  put('provisionallyNamed',mg.provisional());
+
+  // 19 k SGP4 solves are cut across frames, and headless virtual time starves
+  // rAF, so drive one sweep synchronously before reading what is plotted
+  put('plottedAfterOneSweep',mg.sweep());
+
+  const hits=mg.find('nvs');
+  put('nvsSeries',hits.map(s=>[s.norad,s.name,s.country,s.orbit,s.type]));
+  const nvs3=hits.find(s=>/NVS-03/.test(s.name));
+  put('nvs03Found',!!nvs3);
+  put('nvs03',nvs3||null);
+
+  // the whole NavIC series should type as Navigation, not em-dash
+  put('navicTypedRight',hits.every(s=>s.type==='Navigation'));
+
+  // a GTO is an elliptical orbit, and the page's own classifier must say so
+  put('nvs03IsHEO',nvs3&&nvs3.orbit==='HEO');
+  // it must have propagated to a real position, not sit at the origin
+  put('nvs03Propagated',nvs3&&nvs3.ok&&nvs3.altKm>150);
+  put('nvs03AltitudeKm',nvs3&&nvs3.altKm);
+  put('nvs03IsOnTheGlobe',mg.plottedHas(101228));
+
+  // and the page must not pass the SATCAT's name off as Space-Track's
+  put('flaggedProvisional',nvs3&&nvs3.prov===true);
+  put('carriesTheDesignator',nvs3&&nvs3.intl);
+  mg.select(101228); await wait(400);
+  put('selectionReadout',mg.selText());
+  put('readoutSaysWhereTheNameCameFrom',/SATCAT/.test(mg.selText()[1]));
+
+  // the other objects promoted the same way must look sane too
+  const more=['COSMOS 2620','HAIYANG-2E','ALSAT-3B'].map(n=>mg.find(n)[0]).filter(Boolean);
+  put('otherPromoted',more.map(s=>[s.norad,s.name,s.country,s.orbit,s.prov]));
+
+  // nothing should have been promoted without a real name
+  const junk=mg.find('OBJECT ').filter(s=>s.prov);
+  put('noPlaceholderNamesPromoted',[junk.length,junk.slice(0,3).map(s=>s.name)]);
+ }catch(e){ put('ERROR',e.message+' @ '+(e.stack||'').split('\n')[1]); }
+ done();
+}
+</script>

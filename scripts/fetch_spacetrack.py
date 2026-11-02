@@ -257,6 +257,7 @@ try:
         (100607, None, None),                    # EOS-5 (orbit raising)
         (68762, '2026-10-10', '2026-10-27'),     # COSMOS 2612 - shadowed ICEYE-X36
         (59103, '2026-10-10', '2026-10-27'),     # ICEYE-X36 - the object it shadowed
+        (101228, '2026-10-30', None),            # NVS-03 - GTO to geosynchronous
     ]
     try:
         launch = {str(g.get('NORAD_CAT_ID')): (g.get('LAUNCH_DATE') or '')[:10] for g in gp_all}

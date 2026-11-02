@@ -67,7 +67,7 @@
   // em-dash when nothing matches rather than guessing.
   const TYPES = [
     [/STARLINK|ONEWEB|IRIDIUM|GLOBALSTAR|INTELSAT|EUTELSAT|ASTRA|INMARSAT|THURAYA|VIASAT|ECHOSTAR|GUOWANG|QIANFAN|CHINASAT|ZHONGXING|YAMAL|EXPRESS-|TIANTONG|KUIPER|ORBCOMM|GONETS|MOLNIYA|RADUGA|GORIZONT|TDRS|SICRAL|SKYNET|MILSTAR/, 'Communications'],
-    [/NAVSTAR|GLONASS|GALILEO|GSAT0|BEIDOU|QZS-|IRNSS|NAVIC/, 'Navigation'],
+    [/NAVSTAR|GLONASS|GALILEO|GSAT0|BEIDOU|QZS-|IRNSS|NAVIC|NVS-/, 'Navigation'],
     [/METEOR-|NOAA |GOES |METOP|HIMAWARI|FENGYUN|INSAT|ELEKTRO|DMSP|SUOMI|JPSS|METEOSAT|MTG-/, 'Meteorology'],
     [/YAOGAN|LACROSSE|ONYX|OFEQ|HELIOS|SAR-LUPE|CSO-|EROS|NROL|MENTOR|TRUMPET|COSMOS/, 'ISR / military'],
     [/LANDSAT|SENTINEL|SPOT-|PLEIADES|WORLDVIEW|GEOEYE|QUICKBIRD|IKONOS|SKYSAT|FLOCK|DOVE|RESOURCESAT|CARTOSAT|KOMPSAT|ICEYE|CAPELLA|TERRASAR|RADARSAT|ALOS|JILIN|SUPERVIEW|BLACKSKY|GAOFEN|TERRA|AQUA|PRISMA/, 'Earth observation'],
@@ -95,7 +95,6 @@
   const orbitOn = new Set(ORBITS.map(o => o.k));
   const statusOn = new Set(STATUSES.map(s => s.k));
   let countryOn = new Set();            // empty === show all
-  let visible = [];                     // indices currently plotted
 
   const CT_COL = new THREE.Color('#67c8ff');
   const SEL_COL = new THREE.Color('#ffd27f');
@@ -133,6 +132,10 @@
       sats.push({
         norad: s.c, name: s.n || ('NORAD ' + s.c), country: s.o, launch: s.ld, site: s.ls || '',
         orbit: orbitClass(s), status: statusOf(s), satrec,
+        // Space-Track enters a new object as `OBJECT A` with no type for days
+        // after launch, so scripts/promote_new_launches.py takes the name from
+        // CelesTrak's SATCAT. The two sources should stay distinguishable.
+        prov: !!s.prov, intl: s.intl || '',
         lat: 0, lng: 0, altKm: 0, speed: 0, ok: false,
       });
     }
@@ -208,32 +211,38 @@
     propagating = true; propNow = new Date(); chunkIdx = 0;
     propagateChunk();
   }
+  // One satellite, placed or hidden.  Pulled out of the chunk loop so a check
+  // can run the whole sweep in one go - headless virtual time starves
+  // requestAnimationFrame, and a sweep that never reaches the end of the
+  // catalogue reads as "that satellite is not on the globe".
+  function placeOne(i, gmst) {
+    const s = sats[i];
+    const shown = orbitOn.has(s.orbit) && statusOn.has(s.status)
+      && (!countryOn.size || countryOn.has(s.country));
+    if (!shown) { mesh.setMatrixAt(i, HIDE); s.ok = false; return; }
+    const pv = satellite.propagate(s.satrec, propNow);
+    if (!pv || !pv.position) { mesh.setMatrixAt(i, HIDE); s.ok = false; return; }
+    const gd = satellite.eciToGeodetic(pv.position, gmst);
+    const altKm = gd.height;
+    if (!Number.isFinite(altKm) || altKm < 0) { mesh.setMatrixAt(i, HIDE); s.ok = false; return; }
+    s.lat = satellite.degreesLat(gd.latitude);
+    s.lng = satellite.degreesLong(gd.longitude);
+    s.altKm = altKm;
+    const v = pv.velocity;
+    s.speed = v ? Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z) : 0;
+    const p = world.getCoords(s.lat, s.lng, (altKm / R_EARTH) * altScale);
+    s.x = p.x; s.y = p.y; s.z = p.z; s.ok = true;
+    dummy.position.set(p.x, p.y, p.z);
+    dummy.scale.setScalar(dotScale * (selected === s ? 3.6 : 1));
+    dummy.updateMatrix();
+    mesh.setMatrixAt(i, dummy.matrix);
+    mesh.setColorAt(i, selected === s ? SEL_COL : colFor(s));
+  }
+
   function propagateChunk() {
     const end = Math.min(chunkIdx + CHUNK_SIZE, sats.length);
     const gmst = satellite.gstime(propNow);
-    for (let i = chunkIdx; i < end; i++) {
-      const s = sats[i];
-      const shown = orbitOn.has(s.orbit) && statusOn.has(s.status)
-        && (!countryOn.size || countryOn.has(s.country));
-      if (!shown) { mesh.setMatrixAt(i, HIDE); s.ok = false; continue; }
-      const pv = satellite.propagate(s.satrec, propNow);
-      if (!pv || !pv.position) { mesh.setMatrixAt(i, HIDE); s.ok = false; continue; }
-      const gd = satellite.eciToGeodetic(pv.position, gmst);
-      const altKm = gd.height;
-      if (!Number.isFinite(altKm) || altKm < 0) { mesh.setMatrixAt(i, HIDE); s.ok = false; continue; }
-      s.lat = satellite.degreesLat(gd.latitude);
-      s.lng = satellite.degreesLong(gd.longitude);
-      s.altKm = altKm;
-      const v = pv.velocity;
-      s.speed = v ? Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z) : 0;
-      const p = world.getCoords(s.lat, s.lng, (altKm / R_EARTH) * altScale);
-      s.x = p.x; s.y = p.y; s.z = p.z; s.ok = true;
-      dummy.position.set(p.x, p.y, p.z);
-      dummy.scale.setScalar(dotScale * (selected === s ? 3.6 : 1));
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
-      mesh.setColorAt(i, selected === s ? SEL_COL : colFor(s));
-    }
+    for (let i = chunkIdx; i < end; i++) placeOne(i, gmst);
     chunkIdx = end;
     if (chunkIdx < sats.length) {
       if (document.hidden) setTimeout(propagateChunk, 0);
@@ -430,7 +439,9 @@
         <div class="r">Altitude · <b>${Math.round(s.altKm).toLocaleString()} km</b></div>
         <div class="r">Speed · <b>${s.speed.toFixed(2)} km/s</b></div>
         <div class="r">Launched · <b>${esc(s.launch || '—')}</b></div>
-        <div class="r">Orbit · <b>${s.orbit}</b> · ${s.status}</div>`;
+        <div class="r">Orbit · <b>${s.orbit}</b> · ${s.status}</div>`
+        + (s.prov ? `<div class="r prov">Name from CelesTrak's SATCAT${
+            s.intl ? ' (' + esc(s.intl) + ')' : ''} — Space-Track has not published one yet</div>` : '');
       tip.hidden = false;
       const tw = tip.offsetWidth, th = tip.offsetHeight;
       tip.style.left = Math.min(e.clientX + 14, window.innerWidth - tw - 8) + 'px';
@@ -455,7 +466,8 @@
     $('sel-name').textContent = s.name;
     $('sel-meta').textContent =
       `${cname(s.country)} · ${Math.round(s.altKm).toLocaleString()} km · ${s.speed.toFixed(2)} km/s`
-      + (s.launch ? ` · launched ${s.launch}` : '');
+      + (s.launch ? ` · launched ${s.launch}` : '')
+      + (s.prov ? ' · named by the SATCAT, still OBJECT in Space-Track' : '');
   }
   function clearSelection() {
     if (!selected) return;
@@ -537,6 +549,53 @@
 
   const esc = s => String(s).replace(/[&<>"]/g, m =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+
+  // Read-only handle for scripts/tests/mirror-globe-check.html. `const`/`let`
+  // in this IIFE never reach window on their own.
+  window.__mg = {
+    count: function () { return sats.length; },
+    find: function (q) {
+      q = String(q).toLowerCase();
+      return sats.filter(function (s) {
+        return s.name.toLowerCase().indexOf(q) >= 0 || String(s.norad).indexOf(q) >= 0;
+      }).map(function (s) {
+        return { norad: s.norad, name: s.name, country: s.country, launch: s.launch,
+                 orbit: s.orbit, status: s.status, prov: s.prov, intl: s.intl,
+                 type: satType(s.name), altKm: Math.round(s.altKm), ok: s.ok,
+                 lat: +s.lat.toFixed(2), lng: +s.lng.toFixed(2) };
+      });
+    },
+    provisional: function () { return sats.filter(function (s) { return s.prov; }).length; },
+    select: function (norad) {
+      var s = sats.find(function (x) { return String(x.norad) === String(norad); });
+      if (s) select(s);
+      return !!s;
+    },
+    // A sweep is 19 k SGP4 solves cut into CHUNK_SIZE pieces across frames, so
+    // a check runs one synchronously rather than waiting on rAF.
+    sweeping: function () { return propagating; },
+    sweep: function () {
+      propNow = new Date();
+      const gmst = satellite.gstime(propNow);
+      for (let i = 0; i < sats.length; i++) placeOne(i, gmst);
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      return sats.filter(function (s) { return s.ok; }).length;
+    },
+    plotted: function () { return sats.filter(function (s) { return s.ok; }).length; },
+    plottedHas: function (norad) {
+      return sats.some(function (s) { return String(s.norad) === String(norad) && s.ok; });
+    },
+    tipFor: function (norad) {
+      var s = sats.find(function (x) { return String(x.norad) === String(norad); });
+      if (!s) return null;
+      hovered = s;
+      return { prov: s.prov, intl: s.intl };
+    },
+    selText: function () {
+      return [$('sel-name').textContent, $('sel-meta').textContent];
+    }
+  };
 
   if (window.Globe && window.satellite && window.THREE) boot();
   else window.addEventListener('load', boot);
