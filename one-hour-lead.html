@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>NAZAR · One Hour Lead</title>
+  <!-- Space Stuff is password protected: the page stays hidden until the password is entered (nazar-gate.js). -->
+  <script src="nazar-gate.js?v=3" data-section="spacestuff"></script>
+  <link rel="preconnect" href="https://celestrak.org">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=52">
+  <style>
+    /* One Hour Lead — a page, not a pop-up.  The plot is the whole left half
+       and the roster the right, both filling the viewport under a fixed head. */
+    body.page-lead { overflow: hidden; }
+    .lead-page { position: fixed; inset: 0; display: flex; flex-direction: column; color: var(--text); }
+
+    .lead-head { flex: 0 0 auto; padding: 12px 18px 10px; border-bottom: 1px solid var(--line); }
+    .lead-titlerow { display: flex; align-items: baseline; gap: 14px; }
+    .lead-title { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 21px; letter-spacing: .06em; color: var(--accent); }
+    /* The lighthouse mark and the credit beside it are absolutely positioned
+       over the top-right corner, so the two lines of prose that reach that far
+       keep clear of them - the form below starts past the credit's last line. */
+    .lead-titlerow, .lead-sub { padding-right: 300px; }
+    .lead-sub { margin-top: 4px; font-family: var(--mono); font-size: 12px; line-height: 1.55; color: var(--dim); }
+    .lead-sub b { color: var(--text); font-weight: 600; }
+    .lead-back { flex: 0 0 auto; color: var(--accent); font-family: var(--mono); font-size: 11px; text-decoration: none;
+      padding: 3px 8px; border: 1px solid var(--line); border-radius: 3px; }
+    .lead-back:hover { border-color: var(--accent); }
+
+    /* The cone and the moment, editable here so the page stands on its own
+       when it is opened directly rather than from Cone-Waffles. */
+    .lead-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 12px; margin-top: 10px; }
+    .lead-form label { display: flex; flex-direction: column; gap: 3px; font-family: var(--mono); font-size: 10px;
+      letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+    .lead-form input, .lead-form select { width: 92px; padding: 4px 6px; background: rgba(103, 200, 255, .06);
+      border: 1px solid var(--line); border-radius: 3px; color: var(--text); font-family: var(--mono); font-size: 12px; }
+    .lead-form input.wide { width: 150px; }
+    .lead-form input:focus, .lead-form select:focus { outline: none; border-color: var(--accent); }
+    .lead-form button { padding: 6px 12px; background: rgba(103, 200, 255, .1); border: 1px solid var(--line);
+      border-radius: 3px; color: var(--accent); font-family: var(--mono); font-size: 12px; cursor: pointer; }
+    .lead-form button:hover { border-color: var(--accent); background: rgba(103, 200, 255, .2); }
+    .lead-form .spacer { flex: 1 1 12px; }
+
+    .lead-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 16px; padding: 12px 18px 14px; }
+    .lead-plot { position: relative; min-height: 0; display: flex; flex-direction: column; }
+    .lead-plot svg { flex: 1; min-height: 0; width: 100%; touch-action: none; user-select: none; }
+    .lead-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: center; padding-top: 6px;
+      font-family: var(--mono); font-size: 11px; color: var(--dim); }
+    .lead-legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .lead-legend i { display: inline-block; }
+    .lead-foot { margin-top: 4px; text-align: center; font-family: var(--mono); font-size: 10.5px; color: var(--dim); }
+    .lg-cone  { width: 12px; height: 9px; background: rgba(0, 255, 136, .2); border: 1px solid #00ff88; }
+    .lg-grad  { width: 34px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #67e8a4, #f9d24c, #ff6b6b); }
+    .lg-hour  { width: 14px; height: 0; border-top: 1px dashed #ffd166; }
+    .lg-track { width: 14px; height: 0; border-top: 2px solid rgba(255, 255, 255, .55); }
+
+    .lead-progress { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 10px; background: rgba(4, 10, 18, .82); font-family: var(--mono);
+      font-size: 13px; color: var(--text); text-align: center; padding: 20px; }
+    .lead-progress[hidden] { display: none; }
+    .lead-progress .bar { width: min(320px, 70%); height: 6px; border-radius: 3px; background: rgba(103, 200, 255, .15); overflow: hidden; }
+    .lead-progress .bar i { display: block; height: 100%; width: 0; background: #ffd166; }
+
+    .lead-side { min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+    .lead-info { flex: 0 0 auto; min-height: 172px; padding: 10px 12px; border: 1px solid var(--line);
+      border-radius: 6px; background: rgba(103, 200, 255, .05); }
+    .lead-info .nm { margin-bottom: 6px; font-family: var(--mono); font-size: 15px; font-weight: 700; }
+    .lead-info .hint { font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--dim); }
+    .lead-info dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 14px; margin: 0; font-family: var(--mono); font-size: 12.5px; }
+    .lead-info dt { color: var(--dim); }
+    .lead-info dd { margin: 0; color: var(--text); }
+
+    /* dust-off: clears the pure carriers, keeps the sensors. */
+    .lead-bar { flex: 0 0 auto; display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
+    .lead-count { font-family: var(--mono); font-size: 12.5px; color: var(--dim); }
+    .lead-count b { color: var(--accent); }
+    .dust-btn { padding: 6px 12px; border: 1px solid rgba(255, 209, 102, .45); border-radius: 3px;
+      background: rgba(255, 209, 102, .08); color: #ffd166; font-family: var(--mono); font-size: 12px;
+      letter-spacing: .04em; cursor: pointer; white-space: nowrap; }
+    .dust-btn:hover { border-color: #ffd166; background: rgba(255, 209, 102, .2); }
+    .dust-btn.on { background: rgba(255, 209, 102, .26); border-color: #ffd166; color: #fff3d4; }
+    .dust-note { flex: 1 1 100%; font-family: var(--mono); font-size: 11px; line-height: 1.55; color: var(--dim); }
+    .dust-note b { color: var(--text); font-weight: 600; }
+    .dust-note .kept { color: #67e8a4; }
+    .dust-note .gone { color: #ffb4b4; }
+
+    .lead-table { flex: 1; min-height: 0; overflow: auto; border: 1px solid var(--line); border-radius: 6px; }
+    .lead-table table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
+    .lead-table th { position: sticky; top: 0; z-index: 1; padding: 6px 8px; text-align: left; white-space: nowrap;
+      background: var(--bg); border-bottom: 1px solid var(--line); color: var(--accent); font-weight: 600; }
+    .lead-table td { padding: 4px 8px; white-space: nowrap; border-bottom: 1px solid rgba(110, 200, 255, .08); }
+    .lead-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .lead-table td.empty { padding: 14px; color: var(--dim); white-space: normal; }
+    .lead-table tbody tr[data-i] { cursor: pointer; }
+    .lead-table tbody tr[data-i]:hover, .lead-table tr.on { background: rgba(255, 209, 102, .14); }
+    .lead-table .sw { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; }
+
+    #lead-svg .lm-disc     { fill: #06101c; stroke: rgba(103, 200, 255, .45); stroke-width: 1.2; }
+    #lead-svg .lm-land     { fill: rgba(103, 200, 255, .10); fill-rule: evenodd; stroke: rgba(150, 210, 255, .38); stroke-width: .6; }
+    #lead-svg .lm-coast    { fill: none; stroke: rgba(150, 210, 255, .38); stroke-width: .6; }
+    #lead-svg .lm-spoke    { stroke: rgba(234, 242, 251, .10); stroke-width: .8; }
+    #lead-svg .lm-ring     { fill: none; stroke: rgba(234, 242, 251, .18); stroke-width: .8; stroke-dasharray: 3 4; }
+    #lead-svg .lm-rtext    { fill: rgba(234, 242, 251, .6); font: 9px var(--mono); }
+    #lead-svg .lm-compass  { fill: #9fb3c8; font: 700 12px var(--mono); text-anchor: middle; dominant-baseline: central; }
+    #lead-svg .lm-cone     { fill: rgba(0, 255, 136, .16); stroke: #00ff88; stroke-width: 1.4; }
+    #lead-svg .lm-hour     { fill: rgba(255, 209, 102, .04); stroke: #ffd166; stroke-width: 1.3; stroke-dasharray: 6 4; }
+    #lead-svg .lm-dot      { stroke: rgba(0, 0, 0, .6); stroke-width: .6; }
+    #lead-svg .lm-site     { stroke: #ffffff; stroke-width: 1.8; }
+    #lead-svg .lm-sitetext { fill: #ffffff; font: 600 10.5px var(--mono); text-anchor: middle; paint-order: stroke; stroke: #06101c; stroke-width: 3px; }
+    #lead-svg .lm-track    { fill: none; stroke: rgba(255, 255, 255, .5); stroke-width: 1.3; stroke-linejoin: round; }
+    #lead-svg .lm-track-in { fill: none; stroke: #00ff88; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+    #lead-svg .lm-hl       { fill: none; stroke: #ffffff; stroke-width: 2; }
+    #lead-svg .lm-entry    { fill: #06101c; stroke: #00ff88; stroke-width: 2; }
+
+    /* Same call the other self-contained pages make: below this there is no
+       room for the credit beside a full-width header. */
+    @media (max-width: 900px) {
+      .logo-credit { display: none; }
+      .lead-titlerow, .lead-sub { padding-right: 76px; }
+    }
+    @media (max-width: 1100px) {
+      body.page-lead { overflow: auto; }
+      .lead-page { position: static; inset: auto; min-height: 100vh; }
+      .lead-body { display: flex; flex-direction: column; }
+      .lead-plot svg { flex: none; height: min(92vw, 70vh); }
+      .lead-table { flex: none; max-height: 60vh; }
+    }
+    @media (max-width: 720px) {
+      /* mobile-menu.js drops a fixed 64x24 MENU chip into the top-left corner,
+         so the title starts below it rather than behind it. */
+      .lead-head { padding: 36px 12px 8px; }
+      .lead-body { padding: 10px 12px 14px; }
+      .lead-title { font-size: 18px; }
+    }
+  </style>
+</head>
+<body class="page-lead">
+  <a class="top-logo" href="index.html" title="NAZAR — back to the live globe">
+    <img src="data/nazar-logo.svg?v=5" alt="NAZAR">
+  </a>
+
+  <div class="lead-page">
+    <header class="lead-head">
+      <div class="lead-titlerow">
+        <div class="lead-title">One hour lead</div>
+        <a class="lead-back" href="cone-waffles.html" title="Back to Cone-Waffles">← Cone-Waffles</a>
+      </div>
+      <div class="lead-sub" id="lead-sub">Reading the cone…</div>
+      <!-- Opened from Cone-Waffles these arrive in the URL; edited here they
+           re-scan, so the page is usable on its own. -->
+      <form class="lead-form" id="lead-form">
+        <label>Latitude<input type="number" id="f-lat" step="0.01" min="-90" max="90" value="28.61"></label>
+        <label>Longitude<input type="number" id="f-lng" step="0.01" min="-180" max="180" value="77.21"></label>
+        <label>Half-angle °<input type="number" id="f-angle" step="1" min="1" max="89" value="30"></label>
+        <label>Height km<input type="number" id="f-height" step="100" min="100" max="40000" value="2000"></label>
+        <label>Tilt °<input type="number" id="f-tilt" step="1" min="0" max="90" value="0"></label>
+        <label>Lean toward °<input type="number" id="f-dir" step="1" min="0" max="359" value="0"></label>
+        <label>From (UTC)<input type="datetime-local" id="f-when" class="wide" step="60"></label>
+        <label>Clock
+          <select id="f-zone">
+            <option value="UTC">UTC</option>
+            <option value="IST">IST</option>
+          </select>
+        </label>
+        <button type="submit" id="f-run">⏱ Scan the hour</button>
+        <button type="button" id="f-now">⟳ Now</button>
+      </form>
+    </header>
+
+    <div class="lead-body">
+      <div class="lead-plot">
+        <svg id="lead-svg" viewBox="-300 -300 600 600" aria-label="Polar map centred on the site"></svg>
+        <div class="lead-legend">
+          <span><i class="lg-cone"></i>Cone (its reach up to max height)</span>
+          <span><i class="lg-grad"></i>Enters in 0 → 60 min</span>
+          <span><i class="lg-hour"></i>1-hour boundary</span>
+          <span><i class="lg-track"></i>Ground track (hover)</span>
+        </div>
+        <div class="lead-foot">North up · true bearings · distance along the ground from the site (square-root scale)</div>
+        <div class="lead-progress" id="lead-progress" hidden>
+          <span id="lead-progress-text"></span>
+          <div class="bar"><i id="lead-progress-bar"></i></div>
+        </div>
+      </div>
+
+      <div class="lead-side">
+        <div class="lead-info" id="lead-info"></div>
+        <div class="lead-bar">
+          <button type="button" class="dust-btn" id="dust-off" title="Clear the satellites that only carry traffic or watch the weather">🧹 dust-off</button>
+          <span class="lead-count" id="lead-count"></span>
+          <span class="dust-note" id="dust-note"></span>
+        </div>
+        <div class="lead-table">
+          <table>
+            <thead><tr><th>#</th><th>Name</th><th>NORAD</th><th>Alt km</th><th>km/s</th><th>Period min</th><th>Enters in</th><th>Purpose</th></tr></thead>
+            <tbody id="lead-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+  <script src="tle-loader.js?v=11"></script>
+  <script src="cone-geometry.js?v=1"></script>
+  <script src="one-hour-lead.js?v=1"></script>
+  <script src="site-analytics.js?v=6"></script>
+  <script src="mobile-menu.js?v=27"></script>
+</body>
+</html>

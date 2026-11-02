@@ -1,0 +1,174 @@
+<!doctype html><meta charset="utf-8"><body style="background:#000;color:#9f9;font:12px monospace">
+<!-- The "1 hour lead" pop-up is a page now (one-hour-lead.html), and it has a
+     dust-off button.  Three things have to hold.
+
+     1. The page does what the pop-up did: the cone and the moment arrive in
+        the query string, the hour is scanned, and each entry time it reports
+        survives an independent cone test written here from the geometry
+        rather than taken from the page's own module.
+     2. dust-off clears the pure carriers and keeps everything that can see the
+        ground or listen to it - military before all else, so DMSP survives a
+        pass that clears NOAA and MILSTAR survives one that clears Intelsat.
+        The arithmetic has to balance: what the count says was cleared is what
+        the note accounts for.
+     3. Cone-Waffles still works with the geometry lifted out into
+        cone-geometry.js, and its link carries the cone it is showing. -->
+<pre id="out">running…</pre>
+<iframe id="f" style="width:1400px;height:900px;border:0"></iframe>
+<iframe id="g" style="width:1200px;height:700px;border:0"></iframe>
+<script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+<script>
+const log=[],put=(k,v)=>log.push(k+': '+JSON.stringify(v));
+const done=()=>{document.getElementById('out').textContent=log.join('\n');};
+try{ sessionStorage.setItem('nazar.spacestuff','1'); }catch(e){}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+// A fixed moment, so the roster is the same on every run.
+const T=Date.UTC(2026,10,2,12,0,0);
+const CONE={lat:28.61,lng:77.21,angle:30,height:2000,tilt:0,dir:0};
+const f=document.getElementById('f'),g=document.getElementById('g');
+f.src=`../../one-hour-lead.html?lat=${CONE.lat}&lng=${CONE.lng}&angle=${CONE.angle}`+
+      `&height=${CONE.height}&tilt=${CONE.tilt}&dir=${CONE.dir}&t=${T}&zone=UTC`;
+g.src='../../cone-waffles.html';
+window.addEventListener('load',()=>setTimeout(run,3000));
+
+// --- this harness's own cone test, written from the geometry -------------
+// Spherical Earth of the radius the pages draw.  A VERTICAL cone of half-angle
+// A capped at H holds a satellite when it is above the horizon, no more than H
+// along the axis, and no more than A off it.  CONE.tilt is 0, so this is the
+// whole test; it shares no code with cone-geometry.js on purpose.
+const R=6371, D=Math.PI/180;
+function ecef(lat,lon,alt){const a=lat*D,o=lon*D,r=R+alt;
+  return [r*Math.cos(a)*Math.cos(o), r*Math.cos(a)*Math.sin(o), r*Math.sin(a)];}
+function insideVerticalCone(satLat,satLon,satAlt,c){
+  const [ax,ay,az]=ecef(c.lat,c.lng,0), [sx,sy,sz]=ecef(satLat,satLon,satAlt);
+  const la=c.lat*D, lo=c.lng*D;
+  const up=[Math.cos(la)*Math.cos(lo),Math.cos(la)*Math.sin(lo),Math.sin(la)];
+  const v=[sx-ax,sy-ay,sz-az], range=Math.hypot(v[0],v[1],v[2]);
+  const axial=v[0]*up[0]+v[1]*up[1]+v[2]*up[2];
+  if(axial<=0||axial>c.height) return false;
+  return Math.acos(Math.min(1,axial/range))/D<=c.angle;
+}
+function geoAt(rec,ms){
+  const d=new Date(ms), pv=satellite.propagate(rec,d);
+  if(!pv||!pv.position) return null;
+  const q=satellite.eciToGeodetic(pv.position,satellite.gstime(d));
+  return [satellite.degreesLat(q.latitude),satellite.degreesLong(q.longitude),q.height];
+}
+
+async function run(){
+ try{
+  const w=f.contentWindow, d=f.contentDocument;
+  for(let i=0;i<180 && !(w.__ohl && w.__ohl.ready() && !w.__ohl.scanning());i++) await wait(500);
+  const o=w.__ohl;
+  put('hook',!!o);
+  put('scanFinished',!o.scanning());
+
+  // --- 1. the page does what the pop-up did ----------------------------
+  put('coneFromTheUrl',o.cone());
+  put('momentHonoured',o.cone().T===T);
+  put('found',o.found());
+  put('listedEqualsFound',o.listed()===o.found());
+  put('tableMatchesTheList',o.rows()===o.listed());
+  put('subtitleNamesTheSite',/28\.61. N, 77\.21. E/.test(o.subtitle()));
+  put('subtitleFoundTheCountry',/India/.test(o.subtitle()));
+
+  // Every reported entry time, re-derived here: inside at T+entry, and for the
+  // ones that were not already inside, outside 90 s earlier.  (The scan refines
+  // to the second, so a 90 s margin is clear of its own resolution.)
+  const entries=o.entries();
+  let inAt=0, outBefore=0, late=0, checked=0, misses=[];
+  for(const e of entries){
+    const at=geoAt(e.rec,T+e.entry);
+    if(!at) continue;
+    checked++;
+    if(insideVerticalCone(at[0],at[1],at[2],CONE)) inAt++; else misses.push([e.name,e.entry,at]);
+    if(e.entry>90000){
+      late++;
+      const before=geoAt(e.rec,T+e.entry-90000);
+      if(before && !insideVerticalCone(before[0],before[1],before[2],CONE)) outBefore++;
+    }
+  }
+  put('insideAtTheReportedEntry',[inAt,checked]);
+  put('outsideNinetySecondsEarlier',[outBefore,late]);
+  put('entryTimesVerifyIndependently',inAt===checked && outBefore===late);
+  put('misses',misses.slice(0,3));
+
+  // --- 2. dust-off -------------------------------------------------------
+  put('classifications',['MILSTAR 5','SKYNET 5A','DMSP 5D-3 F18','NOAA 19','INTELSAT 901',
+      'STARLINK-1007','ONEWEB-0012','QIANFAN-16','COSMOS 2612','ICEYE-X36','YAOGAN-35 05C',
+      'HAWKEYE 360 CLUSTER 7A','TDRS 12','NVS-03 (IRNSS-1L)','HST','SL-16 R/B','OBJECT A']
+    .map(n=>[n,o.classify(n).label,o.classify(n).keep]));
+
+  const cls=n=>o.classify(n);
+  put('carriersAreCleared',['INTELSAT 901','STARLINK-1007','ONEWEB-0012','NOAA 19','GOES 18','SL-16 R/B']
+    .every(n=>!cls(n).keep));
+  put('militaryCommsAreKept',['MILSTAR 5','SKYNET 5A','WGS-10','MUOS-5','RADUGA-1M 3']
+    .every(n=>cls(n).keep));
+  put('militaryWeatherIsKept',cls('DMSP 5D-3 F18').keep && !cls('NOAA 19').keep);
+  put('sensorsAreKept',['COSMOS 2612','YAOGAN-35 05C','ICEYE-X36','CAPELLA-14','LANDSAT 9',
+    'HAWKEYE 360 CLUSTER 7A','TDRS 12'].every(n=>cls(n).keep));
+  put('unknownIsKept',cls('OBJECT A').keep && cls('2022-023F').keep);
+
+  const before=o.listed(), scaleBefore=o.cone().dmax;
+  o.toggleDust();
+  await wait(900);
+  put('dusted',o.dusted());
+  const after=o.listed();
+  put('listedBeforeAndAfter',[before,after]);
+  put('somethingWasCleared',after<before);
+  put('tableFollowedTheList',o.rows()===after);
+  put('nothingKeptWasCleared',o.listedNames().length===after);
+  put('everySurvivorIsAKeeper',o.purposes().filter(p=>!p[2]).length===before-after);
+
+  // the note has to account for every satellite the count says went
+  const cleared=before-after;
+  const noteTotal=(o.note().match(/ (\d+)/g)||[]).map(Number).reduce((a,b)=>a+b,0);
+  put('countSaysCleared',cleared);
+  put('noteAccountsForThem',noteTotal===cleared);
+  put('noteSaysItIsByName',/catalogue name/i.test(o.note()));
+  put('note',o.note());
+  put('count',o.count());
+
+  // pressing the button must not move the plot under the reader
+  put('plotScaleUnchanged',o.cone().dmax===scaleBefore);
+
+  o.toggleDust();
+  await wait(900);
+  put('bringsThemBack',[o.dusted()===false,o.listed()===before,o.rows()===before]);
+
+  // the cone is still editable on the page itself
+  await o.setCone({angle:12});
+  for(let i=0;i<120 && o.scanning();i++) await wait(500);
+  put('rescanWithANarrowerCone',[o.cone().angle,o.found()]);
+  put('narrowerConeSeesFewer',o.found()<before);
+
+  // --- 3. Cone-Waffles after the extraction ------------------------------
+  const cw=g.contentWindow, cwd=g.contentDocument;
+  for(let i=0;i<60 && !/Catalogue:/.test(cwd.getElementById('cw-status').textContent);i++) await wait(500);
+  put('coneWafflesStatus',cwd.getElementById('cw-status').textContent);
+  put('coneWafflesSharesTheGeometry',!!cw.ConeGeom);
+  put('coneWafflesStillListsHits',cwd.getElementById('land-count').textContent);
+  const a=cwd.getElementById('t-lead');
+  put('leadIsALinkNow',a&&a.tagName);
+  put('popUpMarkupIsGone',!cwd.getElementById('lead'));
+  const href=a&&a.getAttribute('href');
+  put('linkCarriesTheCone',href);
+  const q=new URLSearchParams((href||'').split('?')[1]||'');
+  put('linkMatchesThePanel',[
+    q.get('lat')===cwd.getElementById('land-lat').value,
+    q.get('lng')===cwd.getElementById('land-lng').value,
+    q.get('angle')===cwd.getElementById('land-angle').value,
+    q.get('height')===cwd.getElementById('land-height').value,
+    Math.abs(Date.now()-(+q.get('t')))<5000]);
+
+  // move the cone and the link must follow it
+  const latEl=cwd.getElementById('land-lat');
+  latEl.value='35.00';
+  latEl.dispatchEvent(new Event('input'));
+  await wait(400);
+  put('linkFollowsTheCone',new URLSearchParams(a.getAttribute('href').split('?')[1]).get('lat')==='35.00');
+ }catch(e){ put('ERROR',e.message+' @ '+(e.stack||'').split('\n')[1]); }
+ done();
+}
+</script>
