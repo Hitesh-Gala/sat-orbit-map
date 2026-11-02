@@ -1645,10 +1645,10 @@ body.light .btn-nazar {
 }
 body.light .btn-nazar:hover { background: rgba(21, 101, 192, 0.18); }
 
-/* --- Takshashila Institution logo — top-right corner on every page.
+/* --- The NAZAR lighthouse mark — top-right corner on every page.
    Fixed position with z-50 so it floats above all page chrome
    (topbar, hud-tr, repo-header, page-2d-header, etc.).  Clicking
-   opens https://takshashila.org.in/ in a new tab.
+   goes back to index.html.
 
    The logo sits inside a thin dark panel so it reads cleanly whether
    the canvas behind is the bright Blue-Marble atmosphere, the
