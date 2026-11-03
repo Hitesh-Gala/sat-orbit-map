@@ -32,15 +32,20 @@ const LEAD_EXIT_STEP_MS = 20000;           // walk out of the cone in 20-second 
 const LEAD_EXIT_MAX_MS  = 3 * 3600000;     // …and stop looking after three hours
 const LEAD_R         = 260;                // plot radius in SVG units (viewBox ±300)
 const LEAD_WINDOW_MS = LEAD_MIN * 60000;   // the hour the whole page is about
-const ZONE_MAX       = 6;                  // clear zone: the last column is "6 or more"
+// Clear zone: a column per threshold, and each one is "k or fewer" rather
+// than "exactly k" - a reader who can live with two sets of eyes overhead is
+// also served by the moments when nobody is, so the columns are nested and
+// each absorbs the ones to its left.
+const ZONE_MAX       = 5;
+const ZONE_MIN_MS    = 30000;              // under half a minute is not a window anyone can use
 // Pass boundaries are bisected to a tenth of a second rather than the whole
 // second the two columns are rounded to.  The blocks come from two different
 // satellites' edges landing next to each other, so a second of slack there
 // mis-counts any block shorter than that - and the table's arithmetic is only
 // worth printing if the short blocks are right too.
 const ZONE_RES_MS    = 100;
-const ZONE_HEADS = ['Clear — none in the cone', '1 satellite', '2 satellites', '3 satellites',
-                    '4 satellites', '5 satellites', '6 or more'];
+const ZONE_HEADS = ['Clear — none in the cone', '1 satellite or fewer', '2 or fewer',
+                    '3 or fewer', '4 or fewer', '5 or fewer'];
 const IST_OFFSET_MS  = 5.5 * 3600000;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const WORLD_MAP_URL  = 'data/countries-110m.geojson?v=2';
@@ -329,6 +334,21 @@ function occupancy(sats, windowMs) {
   return blocks;
 }
 
+// The windows at one threshold: every stretch where no more than k satellites
+// are inside at once, with the runs that touch merged into one.  Anything
+// shorter than minMs is dropped - it is the blocks' arithmetic that has to be
+// exact, not every sliver of it that has to be printed, and a window no one
+// could use is noise in a table about when to move.
+function zoneWindows(blocks, k, minMs) {
+  const out = [];
+  for (const b of blocks) {
+    if (b.n > k) continue;
+    const last = out[out.length - 1];
+    if (last && last.to === b.from) last.to = b.to; else out.push({ from: b.from, to: b.to });
+  }
+  return out.filter(w => w.to - w.from >= minMs);
+}
+
 // ==========================================================================
 // The polar map
 // ==========================================================================
@@ -526,27 +546,25 @@ function renderZones() {
 
   const { T, sats } = leadCtx;
   const blocks = occupancy(sats, LEAD_WINDOW_MS);
-  const cols = Array.from({ length: ZONE_MAX + 1 }, () => []);
-  for (const b of blocks) cols[Math.min(b.n, ZONE_MAX)].push(b);
+  const cols = Array.from({ length: ZONE_MAX + 1 }, (_, k) => zoneWindows(blocks, k, ZONE_MIN_MS));
 
   const clock = ms => clockAt(T + ms).slice(0, 8);
-  // Two satellites' edges can land a fraction of a second apart, and the hour
-  // is tiled with no gaps, so some blocks really are that short.
-  const fmtSpan = ms => (ms < 1000 ? '< 1 s' : fmtLead(ms));
   const span = b => `<span class="lz-span">${clock(b.from)}–${clock(b.to)}</span>` +
-                    `<span class="lz-dur">${fmtSpan(b.to - b.from)}</span>`;
+                    `<span class="lz-dur">${fmtLead(b.to - b.from)}</span>`;
   const sum = list => list.reduce((a, b) => a + (b.to - b.from), 0);
+  const floor = fmtLead(ZONE_MIN_MS).replace(/^0 m 0?/, '');
 
   const clear = cols[0], longest = clear.reduce((a, b) => (!a || b.to - b.from > a.to - a.from ? b : a), null);
   lede.innerHTML =
     `The hour from <b>${clock(0)}</b> to <b>${clock(LEAD_WINDOW_MS)} ${fZone.value}</b>, over the ` +
     `<b>${sats.length.toLocaleString('en-US')}</b> satellites left in the list — the ones that can see the ` +
-    `ground or listen to it. ` + (longest
-      ? `<span class="clear">Clear for ${fmtLead(sum(clear))}</span> of it, in ` +
-        `${clear.length} ${clear.length === 1 ? 'block' : 'blocks'}; the longest is ` +
+    `ground or listen to it. Each column is <b>that many or fewer</b>, so it takes in every column to its ` +
+    `left, and nothing under <b>${floor}</b> is listed. ` + (longest
+      ? `<span class="clear">Clear for ${fmtLead(sum(clear))}</span> of the hour, in ` +
+        `${clear.length} ${clear.length === 1 ? 'window' : 'windows'}; the longest is ` +
         `<span class="clear">${fmtLead(longest.to - longest.from)}</span> from ${clock(longest.from)}.`
-      : `<span class="busy">No part of it is clear</span> — at least one of them is inside the cone at ` +
-        `every instant.`);
+      : `<span class="busy">No clear window of ${floor} opens</span> — at least one of them is inside ` +
+        `the cone almost throughout.`);
 
   const rows = Math.max(...cols.map(c => c.length));
   const body = Array.from({ length: rows }, (_, r) => '<tr>' + cols.map((list, k) =>
@@ -555,8 +573,8 @@ function renderZones() {
     <thead><tr>${ZONE_HEADS.map((h, k) => `<th class="${k ? '' : 'zero'}">${h}</th>`).join('')}</tr></thead>
     <tbody>${body}</tbody>
     <tfoot><tr>${cols.map((list, k) => `<td class="${k ? '' : 'zero'}">` +
-      `<span class="lz-span">${list.length} ${list.length === 1 ? 'block' : 'blocks'}</span>` +
-      `<span class="lz-dur">${list.length ? fmtSpan(sum(list)) + ' in all' : 'none'}</span></td>`).join('')}</tr></tfoot>
+      `<span class="lz-span">${list.length} ${list.length === 1 ? 'window' : 'windows'}</span>` +
+      `<span class="lz-dur">${list.length ? fmtLead(sum(list)) + ' in all' : 'none'}</span></td>`).join('')}</tr></tfoot>
   </table>`;
 }
 
@@ -835,6 +853,8 @@ window.__ohl = {
   // reader actually sees it
   window: () => LEAD_WINDOW_MS,
   blocks: () => (leadCtx ? occupancy(leadCtx.sats, LEAD_WINDOW_MS) : []),
+  minWindow: () => ZONE_MIN_MS,
+  windows: k => (leadCtx ? zoneWindows(occupancy(leadCtx.sats, LEAD_WINDOW_MS), k, ZONE_MIN_MS) : []),
   passes: () => (leadCtx ? leadCtx.sats.map(s => ({ name: s.name, rec: s.rec, passes: s.passes })) : []),
   zoneHeads: () => [...document.querySelectorAll('#lz-table thead th')].map(t => t.textContent),
   zoneRows: () => [...document.querySelectorAll('#lz-table tbody tr')]

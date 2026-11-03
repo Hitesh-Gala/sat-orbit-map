@@ -16,6 +16,9 @@
         each block, the number of listed satellites this harness's own cone
         test puts inside the cone has to be the number the block claims, and
         the blocks have to tile the hour end to end with nothing left over.
+        The columns are nested - each is "k or fewer", so every window in one
+        has to sit inside a window of the next - and nothing under half a
+        minute is printed in any of them.
         A clear window that is not clear is the one error the page must not
         make, so it is checked against something other than itself.
      4. Cone-Waffles still works with the geometry lifted out into
@@ -221,39 +224,65 @@ async function run(){
   put('blockMismatches',mism.slice(0,6));
   put('subSecondBlocksSkipped',[shortMism,blocks.length-real]);
 
-  // The clear blocks are the answer the page exists for, so they are not
+  // The clear windows are the answer the page exists for, so they are not
   // sampled once in the middle but swept: at every second of every one of
   // them, nothing on the list may be inside the cone.
   let swept=0, intruders=[];
-  for(const b of blocks.filter(x=>x.n===0)){
+  for(const b of o.windows(0)){
     for(let t=b.from+250; t<b.to; t+=1000){
       swept++;
       const n=countAt(T+Math.min(t,b.to-250));
       if(n) intruders.push([b.from,b.to,Math.round(t),n]);
     }
   }
-  put('clearBlocksSweptSecondBySecond',swept);
-  put('nothingIsInsideAClearBlock',intruders.length===0);
+  put('clearWindowsSweptSecondBySecond',swept);
+  put('nothingIsInsideAClearWindow',intruders.length===0);
   put('intruders',intruders.slice(0,6));
 
-  // the zero column is the answer the page exists for, so say what it holds
-  const clear=blocks.filter(b=>b.n===0);
-  put('clearBlocks',clear.length);
-  put('clearSeconds',Math.round(clear.reduce((a,b)=>a+(b.to-b.from),0)/1000));
-  put('ledeAgreesWithTheBlocks',
-    clear.length ? /Clear for/.test(o.zoneLede()) : /No part of it is clear/.test(o.zoneLede()));
+  // --- the columns the reader actually sees --------------------------
+  const K=[0,1,2,3,4,5], MIN=o.minWindow(), win=K.map(k=>o.windows(k));
+  put('minimumWindow',MIN);
+  put('windowsPerColumn',win.map(w=>w.length));
+
+  // nothing short is printed, and no window runs backwards
+  put('everyWindowReachesTheMinimum',win.every(w=>w.every(x=>x.to-x.from>=MIN && x.to>x.from)));
+
+  // "k or fewer": every window of one column has to sit inside a window of
+  // the next, and the next can only be longer in total
+  const inside=(x,w)=>w.some(y=>y.from<=x.from && y.to>=x.to);
+  put('columnsAreNested',K.slice(1).every(k=>win[k-1].every(x=>inside(x,win[k]))));
+  const tot=w=>w.reduce((a,x)=>a+(x.to-x.from),0);
+  put('totalsPerColumn',win.map(w=>Math.round(tot(w)/1000)));
+  put('totalsOnlyGrowRightwards',K.slice(1).every(k=>tot(win[k])>=tot(win[k-1])));
+
+  // a window is a run of blocks at or under its threshold, and the block
+  // either side of it must be over that threshold (or the hour must end)
+  let edges=0, bad=[];
+  for(const k of K) for(const x of win[k]){
+    const before=blocks.filter(b=>b.to<=x.from).pop(), after=blocks.find(b=>b.from>=x.to);
+    const okIn=blocks.filter(b=>b.from>=x.from && b.to<=x.to).every(b=>b.n<=k);
+    const okOut=(!before||before.n>k) && (!after||after.n>k);
+    if(okIn&&okOut) edges++; else bad.push([k,x.from,x.to,okIn,okOut]);
+  }
+  put('windowsAreMaximalRuns',[edges,win.reduce((a,w)=>a+w.length,0)]);
+  put('badWindows',bad.slice(0,6));
+
+  put('clearWindows',win[0].length);
+  put('clearSeconds',Math.round(tot(win[0])/1000));
+  put('ledeAgreesWithTheWindows',
+    win[0].length ? /Clear for/.test(o.zoneLede()) : /No clear window/.test(o.zoneLede()));
+  put('ledeSaysTheColumnsAreCumulative',/that many or fewer/.test(o.zoneLede()));
+  put('ledeNamesTheFloor',/0 m 30 s|30 s/.test(o.zoneLede()));
   put('lede',o.zoneLede());
 
-  // the table as the reader sees it: a column per count up to "6 or more",
-  // and each column as long as the blocks at that level
   const zheads=o.zoneHeads(), zrows=o.zoneRows();
   put('zoneColumns',zheads);
-  put('sevenColumnsUpToSixOrMore',zheads.length===7 && /none in the cone/.test(zheads[0]) && /6 or more/.test(zheads[6]));
+  put('sixColumnsUpToFiveOrFewer',
+    zheads.length===6 && /none in the cone/.test(zheads[0]) && /5 or fewer/.test(zheads[5]));
   const filled=k=>zrows.filter(r=>r[k]!=='').length;
-  const atLevel=k=>blocks.filter(b=>Math.min(b.n,6)===k).length;
-  put('eachColumnListsItsOwnBlocks',[0,1,2,3,4,5,6].map(k=>[filled(k),atLevel(k)]));
-  put('columnsMatchTheBlocks',[0,1,2,3,4,5,6].every(k=>filled(k)===atLevel(k)));
-  put('rowsAreAsLongAsTheLongestColumn',zrows.length===Math.max(...[0,1,2,3,4,5,6].map(atLevel)));
+  put('eachColumnListsItsOwnWindows',K.map(k=>[filled(k),win[k].length]));
+  put('columnsMatchTheWindows',K.every(k=>filled(k)===win[k].length));
+  put('rowsAreAsLongAsTheLongestColumn',zrows.length===Math.max(...win.map(w=>w.length)));
   put('foot',o.zoneFoot());
   put('firstRow0',zrows.length?zrows[0][0]:'');
 
