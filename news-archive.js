@@ -9,8 +9,11 @@
   if (!NN) { $('news-list').innerHTML = '<div class="news-empty">news-core.js failed to load.</div>'; return; }
   const esc = NN.esc;
 
+  const DOMAIN_MAX = 60;          // the band is an index, not a second archive
+
   let filterText = '';
   let chinaOnly = false;
+  let milOnly = false;
   let sortNewestFirst = true;
   let currentItems = [];
 
@@ -25,6 +28,7 @@
     const q = filterText.trim().toLowerCase();
     let items = NN.getArchive();
     if (chinaOnly) items = items.filter(NN.isChinaItem);
+    if (milOnly) items = items.filter(NN.isDomainItem);
     if (q) items = items.filter(it =>
       ((it.title || '') + ' ' + (it.desc || '') + ' ' + (it.source || '')).toLowerCase().includes(q));
     return items.slice().sort((a, b) => sortNewestFirst
@@ -45,12 +49,51 @@
     const refreshed = meta.last ? new Date(meta.last).toUTCString().replace('GMT', 'UTC') : '—';
     el.innerHTML =
       `<strong>${all.length}</strong> headlines · <strong>${chinaN}</strong> China-related · ` +
+      `<strong>${all.filter(NN.isDomainItem).length}</strong> military / SSA · ` +
       `from <strong>${esc(first)}</strong> to <strong>${esc(last)}</strong><br>` +
       `Sources answering: <strong>${meta.okFeeds ?? '—'}</strong>/<strong>${meta.feeds ?? NN.FEEDS.length}</strong> · ` +
       `last refreshed <strong>${esc(refreshed)}</strong>`;
   }
 
+  // ---- The Military / SSA band ------------------------------------------
+  // Everything in the domain, newest first, as one compact list rather than
+  // scattered through the days.  It follows the text filter so a search still
+  // reaches it, but not the two checkboxes: it IS the defence view, and a
+  // "China only" tick should narrow the page under it, not empty this.
+  const TAG_CLASS = { 'Break-up': 'k-break', 'Proximity op': 'k-rpo' };
+
+  function renderDomain() {
+    const q = filterText.trim().toLowerCase();
+    let items = NN.getArchive().filter(NN.isDomainItem);
+    if (q) items = items.filter(it =>
+      ((it.title || '') + ' ' + (it.desc || '') + ' ' + (it.source || '')).toLowerCase().includes(q));
+    items.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+    const breaks = items.filter(NN.isEventItem).length;
+    const rpos = items.filter(it => !NN.isEventItem(it) && NN.isRpoItem(it)).length;
+    $('news-domain-count').textContent = items.length
+      ? items.length + ' in the archive · ' + breaks + ' break-up or fragmentation · ' +
+        rpos + ' close approach or inspection'
+      : 'nothing in this domain yet';
+
+    const shown = items.slice(0, DOMAIN_MAX);
+    $('news-domain-body').innerHTML = shown.map(it => {
+      const tag = NN.domainTag(it);
+      return '<div class="nd-row">' +
+        '<span class="nd-date">' + esc(NN.fmtShort(it.pubDate)) + '</span>' +
+        '<span class="nd-tag ' + (TAG_CLASS[tag] || 'k-mil') + '">' + esc(tag) + '</span>' +
+        '<a class="nd-head" href="' + esc(it.link) + '" target="_blank" rel="noopener noreferrer">' +
+          esc(it.title) + '</a>' +
+        '<span class="nd-from">' + esc(it.source) + '</span>' +
+      '</div>';
+    }).join('') + (items.length > shown.length
+      ? '<div class="nd-more">' + (items.length - shown.length) +
+        ' older items in this domain are in the list below — tick <b>Defence &amp; SSA only</b> to see them all.</div>'
+      : '');
+  }
+
   function render() {
+    renderDomain();
     const items = getFiltered();
     currentItems = items;
     const list = $('news-list');
@@ -68,7 +111,7 @@
     items.forEach((it, i) => {
       const dayKey = NN.fmtDayKey(it.pubDate);
       if (dayKey !== lastDay) { parts.push(`<h2 class="news-day">${esc(NN.fmtDayLabel(it.pubDate))}</h2>`); lastDay = dayKey; }
-      const cn = NN.isChinaItem(it);
+      const cn = NN.isChinaItem(it), mil = NN.isDomainItem(it);
       parts.push(
         `<article class="news-card${cn ? ' cn' : ''}">` +
           `<div class="news-card-top">` +
@@ -76,6 +119,7 @@
             `<span class="news-date">${esc(NN.fmtLong(it.pubDate))}</span>` +
             `<span class="news-src cat-${esc(it.cat || 'Press')}">${esc(it.source)}</span>` +
             (cn ? `<span class="news-cn-tag">China</span>` : '') +
+            (mil ? `<span class="news-mil-tag">${esc(NN.domainTag(it))}</span>` : '') +
           `</div>` +
           `<a class="news-title" href="${esc(it.link)}" target="_blank" rel="noopener noreferrer">${esc(it.title)}</a>` +
           (it.desc ? `<p class="news-desc">${esc(it.desc)}</p>` : '') +
@@ -181,6 +225,7 @@
   // ---- Wire up -----------------------------------------------------------
   $('news-filter').addEventListener('input', e => { filterText = e.target.value; render(); });
   $('news-cn-only').addEventListener('change', e => { chinaOnly = e.target.checked; render(); });
+  $('news-mil-only').addEventListener('change', e => { milOnly = e.target.checked; render(); });
   $('news-sort').addEventListener('click', () => {
     sortNewestFirst = !sortNewestFirst;
     $('news-sort').textContent = sortNewestFirst ? '↓ Newest first' : '↑ Oldest first';
@@ -208,6 +253,15 @@
     'ESA': 'European Space Agency releases.',
     'China Space News Roundup': 'Andrew Jones’ own newsletter on the Chinese space programme (Substack) — posts rarely, but watched so nothing is missed.',
     'China Space Monitor': 'Blaine Curcio’s newsletter on the Chinese space industry (Substack).',
+    'Integrity ISR': 'ISR and space-power analysis — it carried the Kosmos 2612 / ICEYE-X36 approach two days after the pass, when no other feed here had it. Space and ISR pieces only.',
+    'SpaceNews · Military': 'The same newsroom’s military-space tag feed.',
+    'SpaceNews · Space Force': 'Its Space Force tag feed.',
+    'Air & Space Forces': 'Air & Space Forces Magazine (AFA) — heavy Space Force and counterspace coverage. Space and ISR stories only.',
+    'LeoLabs': 'Commercial radar tracking; publishes break-up and conjunction analysis.',
+    'ESA Space Safety': 'ESA’s debris and planetary-defence office.',
+    'Breaking Defense · Space': 'Defence trade press — it broke the Kosmos 2612 stalking of ICEYE.',
+    'Defense News · Space': 'Defence trade press, space desk.',
+    'US Space Force': 'Service releases.',
   };
 
   // Followed by hand — X/Twitter gives no public feed a browser can read, so
@@ -220,6 +274,7 @@
     ['Reuters', 'https://www.reuters.com/science/', 'Ran the China–Pakistan astronaut training story first in the Western press. Reuters withdrew its public RSS, so it reaches the archive through the Google News searches rather than a feed of its own.'],
     ['COMSPOC · Slingshot · ExoAnalytic', 'https://comspoc.com/', 'Commercial space surveillance. They publish close-approach and break-up analysis in briefings and on social media rather than in a readable feed, so they are watched, not polled.'],
     ['NASA Orbital Debris Program Office', 'https://orbitaldebris.jsc.nasa.gov/', 'The quarterly debris news is a PDF rather than a feed; it is where fragment counts are finally settled.'],
+    ['Pixxel', 'https://www.pixxel.space/', 'The hyperspectral constellation. Its site is a Webflow build with no feed of any kind, and LinkedIn and X expose nothing a web page may read — so the company is followed through a news search on its name instead, which is what the Pixxel topic search below is.'],
   ];
 
   const GROUPS = [

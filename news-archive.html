@@ -118,6 +118,56 @@
     .news-status { font-family: var(--mono); font-size: 14.5px; color: var(--dim); min-height: 20px; margin: 8px 2px 2px; }
     .news-status.err { color: var(--accent2); }
 
+    /* The Military / SSA band above the chronological list.  Compact rows on
+       purpose - it is an index into the archive, not a second copy of it. */
+    .news-cn-toggle.mil input { accent-color: #ffcf5c; }
+    .news-domain {
+      margin: 14px 0 4px; border: 1px solid rgba(255, 207, 92, 0.38); border-radius: 7px;
+      background: rgba(255, 207, 92, 0.05);
+    }
+    .news-domain > summary {
+      display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 14px;
+      padding: 10px 14px; cursor: pointer; list-style: none;
+    }
+    .news-domain > summary::-webkit-details-marker { display: none; }
+    .news-domain > summary::before {
+      content: '\25b8'; color: #ffcf5c; font-size: 13px; transition: transform .15s;
+    }
+    .news-domain[open] > summary::before { transform: rotate(90deg); }
+    .nd-title {
+      font-family: 'Orbitron', var(--mono), sans-serif; font-weight: 700; font-size: 15px;
+      letter-spacing: 0.1em; color: #ffcf5c;
+    }
+    .nd-count { font-family: var(--mono); font-size: 13.5px; color: var(--dim); }
+    .nd-body { padding: 0 14px 10px; }
+    .nd-row {
+      display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px;
+      padding: 6px 0; border-top: 1px solid rgba(255, 207, 92, 0.16);
+    }
+    .nd-row .nd-date {
+      flex: 0 0 auto; font-family: var(--mono); font-size: 13px; color: var(--dim);
+      font-variant-numeric: tabular-nums;
+    }
+    .nd-row .nd-head { flex: 1 1 320px; min-width: 0; font-size: 16px; line-height: 1.45;
+      color: var(--text); text-decoration: none; }
+    .nd-row .nd-head:hover { color: #ffcf5c; text-decoration: underline; }
+    .nd-row .nd-from { flex: 0 0 auto; font-family: var(--mono); font-size: 12px;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
+    .nd-tag {
+      flex: 0 0 auto; font-family: var(--mono); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase; border-radius: 3px; padding: 1px 6px;
+      border: 1px solid currentColor;
+    }
+    .nd-tag.k-break { color: #ff8f6b; }
+    .nd-tag.k-rpo   { color: #c9a0ff; }
+    .nd-tag.k-mil   { color: #ffcf5c; }
+    .nd-more { padding-top: 8px; font-family: var(--mono); font-size: 13px; color: var(--dim); }
+    /* Same chip in the chronological list, so the band and the page agree. */
+    .news-mil-tag {
+      font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+      color: #06101c; background: #ffcf5c; border-radius: 3px; padding: 1px 6px;
+    }
+
     .news-day {
       font-family: var(--mono); font-size: 14.5px; letter-spacing: 0.14em; text-transform: uppercase;
       color: var(--dim); margin: 22px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line);
@@ -193,12 +243,26 @@
     <div class="news-toolbar">
       <input type="search" id="news-filter" placeholder="Filter headlines…" autocomplete="off" aria-label="Filter headlines">
       <label class="news-cn-toggle"><input type="checkbox" id="news-cn-only"> China only</label>
+      <label class="news-cn-toggle mil"><input type="checkbox" id="news-mil-only"> Defence &amp; SSA only</label>
       <button type="button" class="news-btn" id="news-sort" title="Toggle sort order">↓ Newest first</button>
       <button type="button" class="news-btn" id="news-refresh" title="Pull the feeds again now">⟳ Refresh</button>
       <button type="button" class="news-btn" id="news-sources" title="Every site, newsletter and feed monitored for the ticker" aria-haspopup="dialog" aria-controls="news-src-modal">📡 Sources</button>
       <button type="button" class="news-btn primary" id="news-pdf-all" title="Download every archived headline as one chronological PDF">⬇ Download all (PDF)</button>
     </div>
     <div class="news-status" id="news-status"></div>
+
+    <!-- The domain the trackers on this site are actually for: break-ups,
+         close approaches, counterspace and military space, lifted out of the
+         chronological list.  A headline event otherwise sits three weeks of
+         routine launches down the page, which is how the Yaogan-50 and USA 32
+         fragmentations and the Kosmos 2612 approach went unnoticed here. -->
+    <details class="news-domain" id="news-domain" open>
+      <summary>
+        <span class="nd-title">&#9876; Military &#183; SSA/SDA &#183; ISR</span>
+        <span class="nd-count" id="news-domain-count"></span>
+      </summary>
+      <div class="nd-body" id="news-domain-body"></div>
+    </details>
 
     <div class="news-list" id="news-list">
       <div class="news-empty">Loading…</div>
@@ -214,8 +278,8 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="news-core.js?v=8"></script>
-  <script src="news-archive.js?v=3"></script>
+  <script src="news-core.js?v=9"></script>
+  <script src="news-archive.js?v=4"></script>
   <script src="nazar-bgm.js?v=4"></script>
   <script src="site-analytics.js?v=6"></script>
   <script src="mobile-menu.js?v=28"></script>
