@@ -556,7 +556,7 @@ function renderZones() {
     <tbody>${body}</tbody>
     <tfoot><tr>${cols.map((list, k) => `<td class="${k ? '' : 'zero'}">` +
       `<span class="lz-span">${list.length} ${list.length === 1 ? 'block' : 'blocks'}</span>` +
-      `<span class="lz-dur">${fmtSpan(sum(list))} in all</span></td>`).join('')}</tr></tfoot>
+      `<span class="lz-dur">${list.length ? fmtSpan(sum(list)) + ' in all' : 'none'}</span></td>`).join('')}</tr></tfoot>
   </table>`;
 }
 
