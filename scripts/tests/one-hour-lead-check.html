@@ -11,7 +11,14 @@
         pass that clears NOAA and MILSTAR survives one that clears Intelsat.
         The arithmetic has to balance: what the count says was cleared is what
         the note accounts for.
-     3. Cone-Waffles still works with the geometry lifted out into
+     3. The clear zone below the table is empty until Dust-Off is pressed, and
+        once it is, every block it prints is re-counted here: at the middle of
+        each block, the number of listed satellites this harness's own cone
+        test puts inside the cone has to be the number the block claims, and
+        the blocks have to tile the hour end to end with nothing left over.
+        A clear window that is not clear is the one error the page must not
+        make, so it is checked against something other than itself.
+     4. Cone-Waffles still works with the geometry lifted out into
         cone-geometry.js, and its link carries the cone it is showing. -->
 <pre id="out">running…</pre>
 <iframe id="f" style="width:1400px;height:900px;border:0"></iframe>
@@ -59,7 +66,9 @@ function geoAt(rec,ms){
 async function run(){
  try{
   const w=f.contentWindow, d=f.contentDocument;
-  for(let i=0;i<180 && !(w.__ohl && w.__ohl.ready() && !w.__ohl.scanning());i++) await wait(500);
+  // 16k objects over the hour, then every pass for the few hundred found: in a
+  // background tab that is minutes, not seconds.
+  for(let i=0;i<900 && !(w.__ohl && w.__ohl.ready() && !w.__ohl.scanning());i++) await wait(500);
   const o=w.__ohl;
   put('hook',!!o);
   put('scanFinished',!o.scanning());
@@ -140,6 +149,11 @@ async function run(){
     'HAWKEYE 360 CLUSTER 7A','TDRS 12'].every(n=>cls(n).keep));
   put('unknownIsKept',cls('OBJECT A').keep && cls('2022-023F').keep);
 
+  put('buttonReadsDustOff',o.dustLabel());
+  put('nothingIsExplainedUntilItIsPressed',o.note()==='');
+  put('clearZoneIsIdle',[o.zoneLede(),o.zoneRows().length,o.zoneHeads().length]);
+  put('clearZoneWaitsForTheButton',/Dust-Off/.test(o.zoneLede()) && o.zoneRows().length===0);
+
   const before=o.listed(), scaleBefore=o.cone().dmax;
   o.toggleDust();
   await wait(900);
@@ -163,9 +177,90 @@ async function run(){
   // pressing the button must not move the plot under the reader
   put('plotScaleUnchanged',o.cone().dmax===scaleBefore);
 
+  // --- 3. the clear zone -------------------------------------------------
+  put('buttonReadsBringThemBack',o.dustLabel());
+  const W=o.window(), blocks=o.blocks();
+  put('windowIsTheHour',W===3600000);
+  put('blockCount',blocks.length);
+
+  // the blocks have to tile [0, W] end to end: no gap, no overlap, nothing
+  // left over, and no two neighbours carrying the same count
+  let tiles=blocks.length>0 && blocks[0].from===0 && blocks[blocks.length-1].to===W;
+  let merged=true, totals=0;
+  for(let i=0;i<blocks.length;i++){
+    const b=blocks[i];
+    if(b.to<=b.from) tiles=false;
+    if(i && blocks[i-1].to!==b.from) tiles=false;
+    if(i && blocks[i-1].n===b.n) merged=false;
+    totals+=b.to-b.from;
+  }
+  put('blocksTileTheHour',tiles);
+  put('blocksSumToTheHour',[totals,W,totals===W]);
+  put('neighbouringBlocksDiffer',merged);
+
+  // every block's count, re-derived: at the middle of the block, how many of
+  // the listed satellites does THIS harness put inside the cone?
+  const listed=o.passes();
+  put('passesCoverTheListedSatellites',listed.length===after);
+  const countAt=t=>{ let n=0;
+    for(const e of listed){ const g=geoAt(e.rec,t);
+      if(g && insideVerticalCone(g[0],g[1],g[2],CONE)) n++; }
+    return n; };
+  let agree=0, real=0, mism=[], shortMism=0;
+  for(const b of blocks){
+    const n=countAt(T+(b.from+b.to)/2), long=b.to-b.from>=2000;
+    if(long) real++;
+    if(n===b.n){ if(long) agree++; }
+    else if(long) mism.push([b.from,b.to,b.to-b.from,b.n,n]);
+    else shortMism++;
+  }
+  // Blocks shorter than two seconds are left out of the assertion: the page
+  // bisects each boundary to a tenth of a second, so on a block of that order
+  // the midpoint can fall the other side of one.  They are counted, not hidden.
+  put('blockCountsVerifyIndependently',[agree,real]);
+  put('blockMismatches',mism.slice(0,6));
+  put('subSecondBlocksSkipped',[shortMism,blocks.length-real]);
+
+  // The clear blocks are the answer the page exists for, so they are not
+  // sampled once in the middle but swept: at every second of every one of
+  // them, nothing on the list may be inside the cone.
+  let swept=0, intruders=[];
+  for(const b of blocks.filter(x=>x.n===0)){
+    for(let t=b.from+250; t<b.to; t+=1000){
+      swept++;
+      const n=countAt(T+Math.min(t,b.to-250));
+      if(n) intruders.push([b.from,b.to,Math.round(t),n]);
+    }
+  }
+  put('clearBlocksSweptSecondBySecond',swept);
+  put('nothingIsInsideAClearBlock',intruders.length===0);
+  put('intruders',intruders.slice(0,6));
+
+  // the zero column is the answer the page exists for, so say what it holds
+  const clear=blocks.filter(b=>b.n===0);
+  put('clearBlocks',clear.length);
+  put('clearSeconds',Math.round(clear.reduce((a,b)=>a+(b.to-b.from),0)/1000));
+  put('ledeAgreesWithTheBlocks',
+    clear.length ? /Clear for/.test(o.zoneLede()) : /No part of it is clear/.test(o.zoneLede()));
+  put('lede',o.zoneLede());
+
+  // the table as the reader sees it: a column per count up to "6 or more",
+  // and each column as long as the blocks at that level
+  const zheads=o.zoneHeads(), zrows=o.zoneRows();
+  put('zoneColumns',zheads);
+  put('sevenColumnsUpToSixOrMore',zheads.length===7 && /none in the cone/.test(zheads[0]) && /6 or more/.test(zheads[6]));
+  const filled=k=>zrows.filter(r=>r[k]!=='').length;
+  const atLevel=k=>blocks.filter(b=>Math.min(b.n,6)===k).length;
+  put('eachColumnListsItsOwnBlocks',[0,1,2,3,4,5,6].map(k=>[filled(k),atLevel(k)]));
+  put('columnsMatchTheBlocks',[0,1,2,3,4,5,6].every(k=>filled(k)===atLevel(k)));
+  put('rowsAreAsLongAsTheLongestColumn',zrows.length===Math.max(...[0,1,2,3,4,5,6].map(atLevel)));
+  put('foot',o.zoneFoot());
+  put('firstRow0',zrows.length?zrows[0][0]:'');
+
   o.toggleDust();
   await wait(900);
   put('bringsThemBack',[o.dusted()===false,o.listed()===before,o.rows()===before]);
+  put('clearZoneEmptiesAgain',[o.zoneRows().length===0,/Dust-Off/.test(o.zoneLede()),o.dustLabel()]);
 
   // the cone is still editable on the page itself
   await o.setCone({angle:12});
@@ -173,7 +268,7 @@ async function run(){
   put('rescanWithANarrowerCone',[o.cone().angle,o.found()]);
   put('narrowerConeSeesFewer',o.found()<before);
 
-  // --- 3. Cone-Waffles after the extraction ------------------------------
+  // --- 4. Cone-Waffles after the extraction ------------------------------
   const cw=g.contentWindow, cwd=g.contentDocument;
   for(let i=0;i<60 && !/Catalogue:/.test(cwd.getElementById('cw-status').textContent);i++) await wait(500);
   put('coneWafflesStatus',cwd.getElementById('cw-status').textContent);

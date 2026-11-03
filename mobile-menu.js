@@ -54,8 +54,8 @@
     //   'Hitesh Gala is a Space Researcher and<br>' +
     //   'a Defence Fellow at <a href="https://takshashila.org.in" target="_blank" rel="noopener noreferrer">www.takshashila.org.in</a>'
     credit.innerHTML =
-      'Hitesh Gala is a Defence and<br>' +
-      'Space Researcher';
+      'Hitesh Gala is a Defence Fellow<br>' +
+      'and a Space Researcher';
     if (logo.parentElement === document.body) document.body.appendChild(credit);
     else logo.insertAdjacentElement('afterend', credit);
   }

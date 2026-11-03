@@ -31,6 +31,16 @@ const LEAD_TRACK_MIN = 75;                 // hover track: at most this far past
 const LEAD_EXIT_STEP_MS = 20000;           // walk out of the cone in 20-second steps…
 const LEAD_EXIT_MAX_MS  = 3 * 3600000;     // …and stop looking after three hours
 const LEAD_R         = 260;                // plot radius in SVG units (viewBox ±300)
+const LEAD_WINDOW_MS = LEAD_MIN * 60000;   // the hour the whole page is about
+const ZONE_MAX       = 6;                  // clear zone: the last column is "6 or more"
+// Pass boundaries are bisected to a tenth of a second rather than the whole
+// second the two columns are rounded to.  The blocks come from two different
+// satellites' edges landing next to each other, so a second of slack there
+// mis-counts any block shorter than that - and the table's arithmetic is only
+// worth printing if the short blocks are right too.
+const ZONE_RES_MS    = 100;
+const ZONE_HEADS = ['Clear — none in the cone', '1 satellite', '2 satellites', '3 satellites',
+                    '4 satellites', '5 satellites', '6 or more'];
 const IST_OFFSET_MS  = 5.5 * 3600000;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const WORLD_MAP_URL  = 'data/countries-110m.geojson?v=2';
@@ -223,6 +233,102 @@ function leadExit(c, rec, t0, entry) {
   return -1;
 }
 
+// Every stretch of the hour the satellite spends inside the cone, as
+// [in, out] pairs in milliseconds after t0, the last one closing at -1 if it
+// is still inside when the hour runs out.
+//
+// leadEntry stops at the first entry and leadExit at the end of that one pass,
+// which is all the two columns need.  The clear zone needs the rest: a pass it
+// never saw would show up there as quiet sky, and a clear window that is not
+// clear is the one error this page must not make.
+//
+// It walks the same 60-second grid the scan does, and resolves each minute the
+// cheaper of two ways.  When the minute's two ends disagree the
+// boundary is bisected, as leadEntry and leadExit bisect theirs - one crossing
+// per minute, which is the assumption those two already make.  When both ends
+// are outside but a whole pass could have fitted between them, the minute is
+// walked second by second instead, because there is no crossing to bisect
+// towards; that is the conservative distance bound the scan uses, and it is
+// how a two-second graze is still found.  A minute whose two ends are both
+// inside is left alone: a dip out and straight back in within one minute is a
+// grazing geometry neither this nor the entry scan can resolve, and the error
+// it leaves counts the satellite as present, which is the safe way round for a
+// clear zone.
+function leadPasses(c, rec, t0, gmsts) {
+  const passes = [];
+  let open = null, prevIn = false, prevEcf = null;
+  const mark = (ms, isIn) => {
+    if (isIn && open === null) open = ms - t0;
+    else if (!isIn && open !== null) { passes.push([open, ms - t0]); open = null; }
+  };
+  // Narrow a known crossing, keeping an instant on each side of it.
+  const cross = (inMs, outMs) => {
+    let a = inMs, b = outMs;
+    while (Math.abs(b - a) > ZONE_RES_MS) {
+      const mid = (a + b) / 2;
+      if (inConeAt(c, rec, mid)) a = mid; else b = mid;
+    }
+    return { in: a, out: b };
+  };
+  for (let i = 0; i < gmsts.length; i++) {
+    const ms = t0 + i * LEAD_STEP_MS;
+    const pv = satellite.propagate(rec, new Date(ms));
+    if (!pv || !pv.position || !Number.isFinite(pv.position.x)) { prevEcf = null; continue; }
+    // The same test inConeAt makes, off the propagation already in hand.
+    const cur = satellite.eciToEcf(pv.position, gmsts[i]);
+    let curIn = false;
+    if (nearCone(c, cur, COARSE_KM)) {
+      const g = satellite.eciToGeodetic(pv.position, gmsts[i]);
+      curIn = !!coneHit(c.frame, c.apex, c.axis,
+        geodeticToECEF(satellite.degreesLat(g.latitude), satellite.degreesLong(g.longitude), g.height),
+        c.inp.angle, c.inp.height);
+    }
+    const back = ms - LEAD_STEP_MS;
+    if (prevEcf && prevIn !== curIn) {
+      if (curIn) mark(cross(ms, back).in, true); else mark(cross(back, ms).out, false);
+    } else if (prevEcf && !prevIn && !curIn && nearCone(c,
+        { x: (prevEcf.x + cur.x) / 2, y: (prevEcf.y + cur.y) / 2, z: (prevEcf.z + cur.z) / 2 },
+        mag(sub(cur, prevEcf)) / 2 + COARSE_KM)) {
+      for (let t = back + 1000; t < ms; t += 1000) mark(t, inConeAt(c, rec, t));
+    }
+    mark(ms, curIn);
+    prevIn = curIn;
+    prevEcf = cur;
+  }
+  if (open !== null) passes.push([open, -1]);
+  return passes;
+}
+
+// How many of the given satellites are inside the cone at each instant of the
+// window, as blocks that tile [0, windowMs] end to end with no gap.  Built
+// from the passes rather than by sampling the sky again - the intervals are
+// already known to the second - by sorting the entries and exits into one
+// stream and walking it.  Runs with the same count are merged, so a satellite
+// leaving at the instant another arrives does not split a block in two.
+function occupancy(sats, windowMs) {
+  const ev = [];
+  for (const s of sats) for (const [a, b] of s.passes) {
+    const lo = Math.max(0, a), hi = Math.min(windowMs, b < 0 ? windowMs : b);
+    if (hi > lo) ev.push([lo, 1], [hi, -1]);
+  }
+  ev.sort((p, q) => p[0] - q[0]);
+  const blocks = [];
+  let n = 0, at = 0, i = 0;
+  const upTo = to => {
+    if (to <= at) return;
+    const last = blocks[blocks.length - 1];
+    if (last && last.n === n) last.to = to; else blocks.push({ from: at, to, n });
+    at = to;
+  };
+  while (i < ev.length) {
+    const t = ev[i][0];
+    upTo(t);
+    while (i < ev.length && ev[i][0] === t) n += ev[i++][1];
+  }
+  upTo(windowMs);
+  return blocks;
+}
+
 // ==========================================================================
 // The polar map
 // ==========================================================================
@@ -372,10 +478,10 @@ function renderRoster() {
     (inside ? ` · ${inside} already inside at the start` : '') +
     (dusted ? ` · <b>${cleared.toLocaleString('en-US')}</b> dusted off` : '');
 
-  if (!dusted) {
-    $('dust-note').innerHTML = 'dust-off clears the satellites that only carry traffic or watch the weather, ' +
-      'and keeps everything that can see the ground or listen to it.';
-  } else {
+  // Nothing is said about dust-off until it is pressed; then the note accounts
+  // for every satellite the count says went.
+  $('dust-note').innerHTML = '';
+  if (dusted) {
     const byClass = new Map();
     for (const s of L.all) if (!s.keep) byClass.set(s.purpose, (byClass.get(s.purpose) || 0) + 1);
     const rank = k => { const i = DUST_FIRST.indexOf(k); return i < 0 ? DUST_FIRST.length : i; };
@@ -397,6 +503,61 @@ function renderRoster() {
     `<tr><td colspan="9" class="empty">${dusted
       ? 'Every satellite in this hour was a pure carrier — nothing left after the dust-off.'
       : 'No satellite enters the cone in this hour.'}</td></tr>`;
+
+  renderZones();
+}
+
+// ==========================================================================
+// The clear zone
+// ==========================================================================
+
+// The hour broken into blocks by how many satellites are inside the cone at
+// once, a column per count.  Dust-Off is what fills it in: the question is
+// about the satellites that can see the ground or listen to it, so asked over
+// a list that still carries the communications and weather satellites it has
+// no meaning, and the table stays empty rather than answering the wrong one.
+function renderZones() {
+  const lede = $('lz-lede'), host = $('lz-table');
+  if (!leadCtx || !dusted) {
+    lede.innerHTML = 'Press <b>Dust-Off</b> to fill this in.';
+    host.innerHTML = '';
+    return;
+  }
+
+  const { T, sats } = leadCtx;
+  const blocks = occupancy(sats, LEAD_WINDOW_MS);
+  const cols = Array.from({ length: ZONE_MAX + 1 }, () => []);
+  for (const b of blocks) cols[Math.min(b.n, ZONE_MAX)].push(b);
+
+  const clock = ms => clockAt(T + ms).slice(0, 8);
+  // Two satellites' edges can land a fraction of a second apart, and the hour
+  // is tiled with no gaps, so some blocks really are that short.
+  const fmtSpan = ms => (ms < 1000 ? '< 1 s' : fmtLead(ms));
+  const span = b => `<span class="lz-span">${clock(b.from)}–${clock(b.to)}</span>` +
+                    `<span class="lz-dur">${fmtSpan(b.to - b.from)}</span>`;
+  const sum = list => list.reduce((a, b) => a + (b.to - b.from), 0);
+
+  const clear = cols[0], longest = clear.reduce((a, b) => (!a || b.to - b.from > a.to - a.from ? b : a), null);
+  lede.innerHTML =
+    `The hour from <b>${clock(0)}</b> to <b>${clock(LEAD_WINDOW_MS)} ${fZone.value}</b>, over the ` +
+    `<b>${sats.length.toLocaleString('en-US')}</b> satellites left in the list — the ones that can see the ` +
+    `ground or listen to it. ` + (longest
+      ? `<span class="clear">Clear for ${fmtLead(sum(clear))}</span> of it, in ` +
+        `${clear.length} ${clear.length === 1 ? 'block' : 'blocks'}; the longest is ` +
+        `<span class="clear">${fmtLead(longest.to - longest.from)}</span> from ${clock(longest.from)}.`
+      : `<span class="busy">No part of it is clear</span> — at least one of them is inside the cone at ` +
+        `every instant.`);
+
+  const rows = Math.max(...cols.map(c => c.length));
+  const body = Array.from({ length: rows }, (_, r) => '<tr>' + cols.map((list, k) =>
+    `<td class="${k ? '' : 'zero'}">${list[r] ? span(list[r]) : ''}</td>`).join('') + '</tr>').join('');
+  host.innerHTML = `<table>
+    <thead><tr>${ZONE_HEADS.map((h, k) => `<th class="${k ? '' : 'zero'}">${h}</th>`).join('')}</tr></thead>
+    <tbody>${body}</tbody>
+    <tfoot><tr>${cols.map((list, k) => `<td class="${k ? '' : 'zero'}">` +
+      `<span class="lz-span">${list.length} ${list.length === 1 ? 'block' : 'blocks'}</span>` +
+      `<span class="lz-dur">${fmtSpan(sum(list))} in all</span></td>`).join('')}</tr></tfoot>
+  </table>`;
 }
 
 // The satellite's ground track from T (to a little past its entry), faint,
@@ -476,7 +637,7 @@ function applyDust() {
 dustBtn.addEventListener('click', () => {
   dusted = !dusted;
   dustBtn.classList.toggle('on', dusted);
-  dustBtn.textContent = dusted ? '↺ bring them back' : '🧹 dust-off';
+  dustBtn.textContent = dusted ? '↺ Bring Them Back' : '🧹 Dust-Off';
   dustBtn.title = dusted
     ? 'Put the communications, broadband and weather satellites back in the list'
     : 'Clear the satellites that only carry traffic or watch the weather';
@@ -510,6 +671,7 @@ async function run() {
   leadInfo.innerHTML = LEAD_INFO_HINT;
   $('lead-count').textContent = '';
   $('dust-note').textContent = '';
+  renderZones();
 
   const inp = formInputs();
   if (!inp) { leadProgress('Enter a valid latitude, longitude, half-angle and height for the cone.'); return; }
@@ -561,8 +723,12 @@ async function run() {
     const pv = satellite.propagate(f.t.rec, new Date(T));
     if (!pv || !pv.position) continue;
     const g = satellite.eciToGeodetic(pv.position, gmsts[0]), v = pv.velocity, cls = classify(f.t.name);
-    all.push({ name: f.t.name, noradId: f.t.noradId, rec: f.t.rec, entry: f.entry,
-      exit: leadExit(c, f.t.rec, T, f.entry),
+    // The pass the two columns describe is the first of these; its end is the
+    // exit, unless the hour runs out first and leadExit has to reach past it.
+    const passes = leadPasses(c, f.t.rec, T, gmsts);
+    const firstOut = passes.length ? passes[0][1] : -1;
+    all.push({ name: f.t.name, noradId: f.t.noradId, rec: f.t.rec, entry: f.entry, passes,
+      exit: firstOut >= 0 ? firstOut : leadExit(c, f.t.rec, T, f.entry),
       lat: satellite.degreesLat(g.latitude), lon: satellite.degreesLong(g.longitude), alt: g.height,
       speed: Math.hypot(v.x, v.y, v.z), period: 2 * Math.PI / f.t.rec.no,
       purpose: cls.label, keep: cls.keep, color: leadColor(f.entry) });
@@ -625,6 +791,7 @@ $('f-now').addEventListener('click', () => { fWhen.value = toField(Date.now()); 
 fZone.addEventListener('change', () => {
   if (!leadCtx) return;
   $('lead-sub').innerHTML = leadSubtitle(leadCtx.c, leadCtx.T, leadCtx.country);
+  renderZones();
 });
 
 // Cone-Waffles hands the cone and the moment over in the query string; a
@@ -663,6 +830,18 @@ window.__ohl = {
   // position for itself instead of trusting this page's own cone test
   entries: () => (leadCtx ? leadCtx.sats.map(s => ({ name: s.name, norad: s.noradId, rec: s.rec, entry: s.entry, exit: s.exit })) : []),
   cone: () => (leadCtx ? { ...leadCtx.c.inp, tilt: leadCtx.c.tilt, T: leadCtx.T, dmax: leadCtx.dmax } : null),
+  // the clear zone, three ways: the blocks it is computed from, every listed
+  // satellite's passes so a harness can re-derive them, and the table as the
+  // reader actually sees it
+  window: () => LEAD_WINDOW_MS,
+  blocks: () => (leadCtx ? occupancy(leadCtx.sats, LEAD_WINDOW_MS) : []),
+  passes: () => (leadCtx ? leadCtx.sats.map(s => ({ name: s.name, rec: s.rec, passes: s.passes })) : []),
+  zoneHeads: () => [...document.querySelectorAll('#lz-table thead th')].map(t => t.textContent),
+  zoneRows: () => [...document.querySelectorAll('#lz-table tbody tr')]
+    .map(tr => [...tr.children].map(td => td.textContent)),
+  zoneFoot: () => [...document.querySelectorAll('#lz-table tfoot td')].map(td => td.textContent),
+  zoneLede: () => $('lz-lede').textContent,
+  dustLabel: () => dustBtn.textContent,
   subtitle: () => $('lead-sub').textContent,
   note: () => $('dust-note').textContent,
   count: () => $('lead-count').textContent,

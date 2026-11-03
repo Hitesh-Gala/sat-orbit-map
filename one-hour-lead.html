@@ -17,9 +17,14 @@
   <link rel="stylesheet" href="styles.css?v=52">
   <style>
     /* One Hour Lead — a page, not a pop-up.  The plot is the whole left half
-       and the roster the right, both filling the viewport under a fixed head. */
-    body.page-lead { overflow: hidden; }
-    .lead-page { position: fixed; inset: 0; display: flex; flex-direction: column; color: var(--text); }
+       and the roster the right, and together they fill the first screen; the
+       clear zone follows below it, so the page scrolls and the first screen is
+       a hair short of the viewport to let the next heading show.  styles.css
+       holds every page
+       at `html, body { height: 100%; overflow: hidden }`, so a page with
+       anything below the fold has to say so, as the other scrolling ones do. */
+    body.page-lead { overflow: auto; }
+    .lead-page { height: calc(100vh - 40px); display: flex; flex-direction: column; color: var(--text); }
 
     .lead-head { flex: 0 0 auto; padding: 12px 18px 10px; border-bottom: 1px solid var(--line); }
     .lead-titlerow { display: flex; align-items: baseline; gap: 14px; }
@@ -120,15 +125,50 @@
     #lead-svg .lm-hl       { fill: none; stroke: #ffffff; stroke-width: 2; }
     #lead-svg .lm-entry    { fill: #06101c; stroke: #00ff88; stroke-width: 2; }
 
+    /* The clear zone - the hour in blocks, a column per number of satellites
+       inside the cone at once.  Empty until Dust-Off is pressed. */
+    .lead-zones { padding: 10px 18px 28px; border-top: 1px solid var(--line); }
+    .lz-title { margin: 0 0 5px; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 17px;
+      letter-spacing: .06em; color: var(--accent); }
+    .lz-lede { font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--dim); }
+    .lz-lede b { color: var(--text); font-weight: 600; }
+    .lz-lede .clear { color: #67e8a4; font-weight: 600; }
+    .lz-lede .busy { color: #ffb4b4; font-weight: 600; }
+    .lz-table { margin-top: 10px; max-height: 62vh; overflow: auto;
+      border: 1px solid var(--line); border-radius: 6px; }
+    .lz-table:empty { display: none; }
+    .lz-table table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 11.5px; }
+    .lz-table th { position: sticky; top: 0; z-index: 1; padding: 6px 9px; text-align: left;
+      vertical-align: bottom; background: var(--bg); border-bottom: 1px solid var(--line);
+      color: var(--accent); font-weight: 600; }
+    .lz-table td { padding: 4px 9px; white-space: nowrap; vertical-align: top;
+      border-bottom: 1px solid rgba(110, 200, 255, .08); }
+    .lz-table .zero { color: #67e8a4; }
+    .lz-table td.zero { background: rgba(103, 232, 164, .07); }
+    .lz-table tfoot td { position: sticky; bottom: 0; background: var(--bg);
+      border-top: 1px solid var(--line); border-bottom: none; }
+    /* The zero column tint is translucent, and a translucent sticky foot lets
+       the last row show through it - so it is painted as an image over the
+       page colour rather than instead of it. */
+    .lz-table tfoot td.zero { background-color: var(--bg);
+      background-image: linear-gradient(rgba(103, 232, 164, .07), rgba(103, 232, 164, .07)); }
+    .lz-span { display: block; font-variant-numeric: tabular-nums; }
+    .lz-dur { display: block; color: var(--dim); font-variant-numeric: tabular-nums; }
+    .lz-table td.zero .lz-dur { color: #9fe8c4; }
+
     /* Same call the other self-contained pages make: below this there is no
        room for the credit beside a full-width header. */
     @media (max-width: 900px) {
       .logo-credit { display: none; }
       .lead-titlerow, .lead-sub { padding-right: 76px; }
     }
+    @media (max-width: 1240px) {
+      /* Seven columns of times outrun a narrow screen, so this one table
+         keeps a horizontal scroller of its own. */
+      .lz-table { overflow-x: auto; }
+    }
     @media (max-width: 1100px) {
-      body.page-lead { overflow: auto; }
-      .lead-page { position: static; inset: auto; min-height: 100vh; }
+      .lead-page { height: auto; min-height: 100vh; }
       .lead-body { display: flex; flex-direction: column; }
       .lead-plot svg { flex: none; height: min(92vw, 70vh); }
       .lead-table { flex: none; max-height: 60vh; }
@@ -139,6 +179,7 @@
       .lead-head { padding: 36px 12px 8px; }
       .lead-body { padding: 10px 12px 14px; }
       .lead-title { font-size: 18px; }
+      .lead-zones { padding: 10px 12px 24px; }
     }
   </style>
 </head>
@@ -194,7 +235,7 @@
       <div class="lead-side">
         <div class="lead-info" id="lead-info"></div>
         <div class="lead-bar">
-          <button type="button" class="dust-btn" id="dust-off" title="Clear the satellites that only carry traffic or watch the weather">🧹 dust-off</button>
+          <button type="button" class="dust-btn" id="dust-off" title="Clear the satellites that only carry traffic or watch the weather">🧹 Dust-Off</button>
           <span class="lead-count" id="lead-count"></span>
           <span class="dust-note" id="dust-note"></span>
         </div>
@@ -208,11 +249,19 @@
     </div>
   </div>
 
+  <!-- Below the fold: when is nobody looking.  Only Dust-Off fills this in,
+       and only over the satellites it leaves in the list. -->
+  <section class="lead-zones" id="lead-zones">
+    <h2 class="lz-title">Clear zone</h2>
+    <div class="lz-lede" id="lz-lede">Press <b>Dust-Off</b> to fill this in.</div>
+    <div class="lz-table" id="lz-table"></div>
+  </section>
+
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=11"></script>
   <script src="cone-geometry.js?v=1"></script>
-  <script src="one-hour-lead.js?v=2"></script>
+  <script src="one-hour-lead.js?v=3"></script>
   <script src="site-analytics.js?v=6"></script>
-  <script src="mobile-menu.js?v=27"></script>
+  <script src="mobile-menu.js?v=28"></script>
 </body>
 </html>
