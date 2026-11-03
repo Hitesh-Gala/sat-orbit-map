@@ -38,8 +38,12 @@ window.NazarNews = (function () {
   // whole pull until it returned 429.  Whatever is pulled last is what gets
   // dropped on a thin day.
   //
-  // So the order is not fixed: `pin: true` holds the China block at the front,
-  // because that is the point of the site, and everything after it ROTATES by
+  // So the order is not fixed: `pin: true` holds the China block AND the four
+  // SSA backfill searches at the front.  On 03 Nov 2026 only 23 of 35 feeds
+  // answered and every one of those searches was in the dropped tail - which is
+  // how Yaogan-50 and USA 32 stayed missing from the very pull meant to find
+  // them.  Whatever a thin day costs, it must not cost the site its subject.
+  // Everything after the pinned block ROTATES by
   // ROTATE_STRIDE places on each refresh.  A fixed order meant the tail of this
   // list was permanently the part that never answered, and the list has grown
   // past thirty feeds — a thin pull now reaches a third of it.  Rotating costs
@@ -117,24 +121,24 @@ window.NazarNews = (function () {
     // catalogue's language for stories written in the press's language is why
     // these events were missing.
     { url: 'https://news.google.com/rss/search?q=(satellite+OR+spacecraft)+("proximity+operations"+OR+"rendezvous+and+proximity"+OR+co-orbital+OR+shadowing+OR+stalked+OR+"close+approach"+OR+dogfighting+OR+"inspector+satellite")+when:1y&hl=en-US&gl=US&ceid=US:en',
-      source: 'Google News · Proximity operations', cat: 'SSA', google: true },
+      source: 'Google News · Proximity operations', cat: 'SSA', google: true , pin: true },
     // Named series, because a headline often names the object and nothing
     // else: "China's Shijian-31 satellite is sweeping GEO using a unique
     // orbit" carries no proximity word at all.
     { url: 'https://news.google.com/rss/search?q=(shijian+OR+"TJS"+OR+shiyan+OR+yaogan+OR+luch+OR+olymp+OR+kosmos+OR+cosmos)+satellite+(maneuver+OR+manoeuvre+OR+approach+OR+inspect+OR+shadow+OR+rendezvous+OR+geo)+when:1y&hl=en-US&gl=US&ceid=US:en',
-      source: 'Google News · Shadowing & inspection', cat: 'SSA', google: true },
+      source: 'Google News · Shadowing & inspection', cat: 'SSA', google: true , pin: true },
     { url: 'https://news.google.com/rss/search?q=(satellite+OR+"rocket+body"+OR+spacecraft)+(breakup+OR+"break+up"+OR+"broke+apart"+OR+fragmentation+OR+"debris+cloud"+OR+collision)+when:1y&hl=en-US&gl=US&ceid=US:en',
-      source: 'Google News · Break-ups & collisions', cat: 'SSA', google: true },
+      source: 'Google News · Break-ups & collisions', cat: 'SSA', google: true , pin: true },
     // Bare "ASAT" is left out on purpose: it matched a person's surname and
     // pulled an Amnesty International story about a detained entrepreneur into
     // a space archive.
     { url: 'https://news.google.com/rss/search?q=("anti-satellite"+OR+counterspace+OR+"space+weapon"+OR+"orbital+warfare"+OR+"satellite+jamming"+OR+"GPS+spoofing"+OR+"ASAT+test")+when:1y&hl=en-US&gl=US&ceid=US:en',
-      source: 'Google News · Counterspace', cat: 'SSA', google: true },
+      source: 'Google News · Counterspace', cat: 'SSA', google: true , pin: true },
     // Pixxel publishes on a Webflow site with no feed of any kind, and its
     // LinkedIn and X accounts are not readable by a web page, so the company
     // is followed through what the press writes about it instead.
     { url: 'https://news.google.com/rss/search?q=Pixxel+(satellite+OR+hyperspectral+OR+space+OR+Firefly)+when:1y&hl=en-US&gl=US&ceid=US:en',
-      source: 'Google News · Pixxel', cat: 'Press', google: true },
+      source: 'Google News · Pixxel', cat: 'Press', google: true , pin: true },
     // ---- Orbital events anywhere ----------------------------------------
     { url: 'https://news.google.com/rss/search?q=satellite+(breakup+OR+"break+up"+OR+fragmentation+OR+debris+OR+collision+OR+anomaly)+when:30d&hl=en-US&gl=US&ceid=US:en',
       source: 'Google News · Orbital events', cat: 'Press', google: true },
@@ -193,7 +197,11 @@ window.NazarNews = (function () {
   // Rendezvous and proximity operations — one satellite closing on another,
   // whoever owns it.  Kept separate from EVENT_RE because nothing breaks: the
   // story is that something came close on purpose.
-  const RPO_RE = /\b(proximity\s+operations?|rendezvous|co-?orbital|non-?cooperative|shadow(?:ing|ed|s|er)?|stalk(?:ing|ed|s|er)?|tailing|dogfight(?:ing|s)?|inspector\s+satellite|satellite\s+inspect(?:or|ion)|close\s+approach(?:es)?|loiter(?:ing)?|sub-?satellite|grappl(?:e|ing)|servicing\s+mission)\b/i;
+  // `rendezvous` on its own is not this subject: it caught "China Plans 'Two
+  // Launches, Lunar Orbit Rendezvous' to Land Taikonauts" (mission architecture)
+  // and "Rendezvous Robotics Raises $20M" (a company's name).  Paired with
+  // DEFENCE_RE below, MANOEUVRE_RE still catches a real military rendezvous.
+  const RPO_RE = /\b(proximity\s+operations?|rendezvous\s+(?:and|with)|co-?orbital|non-?cooperative|shadow(?:ing|ed|s|er)?|stalk(?:ing|ed|s|er)?|tailing|dogfight(?:ing|s)?|inspector\s+satellite|satellite\s+inspect(?:or|ion)|close\s+approach(?:es)?|loiter(?:ing)?|sub-?satellite|grappl(?:e|ing)|servicing\s+mission)\b/i;
 
   // Military space, space domain awareness and ISR.  Space-coupled on purpose:
   // jamming or targeting on the ground is not this page's business.  The named
@@ -211,7 +219,22 @@ window.NazarNews = (function () {
   // Notable orbital events — a breakup, collision or failure leads the ticker
   // even when newer routine items exist.  Titles only: descriptions mention
   // debris in passing far too often.
-  const EVENT_RE = /\b(break[\s-]?up|breaks?\s+up|broke\s+up|breaking\s+up|fragmentation|fragments?|debris|collision|collides?|collided|explosion|exploded|anomaly|malfunction|failure|fails?|failed|lost\s+contact|re-?entry|de-?orbit(?:s|ed|ing)?)\b/i;
+  // An event is something that HAPPENED to an object, not a word a business
+  // story mentions.  The first cut matched bare `debris`, `fragments`,
+  // `failure` and `reentry`, and on a live archive of 190 headlines it called
+  // 16 items break-ups of which almost none were: a 6.9M funding round for a
+  // reentry vehicle, a conference panel on debris, university research into
+  // collision risk, a launch carrying a reentry capsule.  Those then inherited
+  // the extended ticker window below and would have squatted in it for four
+  // months, which is the opposite of highlighting an event.  So the nouns are
+  // coupled to something happening - `debris found`, `debris cloud`,
+  // `43 fragments`, `fragments tracked` - and NOT_EVENT_RE throws out the
+  // money-and-plans vocabulary that survives that.
+  const EVENT_RE = /\b(break[\s-]?up|breaks?\s+up|broke\s+(?:up|apart)|breaking\s+up|disintegrat(?:e|es|ed|ion)|fragmentation|fragments?\s+(?:tracked|catalogued|detected)|\d+\s+fragments?|debris\s+(?:cloud|field|from|found|discovered|recovered|fell|lands?|landed)|shed(?:s|ding)?\s+debris|collision|collides?|collided|explosion|exploded|anomaly|malfunction(?:s|ed)?|lost\s+contact|went\s+silent|re-?enter(?:s|ed|ing)|de-?orbited|fell\s+(?:to\s+earth|back)|crashed)\b/i;
+
+  // Money, plans, panels and coursework.  A story about building the capability
+  // to clear debris is not a debris event.
+  const NOT_EVENT_RE = /\b(rais(?:e|es|ed|ing)\s+[€£$\d]|[€£$]\d+(?:\.\d+)?\s*(?:m|bn|million|billion)|series\s+[a-f]\b|funding|investment|investors?|valuation|acquisitions?|aims?\s+to|plans?\s+to|race\s+to|seeks?\s+to|to\s+(?:build|tackle|clean|reduce|develop|remove|prevent)|startup|speakers?|panel|summit|conference|calls?\s+for|urges?|researchers?|study|students?|guidelines?|new\s+policy)/i;
 
   // =======================================================================
   // Small helpers
@@ -257,7 +280,10 @@ window.NazarNews = (function () {
     return it.cat === 'China' || CHINA_RE.test((it.title || '') + ' ' + (it.desc || ''));
   }
 
-  function isEventItem(it) { return EVENT_RE.test(it.title || ''); }
+  function isEventItem(it) {
+    const t = it.title || '';
+    return EVENT_RE.test(t) && !NOT_EVENT_RE.test(t);
+  }
 
   // The military / SSA / ISR domain — what the section on the archive page
   // collects, what the ticker promotes, and what the archive trim protects.
@@ -593,7 +619,7 @@ window.NazarNews = (function () {
   }
 
   return {
-    FEEDS, PROXIES, pullOrder, CHINA_RE, DEFENCE_RE, RPO_RE, EVENT_RE,
+    FEEDS, PROXIES, pullOrder, CHINA_RE, DEFENCE_RE, RPO_RE, EVENT_RE, NOT_EVENT_RE,
     ARCHIVE_START, TICKER_MAX, TICKER_WINDOW_DAYS, TICKER_EVENT_DAYS, TICKER_EVENT_MAX,
     esc, cleanText, hostOf, fmtShort, fmtLong, fmtDayKey, fmtDayLabel,
     isChinaItem, isEventItem, isRpoItem, isDomainItem, isMajorItem, domainTag,
