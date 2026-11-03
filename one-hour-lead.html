@@ -94,7 +94,7 @@
 
     .lead-table { flex: 1; min-height: 0; overflow: auto; border: 1px solid var(--line); border-radius: 6px; }
     .lead-table table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
-    .lead-table th { position: sticky; top: 0; z-index: 1; padding: 6px 8px; text-align: left; white-space: nowrap;
+    .lead-table th { position: sticky; top: 0; z-index: 1; padding: 6px 8px; text-align: left; vertical-align: bottom;
       background: var(--bg); border-bottom: 1px solid var(--line); color: var(--accent); font-weight: 600; }
     .lead-table td { padding: 4px 8px; white-space: nowrap; border-bottom: 1px solid rgba(110, 200, 255, .08); }
     .lead-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
@@ -200,7 +200,7 @@
         </div>
         <div class="lead-table">
           <table>
-            <thead><tr><th>#</th><th>Name</th><th>NORAD</th><th>Alt km</th><th>km/s</th><th>Period min</th><th>Enters in</th><th>Purpose</th></tr></thead>
+            <thead><tr><th>#</th><th>Name</th><th>NORAD</th><th>Alt km</th><th>km/s</th><th>Period min</th><th>Enters in</th><th>Goes out</th><th>Purpose</th></tr></thead>
             <tbody id="lead-rows"></tbody>
           </table>
         </div>
@@ -211,7 +211,7 @@
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
   <script src="tle-loader.js?v=11"></script>
   <script src="cone-geometry.js?v=1"></script>
-  <script src="one-hour-lead.js?v=1"></script>
+  <script src="one-hour-lead.js?v=2"></script>
   <script src="site-analytics.js?v=6"></script>
   <script src="mobile-menu.js?v=27"></script>
 </body>

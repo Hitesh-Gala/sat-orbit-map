@@ -94,6 +94,36 @@ async function run(){
   put('entryTimesVerifyIndependently',inAt===checked && outBefore===late);
   put('misses',misses.slice(0,3));
 
+  // The "Goes out" column, the same way: inside 5 s before the instant it
+  // names, outside 5 s after, and never before the satellite got in.
+  let inBefore=0, outAfter=0, ordered=0, exits=0, stillIn=0, exitMisses=[];
+  for(const e of entries){
+    if(e.exit<0){ stillIn++; continue; }
+    exits++;
+    if(e.exit>e.entry) ordered++;
+    const a=geoAt(e.rec,T+e.exit-5000), b=geoAt(e.rec,T+e.exit+5000);
+    const okIn=a&&insideVerticalCone(a[0],a[1],a[2],CONE);
+    const okOut=b&&!insideVerticalCone(b[0],b[1],b[2],CONE);
+    if(okIn) inBefore++;
+    if(okOut) outAfter++;
+    if(!okIn||!okOut) exitMisses.push([e.name,e.entry,e.exit,okIn,okOut]);
+  }
+  put('everySatelliteHasAnExit',exits+stillIn===entries.length);
+  put('stillInsideAfterThreeHours',stillIn);
+  put('insideFiveSecondsBeforeTheExit',[inBefore,exits]);
+  put('outsideFiveSecondsAfterTheExit',[outAfter,exits]);
+  put('exitAlwaysAfterEntry',[ordered,exits]);
+  put('exitTimesVerifyIndependently',inBefore===exits && outAfter===exits && ordered===exits);
+  put('exitMisses',exitMisses.slice(0,3));
+
+  // the column has to be in the table, next to "Enters in"
+  const heads=[...d.querySelectorAll('thead th')].map(h=>h.textContent);
+  put('columns',heads);
+  put('goesOutSitsNextToEntersIn',heads.indexOf('Goes out')===heads.indexOf('Enters in')+1);
+  const cells=[...d.querySelectorAll('tr[data-i]')[0].children].map(c=>c.textContent);
+  put('firstRow',cells);
+  put('cellsMatchTheHeadings',cells.length===heads.length);
+
   // --- 2. dust-off -------------------------------------------------------
   put('classifications',['MILSTAR 5','SKYNET 5A','DMSP 5D-3 F18','NOAA 19','INTELSAT 901',
       'STARLINK-1007','ONEWEB-0012','QIANFAN-16','COSMOS 2612','ICEYE-X36','YAOGAN-35 05C',

@@ -28,6 +28,8 @@ const {
 const LEAD_MIN       = 60;
 const LEAD_STEP_MS   = 60000;
 const LEAD_TRACK_MIN = 75;                 // hover track: at most this far past T
+const LEAD_EXIT_STEP_MS = 20000;           // walk out of the cone in 20-second steps…
+const LEAD_EXIT_MAX_MS  = 3 * 3600000;     // …and stop looking after three hours
 const LEAD_R         = 260;                // plot radius in SVG units (viewBox ±300)
 const IST_OFFSET_MS  = 5.5 * 3600000;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -80,7 +82,7 @@ const CLASSES = [
 
   // --- Military imaging and radar reconnaissance ------------------------
   [/^USA[ -]\d|^NROL|LACROSSE|\bONYX\b|\bMISTY\b|\bKH-\d|^OFEQ|^OFEK|TECSAR|^EROS[ -]|HELIOS [12]|^CSO-|SAR-LUPE|^SARAH[ -]|KONDOR|PERSONA|BARS-M|RESURS-P|\bARKON\b|YANTAR|NEITRON/, 'ISR / military imaging', true],
-  [/^COSMOS|^KOSMOS/, 'Russian military (COSMOS series, mission undeclared)', true],
+  [/^COSMOS|^KOSMOS/, 'Russian military (undeclared)', true],
   [/^YAOGAN/, 'Earth observation (recon, military)', true],
   [/^TJS-|^TJS |^SHIYAN|^SY-\d|^SHIJIAN|^SJ-\d/, 'Chinese experimental / undeclared payload', true],
   [/^GAOFEN|^GF-\d/, 'High-resolution Earth observation (CHEOS)', true],
@@ -149,6 +151,9 @@ let dusted = false;      // is the roster currently dusted off?
 const zoneOffset = () => (fZone.value === 'IST' ? IST_OFFSET_MS : 0);
 const fmtKm   = km => Math.round(km).toLocaleString('en-US');
 const fmtLead = ms => { const sec = Math.round(ms / 1000); return `${Math.floor(sec / 60)} m ${String(sec % 60).padStart(2, '0')} s`; };
+// -1 means leadExit gave up: the satellite was still in the cone three hours
+// on, which says more than a made-up figure would.
+const fmtExit = ms => (ms < 0 ? '> 3 h' : fmtLead(ms));
 const clockAt = ms => `${new Date(ms + zoneOffset()).toISOString().slice(11, 19)} ${fZone.value}`;
 
 function fmtStamp(ms, offsetMs) {
@@ -186,6 +191,34 @@ function leadEntry(c, rec, t0, gmsts, maxRange) {
       }
     }
     prev = cur;
+  }
+  return -1;
+}
+
+// Milliseconds after T at which the satellite leaves the cone again, or -1 if
+// it is still inside LEAD_EXIT_MAX_MS later.
+//
+// This is the end of the pass leadEntry found, not of any later one: the
+// satellite is inside at `entry`, so walk forward until a sample is outside
+// and bisect that step to the second.  The walk is finer than the 60-second
+// grid the entry scan uses, so it is not the weaker of the two; a dip out and
+// straight back inside one 20-second step would still be missed, which is a
+// grazing geometry the page cannot resolve either way.
+//
+// The cap is what stops a satellite that simply sits in the cone - a
+// geostationary one, when the cap on the cone is high enough to reach it -
+// from being propagated forever.  The column says so rather than inventing a
+// time.
+function leadExit(c, rec, t0, entry) {
+  const start = t0 + entry;
+  for (let dt = LEAD_EXIT_STEP_MS; dt <= LEAD_EXIT_MAX_MS; dt += LEAD_EXIT_STEP_MS) {
+    if (inConeAt(c, rec, start + dt)) continue;
+    let lo = start + dt - LEAD_EXIT_STEP_MS, hi = start + dt;   // inside at lo, outside at hi
+    while (hi - lo > 1000) {
+      const mid = (lo + hi) / 2;
+      if (inConeAt(c, rec, mid)) lo = mid; else hi = mid;
+    }
+    return hi - t0;
   }
   return -1;
 }
@@ -359,8 +392,9 @@ function renderRoster() {
     <td class="num">${i + 1}</td><td><i class="sw" style="background:${s.color}"></i>${escHtml(s.name)}</td>
     <td class="num">${s.noradId}</td><td class="num">${fmtKm(s.alt)}</td><td class="num">${s.speed.toFixed(2)}</td>
     <td class="num">${s.period.toFixed(1)}</td><td class="num">${s.entry ? fmtLead(s.entry) : 'inside now'}</td>
+    <td class="num">${fmtExit(s.exit)}</td>
     <td>${escHtml(s.purpose)}</td></tr>`).join('') ||
-    `<tr><td colspan="8" class="empty">${dusted
+    `<tr><td colspan="9" class="empty">${dusted
       ? 'Every satellite in this hour was a pure carrier — nothing left after the dust-off.'
       : 'No satellite enters the cone in this hour.'}</td></tr>`;
 }
@@ -406,6 +440,9 @@ function setLeadHover(i, fromPlot) {
       <dt>Period</dt><dd>${s.period.toFixed(1)} min</dd>
       <dt>Purpose</dt><dd>${escHtml(s.purpose)}${s.keep ? '' : ' · cleared by dust-off'}</dd>
       <dt>Enters cone</dt><dd>${s.entry ? `in ${fmtLead(s.entry)} · at ${clockAt(leadCtx.T + s.entry)}` : 'already inside at the start'}</dd>
+      <dt>Leaves cone</dt><dd>${s.exit < 0
+        ? 'still inside three hours on'
+        : `in ${fmtLead(s.exit)} · at ${clockAt(leadCtx.T + s.exit)} · ${fmtLead(s.exit - s.entry)} inside`}</dd>
       <dt>At the start</dt><dd>${fmtKm(s.d)} km ${compassPoint((s.az / DEG + 360) % 360)} of the site · ${s.lat.toFixed(2)}°, ${s.lon.toFixed(2)}°</dd>
     </dl>`;
   const row = leadRows.querySelector(`tr[data-i="${i}"]`);
@@ -513,15 +550,29 @@ async function run() {
   await mapReady;
   if (token !== leadToken) return;
 
+  // A second pass over the few hundred that were found, for where each one is
+  // at T and when it leaves again.  It is kept out of the scan loop above
+  // because that one runs over the whole catalogue and this runs over the
+  // handful that matter.
   const all = [];
-  for (const f of found) {
+  leadProgress(`Working out when ${found.length.toLocaleString('en-US')} of them leave again…`, 0);
+  for (let k = 0; k < found.length; k++) {
+    const f = found[k];
     const pv = satellite.propagate(f.t.rec, new Date(T));
     if (!pv || !pv.position) continue;
     const g = satellite.eciToGeodetic(pv.position, gmsts[0]), v = pv.velocity, cls = classify(f.t.name);
     all.push({ name: f.t.name, noradId: f.t.noradId, rec: f.t.rec, entry: f.entry,
+      exit: leadExit(c, f.t.rec, T, f.entry),
       lat: satellite.degreesLat(g.latitude), lon: satellite.degreesLong(g.longitude), alt: g.height,
       speed: Math.hypot(v.x, v.y, v.z), period: 2 * Math.PI / f.t.rec.no,
       purpose: cls.label, keep: cls.keep, color: leadColor(f.entry) });
+    if (performance.now() - tick > 30) {
+      leadProgress(`Working out when ${found.length.toLocaleString('en-US')} of them leave again… ` +
+        `${Math.round(k / found.length * 100)} %`, k / found.length);
+      await new Promise(r => setTimeout(r, 0));
+      if (token !== leadToken) return;
+      tick = performance.now();
+    }
   }
   all.sort((a, b) => a.entry - b.entry || a.name.localeCompare(b.name));
 
@@ -610,7 +661,7 @@ window.__ohl = {
   listedNames: () => (leadCtx ? leadCtx.sats.map(s => s.name) : []),
   // the element set and the reported entry, so a harness can re-derive the
   // position for itself instead of trusting this page's own cone test
-  entries: () => (leadCtx ? leadCtx.sats.map(s => ({ name: s.name, norad: s.noradId, rec: s.rec, entry: s.entry })) : []),
+  entries: () => (leadCtx ? leadCtx.sats.map(s => ({ name: s.name, norad: s.noradId, rec: s.rec, entry: s.entry, exit: s.exit })) : []),
   cone: () => (leadCtx ? { ...leadCtx.c.inp, tilt: leadCtx.c.tilt, T: leadCtx.T, dmax: leadCtx.dmax } : null),
   subtitle: () => $('lead-sub').textContent,
   note: () => $('dust-note').textContent,
