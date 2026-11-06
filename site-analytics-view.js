@@ -87,8 +87,11 @@
     return d.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric',
                                       hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
   }
+  // Four-digit year on purpose: "26 Oct 26" reads as a date in November to
+  // anyone who takes the trailing year for a day, and this label is the one
+  // place a reader is asked to judge how far back the log goes.
   function fmtDay(d) {
-    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   }
   function fmtDur(sec) {
     sec = Math.max(0, Math.round(Number(sec) || 0));
@@ -247,13 +250,23 @@
     // When the backend truncates to the newest rows the oldest one loaded is
     // not where the log actually starts, so say "newest" rather than imply a
     // start date that isn't one.
-    const first = allVisits.length ? new Date(allVisits[0].start) : null;
+    // `allVisits` is newest-first (it is reversed on load), so the OLDEST visit
+    // is the last element.  Reading [0] here made the card say "since" and then
+    // print the date of the most recent visit — the label moved forward every
+    // time someone came to the site, and a log running back to September read
+    // as though it began this week.
+    const oldest = allVisits.length ? new Date(allVisits[allVisits.length - 1].start) : null;
+    const newest = allVisits.length ? new Date(allVisits[0].start) : null;
     const since = $('st-since');
-    since.textContent = first && !isNaN(first)
-      ? (res.truncated ? 'newest since ' : 'since ') + fmtDay(first) : '';
-    since.title = res.truncated
-      ? `Only the newest ${allVisits.length.toLocaleString()} visits were loaded — the log itself starts earlier.`
-      : 'The first visit in the log.';
+    since.textContent = oldest && !isNaN(oldest)
+      ? (res.truncated ? 'newest since ' : 'since ') + fmtDay(oldest) : '';
+    since.title = !oldest || isNaN(oldest) ? 'No visits logged yet.'
+      : res.truncated
+        ? `Only the newest ${allVisits.length.toLocaleString()} visits were loaded, back to `
+          + `${fmtDay(oldest)} — the log itself starts earlier. Raise MAX_READ in `
+          + `site-analytics-backend.gs (and publish a new deployment version) to load more.`
+        : `The whole log: ${allVisits.length.toLocaleString()} visits, `
+          + `${fmtDay(oldest)} to ${fmtDay(newest)}.`;
     renderUsersPop(res);
     renderCountriesPop();
   }

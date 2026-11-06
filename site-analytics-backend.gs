@@ -43,7 +43,15 @@
 
 var PASSWORD_SHA256 = '6805b3729c5fc9e4f9758d7f40284484c93db2214cf16c2a7f17c7e6315162d3';
 var SHEET_NAME = 'Visits';
-var MAX_READ   = 5000;   // newest visits returned to the dashboard
+// Newest visits returned to the dashboard.  Nothing in this script ever
+// deletes a row, so the Sheet holds every visit since the day it started
+// logging — this cap only governs how many of them the dashboard loads at
+// once.  At 5000 a busy log silently stopped short of its own beginning and
+// the dashboard could only say "newest since".  Raising it costs one bigger
+// response; the read is a single getValues() either way.
+// NOTE: editing this file changes nothing until you publish a NEW deployment
+// version (Deploy → Manage deployments → ✏ → Version: "New version").
+var MAX_READ   = 20000;
 
 // Sheet columns.  'start' / 'last' are server times; 'seconds' is the visitor's
 // foreground time on the site, summed across every page of the visit.
