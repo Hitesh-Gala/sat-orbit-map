@@ -49,6 +49,18 @@ const CATEGORIES = [
   { id: 'op-geespace',  tier: 'Constellations', label: 'GeeSpace / Geely (China)', color: '#e6b800', test: n => /^GEESAT/i.test(n) },
   { id: 'op-tianqi',    tier: 'Constellations', label: 'Tianqi IoT (China)',      color: '#ff9e4a', test: n => /^TIANQI[- ]/i.test(n) },
   { id: 'op-sitro',     tier: 'Constellations', label: 'Sitronics SITRO-AIS (Russia)', color: '#7fd1b0', test: n => /^SITRO/i.test(n) },
+  { id: 'op-rassvet',   tier: 'Constellations', label: 'Rassvet / Bureau 1440 (Russia)', color: '#8fd4ff', test: n => /^RASSVET/i.test(n) },
+  // Kepler's optical data-relay constellation.  `AETHER-\d` keeps it off any
+  // other craft that happens to be called Aether.
+  { id: 'op-kepler',    tier: 'Constellations', label: 'Kepler AETHER (optical relay)', color: '#b388ff', test: n => /^AETHER-\d/i.test(n) },
+  { id: 'op-connecta',  tier: 'Constellations', label: 'Plan-S Connecta (T\u00fcrkiye IoT)', color: '#4db6ac', test: n => /^CONNECTA/i.test(n) },
+  { id: 'op-sateliot',  tier: 'Constellations', label: 'Sateliot (Spain, 5G IoT)',  color: '#80cbc4', test: n => /^SATELIOT/i.test(n) },
+  { id: 'op-fossa',     tier: 'Constellations', label: 'FOSSA Systems (Spain IoT)', color: '#9ccc65', test: n => /^FOSSASAT/i.test(n) },
+  { id: 'op-astrocast', tier: 'Constellations', label: 'Astrocast (Switzerland IoT)', color: '#aed581', test: n => /^ASTROCAST/i.test(n) },
+  { id: 'op-lynk',      tier: 'Constellations', label: 'Lynk Global (D2C)',        color: '#c5e1a5', test: n => /^LYNK/i.test(n) },
+  // CENTAURI-n is Fleet Space; CentiSpace is tested above and does not clash.
+  { id: 'op-fleet',     tier: 'Constellations', label: 'Fleet Space Centauri (Australia)', color: '#64b5f6', test: n => /^CENTAURI-\d/i.test(n) },
+  { id: 'op-skykraft',  tier: 'Constellations', label: 'Skykraft (Australia, ATM)', color: '#4fc3f7', test: n => /^SKYKRAFT/i.test(n) },
 
   // ----- Earth observation companies -------------------------------------
   { id: 'eo-planet',    tier: 'Earth Obs',      label: 'Planet (Flock / SkySat)', color: '#16a085', test: n => /^(FLOCK|SKYSAT|PELICAN|TANAGER)/i.test(n) },
@@ -73,6 +85,20 @@ const CATEGORIES = [
   // Analytics (Ukraine), and IRS-P5 is Cartosat-1 under its old IRS designation.
   { id: 'eo-isro',      tier: 'Earth Obs',      label: 'ISRO remote sensing (Cartosat · RISAT · EOS)', color: '#ff8c42',
     test: n => /^(CARTOSAT|RESOURCESAT|OCEANSAT|RISAT|EOS-\d|HYSIS|SCATSAT|EMISAT|SARAL|MEGHA)/i.test(n) || /^IRS-/i.test(n) },
+  { id: 'eo-umbra',     tier: 'Earth Obs',      label: 'Umbra (SAR)',              color: '#7c4dff', test: n => /^UMBRA-/i.test(n) },
+  { id: 'eo-axelspace', tier: 'Earth Obs',      label: 'Axelspace (GRUS)',         color: '#26a69a', test: n => /^GRUS-/i.test(n) },
+  { id: 'eo-tomorrow',  tier: 'Earth Obs',      label: 'Tomorrow.io (weather radar)', color: '#29b6f6', test: n => /^TOMORROW-/i.test(n) },
+  { id: 'eo-planetiq',  tier: 'Earth Obs',      label: 'PlanetiQ (GNOMES, GNSS-RO)', color: '#4dd0e1', test: n => /^GNOMES/i.test(n) },
+  { id: 'eo-yunyao',    tier: 'Earth Obs',      label: 'Yunyao Aerospace (China, GNSS-RO)', color: '#ffb74d', test: n => /^YUNYAO/i.test(n) },
+  { id: 'eo-tianmu',    tier: 'Earth Obs',      label: 'Tianmu-1 (China, GNSS-RO)', color: '#ffa726', test: n => /^TIANMU/i.test(n) },
+  { id: 'eo-piesat',    tier: 'Earth Obs',      label: 'PIESAT (China SAR)',       color: '#ba68c8', test: n => /^PIESAT/i.test(n) },
+  { id: 'eo-tianhui',   tier: 'Earth Obs',      label: 'Tianhui (China mapping)',  color: '#f06292', test: n => /^TIANHUI/i.test(n) },
+  { id: 'eo-haiyang',   tier: 'Earth Obs',      label: 'Haiyang (China ocean)',    color: '#4dd0f0', test: n => /^HAIYANG/i.test(n) },
+  { id: 'eo-ziyuan',    tier: 'Earth Obs',      label: 'Ziyuan (China resources)', color: '#a1887f', test: n => /^ZIYUAN/i.test(n) },
+  { id: 'eo-zhuhai',    tier: 'Earth Obs',      label: 'Zhuhai-1 / Orbita (China)', color: '#90a4ae', test: n => /^ZHUHAI/i.test(n) },
+  { id: 'eo-cosmoskymed', tier: 'Earth Obs',    label: 'COSMO-SkyMed (Italy, SAR)', color: '#5c6bc0', test: n => /^(COSMO-SKYMED|CSG-\d)/i.test(n) },
+  { id: 'eo-formosat',  tier: 'Earth Obs',      label: 'FORMOSAT (Taiwan, TASA)',  color: '#42a5f5', test: n => /^FORMOSAT/i.test(n) },
+  { id: 'eo-kompsat',   tier: 'Earth Obs',      label: 'KOMPSAT / Arirang (Korea)', color: '#66bb6a', test: n => /^(ARIRANG|KOMPSAT)/i.test(n) },
 
   // ----- Communications (mostly GEO) -------------------------------------
   { id: 'com-inmarsat', tier: 'Communications', label: 'Viasat / Inmarsat',       color: '#d35400', test: n => /^(INMARSAT|VIASAT)/i.test(n) },
@@ -84,6 +110,26 @@ const CATEGORIES = [
   { id: 'com-gsat',     tier: 'Communications', label: 'GSAT (India, ISRO/NSIL)', color: '#e59866', test: n => /^GSAT[- ]/i.test(n) },
   { id: 'com-echostar', tier: 'Communications', label: 'EchoStar / DirecTV / Dish (US DBS)', color: '#eb984e', test: n => /^(ECHOSTAR|DIRECTV|DISH )/i.test(n) },
   { id: 'com-express',  tier: 'Communications', label: 'Express (Russia, RSCC)',  color: '#cd6155', test: n => /^EXPRESS-/i.test(n) },
+  { id: 'com-jsat',     tier: 'Communications', label: 'SKY Perfect JSAT (Japan)', color: '#f5b7b1', test: n => /^(JCSAT|SUPERBIRD)/i.test(n) },
+  { id: 'com-arabsat',  tier: 'Communications', label: 'Arabsat / Badr',           color: '#e6b0aa', test: n => /^(ARABSAT|BADR-)/i.test(n) },
+  { id: 'com-turksat',  tier: 'Communications', label: 'T\u00fcrksat (T\u00fcrkiye)', color: '#d98880', test: n => /^TURKSAT/i.test(n) },
+  { id: 'com-hispasat', tier: 'Communications', label: 'Hispasat / Amazonas',      color: '#f0b27a', test: n => /^(HISPASAT|AMAZONAS)/i.test(n) },
+  { id: 'com-telesat',  tier: 'Communications', label: 'Telesat (Anik \u00b7 Nimiq)', color: '#f8c471', test: n => /^(ANIK|NIMIQ)/i.test(n) },
+  { id: 'com-yamal',    tier: 'Communications', label: 'Gazprom Yamal (Russia)',   color: '#dc7633', test: n => /^YAMAL/i.test(n) },
+  { id: 'com-siriusxm', tier: 'Communications', label: 'SiriusXM (US radio)',      color: '#e59866', test: n => /^(SXM-|SIRIUS )/i.test(n) },
+  { id: 'com-koreasat', tier: 'Communications', label: 'KT SAT / Koreasat',        color: '#edbb99', test: n => /^KOREASAT/i.test(n) },
+  { id: 'com-thuraya',  tier: 'Communications', label: 'Thuraya (UAE)',            color: '#d7bde2', test: n => /^THURAYA/i.test(n) },
+  { id: 'com-thaicom',  tier: 'Communications', label: 'Thaicom (Thailand)',       color: '#c39bd3', test: n => /^THAICOM/i.test(n) },
+  { id: 'com-measat',   tier: 'Communications', label: 'MEASAT (Malaysia)',        color: '#bb8fce', test: n => /^MEASAT/i.test(n) },
+  { id: 'com-amos',     tier: 'Communications', label: 'Spacecom AMOS (Israel)',   color: '#a569bd', test: n => /^AMOS-/i.test(n) },
+  { id: 'com-tianlian', tier: 'Communications', label: 'Tianlian (China relay)',   color: '#d2b4de', test: n => /^TIANLIAN/i.test(n) },
+  { id: 'com-tdrs',     tier: 'Communications', label: 'TDRS (NASA relay)',        color: '#aed6f1', test: n => /^TDRS/i.test(n) },
+  // US military SATCOM.  These are catalogued as "WGS F1 (USA 195)" and
+  // "AEHF-1 (USA 214)", so the USA-series rule never saw them: it is anchored
+  // and the name does not start with USA.  They were all sitting in Other.
+  { id: 'com-wgs',      tier: 'Communications', label: 'WGS (US military SATCOM)', color: '#5499c7', test: n => /^WGS\s/i.test(n) },
+  { id: 'com-aehf',     tier: 'Communications', label: 'AEHF (US military SATCOM)', color: '#5dade2', test: n => /^AEHF/i.test(n) },
+  { id: 'com-muos',     tier: 'Communications', label: 'MUOS (US Navy)',           color: '#7fb3d5', test: n => /^MUOS/i.test(n) },
 
   // ----- Meteorology -----------------------------------------------------
   { id: 'met-noaa',     tier: 'Meteorology',    label: 'NOAA / GOES (USA)',       color: '#5dade2', test: n => /^(NOAA\s|GOES)/i.test(n) },
@@ -91,20 +137,36 @@ const CATEGORIES = [
   { id: 'met-fengyun',  tier: 'Meteorology',    label: 'FengYun (China)',         color: '#ec7063', test: n => /^(FENGYUN|FY[- ])/i.test(n) },
   { id: 'met-himawari', tier: 'Meteorology',    label: 'Himawari (Japan)',        color: '#f5b041', test: n => /^HIMAWARI/i.test(n) },
   { id: 'met-insat',    tier: 'Meteorology',    label: 'INSAT / KALPANA (India)', color: '#52be80', test: n => /^(INSAT|KALPANA)/i.test(n) },
+  { id: 'met-yunhai',   tier: 'Meteorology',    label: 'Yunhai (China)',          color: '#7fb3d5', test: n => /^YUNHAI/i.test(n) },
 
   // ----- Publicly attributed ISR -----------------------------------------
   { id: 'isr-yaogan',   tier: 'ISR',            label: 'Yaogan (China)',          color: '#ff6b6b', test: n => /^YAOGAN/i.test(n) },
   { id: 'isr-gaofen',   tier: 'ISR',            label: 'Gaofen (China)',          color: '#ff8c52', test: n => /^GAOFEN/i.test(n) },
   { id: 'isr-jilin',    tier: 'ISR',            label: 'Jilin (China)',           color: '#ffaa6b', test: n => /^JILIN/i.test(n) },
   { id: 'isr-usa',      tier: 'ISR',            label: 'USA-series (US classified)', color: '#bd1a1a', test: n => /^USA\s*\d/i.test(n) },
-  { id: 'isr-sda',      tier: 'ISR',            label: 'SDA Tranche (US military)', color: '#cb4335', test: n => /^(SDA[ _-]?\d|PRAETORIAN)/i.test(n) },
+  { id: 'isr-sda',      tier: 'ISR',            label: 'SDA Tranche (US military)', color: '#cb4335', test: n => /^(SDA[ _-]?(?:NG|\d)|PRAETORIAN|CHECKMATE)/i.test(n) },
   { id: 'isr-cosmos',   tier: 'ISR',            label: 'Cosmos (Russia)',         color: '#76448a', test: n => /^COSMOS\s*\d/i.test(n) },
+  { id: 'isr-shiyan',   tier: 'ISR',            label: 'Shiyan (China, experimental)', color: '#e59866', test: n => /^SHIYAN/i.test(n) },
+  // Shijian is the same kind of series, but SHIJIAN-21 and -25 are the tugs the
+  // RPO rule below claims.  First match wins and the tiers have to stay
+  // contiguous for the panel's headings, so this excludes those two here
+  // rather than being moved after the RPO block.
+  { id: 'isr-shijian',  tier: 'ISR',            label: 'Shijian / SJ (China, experimental)', color: '#f0a06b',
+    test: n => /^(SHIJIAN|SJ-\d)/i.test(n) && !/^(SHIJIAN-2[15]\b|SJ-2[15]\b)/i.test(n) },
+  { id: 'isr-sbirs',    tier: 'ISR',            label: 'SBIRS / DSP missile warning (US)', color: '#ec7063', test: n => /^(SBIRS|DSP\s)/i.test(n) },
 
   // ----- Rendezvous & proximity operations, and space surveillance -------
   { id: 'rpo-servicing', tier: 'RPO & SSA',     label: 'RPO & servicing (TJS · MEV · SJ-21/25)', color: '#ff6fd8',
     test: n => /^(TJS-\d|MEV-\d|MRV\b|LDPE-\d)/i.test(n) || /^(SHIJIAN-2[15]\b|SJ-2[15]\b)/i.test(n) },
   { id: 'ssa-surv',     tier: 'RPO & SSA',      label: 'Space surveillance (SBSS)', color: '#ffd166',
     test: n => /^SBSS/i.test(n) || /SILENT ?BARKER/i.test(n) },
+
+  // ----- In-orbit services ------------------------------------------------
+  // Carriers and hosted-payload buses: the satellite is the service, and the
+  // payloads aboard belong to other people.
+  { id: 'svc-dorbit',   tier: 'In-orbit services', label: 'D-Orbit ION (carrier)', color: '#ff8a65', test: n => /^ION\s+(SCV|MK)/i.test(n) },
+  { id: 'svc-loft',     tier: 'In-orbit services', label: 'Loft Orbital (YAM)',    color: '#ffab91', test: n => /^YAM-\d/i.test(n) },
+  { id: 'svc-momentus', tier: 'In-orbit services', label: 'Momentus (Vigoride)',   color: '#ffccbc', test: n => /^VIGORIDE/i.test(n) },
 
   // ----- Catch-all -------------------------------------------------------
   // Default OFF so the ~10 k uncategorised dots don't drown out the
@@ -463,6 +525,155 @@ const COMPANY_INFO = {
     note: '"Cosmos" is a catch-all label spanning six decades and many mission types, so these dots are not a single program or company.' },
 
   // ---- Catch-all ----
+  // ---- added Nov 2026: operators with 3+ satellites in orbit that had been
+  // falling through to Other.  See the audit note in CLAUDE.md.
+  'op-rassvet': {
+    name: 'Rassvet', operator: 'Bureau 1440 (Russia)', founded: '2021 (first prototypes 2023)',
+    desc: 'Russia\u2019s LEO broadband programme, funded through IKS Holding. The Rassvet-1 and -2 prototype groups validated the bus and the user terminals; Rassvet-3 is the first batch at constellation scale.' },
+  'op-kepler': {
+    name: 'Kepler AETHER', operator: 'Kepler Communications (Canada)', founded: '2015',
+    desc: 'An optical data-relay network: rather than imaging the Earth, these satellites carry other operators\u2019 data down through laser crosslinks, so a spacecraft in LEO need not wait for a ground station. The first operational AETHER batch went up in 2026.' },
+  'op-connecta': {
+    name: 'Connecta IoT', operator: 'Plan-S (T\u00fcrkiye)', founded: '2021',
+    desc: 'T\u00fcrkiye\u2019s commercial IoT constellation, carrying narrowband machine-to-machine traffic for logistics, agriculture and utilities.' },
+  'op-sateliot': {
+    name: 'Sateliot', operator: 'Sateliot (Spain)', founded: '2018',
+    desc: 'Standards-first IoT: the satellites act as 5G NB-IoT base stations in orbit, so an unmodified ground device roams onto them exactly as it would onto a terrestrial cell.' },
+  'op-fossa': {
+    name: 'FOSSA Systems', operator: 'FOSSA Systems (Spain)', founded: '2018',
+    desc: 'Picosatellite IoT. The FOSSASAT line is unusually small - sub-1 kg classes - and carries low-bandwidth telemetry for remote assets.' },
+  'op-astrocast': {
+    name: 'Astrocast', operator: 'Astrocast (Switzerland)', founded: '2014',
+    desc: 'L-band IoT for maritime, agriculture and remote industry.' },
+  'op-lynk': {
+    name: 'Lynk Global', operator: 'Lynk Global (USA)', founded: '2017',
+    desc: 'Direct-to-phone: an ordinary unmodified handset connects to the satellite as though it were a cell tower. Lynk flew the first such text to a standard phone and now runs the Lynk Tower series.' },
+  'op-fleet': {
+    name: 'Centauri', operator: 'Fleet Space Technologies (Australia)', founded: '2015',
+    desc: 'IoT connectivity paired with the company\u2019s own mineral-exploration sensing business, which is what most of the capacity is used for.' },
+  'op-skykraft': {
+    name: 'Skykraft', operator: 'Skykraft (Australia)', founded: '2017',
+    desc: 'Space-based air-traffic management - ADS-B surveillance and VHF voice for aircraft over oceans and deserts where no ground radar reaches.' },
+
+  'eo-umbra': {
+    name: 'Umbra', operator: 'Umbra (USA)', founded: '2015',
+    desc: 'Commercial synthetic-aperture radar at some of the finest resolutions on the open market, sold per-image rather than by subscription. SAR sees at night and through cloud, which is why the defence and intelligence demand for it is steady.' },
+  'eo-axelspace': {
+    name: 'GRUS', operator: 'Axelspace (Japan)', founded: '2008',
+    desc: 'Optical Earth observation on a build-fast, fly-often model; GRUS is the company\u2019s own imaging constellation behind the AxelGlobe service.' },
+  'eo-tomorrow': {
+    name: 'Tomorrow.io', operator: 'Tomorrow.io (USA)', founded: '2016',
+    desc: 'Weather from orbit for a commercial forecasting business: the satellites carry precipitation radar and microwave sounders, instruments normally flown only by national agencies.' },
+  'eo-planetiq': {
+    name: 'GNOMES', operator: 'PlanetiQ (USA)', founded: '2012',
+    desc: 'GNSS radio occultation - the satellites watch navigation signals bend through the atmosphere and read temperature, pressure and humidity profiles out of the bending. The data is sold into numerical weather prediction.' },
+  'eo-yunyao': {
+    name: 'Yunyao-1', operator: 'Yunyao Aerospace (China)', founded: '2019',
+    desc: 'A commercial Chinese GNSS radio-occultation constellation, the same measurement principle as PlanetiQ and Spire, feeding Chinese meteorological models.' },
+  'eo-tianmu': {
+    name: 'Tianmu-1', operator: 'Huaxia / Tianjin Yunyao (China)', founded: '2022',
+    desc: 'The other large Chinese GNSS radio-occultation fleet, launched in rapid batches for commercial weather data.' },
+  'eo-piesat': {
+    name: 'PIESAT', operator: 'PIESAT Information Technology (China)', founded: '2008',
+    desc: 'Commercial Chinese SAR. The PIESAT-2 groups fly in close formation so the satellites can interfere their returns against one another and measure ground deformation.' },
+  'eo-tianhui': {
+    name: 'Tianhui', operator: 'PLA / Chinese state (China)', founded: '2010',
+    desc: 'Mapping and geodesy. The series is described officially as surveying for civil cartography; it is widely assessed to serve military geodetic and targeting requirements as well.' },
+  'eo-haiyang': {
+    name: 'Haiyang', operator: 'China (NSOAS)', founded: '2002',
+    desc: 'China\u2019s ocean-observation series - colour, surface temperature, and radar altimetry and scatterometry for sea state and wind.' },
+  'eo-ziyuan': {
+    name: 'Ziyuan', operator: 'China (CRESDA)', founded: '1999',
+    desc: 'The land-resources series: medium-resolution optical and stereo mapping for survey, agriculture and geology.' },
+  'eo-zhuhai': {
+    name: 'Zhuhai-1', operator: 'Orbita Aerospace (China)', founded: '2017',
+    desc: 'A commercial Chinese constellation mixing hyperspectral imagers with video satellites.' },
+  'eo-cosmoskymed': {
+    name: 'COSMO-SkyMed', operator: 'ASI / Italian MoD, distributed by e-GEOS (Italy)', founded: '2007',
+    desc: 'X-band SAR, dual civil and military use. The Second Generation satellites (CSG) now fly alongside the surviving first-generation four.' },
+  'eo-formosat': {
+    name: 'FORMOSAT', operator: 'TASA (Taiwan)', founded: '1999',
+    desc: 'Taiwan\u2019s national programme: optical imaging (FORMOSAT-5) and, with the United States, the FORMOSAT-7/COSMIC-2 radio-occultation weather fleet.' },
+  'eo-kompsat': {
+    name: 'KOMPSAT / Arirang', operator: 'KARI (South Korea)', founded: '1999',
+    desc: 'Korea\u2019s multipurpose observation series - high-resolution optical and, in KOMPSAT-5, X-band SAR.' },
+
+  'com-jsat': {
+    name: 'SKY Perfect JSAT', operator: 'SKY Perfect JSAT (Japan)', founded: '1989 (JSAT)',
+    desc: 'Asia\u2019s largest commercial GEO operator, running the JCSAT and Superbird fleets for broadcasting, mobility and government customers.' },
+  'com-arabsat': {
+    name: 'Arabsat', operator: 'Arab Satellite Communications Organization', founded: '1976',
+    desc: 'The Arab League\u2019s satellite operator, Riyadh-based, carrying broadcasting and telecommunications across the Middle East, Africa and Europe. The Badr satellites are its direct-broadcast fleet.' },
+  'com-turksat': {
+    name: 'T\u00fcrksat', operator: 'T\u00fcrksat A.\u015e. (T\u00fcrkiye)', founded: '1990',
+    desc: 'T\u00fcrkiye\u2019s national operator. T\u00fcrksat 6A, launched 2024, is the country\u2019s first domestically built communications satellite.' },
+  'com-hispasat': {
+    name: 'Hispasat', operator: 'Hispasat, Indra group (Spain)', founded: '1989',
+    desc: 'Spain\u2019s operator, strongest over Iberia and Latin America; the Amazonas satellites serve the Americas.' },
+  'com-telesat': {
+    name: 'Telesat', operator: 'Telesat (Canada)', founded: '1969',
+    desc: 'One of the oldest commercial operators. Anik and Nimiq are the GEO fleet; the Lightspeed LEO constellation is in build and not yet flying in numbers.' },
+  'com-yamal': {
+    name: 'Yamal', operator: 'Gazprom Space Systems (Russia)', founded: '1992',
+    desc: 'Gazprom\u2019s own operator, built originally to connect the pipeline network and now a general Russian GEO provider.' },
+  'com-siriusxm': {
+    name: 'SiriusXM', operator: 'SiriusXM (USA)', founded: '1990 / 2008 merger',
+    desc: 'Satellite radio to vehicles across North America. The SXM-series are among the largest commercial GEO broadcast satellites flying.' },
+  'com-koreasat': {
+    name: 'Koreasat', operator: 'KT SAT (South Korea)', founded: '1995',
+    desc: 'South Korea\u2019s national fleet, carrying broadcasting and broadband across the peninsula and the wider region.' },
+  'com-thuraya': {
+    name: 'Thuraya', operator: 'Space42, ex-Yahsat (UAE)', founded: '1997',
+    desc: 'L-band mobile satellite services - handheld voice and data across Europe, Africa, the Middle East and much of Asia.' },
+  'com-thaicom': {
+    name: 'Thaicom', operator: 'Thaicom (Thailand)', founded: '1991',
+    desc: 'Thailand\u2019s operator; Thaicom 4 (IPSTAR) was for a time the highest-capacity broadband satellite in orbit.' },
+  'com-measat': {
+    name: 'MEASAT', operator: 'MEASAT Satellite Systems (Malaysia)', founded: '1992',
+    desc: 'Malaysia\u2019s operator, carrying broadcasting and broadband over South-East Asia, South Asia and Africa.' },
+  'com-amos': {
+    name: 'AMOS', operator: 'Spacecom (Israel)', founded: '1993',
+    desc: 'Israel\u2019s commercial GEO fleet, over Europe, the Middle East and Africa. AMOS-6 was lost on the pad in the 2016 Falcon 9 explosion.' },
+  'com-tianlian': {
+    name: 'Tianlian', operator: 'China (CASC / PLA)', founded: '2008',
+    desc: 'China\u2019s data-relay system, the counterpart to NASA\u2019s TDRS: it keeps crewed missions and low-orbit satellites in contact when they are out of sight of Chinese ground stations.' },
+  'com-tdrs': {
+    name: 'TDRS', operator: 'NASA (USA)', founded: '1983',
+    desc: 'The Tracking and Data Relay Satellite system - near-continuous contact with the ISS, Hubble and other low-orbit missions. NASA is winding it down in favour of commercial relay services.' },
+  'com-wgs': {
+    name: 'WGS', operator: 'US Space Force', founded: '2007',
+    desc: 'Wideband Global SATCOM - the backbone X- and Ka-band capacity for US and allied forces, with partner nations buying in for guaranteed access.' },
+  'com-aehf': {
+    name: 'AEHF', operator: 'US Space Force', founded: '2010',
+    desc: 'Advanced Extremely High Frequency - protected, jam-resistant, nuclear-survivable communications for strategic and tactical users, including allied partners.' },
+  'com-muos': {
+    name: 'MUOS', operator: 'US Navy', founded: '2012',
+    desc: 'Mobile User Objective System - narrowband UHF built on cellular technology, giving handheld and vehicle radios voice and data worldwide.' },
+
+  'met-yunhai': {
+    name: 'Yunhai', operator: 'China (PLA-linked)', founded: '2016',
+    desc: 'Atmospheric, marine and space-environment sounding. Officially described as environmental research; the series is generally assessed to serve military meteorology too. Yunhai 1-02 was struck by debris from a Zenit rocket in 2021 and survived.' },
+
+  'isr-shiyan': {
+    name: 'Shiyan', operator: 'China (PLA / CASC)', founded: '2004',
+    desc: 'Literally \u201cexperiment\u201d - a cover designation rather than a programme. Missions are not announced, and the satellites under this name have ranged from technology demonstration to what is assessed to be reconnaissance and signals work.' },
+  'isr-shijian': {
+    name: 'Shijian / SJ', operator: 'China (CAS / CASC / PLA)', founded: '1971',
+    desc: 'Literally \u201cpractice\u201d - China\u2019s long-running experimental series, covering genuine science as well as undeclared military payloads. Shijian-21 and -25, the two that have manoeuvred as tugs in GEO, are listed under RPO & servicing instead.' },
+  'isr-sbirs': {
+    name: 'SBIRS / DSP', operator: 'US Space Force', founded: '1970 (DSP) / 2011 (SBIRS GEO)',
+    desc: 'Infrared missile warning from geostationary and highly elliptical orbit. SBIRS replaced the Defense Support Program and is itself being succeeded by the Next-Gen OPIR satellites.' },
+
+  'svc-dorbit': {
+    name: 'ION Satellite Carrier', operator: 'D-Orbit (Italy)', founded: '2011',
+    desc: 'A carrier, not a satellite: ION rides up full of other people\u2019s cubesats and releases each into its own orbit and phase, which a rideshare launch on its own cannot do. Later vehicles also host payloads that stay aboard.' },
+  'svc-loft': {
+    name: 'YAM', operator: 'Loft Orbital (USA / France)', founded: '2017',
+    desc: 'Hosted payloads as a service - the customer supplies the instrument, Loft flies and operates the spacecraft around it. \u201cYAM\u201d is Yet Another Mission, which is rather the point of a standardised bus.' },
+  'svc-momentus': {
+    name: 'Vigoride', operator: 'Momentus (USA)', founded: '2017',
+    desc: 'An orbital transfer vehicle for last-mile delivery from a rideshare drop-off, using water plasma propulsion.' },
+
   'other': {
     name: 'Other / uncategorised', operator: 'Many operators', founded: '—',
     fleet: '~10,000 catalogued objects', active: 'Varies', retired: 'Varies',
@@ -840,6 +1051,15 @@ let propagationActive = false;
 const categoryEnabled = CATEGORIES.map(c => !c.defaultOff);
 // Per-category live count, refreshed each propagation tick.
 const categoryCount = CATEGORIES.map(() => 0);
+// `categoryCount` is zeroed at the start of a pass and refilled chunk by
+// chunk, so between those two moments it is a half-counted array.  The panel
+// never shows it mid-pass - updateCategoryCounts runs only when a pass
+// finishes - but the dossier pop-up read it directly and would print 0 for any
+// category the pass had not reached yet.  Opening Rassvet (indices 14,367 to
+// 15,987 of 16,868) during a pass showed "tracked on this globe right now: 0"
+// against 30 satellites sitting right there on the screen.  This holds the
+// last COMPLETE pass, so a reader never sees a count that is still being made.
+let categoryCountDone = null;
 
 // User-controlled view sliders, both 1.0× by default.  altScale
 // exaggerates the radial spread (useful to pull a dense LEO shell
@@ -1033,8 +1253,8 @@ function updateCategoryCounts() {
   for (let i = 0; i < CATEGORIES.length; i++) {
     const el = $('sbo-cnt-' + i);
     if (!el) continue;
-    el.textContent = categoryCount[i].toLocaleString();
-    el.closest('.sbo-row').classList.toggle('zero', categoryCount[i] === 0);
+    el.textContent = categoryCountDone[i].toLocaleString();
+    el.closest('.sbo-row').classList.toggle('zero', categoryCountDone[i] === 0);
   }
 }
 
@@ -1054,7 +1274,7 @@ function openCompany(idx) {
 
   const stat = (k, v) => v
     ? `<div class="sbo-stat"><span class="k">${escHtml(k)}</span><span class="v">${escHtml(v)}</span></div>` : '';
-  const live = categoryCount[idx];
+  const live = categoryCountDone ? categoryCountDone[idx] : 0;
   // The four lower figures are hand-kept open-source estimates; the top one is
   // counted from today's catalogue.  A constellation that outgrows its estimate
   // would otherwise read as an impossibility — fewer launched than are flying —
@@ -1099,7 +1319,7 @@ function openCompany(idx) {
       </div>
     </div>
     <div class="sbo-stats">
-      <div class="sbo-stat hl"><span class="k">Tracked on this globe right now</span><span class="v" style="color:${c.color}">${live.toLocaleString()}</span></div>
+      <div class="sbo-stat hl"><span class="k">Tracked on this globe right now</span><span class="v" style="color:${c.color}">${categoryCountDone ? live.toLocaleString() : 'counting…'}</span></div>
       ${stat('Launched to date', floorStat(info.launched || info.fleet))}
       ${stat('Gone \u2014 de-orbited, re-entered or destroyed', info.lost || info.retired)}
       ${stat('Still in orbit', floorStat(info.inOrbit))}
@@ -1245,6 +1465,7 @@ function processChunk() {
   }
   instMesh.instanceMatrix.needsUpdate = true;
   if (instMesh.instanceColor) instMesh.instanceColor.needsUpdate = true;
+  categoryCountDone = categoryCount.slice();
   updateCategoryCounts();
   const total = categoryCount.reduce((a, b) => a + b, 0);
   setStatus(`${total.toLocaleString()} sats categorised · refreshed ${propNow.toISOString().slice(11, 19)} UTC`);
@@ -1277,6 +1498,100 @@ function rerenderFiltered() {
 }
 
 // =========================================================================
+// Space-Track supplement
+// =========================================================================
+// CelesTrak is the catalogue this page propagates, and it does not publish an
+// element set for the newest payloads for weeks.  NVS-03 (NORAD 101228,
+// launched 30 Oct 2026) is in CelesTrak's own SATCAT as "NVS-03 (IRNSS-1L)",
+// yet gp.php answers "No GP data found" for its catalogue number, its launch
+// designator and its name alike - so there was nothing to propagate and NavIC
+// showed one satellite short.  Checked 07 Nov 2026.
+//
+// Space-Track has it, with elements, and the daily bundle this repository
+// already builds for Mirror Globe carries them.  So that bundle supplements
+// the catalogue here: an on-orbit payload CelesTrak has no elements for is
+// added rather than left off the globe for the length of the lag.
+//
+// Only Space-Track's OPERATIONAL payloads ('+') are taken.  The bundle holds
+// 3,940 payloads CelesTrak omits, but ~2,900 of those are dead or
+// unknown-status objects CelesTrak leaves out of "active" on purpose; taking
+// the lot would quietly turn this page from active satellites into everything
+// still in orbit.  The 1,029 that remain are overwhelmingly recent launches -
+// 981 of them went up in the last twelve months.
+const SPACETRACK_BUNDLE = 'data/spacetrack-gp.json';
+
+// An element set this old is not describing where the object is now.  Space-
+// Track still lists escaped and interplanetary craft as on-orbit payloads and
+// keeps the LAST set it had, which for those is the parking orbit before the
+// departure burn: Mars Express carries a 177 km circular orbit from 2003,
+// WIND one from 1994, and the Tesla Roadster is in there too.  Propagating
+// those puts a dot in low Earth orbit for a spacecraft at Mars, which is why
+// CelesTrak leaves them out of "active" in the first place.  Thirty days drops
+// 48 such objects and keeps 981 - every one of them a real recent launch.
+const SPACETRACK_MAX_AGE_DAYS = 30;
+
+// A second guard, for the ones whose elements really are fresh but whose orbit
+// is not an Earth orbit SGP4 can represent: DRO-A and DRO-B sit in lunar
+// distant retrograde orbits and are re-catalogued often enough to pass the age
+// test above.  Geostationary radius is 42,164 km and a Molniya apogee reaches
+// about 46,000, so this ceiling excludes nothing that belongs on the globe.
+const SPACETRACK_MAX_APOGEE_KM = 100000;
+
+// Catalogue numbers past 99999 are written in Alpha-5 in the element set
+// itself - NVS-03's lines say "A1228" where the bundle's `c` field says
+// 101228 - but tle-loader's catalogNumber already decodes that back to an
+// integer, so both sides of the comparison below are plain numbers.
+//
+// tle-loader keeps intlDesignator to itself, and the hover panel prints this
+// field, so a raw "26245A" beside CelesTrak's "2023-076A" would read as two
+// different kinds of identifier.  Same formatting, kept in step by hand.
+function intlDesignator(l1) {
+  const raw = (l1 || '').slice(9, 17).trim();
+  const m = raw.match(/^(\d{2})(\d{3})([A-Z]{1,3})$/);
+  if (!m) return raw || null;
+  const yy = parseInt(m[1], 10);
+  return `${yy < 57 ? 2000 + yy : 1900 + yy}-${m[2]}${m[3]}`;
+}
+
+async function supplementFromSpacetrack(sats) {
+  let doc;
+  try {
+    const r = await fetch(SPACETRACK_BUNDLE, { cache: 'no-cache' });
+    if (!r.ok) return 0;
+    doc = await r.json();
+  } catch {
+    return 0;                       // the bundle is a bonus, never a dependency
+  }
+  const have = new Set();
+  for (const s of sats) if (Number.isFinite(s.noradId)) have.add(s.noradId);
+
+  const nowJd = Date.now() / 86400000 + 2440587.5;
+  let added = 0;
+  for (const s of (doc && doc.sats) || []) {
+    if (s.s !== '+') continue;                       // operational payloads only
+    if (!s.t || s.t.length < 2) continue;
+    const num = Number(s.c);
+    if (have.has(num)) continue;
+    let rec;
+    try { rec = satellite.twoline2satrec(s.t[0], s.t[1]); } catch { continue; }
+    if (!rec || rec.error) continue;
+    if (!(nowJd - rec.jdsatepoch <= SPACETRACK_MAX_AGE_DAYS)) continue;   // NaN-safe
+    const apogeeKm = rec.a * (1 + rec.ecco) * EARTH_R_KM;
+    if (!(apogeeKm <= SPACETRACK_MAX_APOGEE_KM)) continue;                // NaN-safe
+    have.add(num);
+    sats.push({
+      name: s.n,
+      noradId: num,
+      intlId: intlDesignator(s.t[0]),
+      rec,
+      fromSpacetrack: true,
+    });
+    added++;
+  }
+  return added;
+}
+
+// =========================================================================
 // Boot
 // =========================================================================
 
@@ -1290,6 +1605,7 @@ async function boot() {
     return;
   }
   allSats = makeSatrecs(tleResult.tles);
+  const fromST = await supplementFromSpacetrack(allSats);
   if (allSats.length > MAX_INSTANCES) {
     console.warn(`More sats (${allSats.length}) than reserved instances (${MAX_INSTANCES}); trimming.`);
     allSats.length = MAX_INSTANCES;
@@ -1311,7 +1627,9 @@ async function boot() {
   const tag = tleResult.source === 'celestrak' ? 'live'
             : tleResult.source === 'cache'    ? 'cached'
             : 'bundled snapshot';
-  setStatus(`Catalogue: ${allSats.length.toLocaleString()} sats (${tag}). Propagating…`);
+  setStatus(`Catalogue: ${allSats.length.toLocaleString()} sats (${tag}`
+            + (fromST ? `, +${fromST.toLocaleString()} from Space-Track` : '')
+            + `). Propagating…`);
   startPropagationTick();
   setInterval(startPropagationTick, REFRESH_MS);
 }
