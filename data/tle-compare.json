@@ -1,5 +1,5 @@
 {
- "built": "2026-11-08T13:40:57Z",
+ "built": "2026-11-09T16:40:39Z",
  "sources": {
   "celestrak": "data/active.tle (bundled CelesTrak snapshot)",
   "spacetrack": "data/spacetrack-gp-tle.txt / spacetrack-debris.tle, refreshed in CI",
