@@ -1,6 +1,6 @@
 {
  "source": "CelesTrak",
- "retrieved": "2026-11-15T14:08:50Z",
+ "retrieved": "2026-11-16T16:09:35Z",
  "satcat": {
   "label": "Active payloads",
   "count": 20525,
@@ -31,8 +31,8 @@
  "tle": {
   "label": "Active TLE sets",
   "count": 15860,
-  "latestEpoch": "2026-11-16T02:39:43Z",
-  "oldestEpoch": "2026-10-21T19:29:14Z",
+  "latestEpoch": "2026-11-16T22:29:56Z",
+  "oldestEpoch": "2026-10-29T08:22:36Z",
   "note": "GROUP=active TLE catalogue (gp.php)."
  },
  "conjunctions": {
