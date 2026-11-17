@@ -1,17 +1,17 @@
 {
  "source": "CelesTrak",
- "retrieved": "2026-11-16T16:09:35Z",
+ "retrieved": "2026-11-17T16:16:59Z",
  "satcat": {
   "label": "Active payloads",
-  "count": 20525,
+  "count": 20522,
   "topOwners": [
    [
     "US",
-    13994
+    13991
    ],
    [
     "CIS",
-    1726
+    1727
    ],
    [
     "PRC",
@@ -23,16 +23,16 @@
    ],
    [
     "JPN",
-    250
+    249
    ]
   ],
   "note": "Active payloads only (CelesTrak /pub/satcat.csv, decay-filtered)."
  },
  "tle": {
   "label": "Active TLE sets",
-  "count": 15860,
-  "latestEpoch": "2026-11-16T22:29:56Z",
-  "oldestEpoch": "2026-10-29T08:22:36Z",
+  "count": 15856,
+  "latestEpoch": "2026-11-18T18:07:56Z",
+  "oldestEpoch": "2026-11-02T06:44:40Z",
   "note": "GROUP=active TLE catalogue (gp.php)."
  },
  "conjunctions": {
