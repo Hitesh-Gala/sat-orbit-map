@@ -1,13 +1,13 @@
 {
  "source": "CelesTrak",
- "retrieved": "2026-11-20T15:43:56Z",
+ "retrieved": "2026-11-21T14:49:10Z",
  "satcat": {
   "label": "Active payloads",
-  "count": 20546,
+  "count": 20592,
   "topOwners": [
    [
     "US",
-    14011
+    14057
    ],
    [
     "CIS",
