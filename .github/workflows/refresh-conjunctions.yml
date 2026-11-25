@@ -1,11 +1,31 @@
 # Refresh the bundled satellite-conjunction predictions the Traffic-Conjunctions
 # page (traffic-conjunctions.html) ships with.
 #
-# SOCRATES conjunction predictions are valid for ~1 week, so a 2-day cadence
+# SOCRATES conjunction predictions are valid for ~1 week, so a daily cadence
 # keeps them comfortably fresh.  A GitHub runner isn't subject to the per-IP
 # rate-limit that throttles dev machines, so it can pull SOCRATES + the handful
 # of extra TLEs reliably.  scripts/gen_conjunctions.py aborts without writing if
 # too few usable pairs come back, so a bad fetch never clobbers a good bundle.
+#
+# This job silently stopped delivering between 09 and 25 Nov 2026 — the page sat
+# on the 10-15 Nov window for over two weeks while every run "ran".  Three
+# separate faults, all now guarded:
+#
+#   1. The push had no rebase.  The job fetches, installs sgp4 and verifies
+#      every pair, which takes minutes, and refresh-data.yml (4x/day) and
+#      refresh-spacetrack.yml also push to main.  So main had almost always
+#      moved by the time this pushed, the push was rejected, and the freshly
+#      generated bundle was thrown away: 5 of the 7 failures in that fortnight
+#      had already written a good file (~175 changed lines) before dying.
+#      A `concurrency:` group would NOT have helped — the collision is between
+#      *different* workflows, not between runs of this one.
+#   2. curl had retries but no timeouts, so a SOCRATES connection that opened
+#      and then stalled blocked until GitHub's 6-hour job ceiling killed the
+#      run.  6 of 20 runs died that way, each burning 6 hours of runner time
+#      and reporting only "cancelled".
+#   3. Nothing failed loudly.  A fetch that 503s is ordinary; a pipeline that
+#      has delivered nothing for a fortnight is not, so the last step now
+#      checks how old the committed bundle actually is.
 
 name: Refresh conjunction predictions
 
@@ -21,6 +41,9 @@ permissions:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    # Nothing here legitimately takes 20 minutes; the old runs that sat for six
+    # hours were a stalled socket, not work in progress.
+    timeout-minutes: 20
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -34,9 +57,14 @@ jobs:
         run: pip install --quiet sgp4
 
       - name: Fetch SOCRATES conjunctions (CSV)
+        # The step timeout is the guard, because it does not depend on how curl
+        # interprets --max-time alongside --retry.  Belt and braces.
+        timeout-minutes: 8
         run: |
           set -euo pipefail
-          curl -fsS --retry 4 --retry-delay 6 \
+          curl -fsS \
+            --connect-timeout 20 --max-time 60 \
+            --retry 4 --retry-delay 10 \
             "https://celestrak.org/SOCRATES/sort-maxProb.csv" \
             -o /tmp/socrates.csv
           echo "SOCRATES CSV: $(wc -c < /tmp/socrates.csv) bytes, $(wc -l < /tmp/socrates.csv) lines"
@@ -56,4 +84,47 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/conjunctions.json
           git commit -m "Auto-refresh conjunction predictions ($(date -u +'%Y-%m-%d %H:%M UTC'))"
-          git push
+
+          # Rebase and retry rather than force: these are append-only data
+          # commits and the competing pushes are the other refresh workflows'.
+          for i in 1 2 3 4 5; do
+              if git push; then
+                  echo "pushed on attempt $i"
+                  exit 0
+              fi
+              echo "push attempt $i rejected — main moved under us, rebasing"
+              git pull --rebase --autostash origin main
+              sleep $(( i * 5 ))
+          done
+          echo "::error::could not push data/conjunctions.json after 5 rebase attempts"
+          exit 1
+
+      - name: Report how fresh the committed bundle actually is
+        # The whole point of the job is that this file is recent.  A run that
+        # ends "successful" having delivered a fortnight-old bundle is the
+        # failure mode that went unnoticed, so say the age out loud.
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, datetime as dt, os, sys
+          with open('data/conjunctions.json', encoding='utf-8') as fh:
+              d = json.load(fh)
+          gen = dt.datetime.fromisoformat(d['generated'].replace('Z', '+00:00'))
+          age = (dt.datetime.now(dt.timezone.utc) - gen).total_seconds() / 86400
+          win = d.get('window', {})
+          print(f"generated : {d['generated']}  ({age:.1f} days old)")
+          print(f"window    : {win.get('from')} -> {win.get('to')}")
+          print(f"pairs     : {len(d.get('conjunctions', []))}")
+          summary = os.environ.get('GITHUB_STEP_SUMMARY')
+          line = f"Conjunction bundle: generated {d['generated']}, **{age:.1f} days old**, window {win.get('from')} to {win.get('to')}"
+          if summary:
+              with open(summary, 'a', encoding='utf-8') as fh:
+                  fh.write(line + '\n')
+          # SOCRATES predictions are good for about a week.  Past that the page
+          # is showing an expired window, which is what happened here.
+          if age > 8:
+              print(f"::error::conjunction bundle is {age:.1f} days old — SOCRATES predictions expire after ~1 week, so the page is showing a stale window")
+              sys.exit(1)
+          if age > 3:
+              print(f"::warning::conjunction bundle is {age:.1f} days old")
+          PY
