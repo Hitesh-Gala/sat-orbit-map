@@ -47,7 +47,7 @@ jobs:
     # elements for every pair and SGP4-verifies each one.  A 20-minute ceiling
     # looked reasonable and killed a healthy run mid-generate; size this off
     # the measurement, not off the intuition.
-    timeout-minutes: 90
+    timeout-minutes: 30
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -76,8 +76,14 @@ jobs:
           head -4 /tmp/socrates.csv
 
       - name: Regenerate data/conjunctions.json
-        # ~50 min of real work; bounded so a stall here is caught too.
-        timeout-minutes: 75
+        # Elements now come from the bundles already in data/ rather than a
+        # per-object gp.php lookup, so this is seconds of work, not the ~50 min
+        # it used to be (measured: 36 297 objects indexed and 12 pairs screened
+        # in 2 s).  The cap is ~100x headroom - enough that a slow runner is
+        # never the thing that fails, tight enough that a regression back to
+        # per-object fetching is caught in minutes instead of stalling for an
+        # hour and committing nothing.
+        timeout-minutes: 20
         run: python3 scripts/gen_conjunctions.py /tmp/socrates.csv data/conjunctions.json
 
       - name: Commit + push if changed

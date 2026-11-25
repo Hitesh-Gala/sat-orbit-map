@@ -6,7 +6,7 @@ predictions are valid for ~1 week, so a 2-day cadence keeps them fresh).
 
 Reads a SOCRATES CSV (downloaded by the workflow), picks the top distinct
 close-approach pairs by max collision probability, attaches each object's TLE
-(from data/active.tle, else gp.php) and owner country (from
+(from the bundles already in data/, else gp.php) and owner country (from
 data/satcat-active.json), and writes the compact JSON the Traffic-Conjunctions
 page consumes.  Aborts without overwriting if too few usable pairs survive, so a
 bad fetch never clobbers a good bundle.
@@ -21,8 +21,24 @@ except ImportError:
 
 CSV = sys.argv[1] if len(sys.argv) > 1 else '/tmp/socrates.csv'
 OUT = sys.argv[2] if len(sys.argv) > 2 else 'data/conjunctions.json'
-ACTIVE_TLE = 'data/active.tle'
 SATCAT = 'data/satcat-active.json'
+
+# Element sources, searched together; for each object the set with the LATEST
+# epoch wins.  Between them these cover ~36 300 objects at a median element age
+# of about half a day - as fresh as anything gp.php would hand back.
+TLE_BUNDLES = ['data/active.tle', 'data/spacetrack-debris.tle']
+GP_BUNDLES = ['data/spacetrack-gp.json', 'data/spacetrack-other.json']
+
+# gp.php is now only a top-up for objects no bundle carries, and it runs on a
+# hard overall budget.  On 2026-11-25 CelesTrak was answering but desperately
+# slow: every per-object lookup timed out three times at 25 s - about 84 s an
+# object - and the job hit the 75-minute step limit having committed nothing,
+# the sixteenth consecutive day the page kept a window that expired on
+# 15 November.  All three objects it died waiting for were already in data/,
+# 0.3-0.4 days old.  An element set slightly older than the best available but
+# which actually LANDS beats a perfect one that never arrives.
+GP_BUDGET_S = 240
+GP_TIMEOUT_S = 10
 WANT = 10          # target number of conjunctions in the output
 VERIFY_KM = 5.0    # a pair must actually come this close in OUR elements
 MIN_OK = 4         # abort (keep old file) if fewer than this survive
@@ -129,44 +145,109 @@ pairs = [best[k] for k in order]
 pairs.sort(key=lambda x: (-x['prob'], x['missM'] or 1e9))
 log(f'{len(pairs)} distinct pairs parsed')
 
-# ---- TLE index (active.tle) + gp.php fallback ----------------------------
+# ---- TLE index: every local bundle, latest epoch wins --------------------
+def tle_epoch(l1):
+    """Datetime of a TLE's epoch field, or None if the line is malformed."""
+    try:
+        yy = int(l1[18:20])
+        doy = float(l1[20:32])
+    except ValueError:
+        return None
+    if not 1.0 <= doy < 367.0:
+        return None
+    year = yy + (2000 if yy < 57 else 1900)
+    return (datetime.datetime(year, 1, 1, tzinfo=datetime.timezone.utc)
+            + datetime.timedelta(days=doy - 1.0))
+
+
 tle = {}
-try:
-    L = open(ACTIVE_TLE, encoding='utf-8', errors='replace').read().splitlines()
-    i = 0
-    while i + 2 < len(L):
-        if L[i + 1].startswith('1 ') and L[i + 2].startswith('2 '):
-            tle[L[i + 1][2:7].strip()] = (L[i].strip(), L[i + 1].rstrip(), L[i + 2].rstrip())
-            i += 3
+_epoch = {}
+
+
+def offer(nid, name, l1, l2):
+    """Record this element set for nid unless a newer one is already held.
+
+    Propagating a stale TLE to the predicted time of closest approach
+    accumulates along-track error - up to ~13 000 km, half an orbit of phase
+    drift - and the two objects then miss each other entirely on the globe.
+    Hence "latest epoch wins" rather than "first bundle wins".
+    """
+    e = tle_epoch(l1)
+    if e is None:
+        return
+    nid = str(nid).strip()
+    if nid in _epoch and _epoch[nid] >= e:
+        return
+    _epoch[nid] = e
+    tle[nid] = (name.strip(), l1.rstrip(), l2.rstrip())
+
+
+for _path in TLE_BUNDLES:
+    try:
+        _L = open(_path, encoding='utf-8', errors='replace').read().splitlines()
+    except FileNotFoundError:
+        log('warning: no', _path)
+        continue
+    _i = 0
+    while _i + 1 < len(_L):
+        # Two-line (1 + 2) and three-line (name + 1 + 2) files both occur.
+        if _L[_i].startswith('1 ') and _L[_i + 1].startswith('2 '):
+            offer(_L[_i][2:7], '', _L[_i], _L[_i + 1])
+            _i += 2
+        elif (_i + 2 < len(_L) and _L[_i + 1].startswith('1 ')
+                and _L[_i + 2].startswith('2 ')):
+            offer(_L[_i + 1][2:7], _L[_i], _L[_i + 1], _L[_i + 2])
+            _i += 3
         else:
-            i += 1
-except FileNotFoundError:
-    log('warning: no', ACTIVE_TLE)
+            _i += 1
+
+for _path in GP_BUNDLES:
+    try:
+        _d = json.load(open(_path, encoding='utf-8'))
+    except (FileNotFoundError, ValueError) as e:
+        log('warning:', _path, e)
+        continue
+    _rows = _d if isinstance(_d, list) else (_d.get('sats') or _d.get('rows') or [])
+    for _r in _rows:
+        _t = _r.get('t') or []
+        if len(_t) == 2:
+            offer(_r.get('c'), _r.get('n') or '', _t[0], _t[1])
+
+if tle:
+    _ages = sorted((datetime.datetime.now(datetime.timezone.utc) - v).total_seconds() / 86400
+                   for v in _epoch.values())
+    log(f'{len(tle)} objects indexed from {len(TLE_BUNDLES) + len(GP_BUNDLES)} bundles '
+        f'(median element age {_ages[len(_ages) // 2]:.2f} days)')
+else:
+    log('warning: no local elements at all - every lookup will hit gp.php')
+
+_gp_spent = 0.0
 
 
 def fetch_tle(nid):
-    """Prefer a FRESH element set from gp.php over the bundled snapshot.
-
-    SOCRATES screens with current elements; data/active.tle can be days older.
-    Propagating a stale TLE to the predicted TCA accumulates along-track error
-    (observed up to ~13 000 km — half an orbit of phase drift), which makes the
-    two objects miss each other entirely on the globe.  So hit gp.php first and
-    only fall back to the bundle if that fails.
-    """
+    """The local element set if we have one, else one bounded try at gp.php."""
+    global _gp_spent
     nid = str(nid)
+    hit = tle.get(nid)
+    if hit:
+        return hit
+    if _gp_spent >= GP_BUDGET_S:
+        log(f'  gp.php {nid}: skipped, lookup budget spent')
+        return None
+    t0 = time.time()
     url = f'https://celestrak.org/NORAD/elements/gp.php?CATNR={nid}&FORMAT=TLE'
-    for attempt in range(3):
-        try:
-            with urllib.request.urlopen(url, timeout=25) as resp:
-                t = resp.read().decode('utf-8', 'replace').strip().splitlines()
-            if len(t) >= 3 and t[1].startswith('1 ') and t[2].startswith('2 '):
-                tle[nid] = (t[0].strip(), t[1].rstrip(), t[2].rstrip())
-                time.sleep(1.5)
-                return tle[nid]
-        except Exception as e:
-            log(f'  gp.php {nid} attempt {attempt + 1}: {e}')
-        time.sleep(3)
-    return tle.get(nid)          # fall back to the bundled snapshot
+    try:
+        with urllib.request.urlopen(url, timeout=GP_TIMEOUT_S) as resp:
+            t = resp.read().decode('utf-8', 'replace').strip().splitlines()
+        if len(t) >= 3 and t[1].startswith('1 ') and t[2].startswith('2 '):
+            offer(nid, t[0], t[1], t[2])
+            return tle.get(nid)
+        log(f'  gp.php {nid}: no element set returned')
+    except Exception as e:
+        log(f'  gp.php {nid}: {e}')
+    finally:
+        _gp_spent += time.time() - t0
+    return None
 
 
 # ---- owners --------------------------------------------------------------
