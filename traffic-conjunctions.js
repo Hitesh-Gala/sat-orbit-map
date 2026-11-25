@@ -199,8 +199,30 @@
   function renderWindow() {
     const t = conjs.map(c => new Date(c.tca).getTime());
     const f = ms => new Date(ms).toUTCString().slice(5, 16);   // "25 Aug 2026"
-    $('valid-window').innerHTML =
-      `Predicted close approaches valid <b>${f(Math.min(...t))} → ${f(Math.max(...t))}</b> (UTC)`;
+    const first = Math.min(...t), last = Math.max(...t);
+    const el = $('valid-window');
+
+    // SOCRATES predictions are good for about a week.  This line used to call
+    // whatever the bundle happened to hold "valid", so when the refresh
+    // workflow stopped delivering (09 to 25 Nov 2026 - a rejected push it never
+    // retried) the page showed the 10-15 Nov window for a fortnight and nothing
+    // on it suggested the dates were old news.  That is how it went unnoticed.
+    const daysPast = (Date.now() - last) / 86400000;
+    if (daysPast > 0) {
+      const age = daysPast < 1 ? 'earlier today'
+                : Math.round(daysPast) + (Math.round(daysPast) === 1 ? ' day ago' : ' days ago');
+      el.innerHTML = `<b style="color:#ffb43d">Predictions expired</b> — last window `
+        + `<b>${f(first)} → ${f(last)}</b> (UTC), ended ${age}`;
+      el.title = 'CelesTrak SOCRATES predictions are only valid for about a week. '
+        + 'This window has passed, so these are the last predictions NAZAR could '
+        + 'fetch, not current ones.';
+      el.style.whiteSpace = 'normal';   // the element is nowrap/ellipsis, which would clip this
+      return;
+    }
+    el.innerHTML =
+      `Predicted close approaches valid <b>${f(first)} → ${f(last)}</b> (UTC)`;
+    el.title = '';
+    el.style.whiteSpace = '';
   }
 
   // ---- closest-approach details card --------------------------------------
