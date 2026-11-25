@@ -41,9 +41,13 @@ permissions:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    # Nothing here legitimately takes 20 minutes; the old runs that sat for six
-    # hours were a stalled socket, not work in progress.
-    timeout-minutes: 20
+    # The old runs that sat for six hours were a stalled socket, not work in
+    # progress - but the generate step genuinely needs the best part of an
+    # hour (50m 18s on the last good run, 09 Nov 2026), because it pulls fresh
+    # elements for every pair and SGP4-verifies each one.  A 20-minute ceiling
+    # looked reasonable and killed a healthy run mid-generate; size this off
+    # the measurement, not off the intuition.
+    timeout-minutes: 90
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -72,6 +76,8 @@ jobs:
           head -4 /tmp/socrates.csv
 
       - name: Regenerate data/conjunctions.json
+        # ~50 min of real work; bounded so a stall here is caught too.
+        timeout-minutes: 75
         run: python3 scripts/gen_conjunctions.py /tmp/socrates.csv data/conjunctions.json
 
       - name: Commit + push if changed
